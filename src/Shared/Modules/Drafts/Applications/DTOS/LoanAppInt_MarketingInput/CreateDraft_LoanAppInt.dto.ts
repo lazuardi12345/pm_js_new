@@ -83,7 +83,7 @@ class JobInternalDto {
 // ================= Loan Application =================
 class LoanApplicationInternalDto {
   @IsOptional() @IsEnum(StatusPinjamanEnum) status_pinjaman?: StatusPinjamanEnum;
-  @IsOptional() @IsNumber() pinjam_ke?: number;
+  @IsOptional() @IsNumber() pinjaman_ke?: number;
   @IsOptional() @IsNumber() nominal_pinjaman?: number;
   @IsOptional() @IsNumber() tenor?: number;
   @IsOptional() @IsString() keperluan?: string;
@@ -106,7 +106,9 @@ class CollateralInternalDto {
   @IsOptional() @IsString() bagian?: string;
   @IsOptional() @IsString() absensi?: string;
   @IsOptional() @IsEnum(RiwayatPinjamPenjaminEnum) riwayat_pinjam_penjamin?: RiwayatPinjamPenjaminEnum;
+  @IsOptional() @IsNumber() riwayat_nominal_penjamin? : number
   @IsOptional() @IsNumber() riwayat_tenor_penjamin?: number;
+  @IsOptional() @IsNumber() sisa_pinjaman_penjamin?: number;
   @IsOptional() @IsString() jaminan_cg_penjamin?: string;
   @IsOptional() @IsString() status_hubungan_penjamin?: string;
   @IsOptional() @IsString() foto_ktp_penjamin?: string;

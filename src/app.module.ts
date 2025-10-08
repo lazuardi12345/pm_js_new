@@ -17,6 +17,7 @@ import { MarketingInternalUseCaseModule } from './Modules/Users/Roles/Marketing-
 import { SupervisorInternalUseCaseModule } from './Modules/Users/Roles/Supervisor-Internal/supervisor-internal.module';
 import { PersistenceLoanAppModule } from './Modules/LoanAppInternal/PersistenceLoanAppModule.module';
 import { CreditAnalystInternalUseCaseModule } from './Modules/Users/Roles/CreditAnalyst-Internal/credit-analyst-internal.module';
+import { HeadMarkertingInternalUsecaseModel } from './Modules/Users/Roles/Head-Marketing-Internal/head-marketing-internal-module';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { CreditAnalystInternalUseCaseModule } from './Modules/Users/Roles/Credit
     MarketingInternalUseCaseModule,
     SupervisorInternalUseCaseModule,
     CreditAnalystInternalUseCaseModule,
+    HeadMarkertingInternalUsecaseModel,
 
     //? --- Persistence Config Modules ---
     PersistenceLoanAppModule,
