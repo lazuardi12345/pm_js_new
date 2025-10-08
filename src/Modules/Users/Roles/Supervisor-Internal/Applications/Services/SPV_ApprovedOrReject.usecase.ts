@@ -1,0 +1,140 @@
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
+import { Inject } from '@nestjs/common';
+import { ApprovalInternal } from 'src/Modules/LoanAppInternal/Domain/Entities/approval-internal.entity';
+import {
+  IApprovalInternalRepository,
+  APPROVAL_INTERNAL_REPOSITORY,
+} from 'src/Modules/LoanAppInternal/Domain/Repositories/approval-internal.repository';
+import {
+  ILoanApplicationInternalRepository,
+  LOAN_APPLICATION_INTERNAL_REPOSITORY,
+} from 'src/Modules/LoanAppInternal/Domain/Repositories/loanApp-internal.repository';
+import {
+  IUsersRepository,
+  USERS_REPOSITORY,
+} from 'src/Modules/Users/Domain/Repositories/users.repository';
+import { ApprovalInternalStatusEnum } from 'src/Shared/Enums/Internal/Approval.enum';
+import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
+
+@Injectable()
+export class SPV_ApproveOrRejectUseCase {
+  constructor(
+    @Inject(APPROVAL_INTERNAL_REPOSITORY)
+    private readonly approvalRepo: IApprovalInternalRepository,
+    @Inject(LOAN_APPLICATION_INTERNAL_REPOSITORY)
+    private readonly loanAppRepo: ILoanApplicationInternalRepository,
+    @Inject(USERS_REPOSITORY)
+    private readonly userRepo: IUsersRepository,
+  ) {}
+
+  async execute(
+    loan_id: number,
+    user_id: number,
+    role: USERTYPE,
+    status: ApprovalInternalStatusEnum,
+    keterangan?: string,
+  ) {
+    try {
+      console.log(
+        `SPV_ApproveOrRejectUseCase.execute(loan_id: ${loan_id}, user_id: ${user_id}, role: ${role}, status: ${status}, keterangan: ${keterangan})`,)
+      // Validasi loan
+      const loan = await this.loanAppRepo.findById(loan_id);
+      if (!loan) {
+        throw new HttpException(
+          {
+            error: true,
+            message: `Pengajuan dengan ID ${loan_id} tidak ditemukan`,
+            reference: 'LOAN_NOT_FOUND',
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      // Validasi user
+      const user = await this.userRepo.findById(user_id);
+      if (!user) {
+        throw new HttpException(
+          {
+            error: true,
+            message: `Pengguna dengan ID ${user_id} tidak ditemukan`,
+            reference: 'USER_NOT_FOUND',
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      // Validasi role
+      if (role !== USERTYPE.SPV) {
+        throw new HttpException(
+          {
+            error: true,
+            message: 'Hanya pengguna dengan role SPV yang dapat melakukan approval',
+            reference: 'ROLE_INVALID',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Buat entitas approval
+      const approval = new ApprovalInternal(
+        loan_id,
+        {id: user.id!},
+        role,
+        ApprovalInternalStatusEnum.PENDING,
+        false,
+        undefined,
+        keterangan || '',
+        undefined,
+      );
+
+      // Terapkan status approval
+      if (status === ApprovalInternalStatusEnum.APPROVED) {
+        approval.approve();
+      } else if (status === ApprovalInternalStatusEnum.REJECTED) {
+        approval.reject();
+      } else {
+        throw new HttpException(
+          {
+            error: true,
+            message: `Status ${status} tidak valid untuk approval`,
+            reference: 'STATUS_INVALID',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Simpan approval
+      const savedApproval = await this.approvalRepo.save(approval);
+
+      return {
+        error: false,
+        message: `Approval berhasil disimpan dengan status ${savedApproval.status}`,
+        reference: 'APPROVAL_SUCCESS',
+        data: {
+          id: savedApproval.id,
+          status: savedApproval.status,
+          keterangan: savedApproval.keterangan,
+          created: savedApproval.createdAt,
+          updated: savedApproval.updatedAt,
+        },
+      };
+    } catch (err) {
+      console.log(err)
+      // Tangani error tak terduga
+      throw new HttpException(
+        {
+          error: true,
+          message: err.message || 'Unexpected error',
+          reference: 'APPROVAL_UNKNOWN_ERROR',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+}

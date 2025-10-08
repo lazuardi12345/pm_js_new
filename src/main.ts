@@ -1,0 +1,77 @@
+import { NestFactory, Reflector } from '@nestjs/core';
+
+import * as dotenv from 'dotenv';
+dotenv.config();
+
+import { AppModule } from './app.module';
+import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/jwtAuth.guard';
+import cookieParser from 'cookie-parser';
+import { Logger, ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+// somewhere in your initialization file
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule, {
+    logger: ['error', 'warn', 'log', 'debug'], // atur level log
+  });
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
+
+  app.useGlobalGuards(new JwtAuthGuard(app.get(Reflector)));
+  app.use(cookieParser());
+
+  app.enableCors({
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        'http://localhost:5173',
+        'http://localhost:4173',
+        'http://127.0.0.1:5500',
+        'http://app.local:3000',
+      ];
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, origin);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type, Authorization',
+  });
+
+  app.use((req, res, next) => {
+    console.log('Request Origin:', req.headers.origin);
+    console.log('Request Cookie:', req.headers);
+    console.log('Response Headers:', res.getHeaders());
+    next();
+  });
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+    }),
+  );
+
+  // Swagger Configuration
+  const config = new DocumentBuilder()
+    .setTitle('Pengajuan Marketing API')
+    .setDescription('API description')
+    .setVersion('1.0')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
+
+  await app.listen(process.env.PORT ?? 3001, '0.0.0.0');
+  console.log(
+    `Server Successfully Started at http://localhost:${process.env.PORT}`,
+  );
+
+  const logger = new Logger('Bootstrap');
+}
+
+bootstrap().catch((err) => {
+  console.error('Bootstrap failed:', err);
+});
