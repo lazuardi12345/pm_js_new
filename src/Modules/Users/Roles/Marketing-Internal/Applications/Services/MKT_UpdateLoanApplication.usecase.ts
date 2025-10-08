@@ -28,9 +28,9 @@ import {
   RELATIVE_INTERNAL_REPOSITORY,
 } from 'src/Modules/LoanAppInternal/Domain/Repositories/relatives-internal.repository';
 import {
-  IFileStorageService,
+  IFileStorageRepository,
   FILE_STORAGE_SERVICE,
-} from 'src/Shared/Modules/Storage/Domain/Services/IFileStorage.service';
+} from 'src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository';
 import {
   IUnitOfWork,
   UNIT_OF_WORK,
@@ -54,7 +54,7 @@ export class MKT_UpdateLoanApplicationUseCase {
     @Inject(RELATIVE_INTERNAL_REPOSITORY)
     private readonly relativeRepo: IRelativesInternalRepository,
     @Inject(FILE_STORAGE_SERVICE)
-    private readonly fileStorage: IFileStorageService,
+    private readonly fileStorage: IFileStorageRepository,
     @Inject(UNIT_OF_WORK)
     private readonly uow: IUnitOfWork,
   ) {}
@@ -79,7 +79,11 @@ export class MKT_UpdateLoanApplicationUseCase {
 
         // 2. Upload files
         const filePaths = files
-          ? await this.fileStorage.saveFiles(client.id!, client.nama_lengkap, files)
+          ? await this.fileStorage.saveFiles(
+              client.id!,
+              client.nama_lengkap,
+              files,
+            )
           : {};
 
         // Logging jika payload kosong
@@ -93,7 +97,9 @@ export class MKT_UpdateLoanApplicationUseCase {
           !relativeInternal &&
           Object.keys(filePaths).length === 0
         ) {
-          console.log('Warning: Tidak ada data yang dikirim. DB tidak berubah.');
+          console.log(
+            'Warning: Tidak ada data yang dikirim. DB tidak berubah.',
+          );
         }
 
         // 3. Update Client
@@ -103,7 +109,8 @@ export class MKT_UpdateLoanApplicationUseCase {
             foto_ktp: filePaths['foto_ktp']?.[0] ?? client.foto_ktp,
             foto_kk: filePaths['foto_kk']?.[0] ?? client.foto_kk,
             foto_id_card: filePaths['foto_id_card']?.[0] ?? client.foto_id_card,
-            foto_rekening: filePaths['foto_rekening']?.[0] ?? client.foto_rekening,
+            foto_rekening:
+              filePaths['foto_rekening']?.[0] ?? client.foto_rekening,
             updated_at: now,
           });
           await this.clientRepo.save(client);
@@ -113,17 +120,26 @@ export class MKT_UpdateLoanApplicationUseCase {
 
         // 4. Update Address
         if (addressInternal) {
-          await this.addressRepo.update(client.id!, { ...addressInternal, updated_at: now });
+          await this.addressRepo.update(client.id!, {
+            ...addressInternal,
+            updated_at: now,
+          });
         }
 
         // 5. Update Family
         if (familyInternal) {
-          await this.familyRepo.update(client.id!, { ...familyInternal, updated_at: now });
+          await this.familyRepo.update(client.id!, {
+            ...familyInternal,
+            updated_at: now,
+          });
         }
 
         // 6. Update Job
         if (jobInternal) {
-          await this.jobRepo.update(client.id!, { ...jobInternal, updated_at: now });
+          await this.jobRepo.update(client.id!, {
+            ...jobInternal,
+            updated_at: now,
+          });
         }
 
         // 7. Update Loan Application
@@ -131,18 +147,27 @@ export class MKT_UpdateLoanApplicationUseCase {
           const loanApps = await this.loanAppRepo.findByNasabahId(client.id!);
           const loanApp = loanApps?.[0];
           if (loanApp) {
-            await this.loanAppRepo.update(loanApp.id!, { ...loanAppInternal, updated_at: now });
+            await this.loanAppRepo.update(loanApp.id!, {
+              ...loanAppInternal,
+              updated_at: now,
+            });
           }
         }
 
         // 8. Update Collateral
         if (collateralInternal) {
-          await this.collateralRepo.update(client.id!, { ...collateralInternal, updated_at: now });
+          await this.collateralRepo.update(client.id!, {
+            ...collateralInternal,
+            updated_at: now,
+          });
         }
 
         // 9. Update Relative
         if (relativeInternal) {
-          await this.relativeRepo.update(client.id!, { ...relativeInternal, updated_at: now });
+          await this.relativeRepo.update(client.id!, {
+            ...relativeInternal,
+            updated_at: now,
+          });
         }
 
         return {

@@ -40,9 +40,9 @@ import {
 
 // File Storage abstraction
 import {
-  IFileStorageService,
+  IFileStorageRepository,
   FILE_STORAGE_SERVICE,
-} from 'src/Shared/Modules/Storage/Domain/Services/IFileStorage.service';
+} from 'src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository';
 
 // Unit of Work abstraction
 import {
@@ -68,7 +68,7 @@ export class MKT_CreateLoanApplicationUseCase {
     @Inject(RELATIVE_INTERNAL_REPOSITORY)
     private readonly relativeRepo: IRelativesInternalRepository,
     @Inject(FILE_STORAGE_SERVICE)
-    private readonly fileStorage: IFileStorageService,
+    private readonly fileStorage: IFileStorageRepository,
 
     @Inject(UNIT_OF_WORK)
     private readonly uow: IUnitOfWork, // handle transaction + rollback
@@ -91,7 +91,7 @@ export class MKT_CreateLoanApplicationUseCase {
         // 1. Simpan Clients
         const customer = await this.clientRepo.save(
           new ClientInternal(
-            {id: marketing_id!},
+            { id: marketing_id! },
             client_internal.nama_lengkap,
             client_internal.no_ktp,
             client_internal.jenis_kelamin,
@@ -122,15 +122,15 @@ export class MKT_CreateLoanApplicationUseCase {
         );
 
         customer.foto_ktp =
-          filePaths['foto_ktp']?.[0] ?? client_internal.foto_ktp ?? null;
+          filePaths['foto_ktp']?.[0]?.url ?? client_internal.foto_ktp ?? null;
         customer.foto_kk =
-          filePaths['foto_kk']?.[0] ?? client_internal.foto_kk ?? null;
+          filePaths['foto_kk']?.[0]?.url ?? client_internal.foto_kk ?? null;
         customer.foto_id_card =
-          filePaths['foto_id_card']?.[0] ??
+          filePaths['foto_id_card']?.[0]?.url ??
           client_internal.foto_id_card ??
           null;
         customer.foto_rekening =
-          filePaths['foto_rekening']?.[0] ??
+          filePaths['foto_rekening']?.[0]?.url ??
           client_internal.foto_rekening ??
           null;
 
@@ -139,7 +139,7 @@ export class MKT_CreateLoanApplicationUseCase {
         // 3. Address
         await this.addressRepo.save(
           new AddressInternal(
-            {id: customer.id!},
+            { id: customer.id! },
             address_internal.alamat_ktp,
             address_internal.kelurahan,
             address_internal.rt_rw,
@@ -155,7 +155,7 @@ export class MKT_CreateLoanApplicationUseCase {
         // 4. Family
         await this.familyRepo.save(
           new FamilyInternal(
-            {id: customer.id!},
+            { id: customer.id! },
             family_internal.hubungan,
             family_internal.nama,
             family_internal.bekerja,
@@ -166,7 +166,7 @@ export class MKT_CreateLoanApplicationUseCase {
         // 5. Job
         await this.jobRepo.save(
           new JobInternal(
-            {id: customer.id!},
+            { id: customer.id! },
             job_internal.perusahaan,
             job_internal.divisi,
             job_internal.lama_kerja_tahun,
@@ -181,7 +181,7 @@ export class MKT_CreateLoanApplicationUseCase {
         // 6. Loan Application
         const loanApp = await this.loanAppRepo.save(
           new LoanApplicationInternal(
-            {id: customer.id!},
+            { id: customer.id! },
             loan_application_internal.status_pinjaman,
             loan_application_internal.nominal_pinjaman,
             loan_application_internal.tenor,
@@ -193,7 +193,7 @@ export class MKT_CreateLoanApplicationUseCase {
         // 7. Collateral
         await this.collateralRepo.save(
           new CollateralInternal(
-            {id: customer.id!},
+            { id: customer.id! },
             collateral_internal.jaminan_hrd,
             collateral_internal.jaminan_cg,
             collateral_internal.penjamin,
@@ -204,7 +204,7 @@ export class MKT_CreateLoanApplicationUseCase {
         if (relative_internal) {
           await this.relativeRepo.save(
             new RelativesInternal(
-              {id: customer.id!},
+              { id: customer.id! },
               relative_internal.kerabat_kerja,
               relative_internal.nama,
               relative_internal.alamat,
@@ -226,7 +226,7 @@ export class MKT_CreateLoanApplicationUseCase {
         };
       });
     } catch (err) {
-      console.log(err)
+      console.log(err);
       throw new BadRequestException(err.message || 'Gagal membuat pengajuan');
     }
   }

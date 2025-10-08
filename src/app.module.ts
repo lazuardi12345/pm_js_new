@@ -17,6 +17,7 @@ import { MarketingInternalUseCaseModule } from './Modules/Users/Roles/Marketing-
 import { SupervisorInternalUseCaseModule } from './Modules/Users/Roles/Supervisor-Internal/supervisor-internal.module';
 import { PersistenceLoanAppModule } from './Modules/LoanAppInternal/PersistenceLoanAppModule.module';
 import { CreditAnalystInternalUseCaseModule } from './Modules/Users/Roles/CreditAnalyst-Internal/credit-analyst-internal.module';
+import { FileSystemStorageModules } from './Shared/Modules/Storage/ModuleStorage.module';
 
 @Module({
   imports: [
@@ -51,7 +52,8 @@ import { CreditAnalystInternalUseCaseModule } from './Modules/Users/Roles/Credit
     AuthModule,
     DraftsModule,
     NotificationsModule,
-    
+    FileSystemStorageModules,
+
     //? --- All Use Cases ---
     MarketingInternalUseCaseModule,
     SupervisorInternalUseCaseModule,

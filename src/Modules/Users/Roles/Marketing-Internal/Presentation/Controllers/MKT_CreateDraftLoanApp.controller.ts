@@ -21,30 +21,38 @@ import { MKT_CreateDraftLoanApplicationUseCase } from '../../Applications/Servic
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { PayloadDTO } from 'src/Shared/Modules/Drafts/Applications/DTOS/LoanAppInt_MarketingInput/CreateDraft_LoanAppInt.dto';
 import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
+import multer from 'multer';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('mkt/int/drafts')
 export class MKT_CreateDraftLoanApplicationController {
   constructor(
     private readonly MKT_CreateDraftLoanAppUseCase: MKT_CreateDraftLoanApplicationUseCase,
-  ) { }
+  ) {}
 
   // @Public()
   @Post('add')
   @UseInterceptors(
-    FileFieldsInterceptor([
-      { name: 'foto_ktp', maxCount: 1 },
-      { name: 'foto_kk', maxCount: 1 },
-      // { name: 'foto_rekening', maxCount: 1 },
-    ]),
+    FileFieldsInterceptor(
+      [
+        { name: 'foto_ktp', maxCount: 1 },
+        { name: 'foto_kk', maxCount: 1 },
+      ],
+      {
+        storage: multer.memoryStorage(), // ✅ WAJIB untuk akses file.buffer
+        limits: { fileSize: 5 * 1024 * 1024 }, // optional, batasin 5MB
+      },
+    ),
   )
   async createDraft(
+    @UploadedFiles() files: Record<string, Express.Multer.File[]>,
     @CurrentUser('id') marketingId: number,
     @Body() dto: any,
-    @UploadedFiles() files: Record<string, Express.Multer.File[]>,
   ) {
     try {
       let payload: PayloadDTO;
+      console.log('Files:', files);
+      console.log('Body: > kntol', dto);
 
       // parsing dto.payload biar tetap fleksibel (string / object)
       if (dto.payload) {
@@ -55,8 +63,6 @@ export class MKT_CreateDraftLoanApplicationController {
       } else {
         payload = { client_internal: {} } as PayloadDTO;
       }
-
-      // ⬇️ marketingId langsung dimasukin otomatis, ga perlu di payload request
       payload.marketing_id = marketingId;
 
       console.log('Files uploaded:', files);
@@ -66,7 +72,6 @@ export class MKT_CreateDraftLoanApplicationController {
         throw new BadRequestException('No files uploaded');
       }
 
-      // ⬇️ cukup passing payload yang udah ada marketing_id nya
       return this.MKT_CreateDraftLoanAppUseCase.executeCreateDraft(
         payload,
         files,
@@ -78,7 +83,6 @@ export class MKT_CreateDraftLoanApplicationController {
       );
     }
   }
-
 
   @Get()
   async getDraftByMarketingId(@CurrentUser('id') marketingId: number) {
@@ -115,7 +119,7 @@ export class MKT_CreateDraftLoanApplicationController {
     const payloadParent =
       typeof updateData.payload === 'string'
         ? JSON.parse(updateData.payload)
-        : updateData.payload ?? {};
+        : (updateData.payload ?? {});
 
     return this.MKT_CreateDraftLoanAppUseCase.updateDraftById(
       Id,
