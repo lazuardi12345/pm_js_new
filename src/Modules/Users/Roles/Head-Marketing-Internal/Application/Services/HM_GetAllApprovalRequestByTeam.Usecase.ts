@@ -5,7 +5,7 @@ import {
 } from 'src/Modules/LoanAppInternal/Domain/Repositories/loanApp-internal.repository';
 
 @Injectable()
-export class HM_GetAllApprovalRequestByTeam_UseCase {
+export class HM_GetAllApprovalRequestByTeamUseCase {
   constructor(
     @Inject(LOAN_APPLICATION_INTERNAL_REPOSITORY)
     private readonly loanAppRepo: ILoanApplicationInternalRepository,
@@ -18,56 +18,54 @@ export class HM_GetAllApprovalRequestByTeam_UseCase {
     searchQuery = '',
   ) {
     try {
-      console.log(
-        'HM ID: ',
-        hmId,
-        'page: ',
-        page,
-        'pageSize: ',
-        pageSize,
-      );
+      console.log('hm:', hmId, 'page:', page, 'pageSize:', pageSize);
 
-      // 🔹 Panggil Stored Procedure khusus HM
       const { data, total } =
-        await this.loanAppRepo.callSP_CA_GetAllApprovalRequest_Internal(
+        await this.loanAppRepo.callSP_HM_GetAllApprovalRequest_Internal(
           hmId,
           page,
+          pageSize,
         );
 
       if (!data || data.length === 0) {
-        throw new Error('Data pengajuan tidak ditemukan');
+        return { data: [], total: 0 };
       }
 
-      // 🔍 Filter berdasarkan searchQuery
+      // Filter jika searchQuery ada
       const filteredData = searchQuery
-        ? data.filter((item) =>
-            item.nasabah_nama
-              ?.toLowerCase()
-              .includes(searchQuery.toLowerCase()),
-          )
-        : data;
+  ? data.filter((item) =>
+      item.nasabah_nama?.toLowerCase().includes(searchQuery.toLowerCase()),
+    )
+  : data;
 
-      // 💰 Format nominal pinjaman
-      const formattedData = filteredData.map((item) => {
-        const nominal = Number(item.nominal_pinjaman);
-        const formattedNominal = new Intl.NumberFormat('id-ID', {
-          style: 'currency',
-          currency: 'IDR',
-        }).format(nominal);
+console.log(data);
 
-        return {
-          id_pengajuan: Number(item.loan_id),
-          id_nasabah: Number(item.nasabah_id),
-          nama_nasabah: item.nasabah_nama,
-          nominal_pinjaman: formattedNominal,
-          id_marketing: Number(item.user_id),
-          nama_marketing: item.marketing_nama,
-          status: item.loan_status,
-        };
-      });
+// Mapping data sesuai field SP
+const formattedData = filteredData.map((item) => {
+  const nominal = Number(item.nominal_pinjaman) || 0;
+
+  return {
+    id_nasabah: item.nasabah_id || null,       // <-- tambahkan ini
+    nama_nasabah: item.nasabah_nama || '-',
+    pinjaman_ke: item.pinjaman_ke || 0,
+    nominal_pinjaman: new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+    }).format(nominal),
+    tenor: item.tenor ? `${item.tenor} bulan` : '0 bulan',
+    id_marketing: item.marketing_id || null,   // <-- tambahkan ini
+    nama_marketing: item.marketing_nama || '-',
+    waktu_pengajuan: item.waktu_pengajuan || '-',
+    status_loan: item.status_loan || '-',
+  };
+});
+
+return { data: formattedData, total };
 
       return { data: formattedData, total };
     } catch (err) {
+      console.error('❌ Error di UseCase HM_GetAllApprovalRequest:', err);
       throw new Error(err.message || 'Gagal mengambil data pengajuan untuk HM');
     }
   }

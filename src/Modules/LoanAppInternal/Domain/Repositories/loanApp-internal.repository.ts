@@ -4,6 +4,7 @@ import { LoanApplicationInternal } from '../Entities/loan-application-internal.e
 export const LOAN_APPLICATION_INTERNAL_REPOSITORY = Symbol('LOAN_APPLICATION_INTERNAL_REPOSITORY');
 
 export interface ILoanApplicationInternalRepository {
+  callSP_HM_GetAllApprovalHistory_ByTeam(headMarketingId: number, page: number, pageSize: number): { data: any; total: any; } | PromiseLike<{ data: any; total: any; }>;
   // ========== Basic CRUD ==========
   findById(id: number): Promise<LoanApplicationInternal | null>;
   findByNasabahId(nasabahId: number): Promise<LoanApplicationInternal[]>;

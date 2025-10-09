@@ -1,28 +1,41 @@
-import { Controller, Get, Query, UseGuards, HttpException, HttpStatus } from '@nestjs/common';
+// src/Modules/LoanAppInternal/Infrastructure/Controllers/HM_GetApprovalHistoryByTeam.controller.ts
+
+import {
+  Controller,
+  Get,
+  Query,
+  Inject,
+  UseGuards,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
+import { HM_GetAllApprovalHistoryByTeamUseCase } from '../../Application/Services/HM_GetApprovalHistoryByTeam.usecase';
 import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/jwtAuth.guard';
 import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
 import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/roles.decorator';
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
-import { HM_GetAllApprovalRequestByTeamUseCase } from '../../Application/Services/HM_GetAllApprovalRequestByTeam.Usecase';
 
-@Controller('hm/int/loan-apps')
-export class HM_GetAllApprovalRequestByTeamController {
+@Controller('hm/int/loan-apps/history')
+export class HM_GetApprovalHistoryByTeamController {
   constructor(
-    private readonly getAllApprovalRequestByTeamUseCase: HM_GetAllApprovalRequestByTeamUseCase,
+    @Inject(HM_GetAllApprovalHistoryByTeamUseCase)
+    private readonly getApprovalHistoryByTeamUseCase: HM_GetAllApprovalHistoryByTeamUseCase,
   ) {}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(USERTYPE.HM)
-  @Get('/request')
-  async getAllLoanApplications(
+  @Get()
+  async getHistory(
     @CurrentUser('id') hmId: number,
     @Query('page') page: number = 1,
     @Query('pageSize') pageSize: number = 10,
     @Query('searchQuery') searchQuery = '',
   ) {
     try {
-      const result = await this.getAllApprovalRequestByTeamUseCase.execute(
+      console.log('💼 HM History Request:', hmId, page, pageSize);
+
+      const result = await this.getApprovalHistoryByTeamUseCase.execute(
         hmId,
         page,
         pageSize,
@@ -32,8 +45,8 @@ export class HM_GetAllApprovalRequestByTeamController {
       return {
         payload: {
           error: false,
-          message: 'HM loan approval requests retrieved successfully',
-          reference: 'HM_LOAN_RETRIEVE_OK',
+          message: 'HM approval history retrieved successfully',
+          reference: 'HM_HISTORY_RETRIEVE_OK',
           data: {
             results: result.data,
             page,
@@ -43,13 +56,13 @@ export class HM_GetAllApprovalRequestByTeamController {
         },
       };
     } catch (err) {
-      console.error('❌ Controller error:', err);
+      console.error('❌ Error in HM_GetApprovalHistoryByTeamController:', err);
       throw new HttpException(
         {
           payload: {
             error: true,
             message: err.message || 'Unexpected error',
-            reference: 'HM_LOAN_UNKNOWN_ERROR',
+            reference: 'HM_HISTORY_UNKNOWN_ERROR',
           },
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
