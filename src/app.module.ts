@@ -18,7 +18,6 @@ import { SupervisorInternalUseCaseModule } from './Modules/Users/Roles/Superviso
 import { PersistenceLoanAppModule } from './Modules/LoanAppInternal/PersistenceLoanAppModule.module';
 import { CreditAnalystInternalUseCaseModule } from './Modules/Users/Roles/CreditAnalyst-Internal/credit-analyst-internal.module';
 import { FileSystemStorageModules } from './Shared/Modules/Storage/ModuleStorage.module';
-
 @Module({
   imports: [
     //? --- MySQL Connection ---
@@ -63,6 +62,7 @@ import { FileSystemStorageModules } from './Shared/Modules/Storage/ModuleStorage
     MarketingInternalUseCaseModule,
     SupervisorInternalUseCaseModule,
     CreditAnalystInternalUseCaseModule,
+    HeadMarkertingInternalUsecaseModel,
 
     //? --- Persistence Config Modules ---
     PersistenceLoanAppModule,

@@ -1,7 +1,7 @@
 export enum USERTYPE {
   SUPERADMIN = 'superadmin',
   ADMIN = 'admin',
-  MANAGER = 'manager',
+  // MANAGER = 'manager',
   CA = 'credit_analyst',
   SPV = 'supervisor',
   SVY = 'surveyor',

@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { IsEnum } from 'class-validator';
 import { HydratedDocument } from 'mongoose';
-import { StatusRumahEnum } from 'src/Shared/Enums/Internal/Address.enum';
+import { DomisiliEnum, StatusRumahEnum } from 'src/Shared/Enums/Internal/Address.enum';
 import { GENDER, MARRIAGE_STATUS } from 'src/Shared/Enums/Internal/Clients.enum';
 import { PenjaminEnum, RiwayatPinjamPenjaminEnum } from 'src/Shared/Enums/Internal/Collateral.enum';
 import { StatusPengajuanEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
@@ -46,6 +46,7 @@ class AddressInternal {
   @Prop() status_rumah?: StatusRumahEnum;
   @Prop() status_rumah_ktp?: StatusRumahEnum;
   @Prop() alamat_lengkap?: string;
+  @Prop() domisili?: DomisiliEnum;
 }
 export const AddressInternalSchema =
   SchemaFactory.createForClass(AddressInternal);
@@ -86,7 +87,7 @@ export const JobInternalSchema = SchemaFactory.createForClass(JobInternal);
 @Schema({ _id: false })
 class LoanApplicationInternal {
   @Prop() status_pinjaman?: string;
-  @Prop() pinjam_ke?: number;
+  @Prop() pinjaman_ke?: number;
   @Prop() nominal_pinjaman?: number;
   @Prop() tenor?: number;
   @Prop() keperluan?: string;
@@ -114,8 +115,9 @@ class CollateralInternal {
   @Prop() absensi?: string;
   @Prop() riwayat_pinjam_penjamin?: RiwayatPinjamPenjaminEnum;
   @Prop() riwayat_tenor_penjamin?: number;
+  @Prop() sisa_pinjaman_penjamin?: number;
   @Prop() jaminan_cg_penjamin?: string;
-  @Prop() tatus_hubungan_penjamin?: string;
+  @Prop() status_hubungan_penjamin?: string;
   @Prop() foto_ktp_penjamin?: string;
   @Prop() foto_id_card_penjamin?: string;
 }

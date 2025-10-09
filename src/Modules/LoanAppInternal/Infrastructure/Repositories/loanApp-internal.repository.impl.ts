@@ -17,6 +17,18 @@ export class LoanApplicationInternalRepositoryImpl
     @InjectRepository(LoanApplicationInternal_ORM_Entity)
     private readonly ormRepository: Repository<LoanApplicationInternal_ORM_Entity>,
   ) {}
+  callSP_HM_GetAllApprovalHistory_Internal(hmId: number, page: number, pageSize: number): Promise<{ data: any[]; total: number; }> {
+    throw new Error('Method not implemented.');
+  }
+  callSP_HM_GetAllApprovalRequest_Internal(hmId: number, page: number, pageSize: number): Promise<{ data: any[]; total: number; }> {
+    throw new Error('Method not implemented.');
+  }
+  callSP_HM_GetDetail_LoanApplicationsInternal_ById(loanAppId: number): Promise<[TypeLoanApplicationDetail[], TypeApprovalDetail[]]> {
+    throw new Error('Method not implemented.');
+  }
+  callSP_HM_GetAllTeams_Internal(hmId: number): Promise<any[]> {
+    throw new Error('Method not implemented.');
+  }
 
   //? MAPPER >==========================================================================
 
