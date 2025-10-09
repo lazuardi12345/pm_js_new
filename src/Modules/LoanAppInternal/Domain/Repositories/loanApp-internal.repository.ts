@@ -1,10 +1,20 @@
-import { TypeApprovalDetail, TypeLoanApplicationDetail } from 'src/Modules/Users/Roles/Marketing-Internal/Applications/DTOS/MKT_CreateLoanApplication.dto';
+import {
+  TypeApprovalDetail,
+  TypeLoanApplicationDetail,
+} from 'src/Modules/Users/Roles/Marketing-Internal/Applications/DTOS/MKT_CreateLoanApplication.dto';
 import { LoanApplicationInternal } from '../Entities/loan-application-internal.entity';
+import { StatusPengajuanEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
 
-export const LOAN_APPLICATION_INTERNAL_REPOSITORY = Symbol('LOAN_APPLICATION_INTERNAL_REPOSITORY');
+export const LOAN_APPLICATION_INTERNAL_REPOSITORY = Symbol(
+  'LOAN_APPLICATION_INTERNAL_REPOSITORY',
+);
 
 export interface ILoanApplicationInternalRepository {
-  callSP_HM_GetAllApprovalHistory_ByTeam(headMarketingId: number, page: number, pageSize: number): { data: any; total: any; } | PromiseLike<{ data: any; total: any; }>;
+  callSP_HM_GetAllApprovalHistory_ByTeam(
+    headMarketingId: number,
+    page: number,
+    pageSize: number,
+  ): { data: any; total: any } | PromiseLike<{ data: any; total: any }>;
   // ========== Basic CRUD ==========
   findById(id: number): Promise<LoanApplicationInternal | null>;
   findByNasabahId(nasabahId: number): Promise<LoanApplicationInternal[]>;
@@ -15,6 +25,11 @@ export interface ILoanApplicationInternalRepository {
     loan: Partial<LoanApplicationInternal>,
   ): Promise<LoanApplicationInternal>;
   delete(id: number): Promise<void>;
+
+  updateLoanAppInternalStatus(
+    loan_id: number,
+    status: StatusPengajuanEnum,
+  ): Promise<void>;
 
   // ========== MARKETING ==========
   callSP_MKT_GetAllLoanApplications_Internal(
@@ -40,9 +55,7 @@ export interface ILoanApplicationInternalRepository {
   callSP_SPV_GetDetail_LoanApplicationsInternal_ById(
     loanAppId: number,
   ): Promise<[TypeLoanApplicationDetail[], TypeApprovalDetail[]]>;
-  callSP_SPV_GetAllTeams_Internal(
-    supervisorId: number,
-  ): Promise<any[]>;
+  callSP_SPV_GetAllTeams_Internal(supervisorId: number): Promise<any[]>;
 
   // ========== HEAD MARKETING (HM) ==========
   callSP_HM_GetAllApprovalHistory_Internal(
@@ -58,9 +71,7 @@ export interface ILoanApplicationInternalRepository {
   callSP_HM_GetDetail_LoanApplicationsInternal_ById(
     loanAppId: number,
   ): Promise<[TypeLoanApplicationDetail[], TypeApprovalDetail[]]>;
-  callSP_HM_GetAllTeams_Internal(
-    hmId: number,
-  ): Promise<any[]>;
+  callSP_HM_GetAllTeams_Internal(hmId: number): Promise<any[]>;
 
   // ========== CREDIT ANALYST (CA) ==========
   callSP_CA_GetAllApprovalHistory_Internal(

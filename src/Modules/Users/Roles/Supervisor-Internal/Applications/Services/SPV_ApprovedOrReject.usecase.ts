@@ -20,6 +20,7 @@ import {
   USERS_REPOSITORY,
 } from 'src/Modules/Users/Domain/Repositories/users.repository';
 import { ApprovalInternalStatusEnum } from 'src/Shared/Enums/Internal/Approval.enum';
+import { StatusPengajuanEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 
 @Injectable()
@@ -42,7 +43,9 @@ export class SPV_ApproveOrRejectUseCase {
   ) {
     try {
       console.log(
-        `SPV_ApproveOrRejectUseCase.execute(loan_id: ${loan_id}, user_id: ${user_id}, role: ${role}, status: ${status}, keterangan: ${keterangan})`,)
+        `SPV_ApproveOrRejectUseCase.execute(loan_id: ${loan_id}, user_id: ${user_id}, role: ${role}, status: ${status}, keterangan: ${keterangan})`,
+      );
+
       // Validasi loan
       const loan = await this.loanAppRepo.findById(loan_id);
       if (!loan) {
@@ -74,7 +77,8 @@ export class SPV_ApproveOrRejectUseCase {
         throw new HttpException(
           {
             error: true,
-            message: 'Hanya pengguna dengan role SPV yang dapat melakukan approval',
+            message:
+              'Hanya pengguna dengan role SPV yang dapat melakukan approval',
             reference: 'ROLE_INVALID',
           },
           HttpStatus.BAD_REQUEST,
@@ -84,7 +88,7 @@ export class SPV_ApproveOrRejectUseCase {
       // Buat entitas approval
       const approval = new ApprovalInternal(
         loan_id,
-        {id: user.id!},
+        { id: user.id! },
         role,
         ApprovalInternalStatusEnum.PENDING,
         false,
@@ -93,11 +97,16 @@ export class SPV_ApproveOrRejectUseCase {
         undefined,
       );
 
+      console.log('uhuy cukay: >>>>>>>>>>>>>>>>>>>>>.', status);
+
       // Terapkan status approval
+      let newLoanStatus: StatusPengajuanEnum;
       if (status === ApprovalInternalStatusEnum.APPROVED) {
         approval.approve();
+        newLoanStatus = StatusPengajuanEnum.APPROVED_SPV;
       } else if (status === ApprovalInternalStatusEnum.REJECTED) {
         approval.reject();
+        newLoanStatus = StatusPengajuanEnum.REJECTED_SPV;
       } else {
         throw new HttpException(
           {
@@ -112,6 +121,12 @@ export class SPV_ApproveOrRejectUseCase {
       // Simpan approval
       const savedApproval = await this.approvalRepo.save(approval);
 
+      // Update status pengajuan di loan app
+      await this.loanAppRepo.updateLoanAppInternalStatus(
+        loan_id,
+        newLoanStatus,
+      );
+
       return {
         error: false,
         message: `Approval berhasil disimpan dengan status ${savedApproval.status}`,
@@ -119,13 +134,14 @@ export class SPV_ApproveOrRejectUseCase {
         data: {
           id: savedApproval.id,
           status: savedApproval.status,
+          loan_status: newLoanStatus,
           keterangan: savedApproval.keterangan,
           created: savedApproval.createdAt,
           updated: savedApproval.updatedAt,
         },
       };
     } catch (err) {
-      console.log(err)
+      console.log(err);
       // Tangani error tak terduga
       throw new HttpException(
         {

@@ -160,21 +160,6 @@ export class ApprovalInternalRepositoryImpl
   async save(approval: ApprovalInternal): Promise<ApprovalInternal> {
     const ormEntity = this.toOrm(approval);
     const savedOrm = await this.ormRepository.save(ormEntity);
-
-    // 🔁 Sinkronisasi status loan
-    const mappedStatus = this.mapApprovalToLoanStatus(
-      approval.role!,
-      approval.status!,
-      approval.isBanding,
-    );
-
-    if (mappedStatus) {
-      await this.loanAppRepo.updateStatus(approval.pengajuan, mappedStatus);
-      console.log(
-        `[ApprovalInternalRepositoryImpl] Loan ${approval.pengajuan} updated to ${mappedStatus}`,
-      );
-    }
-
     return this.toDomain(savedOrm);
   }
 
@@ -190,21 +175,6 @@ export class ApprovalInternalRepositoryImpl
     });
 
     if (!updated) throw new Error('Approval not found');
-
-    // 🔁 Sinkronisasi status loan
-    const mappedStatus = this.mapApprovalToLoanStatus(
-      approvalData.role ?? updated.role,
-      approvalData.status ?? updated.status,
-      approvalData.isBanding ?? updated.is_banding,
-    );
-
-    if (mappedStatus) {
-      await this.loanAppRepo.updateStatus(updated.pengajuan.id, mappedStatus);
-      console.log(
-        `[ApprovalInternalRepositoryImpl] Loan ${updated.pengajuan.id} updated to ${mappedStatus}`,
-      );
-    }
-
     return this.toDomain(updated);
   }
 

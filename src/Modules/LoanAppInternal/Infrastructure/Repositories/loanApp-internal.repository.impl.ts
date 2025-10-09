@@ -19,8 +19,6 @@ export class LoanApplicationInternalRepositoryImpl
     @InjectRepository(LoanApplicationInternal_ORM_Entity)
     private readonly ormRepository: Repository<LoanApplicationInternal_ORM_Entity>,
   ) {}
- 
-
 
   //? MAPPER >==========================================================================
 
@@ -122,7 +120,7 @@ export class LoanApplicationInternalRepositoryImpl
   async findByNasabahId(nasabahId: number): Promise<LoanApplicationInternal[]> {
     console.log('REMEMBER SUMMER DAAYYYSSSS >>>>>>>>>>>>>>>> > : ', nasabahId);
     const ormEntities = await this.ormRepository.find({
-      where: { nasabah: { id: nasabahId } }
+      where: { nasabah: { id: nasabahId } },
     });
     console.log(
       'REMEMBER SUMMER DAAYYYSSSS >>>>>>>>>>>>>>>> > : ',
@@ -150,10 +148,13 @@ export class LoanApplicationInternalRepositoryImpl
     if (!updated) throw new Error('Loan Application not found');
     return this.toDomain(updated);
   }
-  async updateStatus(loanId: number, newStatus: StatusPengajuanEnum): Promise<void> {
-  await this.ormRepository.update(loanId, { status: newStatus });
-  console.log(`[LoanApplicationInternalRepositoryImpl] Status loan ${loanId} diubah menjadi: ${newStatus}`);
-}
+
+  async updateLoanAppInternalStatus(
+    loan_id: number,
+    status: StatusPengajuanEnum,
+  ): Promise<void> {
+    await this.ormRepository.update({ id: loan_id }, { status: status });
+  }
 
   async delete(id: number): Promise<void> {
     await this.ormRepository.softDelete(id);
@@ -241,10 +242,9 @@ export class LoanApplicationInternalRepositoryImpl
 
   async callSP_SPV_GetAllTeams_Internal(supervisorId: number): Promise<any[]> {
     const ormEntities = this.ormRepository.manager;
-    const result = await ormEntities.query(
-      `CALL SPV_GetAllTeams_Internal(?)`,
-      [supervisorId],
-    );
+    const result = await ormEntities.query(`CALL SPV_GetAllTeams_Internal(?)`, [
+      supervisorId,
+    ]);
     return result[0];
   }
 
@@ -292,7 +292,7 @@ export class LoanApplicationInternalRepositoryImpl
     return results;
   }
 
-   // ========== HEAD MARKETING (HM) ==========
+  // ========== HEAD MARKETING (HM) ==========
 
   async callSP_HM_GetAllApprovalHistory_Internal(
     hmId: number,
@@ -302,25 +302,24 @@ export class LoanApplicationInternalRepositoryImpl
     throw new Error('Method not implemented.');
   }
 
-async callSP_HM_GetAllApprovalRequest_Internal(
-  hmId: number,
-  page: number,
-  pageSize: number,
-): Promise<{ data: any[]; total: number }> {
-  const manager = this.ormRepository.manager;
-  const result = await manager.query(
-    `CALL HM_GetAllApprovalRequest_Internal(?, ?, ?)`,
-    [hmId, page, pageSize],
-  );
+  async callSP_HM_GetAllApprovalRequest_Internal(
+    hmId: number,
+    page: number,
+    pageSize: number,
+  ): Promise<{ data: any[]; total: number }> {
+    const manager = this.ormRepository.manager;
+    const result = await manager.query(
+      `CALL HM_GetAllApprovalRequest_Internal(?, ?, ?)`,
+      [hmId, page, pageSize],
+    );
 
-  console.log("ini res: >", result)
+    console.log('ini res: >', result);
 
-  return {
-    data: result[1] || [], // <-- data actual
-    total: result[1] ? result[1][0]?.total_count || 0 : 0, // <-- total count
-  };
-}
-
+    return {
+      data: result[1] || [], // <-- data actual
+      total: result[1] ? result[1][0]?.total_count || 0 : 0, // <-- total count
+    };
+  }
 
   async callSP_HM_GetDetail_LoanApplicationsInternal_ById(
     loanAppId: number,
@@ -331,18 +330,21 @@ async callSP_HM_GetAllApprovalRequest_Internal(
   // ✅ FIXED FUNCTION
   async callSP_HM_GetAllTeams_Internal(hmId: number): Promise<any[]> {
     const ormEntities = this.ormRepository.manager;
-    const result = await ormEntities.query(`CALL HM_GetAllTeams_Internal(?)`, [hmId]);
+    const result = await ormEntities.query(`CALL HM_GetAllTeams_Internal(?)`, [
+      hmId,
+    ]);
     return result[0];
   }
 
-
-   callSP_HM_GetAllApprovalHistory_ByTeam(headMarketingId: number, page: number, pageSize: number): { data: any; total: any; } | PromiseLike<{ data: any; total: any; }> {
+  callSP_HM_GetAllApprovalHistory_ByTeam(
+    headMarketingId: number,
+    page: number,
+    pageSize: number,
+  ): { data: any; total: any } | PromiseLike<{ data: any; total: any }> {
     throw new Error('Method not implemented.');
   }
-  
 }
 
 function HM_GetAllApprovalRequest_Internal(): any[] | undefined {
   throw new Error('Function not implemented.');
 }
- 

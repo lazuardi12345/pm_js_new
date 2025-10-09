@@ -15,7 +15,7 @@ import { LoanApplicationInternalModule } from './loanApp-internal.module';
       LoanApplicationInternal_ORM_Entity,
       Users_ORM_Entity,
     ]),
-    LoanApplicationInternalModule, // ✅ letakkan di sini
+    LoanApplicationInternalModule,
   ],
   providers: [
     {
