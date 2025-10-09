@@ -1,9 +1,4 @@
-
-import {
-  Injectable,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import { ApprovalInternal } from 'src/Modules/LoanAppInternal/Domain/Entities/approval-internal.entity';
 import {
@@ -19,6 +14,7 @@ import {
   USERS_REPOSITORY,
 } from 'src/Modules/Users/Domain/Repositories/users.repository';
 import { ApprovalInternalStatusEnum } from 'src/Shared/Enums/Internal/Approval.enum';
+import { StatusPengajuanEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 
 @Injectable()
@@ -75,7 +71,8 @@ export class HM_ApproveOrRejectUseCase {
         throw new HttpException(
           {
             error: true,
-            message: 'Hanya pengguna dengan role Head Marketing yang dapat melakukan approval',
+            message:
+              'Hanya pengguna dengan role Head Marketing yang dapat melakukan approval',
             reference: 'ROLE_INVALID',
           },
           HttpStatus.BAD_REQUEST,
@@ -94,11 +91,16 @@ export class HM_ApproveOrRejectUseCase {
         undefined,
       );
 
-      // ✅ Terapkan status approval
+      console.log('uhuy cukay: >>>>>>>>>>>>>>>>>>>>>.', status);
+
+      // Terapkan status approval
+      let newLoanStatus: StatusPengajuanEnum;
       if (status === ApprovalInternalStatusEnum.APPROVED) {
         approval.approve();
+        newLoanStatus = StatusPengajuanEnum.APPROVED_HM;
       } else if (status === ApprovalInternalStatusEnum.REJECTED) {
         approval.reject();
+        newLoanStatus = StatusPengajuanEnum.REJECTED_HM;
       } else {
         throw new HttpException(
           {
@@ -110,8 +112,14 @@ export class HM_ApproveOrRejectUseCase {
         );
       }
 
-      // ✅ Simpan approval
+      // Simpan approval
       const savedApproval = await this.approvalRepo.save(approval);
+
+      // Update status pengajuan di loan app
+      await this.loanAppRepo.updateLoanAppInternalStatus(
+        loan_id,
+        newLoanStatus,
+      );
 
       return {
         error: false,

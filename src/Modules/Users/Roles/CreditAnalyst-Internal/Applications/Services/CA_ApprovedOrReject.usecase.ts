@@ -20,6 +20,7 @@ import {
   USERS_REPOSITORY,
 } from 'src/Modules/Users/Domain/Repositories/users.repository';
 import { ApprovalInternalStatusEnum } from 'src/Shared/Enums/Internal/Approval.enum';
+import { StatusPengajuanEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 
 @Injectable()
@@ -43,7 +44,8 @@ export class CA_ApproveOrRejectUseCase {
   ) {
     try {
       console.log(
-        `CA_ApproveOrRejectUseCase.execute(loan_id: ${loan_id}, user_id: ${user_id}, role: ${role}, status: ${status}, keterangan: ${keterangan})`,)
+        `CA_ApproveOrRejectUseCase.execute(loan_id: ${loan_id}, user_id: ${user_id}, role: ${role}, status: ${status}, keterangan: ${keterangan})`,
+      );
       // Validasi loan
       const loan = await this.loanAppRepo.findById(loan_id);
       if (!loan) {
@@ -75,7 +77,8 @@ export class CA_ApproveOrRejectUseCase {
         throw new HttpException(
           {
             error: true,
-            message: 'Hanya pengguna dengan role CA yang dapat melakukan approval',
+            message:
+              'Hanya pengguna dengan role CA yang dapat melakukan approval',
             reference: 'ROLE_INVALID',
           },
           HttpStatus.BAD_REQUEST,
@@ -85,7 +88,7 @@ export class CA_ApproveOrRejectUseCase {
       // Buat entitas approval
       const approval = new ApprovalInternal(
         loan_id,
-        {id: user_id!},
+        { id: user_id! },
         role,
         ApprovalInternalStatusEnum.PENDING,
         false,
@@ -94,11 +97,16 @@ export class CA_ApproveOrRejectUseCase {
         kesimpulan || '',
       );
 
+      console.log('uhuy cukay: >>>>>>>>>>>>>>>>>>>>>.', status);
+
       // Terapkan status approval
+      let newLoanStatus: StatusPengajuanEnum;
       if (status === ApprovalInternalStatusEnum.APPROVED) {
         approval.approve();
+        newLoanStatus = StatusPengajuanEnum.APPROVED_CA;
       } else if (status === ApprovalInternalStatusEnum.REJECTED) {
         approval.reject();
+        newLoanStatus = StatusPengajuanEnum.REJECTED_CA;
       } else {
         throw new HttpException(
           {
@@ -112,6 +120,12 @@ export class CA_ApproveOrRejectUseCase {
 
       // Simpan approval
       const savedApproval = await this.approvalRepo.save(approval);
+
+      // Update status pengajuan di loan app
+      await this.loanAppRepo.updateLoanAppInternalStatus(
+        loan_id,
+        newLoanStatus,
+      );
 
       return {
         error: false,
@@ -127,7 +141,7 @@ export class CA_ApproveOrRejectUseCase {
         },
       };
     } catch (err) {
-      console.log(err)
+      console.log(err);
       // Tangani error tak terduga
       throw new HttpException(
         {
