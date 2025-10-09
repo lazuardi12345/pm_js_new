@@ -16,8 +16,9 @@ import {
 import { LoanApplicationEntity } from 'src/Shared/Modules/Drafts/Domain/Entities/LoanAppInt.entity';
 import {
   FILE_STORAGE_SERVICE,
-  IFileStorageService,
-} from 'src/Shared/Modules/Storage/Domain/Services/IFileStorage.service';
+  FileMetadata,
+  IFileStorageRepository,
+} from 'src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository';
 
 @Injectable()
 export class MKT_CreateDraftLoanApplicationUseCase {
@@ -26,7 +27,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     private readonly loanAppDraftRepo: ILoanApplicationDraftRepository,
 
     @Inject(FILE_STORAGE_SERVICE)
-    private readonly fileStorage: IFileStorageService,
+    private readonly fileStorage: IFileStorageRepository,
   ) {}
 
   async executeCreateDraft(
@@ -34,11 +35,11 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     files?: Record<string, Express.Multer.File[]>,
   ) {
     try {
-      let filePaths: Record<string, string[]> = {};
+      let filePaths: Record<string, FileMetadata[]> = {};
 
       if (files && Object.keys(files).length > 0) {
-        filePaths = await this.fileStorage.saveDraftsFile(
-          dto.marketing_id ,
+        filePaths = await this.fileStorage.saveDraftsFiles(
+          dto.marketing_id,
           dto.client_internal?.nama_lengkap ?? `draft-${dto.marketing_id}`,
           files,
         );
@@ -193,109 +194,116 @@ export class MKT_CreateDraftLoanApplicationUseCase {
   }
 
   async deleteDraftByMarketingId(id: string) {
-  try {
-    await this.loanAppDraftRepo.softDelete(id);
+    try {
+      await this.loanAppDraftRepo.softDelete(id);
 
-    return {
-      payload: {
-        error: false,
-        message: 'Draft loan applications deleted',
-        reference: 'LOAN_DELETE_OK',
-        data: [],
-      },
-    };
-  } catch (error) {
-    console.error('DeleteDraft Error >>>', error);
-    throw new HttpException(   
-      {
+      return {
         payload: {
-          error: true,
-          message:
-            error.message || 'Draft tidak ditemukan atau unexpected error',
-          reference: 'LOAN_DELETE_ERROR',
+          error: false,
+          message: 'Draft loan applications deleted',
+          reference: 'LOAN_DELETE_OK',
+          data: [],
         },
-      },
-      HttpStatus.INTERNAL_SERVER_ERROR,
-    );
-  }
-}
-
-async updateDraftById(
-  Id: string,
-  updateData: Partial<CreateDraftLoanApplicationDto>,
-  files?: Record<string, Express.Multer.File[]>,
-) {
-  const { payload } = updateData;
-  console.log("Unified: >", payload)
-  let filePaths: Record<string, string[]> = {};
-
-  console.log('🟢 [updateDraftById] START');
-  console.log('➡️ Incoming ID:', Id);
-  console.log('➡️ Incoming Payload:', JSON.stringify(payload, null, 2));
-
-  // ✅ Simpan file bila ada upload
-  if (files && Object.keys(files).length > 0) {
-    filePaths = await this.fileStorage.saveDraftsFile(
-      Number(payload?.client_internal?.no_ktp) ?? Id,
-      payload?.client_internal?.nama_lengkap ?? `draft-${Id}`,
-      files,
-    );
+      };
+    } catch (error) {
+      console.error('DeleteDraft Error >>>', error);
+      throw new HttpException(
+        {
+          payload: {
+            error: true,
+            message:
+              error.message || 'Draft tidak ditemukan atau unexpected error',
+            reference: 'LOAN_DELETE_ERROR',
+          },
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
-  try {
-    const existingDraft = await this.loanAppDraftRepo.findById(Id);
-    console.log('🔍 Existing Draft:', JSON.stringify(existingDraft, null, 2));
+  async updateDraftById(
+    Id: string,
+    updateData: Partial<CreateDraftLoanApplicationDto>,
+    files?: Record<string, Express.Multer.File[]>,
+  ) {
+    const { payload } = updateData;
+    console.log('Unified: >', payload);
+    let filePaths: Record<string, FileMetadata[]> = {};
 
-    if (!existingDraft) {
-      throw new NotFoundException(`Draft with id ${Id} not found`);
+    console.log('🟢 [updateDraftById] START');
+    console.log('➡️ Incoming ID:', Id);
+    console.log('➡️ Incoming Payload:', JSON.stringify(payload, null, 2));
+
+    // ✅ Simpan file bila ada upload
+    if (files && Object.keys(files).length > 0) {
+      filePaths = await this.fileStorage.saveDraftsFiles(
+        Number(payload?.client_internal?.no_ktp) ?? Id,
+        payload?.client_internal?.nama_lengkap ?? `draft-${Id}`,
+        files,
+      );
     }
 
-    const mergedFiles = {
-      ...(existingDraft.uploaded_files || {}),
-      ...(Object.keys(filePaths).length > 0 ? filePaths : {}),
-    };
+    try {
+      const existingDraft = await this.loanAppDraftRepo.findById(Id);
+      console.log('🔍 Existing Draft:', JSON.stringify(existingDraft, null, 2));
 
-    const entityUpdate: Partial<LoanApplicationEntity> = {
-      ...payload,
-      uploaded_files: mergedFiles,
-    };
+      if (!existingDraft) {
+        throw new NotFoundException(`Draft with id ${Id} not found`);
+      }
 
-    console.log('🧩 Final entityUpdate to save:', JSON.stringify(entityUpdate, null, 2));
+      const mergedFiles = {
+        ...(existingDraft.uploaded_files || {}),
+        ...(Object.keys(filePaths).length > 0 ? filePaths : {}),
+      };
 
-    const loanApp = await this.loanAppDraftRepo.updateDraftById(Id, entityUpdate);
-    console.log('✅ Repository returned:', JSON.stringify(loanApp, null, 2));
+      const entityUpdate: Partial<LoanApplicationEntity> = {
+        ...payload,
+        uploaded_files: mergedFiles,
+      };
 
-    // Verifikasi apakah hasilnya berubah
-    const verifyAfterUpdate = await this.loanAppDraftRepo.findById(Id);
-    console.log('🔁 Data after update in DB:', JSON.stringify(verifyAfterUpdate, null, 2));
+      console.log(
+        '🧩 Final entityUpdate to save:',
+        JSON.stringify(entityUpdate, null, 2),
+      );
 
-    return {
-      payload: {
-        error: false,
-        message: 'Draft loan applications updated',
-        reference: 'LOAN_UPDATE_OK',
-        data: verifyAfterUpdate,
-      },
-    };
+      const loanApp = await this.loanAppDraftRepo.updateDraftById(
+        Id,
+        entityUpdate,
+      );
+      console.log('✅ Repository returned:', JSON.stringify(loanApp, null, 2));
 
-  } catch (error) {
-    console.error('❌ Update error:', error);
+      // Verifikasi apakah hasilnya berubah
+      const verifyAfterUpdate = await this.loanAppDraftRepo.findById(Id);
+      console.log(
+        '🔁 Data after update in DB:',
+        JSON.stringify(verifyAfterUpdate, null, 2),
+      );
 
-    if (error instanceof HttpException) {
-      throw error;
-    }
-
-    throw new HttpException(
-      {
+      return {
         payload: {
-          error: true,
-          message: 'Unexpected error',
-          reference: 'LOAN_UNKNOWN_ERROR',
+          error: false,
+          message: 'Draft loan applications updated',
+          reference: 'LOAN_UPDATE_OK',
+          data: verifyAfterUpdate,
         },
-      },
-      HttpStatus.INTERNAL_SERVER_ERROR,
-    );
-  }
-}
+      };
+    } catch (error) {
+      console.error('❌ Update error:', error);
 
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        {
+          payload: {
+            error: true,
+            message: 'Unexpected error',
+            reference: 'LOAN_UNKNOWN_ERROR',
+          },
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }

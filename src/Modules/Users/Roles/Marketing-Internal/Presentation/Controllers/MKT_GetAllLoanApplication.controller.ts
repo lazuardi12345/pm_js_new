@@ -10,7 +10,6 @@ import {
 } from '@nestjs/common';
 import { MKT_GetAllLoanApplicationUseCase } from '../../Applications/Services/MKT_GetAllLoanApplication.usecase';
 import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
-import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/jwtAuth.guard';
 import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
 import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/roles.decorator';
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
@@ -24,7 +23,7 @@ export class MKT_GetAllLoanApplicationController {
   ) {}
 
   // @Public()
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles(USERTYPE.MARKETING)
   @Get()
   async getAllLoanApplications(
@@ -51,9 +50,9 @@ export class MKT_GetAllLoanApplicationController {
       throw new HttpException(
         {
           payload: {
-            error: "Unexpected error",
-            message: "Unexpected error",
-            reference: "LOAN_UNKNOWN_ERROR",
+            error: 'Unexpected error',
+            message: 'Unexpected error',
+            reference: 'LOAN_UNKNOWN_ERROR',
           },
         },
         HttpStatus.INTERNAL_SERVER_ERROR,

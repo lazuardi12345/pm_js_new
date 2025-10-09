@@ -1,3 +1,4 @@
+// roles.guard.ts
 import {
   CanActivate,
   ExecutionContext,
@@ -18,11 +19,20 @@ export class RolesGuard implements CanActivate {
       ROLES_KEY,
       [context.getHandler(), context.getClass()],
     );
-    if (!requiredRoles) return true;
+
+    if (!requiredRoles) {
+      console.log('✅ RolesGuard: No roles required, allowing access');
+      return true;
+    }
 
     const { user } = context.switchToHttp().getRequest();
 
+    console.log('🔐 RolesGuard: Checking roles');
+    console.log('   - Required roles:', requiredRoles);
+    console.log('   - User:', user);
+
     if (!user) {
+      console.log('❌ RolesGuard: No user in request');
       throw new UnauthorizedException(
         'Masalah dengan autentikasi, silahkan login kembali',
       );
@@ -30,6 +40,12 @@ export class RolesGuard implements CanActivate {
 
     const hasRole = requiredRoles.some(
       (role) => user.usertype.toUpperCase() === role.toUpperCase(),
+    );
+
+    console.log(
+      hasRole
+        ? `RolesGuard: User has required role (${user.usertype})`
+        : `RolesGuard: User lacks required role (has: ${user.usertype}, needs: ${requiredRoles.join(', ')})`,
     );
 
     if (!hasRole) {

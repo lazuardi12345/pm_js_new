@@ -17,17 +17,16 @@ import { MarketingInternalUseCaseModule } from './Modules/Users/Roles/Marketing-
 import { SupervisorInternalUseCaseModule } from './Modules/Users/Roles/Supervisor-Internal/supervisor-internal.module';
 import { PersistenceLoanAppModule } from './Modules/LoanAppInternal/PersistenceLoanAppModule.module';
 import { CreditAnalystInternalUseCaseModule } from './Modules/Users/Roles/CreditAnalyst-Internal/credit-analyst-internal.module';
-import { HeadMarkertingInternalUsecaseModel } from './Modules/Users/Roles/Head-Marketing-Internal/head-marketing-internal-module';
-
+import { FileSystemStorageModules } from './Shared/Modules/Storage/ModuleStorage.module';
 @Module({
   imports: [
     //? --- MySQL Connection ---
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: '192.182.6.69',
+      host: process.env.MYSQL_URI,
       port: 3306,
-      username: 'ardi',
-      password: 'ardi@IT25',
+      username: process.env.MYSQL_USN,
+      password: process.env.MYSQL_PWD,
       database: process.env.DB_DEV || 'pm_js_test',
       autoLoadEntities: true,
       synchronize: true,
@@ -35,9 +34,14 @@ import { HeadMarkertingInternalUsecaseModel } from './Modules/Users/Roles/Head-M
     }),
 
     //? --- MongoDB Connection ---
-    MongooseModule.forRoot('mongodb://localhost:27017/pm_js', {
-      connectionName: 'mongoConnection', // kasih nama juga
-    }),
+    MongooseModule.forRoot(
+      process.env.MONGO_URI
+        ? process.env.MONGO_URI
+        : 'mongodb://root:root@192.182.6.69:27017',
+      {
+        connectionName: 'mongoConnection', // kasih nama juga
+      },
+    ),
 
     //? --- Static Files ---
     ServeStaticModule.forRoot({
@@ -52,7 +56,8 @@ import { HeadMarkertingInternalUsecaseModel } from './Modules/Users/Roles/Head-M
     AuthModule,
     DraftsModule,
     NotificationsModule,
-    
+    FileSystemStorageModules,
+
     //? --- All Use Cases ---
     MarketingInternalUseCaseModule,
     SupervisorInternalUseCaseModule,

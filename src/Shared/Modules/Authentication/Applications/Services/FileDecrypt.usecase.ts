@@ -1,6 +1,6 @@
-import { IFileEncryptorRepository } from "../../Domain/Repositories/FileEncryptor.repository";
+import { IFileEncryptorRepository } from '../../Domain/Repositories/FileEncryptor.repository';
 
-export class EncryptFileUseCase {
+export class DecryptFileUseCase {
   constructor(private fileEncryptorService: IFileEncryptorRepository) {}
 
   async execute(inputPath: string, outputPath: string): Promise<void> {

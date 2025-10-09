@@ -15,8 +15,8 @@ import { RelativeInternal_ORM_Entity } from 'src/Modules/LoanAppInternal/Infrast
 import { UNIT_OF_WORK } from 'src/Modules/LoanAppInternal/Domain/Repositories/IUnitOfWork.repository';
 import { TypeOrmUnitOfWork } from 'src/Modules/LoanAppInternal/Infrastructure/Repositories/UnitOfWork.repository.impl';
 
-import { FILE_STORAGE_SERVICE } from 'src/Shared/Modules/Storage/Domain/Services/IFileStorage.service';
-import { LocalFileStorageService } from 'src/Shared/Modules/Storage/Infrastructure/Service/FileSystemStorage.service';
+import { FILE_STORAGE_SERVICE } from 'src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository';
+import { MinioFileStorageService } from 'src/Shared/Modules/Storage/Infrastructure/Service/ObjectStorageServer.service';
 
 // Usecases
 import { MKT_CreateLoanApplicationUseCase } from './Applications/Services/MKT_CreateLoanApplication.usecase';
@@ -47,8 +47,6 @@ import { RelativeInternalModule } from 'src/Modules/LoanAppInternal/Modules/rela
 import { DataSource } from 'typeorm';
 import { DraftLoanApplicationModule } from 'src/Shared/Modules/Drafts/Modules/CreateLoanAppInt.module';
 
-
-
 @Module({
   imports: [
     AddressInternalModule,
@@ -70,7 +68,7 @@ import { DraftLoanApplicationModule } from 'src/Shared/Modules/Drafts/Modules/Cr
     ]),
 
     //? untuk API Drafts agar bisa diinject ke roles:
-    DraftLoanApplicationModule
+    DraftLoanApplicationModule,
   ],
   controllers: [
     // controllers
@@ -96,7 +94,7 @@ import { DraftLoanApplicationModule } from 'src/Shared/Modules/Drafts/Modules/Cr
     },
     {
       provide: FILE_STORAGE_SERVICE,
-      useClass: LocalFileStorageService,
+      useClass: MinioFileStorageService,
     },
   ],
   exports: [UNIT_OF_WORK, FILE_STORAGE_SERVICE], // biar bisa dipake module lain
