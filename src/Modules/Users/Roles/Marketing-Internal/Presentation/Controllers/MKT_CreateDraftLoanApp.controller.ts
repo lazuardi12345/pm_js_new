@@ -13,17 +13,16 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { CreateDraftLoanApplicationDto } from 'src/Shared/Modules/Drafts/Applications/DTOS/LoanAppInt_MarketingInput/CreateDraft_LoanAppInt.dto';
+// import { CreateDraftLoanApplicationDto } from 'src/Shared/Modules/Drafts/Applications/DTOS/LoanAppInt_MarketingInput/CreateDraft_LoanAppInt.dto';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
-import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/jwtAuth.guard';
-import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
 import { MKT_CreateDraftLoanApplicationUseCase } from '../../Applications/Services/MKT_CreateDraftLoanApp.usecase';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { PayloadDTO } from 'src/Shared/Modules/Drafts/Applications/DTOS/LoanAppInt_MarketingInput/CreateDraft_LoanAppInt.dto';
 import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
 import multer from 'multer';
+import { FileUploadAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/file-upload.decorator';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(FileUploadAuthGuard)
 @Controller('mkt/int/drafts')
 export class MKT_CreateDraftLoanApplicationController {
   constructor(
@@ -51,8 +50,6 @@ export class MKT_CreateDraftLoanApplicationController {
   ) {
     try {
       let payload: PayloadDTO;
-      console.log('Files:', files);
-      console.log('Body: > kntol', dto);
 
       // parsing dto.payload biar tetap fleksibel (string / object)
       if (dto.payload) {

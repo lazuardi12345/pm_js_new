@@ -19,6 +19,7 @@ import {
   FileMetadata,
   IFileStorageRepository,
 } from 'src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository';
+
 @Injectable()
 export class MKT_CreateDraftLoanApplicationUseCase {
   constructor(

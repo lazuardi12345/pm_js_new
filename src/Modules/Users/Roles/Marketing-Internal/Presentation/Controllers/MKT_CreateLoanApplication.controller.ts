@@ -26,7 +26,7 @@ export class MKT_CreateLoanApplicationController {
     private readonly createLoanApplication: MKT_CreateLoanApplicationUseCase,
   ) {}
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles(USERTYPE.MARKETING)
   @Post('create')
   @UseInterceptors(

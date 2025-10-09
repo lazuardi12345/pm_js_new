@@ -16,6 +16,8 @@ export class MinioFileStorageService implements IFileStorageRepository {
   private readonly mainBucket = 'customer-files';
   private readonly draftBucket = 'customer-drafts';
 
+  private readonly backend_uri = process.env.BACKEND_URI;
+
   constructor() {
     // Initialize MinIO Client
     this.minioClient = new Minio.Client({
@@ -158,14 +160,33 @@ export class MinioFileStorageService implements IFileStorageRepository {
         },
       );
 
+      const prefixParser = (prefix) => {
+        const trimmed = prefix.endsWith('/') ? prefix.slice(0, -1) : prefix;
+        const [id, ...rest] = trimmed.split('-');
+        const name = rest.join('-');
+        return [id, name];
+      };
+
+      const [id, name] = prefixParser(prefix);
+
       this.logger.log(`File uploaded: ${encryptedName}`);
+      console.log({
+        buffer: file.buffer,
+        destination: file.destination,
+        fieldname: file.fieldname,
+        filename: file.filename,
+        path: file.path,
+        stream: file.stream,
+        orginalName: file.originalname,
+        prefix: prefix,
+      });
 
       return {
         originalName: file.originalname,
-        encryptedName,
         mimetype: file.mimetype,
+        encryptedName: encryptedName,
         size: file.size,
-        url: `${bucket}/${encryptedName}`,
+        url: `${process.env.BACKEND_URI}/storage/${id}/${name}/${file.originalname}`,
       };
     } catch (error) {
       this.logger.error(`Error uploading file: ${error.message}`);
@@ -187,6 +208,8 @@ export class MinioFileStorageService implements IFileStorageRepository {
       const encryptedName = filename.endsWith('.enc')
         ? `${prefix}${filename}`
         : `${prefix}${filename}.enc`;
+
+      console.log('kamilah duo trio: ', { bucket, prefix, encryptedName });
 
       // Get metadata
       const stat = await this.minioClient.statObject(bucket, encryptedName);

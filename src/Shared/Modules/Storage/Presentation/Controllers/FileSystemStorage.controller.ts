@@ -43,6 +43,7 @@ export class FileStorageController {
     return { message: 'Files uploaded successfully', data: result };
   }
 
+  @Public()
   @Get(':customerId/:customerName')
   async listFiles(
     @Param('customerId', ParseIntPipe) customerId: number,
