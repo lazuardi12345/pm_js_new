@@ -14,8 +14,6 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log', 'debug'], // atur level log
   });
-  app.getHttpAdapter().getInstance().set('trust proxy', 1);
-
   app.useGlobalGuards(new JwtAuthGuard(app.get(Reflector)));
   app.use(cookieParser());
 

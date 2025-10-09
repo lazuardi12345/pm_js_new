@@ -60,8 +60,11 @@ export class TypeOrmUnitOfWork implements IUnitOfWork {
   get approvalRepo(): IApprovalInternalRepository {
     if (!this.queryRunner) throw new Error('Transaction not started');
     return new ApprovalInternalRepositoryImpl(
-      this.queryRunner.manager.getRepository(ApprovalInternal_ORM_Entity),
-    );
+  this.queryRunner.manager.getRepository(ApprovalInternal_ORM_Entity),
+  new LoanApplicationInternalRepositoryImpl(
+    this.queryRunner.manager.getRepository(LoanApplicationInternal_ORM_Entity),
+  ),
+);
   }
 
   get collateralRepo(): ICollateralInternalRepository {

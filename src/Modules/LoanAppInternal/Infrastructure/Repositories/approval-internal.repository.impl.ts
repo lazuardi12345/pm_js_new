@@ -7,6 +7,11 @@ import { ApprovalInternal_ORM_Entity } from '../Entities/approval-internal.orm-e
 import { LoanApplicationInternal_ORM_Entity } from '../Entities/loan-application-internal.orm-entity';
 import { Users_ORM_Entity } from 'src/Modules/Users/Infrastructure/Entities/users.orm-entity';
 
+// Tambahan Import
+import { LoanApplicationInternalRepositoryImpl } from './loanApp-internal.repository.impl';
+import { StatusPengajuanEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
+import { ApprovalInternalStatusEnum } from 'src/Shared/Enums/Internal/Approval.enum';
+
 @Injectable()
 export class ApprovalInternalRepositoryImpl
   implements IApprovalInternalRepository
@@ -14,29 +19,29 @@ export class ApprovalInternalRepositoryImpl
   constructor(
     @InjectRepository(ApprovalInternal_ORM_Entity)
     private readonly ormRepository: Repository<ApprovalInternal_ORM_Entity>,
+
+    private readonly loanAppRepo: LoanApplicationInternalRepositoryImpl, // Inject repository Loan
   ) {}
 
-  //? MAPPER >==========================================================================
+  // ======================================================
+  // =============== MAPPER FUNCTIONS =====================
+  // ======================================================
 
-  //? All Transactions that using for get datas
-
-private toDomain(orm: ApprovalInternal_ORM_Entity): ApprovalInternal {
-  return new ApprovalInternal(
-    orm.pengajuan!.id,
-    { id: orm.user!.id },
-    orm.role!,
-    orm.status,
-    orm.is_banding,
-    orm.id,
-    orm.keterangan,
-    orm.kesimpulan,
-    orm.created_at,
-    orm.updated_at,
-    orm.deleted_at,
-  );
-}
-
-  //? All Transactions that using for Create datas
+  private toDomain(orm: ApprovalInternal_ORM_Entity): ApprovalInternal {
+    return new ApprovalInternal(
+      orm.pengajuan!.id,
+      { id: orm.user!.id },
+      orm.role!,
+      orm.status,
+      orm.is_banding,
+      orm.id,
+      orm.keterangan,
+      orm.kesimpulan,
+      orm.created_at,
+      orm.updated_at,
+      orm.deleted_at,
+    );
+  }
 
   private toOrm(
     domainEntity: ApprovalInternal,
@@ -58,82 +63,152 @@ private toDomain(orm: ApprovalInternal_ORM_Entity): ApprovalInternal {
     };
   }
 
-  //? All Transactions that using for Partial Update like PATCH or Delete
+  private toOrmPartial(
+    partial: Partial<ApprovalInternal>,
+  ): Partial<ApprovalInternal_ORM_Entity> {
+    const ormData: Partial<ApprovalInternal_ORM_Entity> = {};
 
- private toOrmPartial(
-  partial: Partial<ApprovalInternal>,
-): Partial<ApprovalInternal_ORM_Entity> {
-  const ormData: Partial<ApprovalInternal_ORM_Entity> = {};
+    if (partial.pengajuan)
+      ormData.pengajuan = {
+        id: partial.pengajuan,
+      } as LoanApplicationInternal_ORM_Entity;
 
-  if (partial.pengajuan)
-    ormData.pengajuan = {
-      id: partial.pengajuan,
-    } as LoanApplicationInternal_ORM_Entity;
+    if (partial.user)
+      ormData.user = { id: partial.user.id } as Users_ORM_Entity;
 
-  if (partial.user)
-    ormData.user = { id: partial.user.id } as Users_ORM_Entity;
+    if (partial.role) ormData.role = partial.role;
+    if (partial.status) ormData.status = partial.status;
+    if (partial.isBanding !== undefined) ormData.is_banding = partial.isBanding;
+    if (partial.keterangan) ormData.keterangan = partial.keterangan;
+    if (partial.kesimpulan) ormData.kesimpulan = partial.kesimpulan;
+    if (partial.createdAt) ormData.created_at = partial.createdAt;
+    if (partial.updatedAt) ormData.updated_at = partial.updatedAt;
+    if (partial.deletedAt) ormData.deleted_at = partial.deletedAt;
 
-  if (partial.role) ormData.role = partial.role;
-  if (partial.status) ormData.status = partial.status;
-  if (partial.isBanding !== undefined) ormData.is_banding = partial.isBanding;
-  if (partial.keterangan) ormData.keterangan = partial.keterangan;
-  if (partial.kesimpulan) ormData.kesimpulan = partial.kesimpulan;
-  if (partial.createdAt) ormData.created_at = partial.createdAt;
-  if (partial.updatedAt) ormData.updated_at = partial.updatedAt;
-  if (partial.deletedAt) ormData.deleted_at = partial.deletedAt;
+    return ormData;
+  }
 
-  return ormData;
-}
+  // ======================================================
+  // ============= STATUS MAPPING FUNCTION ================
+  // ======================================================
 
-  //?===================================================================================
+  private mapApprovalToLoanStatus(
+    role: string,
+    approvalStatus: ApprovalInternalStatusEnum,
+    isBanding?: boolean,
+  ): StatusPengajuanEnum | null {
+    if (isBanding) {
+      // Jika status banding aktif
+      if (role === 'CA') {
+        return approvalStatus === ApprovalInternalStatusEnum.APPROVED
+          ? StatusPengajuanEnum.APPROVED_BANDING_CA
+          : StatusPengajuanEnum.REJECTED_BANDING_CA;
+      }
+      if (role === 'HM') {
+        return approvalStatus === ApprovalInternalStatusEnum.APPROVED
+          ? StatusPengajuanEnum.APPROVED_BANDING_HM
+          : StatusPengajuanEnum.REJECTED_BANDING_HM;
+      }
+      return null;
+    }
+
+    switch (role) {
+      case 'SPV':
+        return approvalStatus === ApprovalInternalStatusEnum.APPROVED
+          ? StatusPengajuanEnum.APPROVED_SPV
+          : StatusPengajuanEnum.REJECTED_SPV;
+      case 'CA':
+        return approvalStatus === ApprovalInternalStatusEnum.APPROVED
+          ? StatusPengajuanEnum.APPROVED_CA
+          : StatusPengajuanEnum.REJECTED_CA;
+      case 'HM':
+        return approvalStatus === ApprovalInternalStatusEnum.APPROVED
+          ? StatusPengajuanEnum.APPROVED_HM
+          : StatusPengajuanEnum.REJECTED_HM;
+      default:
+        return null;
+    }
+  }
+
+  // ======================================================
+  // ================= CRUD REPOSITORY ====================
+  // ======================================================
 
   async findById(id: number): Promise<ApprovalInternal | null> {
-  const ormEntity = await this.ormRepository.findOne({
-    where: { id },
-    relations: ['user', 'pengajuan'], // <- wajib
-  });
-  return ormEntity ? this.toDomain(ormEntity) : null;
-}
+    const ormEntity = await this.ormRepository.findOne({
+      where: { id },
+      relations: ['user', 'pengajuan'],
+    });
+    return ormEntity ? this.toDomain(ormEntity) : null;
+  }
 
   async findByNasabahId(nasabahId: number): Promise<ApprovalInternal[]> {
-  const ormEntities = await this.ormRepository.find({
-    where: { user: { id: nasabahId } },
-    relations: ['user', 'pengajuan'], // <- wajib
-  });
-  return ormEntities.map(this.toDomain);
-}
+    const ormEntities = await this.ormRepository.find({
+      where: { user: { id: nasabahId } },
+      relations: ['user', 'pengajuan'],
+    });
+    return ormEntities.map(this.toDomain);
+  }
 
-  async save(address: ApprovalInternal): Promise<ApprovalInternal> {
-    const ormEntity = this.toOrm(address);
+  async findAll(): Promise<ApprovalInternal[]> {
+    const ormEntities = await this.ormRepository.find({
+      relations: ['user', 'pengajuan'],
+    });
+    return ormEntities.map(this.toDomain);
+  }
+
+  async save(approval: ApprovalInternal): Promise<ApprovalInternal> {
+    const ormEntity = this.toOrm(approval);
     const savedOrm = await this.ormRepository.save(ormEntity);
+
+    // 🔁 Sinkronisasi status loan
+    const mappedStatus = this.mapApprovalToLoanStatus(
+      approval.role!,
+      approval.status!,
+      approval.isBanding,
+    );
+
+    if (mappedStatus) {
+      await this.loanAppRepo.updateStatus(approval.pengajuan, mappedStatus);
+      console.log(
+        `[ApprovalInternalRepositoryImpl] Loan ${approval.pengajuan} updated to ${mappedStatus}`,
+      );
+    }
+
     return this.toDomain(savedOrm);
   }
 
-async update(
-  id: number,
-  addressData: Partial<ApprovalInternal>,
-): Promise<ApprovalInternal> {
-  await this.ormRepository.update(id, this.toOrmPartial(addressData));
+  async update(
+    id: number,
+    approvalData: Partial<ApprovalInternal>,
+  ): Promise<ApprovalInternal> {
+    await this.ormRepository.update(id, this.toOrmPartial(approvalData));
 
-  const updated = await this.ormRepository.findOne({
-    where: { id },
-    relations: ['pengajuan', 'user'], // penting!
-  });
+    const updated = await this.ormRepository.findOne({
+      where: { id },
+      relations: ['pengajuan', 'user'],
+    });
 
-  if (!updated) throw new Error('Approval not found');
+    if (!updated) throw new Error('Approval not found');
 
-  return this.toDomain(updated);
-}
+    // 🔁 Sinkronisasi status loan
+    const mappedStatus = this.mapApprovalToLoanStatus(
+      approvalData.role ?? updated.role,
+      approvalData.status ?? updated.status,
+      approvalData.isBanding ?? updated.is_banding,
+    );
 
+    if (mappedStatus) {
+      await this.loanAppRepo.updateStatus(updated.pengajuan.id, mappedStatus);
+      console.log(
+        `[ApprovalInternalRepositoryImpl] Loan ${updated.pengajuan.id} updated to ${mappedStatus}`,
+      );
+    }
+
+    return this.toDomain(updated);
+  }
 
   async delete(id: number): Promise<void> {
     await this.ormRepository.softDelete(id);
   }
-
- async findAll(): Promise<ApprovalInternal[]> {
-  const ormEntities = await this.ormRepository.find({
-    relations: ['user', 'pengajuan'], // <- wajib
-  });
-  return ormEntities.map(this.toDomain);
-}
 }

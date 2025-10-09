@@ -9,6 +9,7 @@ import {
   TypeApprovalDetail,
   TypeLoanApplicationDetail,
 } from 'src/Modules/Users/Roles/Marketing-Internal/Applications/DTOS/MKT_CreateLoanApplication.dto';
+import { StatusPengajuanEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
 @Injectable()
 export class LoanApplicationInternalRepositoryImpl
   implements ILoanApplicationInternalRepository
@@ -149,6 +150,10 @@ export class LoanApplicationInternalRepositoryImpl
     if (!updated) throw new Error('Loan Application not found');
     return this.toDomain(updated);
   }
+  async updateStatus(loanId: number, newStatus: StatusPengajuanEnum): Promise<void> {
+  await this.ormRepository.update(loanId, { status: newStatus });
+  console.log(`[LoanApplicationInternalRepositoryImpl] Status loan ${loanId} diubah menjadi: ${newStatus}`);
+}
 
   async delete(id: number): Promise<void> {
     await this.ormRepository.softDelete(id);
