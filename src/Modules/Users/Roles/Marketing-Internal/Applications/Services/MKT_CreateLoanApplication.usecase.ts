@@ -32,7 +32,6 @@ import {
   ICollateralInternalRepository,
   COLLATERAL_INTERNAL_REPOSITORY,
 } from 'src/Modules/LoanAppInternal/Domain/Repositories/collateral-internal.repository';
-
 import {
   IRelativesInternalRepository,
   RELATIVE_INTERNAL_REPOSITORY,
@@ -71,11 +70,12 @@ export class MKT_CreateLoanApplicationUseCase {
     private readonly fileStorage: IFileStorageRepository,
 
     @Inject(UNIT_OF_WORK)
-    private readonly uow: IUnitOfWork, // handle transaction + rollback
-  ) {}
+    private readonly uow: IUnitOfWork,
+  ) { }
 
   async execute(dto: any, files: any, marketing_id: number) {
     const now = new Date();
+
     try {
       return await this.uow.start(async () => {
         const {
@@ -85,13 +85,13 @@ export class MKT_CreateLoanApplicationUseCase {
           job_internal,
           loan_application_internal,
           collateral_internal,
-          relative_internal, // kalau memang mau dipakai
+          relative_internal,
         } = dto;
 
-        // 1. Simpan Clients
+        // 1. Simpan Client
         const customer = await this.clientRepo.save(
           new ClientInternal(
-            { id: marketing_id! },
+            { id: marketing_id },
             client_internal.nama_lengkap,
             client_internal.no_ktp,
             client_internal.jenis_kelamin,
@@ -99,7 +99,7 @@ export class MKT_CreateLoanApplicationUseCase {
             new Date(client_internal.tanggal_lahir),
             client_internal.no_hp,
             client_internal.status_nikah,
-            undefined, // id
+            undefined, // id (auto)
             client_internal.email,
             client_internal.foto_ktp,
             client_internal.foto_kk,
@@ -114,71 +114,86 @@ export class MKT_CreateLoanApplicationUseCase {
           ),
         );
 
-        // 2. Upload File kalau ada
+        // 2. Upload file jika ada
         const filePaths = await this.fileStorage.saveFiles(
           customer.id!,
           customer.nama_lengkap,
           files,
         );
 
-        customer.foto_ktp =
-          filePaths['foto_ktp']?.[0]?.url ?? client_internal.foto_ktp ?? null;
-        customer.foto_kk =
-          filePaths['foto_kk']?.[0]?.url ?? client_internal.foto_kk ?? null;
+        // Update URL file hasil upload jika ada
+        customer.foto_ktp = filePaths['foto_ktp']?.[0]?.url ?? customer.foto_ktp;
+        customer.foto_kk = filePaths['foto_kk']?.[0]?.url ?? customer.foto_kk;
         customer.foto_id_card =
-          filePaths['foto_id_card']?.[0]?.url ??
-          client_internal.foto_id_card ??
-          null;
+          filePaths['foto_id_card']?.[0]?.url ?? customer.foto_id_card;
         customer.foto_rekening =
-          filePaths['foto_rekening']?.[0]?.url ??
-          client_internal.foto_rekening ??
-          null;
+          filePaths['foto_rekening']?.[0]?.url ?? customer.foto_rekening;
 
         await this.clientRepo.save(customer);
 
-        // 3. Address
+        // 3. Simpan Address
         await this.addressRepo.save(
           new AddressInternal(
             { id: customer.id! },
             address_internal.alamat_ktp,
-            address_internal.kelurahan,
             address_internal.rt_rw,
+            address_internal.kelurahan,
             address_internal.kecamatan,
             address_internal.kota,
             address_internal.provinsi,
-            address_internal.domisili,
-            address_internal.status_rumah_ktp,
             address_internal.status_rumah,
+            address_internal.domisili,
+            undefined, // id
+            now,
+            null,
+            address_internal.status_rumah_ktp,
+            address_internal.alamat_lengkap,
+            now,
           ),
         );
 
-        // 4. Family
+        // 4. Simpan Family
         await this.familyRepo.save(
           new FamilyInternal(
             { id: customer.id! },
             family_internal.hubungan,
             family_internal.nama,
             family_internal.bekerja,
+            undefined, // id
+            undefined, // created
+            undefined, // deleted
+            family_internal.nama_perusahaan,
+            family_internal.jabatan,
+            family_internal.penghasilan,
+            family_internal.alamat_kerja,
             family_internal.no_hp,
-          ),
+            undefined,
+          )
         );
 
-        // 5. Job
+        // 5. Simpan Job
         await this.jobRepo.save(
           new JobInternal(
             { id: customer.id! },
             job_internal.perusahaan,
             job_internal.divisi,
-            job_internal.lama_kerja_tahun,
-            job_internal.lama_kerja_bulan,
             job_internal.golongan,
             job_internal.nama_atasan,
             job_internal.nama_hrd,
             job_internal.absensi,
-          ),
+            undefined, // id
+            undefined, // created
+            undefined, // deleted
+            job_internal.yayasan,
+            job_internal.lama_kerja_bulan,
+            job_internal.lama_kerja_tahun,
+            job_internal.bukti_absensi,
+            undefined // Update
+          )
         );
 
-        // 6. Loan Application
+
+        // 6. Simpan Loan Application
         const loanApp = await this.loanAppRepo.save(
           new LoanApplicationInternal(
             { id: customer.id! },
@@ -186,29 +201,65 @@ export class MKT_CreateLoanApplicationUseCase {
             loan_application_internal.nominal_pinjaman,
             loan_application_internal.tenor,
             loan_application_internal.keperluan,
+            undefined, // id
+            undefined, // created
+            undefined, // updated
+            loan_application_internal.status,
+            loan_application_internal.pinjaman_ke,
+            loan_application_internal.riwayat_nominal,
+            loan_application_internal.riwayat_tenor,
+            loan_application_internal.sisa_pinjaman,
             loan_application_internal.notes,
+            loan_application_internal.is_banding,
+            loan_application_internal.alasan_banding,
+            undefined
+
           ),
         );
 
-        // 7. Collateral
+
+        // 7. Simpan Collateral
         await this.collateralRepo.save(
           new CollateralInternal(
             { id: customer.id! },
             collateral_internal.jaminan_hrd,
             collateral_internal.jaminan_cg,
             collateral_internal.penjamin,
+            undefined, // id?
+            undefined, // created_at?
+            undefined, // deleted_at?
+            collateral_internal.nama_penjamin,
+            collateral_internal.lama_kerja_penjamin,
+            collateral_internal.bagian,
+            collateral_internal.absensi,
+            collateral_internal.riwayat_pinjam_penjamin,
+            collateral_internal.riwayat_nominal_penjamin,
+            collateral_internal.riwayat_tenor_penjamin,
+            collateral_internal.sisa_pinjaman_penjamin,
+            collateral_internal.jaminan_cg_penjamin,
+            collateral_internal.status_hubungan_penjamin,
+            collateral_internal.foto_ktp_penjamin,
+            collateral_internal.foto_id_card_penjamin,
+            undefined
           ),
         );
 
-        // 8. Relative (kalau memang mau dipakai ke tabel baru)
+
+        // 8. Simpan Relative (optional)
         if (relative_internal) {
           await this.relativeRepo.save(
             new RelativesInternal(
-              { id: customer.id! },
-              relative_internal.kerabat_kerja,
-              relative_internal.nama,
-              relative_internal.alamat,
-              relative_internal.no_hp,
+              { id: customer.id! },                 
+              relative_internal.kerabat_kerja,      
+              undefined,                            // id (kosong)
+              relative_internal.nama,             
+              relative_internal.alamat,             
+              relative_internal.no_hp,              
+              relative_internal.status_hubungan,
+              relative_internal.nama_perusahaan,
+              undefined,
+              undefined,
+              undefined
             ),
           );
         }
@@ -226,7 +277,7 @@ export class MKT_CreateLoanApplicationUseCase {
         };
       });
     } catch (err) {
-      console.log(err);
+      console.error(err);
       throw new BadRequestException(err.message || 'Gagal membuat pengajuan');
     }
   }

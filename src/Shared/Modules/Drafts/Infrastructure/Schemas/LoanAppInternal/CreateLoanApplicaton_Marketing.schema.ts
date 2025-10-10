@@ -114,6 +114,7 @@ class CollateralInternal {
   @Prop() bagian?: string;
   @Prop() absensi?: string;
   @Prop() riwayat_pinjam_penjamin?: RiwayatPinjamPenjaminEnum;
+  @Prop() riwayat_nominal_penjamin? : number;
   @Prop() riwayat_tenor_penjamin?: number;
   @Prop() sisa_pinjaman_penjamin?: number;
   @Prop() jaminan_cg_penjamin?: string;
