@@ -9,7 +9,7 @@ import {
   ParseIntPipe,
   DefaultValuePipe,
 } from '@nestjs/common';
-import { CA_GetAllApprovalHistory_UseCase } from '../../Applications/Services/CA_GetAllApprovalHistory.usecase';
+import { CA_GetApprovalHistory_UseCase } from '../../Applications/Services/CA_GetApprovalHistory.usecase';
 import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/jwtAuth.guard';
 import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
 import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/roles.decorator';
@@ -17,10 +17,10 @@ import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
 
 @Controller('ca/int/loan-apps')
-export class CA_GetAllApprovalHistory_Controller {
+export class CA_GetApprovalHistory_Controller {
   constructor(
-    @Inject(CA_GetAllApprovalHistory_UseCase)
-    private readonly getAllApprovalHistoryUseCase: CA_GetAllApprovalHistory_UseCase,
+    @Inject(CA_GetApprovalHistory_UseCase)
+    private readonly getAllApprovalHistoryUseCase: CA_GetApprovalHistory_UseCase,
   ) {}
 
   @UseGuards(JwtAuthGuard, RolesGuard)

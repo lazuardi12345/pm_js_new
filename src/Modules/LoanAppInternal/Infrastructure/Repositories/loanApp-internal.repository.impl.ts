@@ -248,7 +248,7 @@ export class LoanApplicationInternalRepositoryImpl
     return result[0];
   }
 
-  async callSP_CA_GetAllApprovalHistory_Internal(
+  async callSP_CA_GetApprovalHistory_Internal(
     page: number,
     pageSize: number,
   ): Promise<{ data: any[]; total: number }> {

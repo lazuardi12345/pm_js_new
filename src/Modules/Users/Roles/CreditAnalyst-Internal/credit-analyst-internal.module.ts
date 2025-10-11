@@ -13,12 +13,13 @@ import { LoanApplicationInternal_ORM_Entity } from 'src/Modules/LoanAppInternal/
 
 //? USE CASE
 import { CA_ApproveOrRejectUseCase } from './Applications/Services/CA_ApprovedOrReject.usecase';
+import { CA_GetApprovalHistory_UseCase } from './Applications/Services/CA_GetApprovalHistory.usecase';
 //? CONTROLLER
 import { CA_ApprovedOrRejectController } from './Infrastructure/Controllers/CA_ApprovedOrReject.controller';
-import { CA_GetAllApprovalHistory_Controller } from './Infrastructure/Controllers/CA_GetAllApprovalHistory.controller';
+
 import { CA_GetAllApprovalRequest_UseCase } from './Applications/Services/CA_GetAllApprovalRequest.usecase';
-import { CA_GetAllApprovalHistory_UseCase } from './Applications/Services/CA_GetAllApprovalHistory.usecase';
 import { CA_GetAllApprovalRequest_Controller } from './Infrastructure/Controllers/CA_GetAlllAppprovalRequest.controller';
+import { CA_GetApprovalHistory_Controller } from './Infrastructure/Controllers/CA_GetApprovalHistory.controller';
 import { CA_GetLoanApplicationByIdController } from './Infrastructure/Controllers/CA_GetLoanApplicatonById.controller';
 import { CA_GetLoanApplicationByIdUseCase } from './Applications/Services/CA_GetLoanApplicationById.usecase';
 @Module({
@@ -34,14 +35,14 @@ import { CA_GetLoanApplicationByIdUseCase } from './Applications/Services/CA_Get
   ],
   controllers: [
     CA_ApprovedOrRejectController,
-    CA_GetAllApprovalHistory_Controller,
+    CA_GetApprovalHistory_Controller,
     CA_GetAllApprovalRequest_Controller,
     CA_GetLoanApplicationByIdController,
   ],
   providers: [
     CA_ApproveOrRejectUseCase,
     CA_GetAllApprovalRequest_UseCase,
-    CA_GetAllApprovalHistory_UseCase,
+    CA_GetApprovalHistory_UseCase,
     CA_GetLoanApplicationByIdUseCase,
   ],
 })
