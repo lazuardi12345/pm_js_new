@@ -19,7 +19,6 @@ import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/De
 @Controller('hm/int/loan-apps/history')
 export class HM_GetApprovalHistoryController {
   constructor(
-    @Inject(HM_GetAllApprovalHistoryUseCase)
     private readonly getApprovalHistoryByTeamUseCase: HM_GetAllApprovalHistoryUseCase,
   ) {}
 
@@ -33,8 +32,6 @@ export class HM_GetApprovalHistoryController {
     @Query('searchQuery') searchQuery = '',
   ) {
     try {
-      console.log('💼 HM History Request:', hmId, page, pageSize);
-
       const result = await this.getApprovalHistoryByTeamUseCase.execute(
         hmId,
         page,
@@ -56,7 +53,7 @@ export class HM_GetApprovalHistoryController {
         },
       };
     } catch (err) {
-      console.error('❌ Error in HM_GetApprovalHistoryByTeamController:', err);
+      console.error('[HM_GetApprovalHistoryController] Error:', err);
       throw new HttpException(
         {
           payload: {
@@ -70,3 +67,4 @@ export class HM_GetApprovalHistoryController {
     }
   }
 }
+

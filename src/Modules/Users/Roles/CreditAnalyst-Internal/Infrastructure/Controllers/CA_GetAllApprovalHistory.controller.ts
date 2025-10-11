@@ -1,4 +1,3 @@
-// src/Modules/LoanAppInternal/Presentation/Controllers/loanApp-internal.controller.ts
 import {
   Controller,
   Get,
@@ -7,9 +6,10 @@ import {
   UseGuards,
   HttpException,
   HttpStatus,
+  ParseIntPipe,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { CA_GetAllApprovalHistory_UseCase } from '../../Applications/Services/CA_GetAllApprovalHistory.usecase';
-import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
 import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/jwtAuth.guard';
 import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
 import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/roles.decorator';
@@ -20,26 +20,27 @@ import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/De
 export class CA_GetAllApprovalHistory_Controller {
   constructor(
     @Inject(CA_GetAllApprovalHistory_UseCase)
-    private readonly getAllApprovalHistoryRepo: CA_GetAllApprovalHistory_UseCase,
+    private readonly getAllApprovalHistoryUseCase: CA_GetAllApprovalHistory_UseCase,
   ) {}
 
-  // @Public()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(USERTYPE.CA)
   @Get('/history')
   async getAllLoanApplications(
     @CurrentUser('id') supervisorId: number,
-    @Query('page') page: number = 1,
-    @Query('pageSize') pageSize: number = 10,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('pageSize', new DefaultValuePipe(10), ParseIntPipe) pageSize: number,
     @Query('searchQuery') searchQuery = '',
   ) {
     try {
-      console.log('spv', supervisorId, page, pageSize);
-      const result = await this.getAllApprovalHistoryRepo.execute(
+      console.log('Supervisor ID:', supervisorId, 'Page:', page, 'PageSize:', pageSize);
+      
+      const result = await this.getAllApprovalHistoryUseCase.execute(
         page,
         pageSize,
         searchQuery,
       );
+
       return {
         success: true,
         data: result.data,
@@ -48,12 +49,16 @@ export class CA_GetAllApprovalHistory_Controller {
         total: result.total,
       };
     } catch (err) {
-      console.log(err);
+      console.error('Error in getAllLoanApplications:', err);
+
+      // Jika err adalah instance dari Error, bisa ambil pesan spesifiknya
+      const message = err instanceof Error ? err.message : 'Unexpected error';
+
       throw new HttpException(
         {
           payload: {
-            error: 'Unexpected error',
-            message: 'Unexpected error',
+            error: message,
+            message: message,
             reference: 'LOAN_UNKNOWN_ERROR',
           },
         },

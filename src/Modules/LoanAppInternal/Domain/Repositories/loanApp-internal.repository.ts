@@ -10,11 +10,7 @@ export const LOAN_APPLICATION_INTERNAL_REPOSITORY = Symbol(
 );
 
 export interface ILoanApplicationInternalRepository {
-  callSP_HM_GetAllApprovalHistory_ByTeam(
-    headMarketingId: number,
-    page: number,
-    pageSize: number,
-  ): { data: any; total: any } | PromiseLike<{ data: any; total: any }>;
+
   // ========== Basic CRUD ==========
   findById(id: number): Promise<LoanApplicationInternal | null>;
   findByNasabahId(nasabahId: number): Promise<LoanApplicationInternal[]>;
@@ -74,7 +70,7 @@ export interface ILoanApplicationInternalRepository {
   callSP_HM_GetAllTeams_Internal(hmId: number): Promise<any[]>;
 
   // ========== CREDIT ANALYST (CA) ==========
-  callSP_CA_GetAllApprovalHistory_Internal(
+  callSP_CA_GetApprovalHistory_Internal(
     page: number,
     pageSize: number,
   ): Promise<{ data: any[]; total: number }>;

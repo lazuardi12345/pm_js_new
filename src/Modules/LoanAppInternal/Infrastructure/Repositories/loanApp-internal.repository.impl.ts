@@ -294,32 +294,45 @@ export class LoanApplicationInternalRepositoryImpl
 
   // ========== HEAD MARKETING (HM) ==========
 
-  async callSP_HM_GetAllApprovalHistory_Internal(
-    hmId: number,
-    page: number,
-    pageSize: number,
-  ): Promise<{ data: any[]; total: number }> {
-    throw new Error('Method not implemented.');
-  }
+async callSP_HM_GetAllApprovalHistory_Internal(
+  hmId: number,
+  page: number,
+  pageSize: number,
+): Promise<{ data: any[]; total: number }> {
+  const manager = this.ormRepository.manager;
 
-  async callSP_HM_GetAllApprovalRequest_Internal(
-    hmId: number,
-    page: number,
-    pageSize: number,
-  ): Promise<{ data: any[]; total: number }> {
-    const manager = this.ormRepository.manager;
-    const result = await manager.query(
-      `CALL HM_GetAllApprovalRequest_Internal(?, ?, ?)`,
-      [hmId, page, pageSize],
-    );
+  const result = await manager.query(
+    `CALL HM_GetAllApprovalHistory_Internal(?, ?, ?)`,
+    [hmId, page, pageSize],
+  );
 
-    console.log('ini res: >', result);
+  return {
+    total: result[0]?.[0]?.total_count || 0,
+    data: result[1] || [],
+  };
+}
 
-    return {
-      data: result[1] || [], // <-- data actual
-      total: result[1] ? result[1][0]?.total_count || 0 : 0, // <-- total count
-    };
-  }
+
+
+
+async callSP_HM_GetAllApprovalRequest_Internal(
+  hmId: number,
+  page: number,
+  pageSize: number,
+): Promise<{ data: any[]; total: number }> {
+  const manager = this.ormRepository.manager;
+  const result = await manager.query(
+    `CALL HM_GetAllApprovalRequest_Internal(?, ?, ?)`,
+    [hmId, page, pageSize],
+  );
+
+  console.log('SP Result:', result);
+
+  return {
+    data: result[1] || [],
+    total: result[0]?.[0]?.total_count || 0,
+  };
+}
 
   async callSP_HM_GetDetail_LoanApplicationsInternal_ById(
     loanAppId: number,
@@ -336,15 +349,4 @@ export class LoanApplicationInternalRepositoryImpl
     return result[0];
   }
 
-  callSP_HM_GetAllApprovalHistory_ByTeam(
-    headMarketingId: number,
-    page: number,
-    pageSize: number,
-  ): { data: any; total: any } | PromiseLike<{ data: any; total: any }> {
-    throw new Error('Method not implemented.');
-  }
-}
-
-function HM_GetAllApprovalRequest_Internal(): any[] | undefined {
-  throw new Error('Function not implemented.');
 }
