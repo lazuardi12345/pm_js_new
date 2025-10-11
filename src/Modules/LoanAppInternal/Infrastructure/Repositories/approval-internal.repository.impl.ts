@@ -16,6 +16,7 @@ import { ApprovalInternalStatusEnum } from 'src/Shared/Enums/Internal/Approval.e
 export class ApprovalInternalRepositoryImpl
   implements IApprovalInternalRepository
 {
+  repo: any;
   constructor(
     @InjectRepository(ApprovalInternal_ORM_Entity)
     private readonly ormRepository: Repository<ApprovalInternal_ORM_Entity>,
@@ -181,4 +182,15 @@ export class ApprovalInternalRepositoryImpl
   async delete(id: number): Promise<void> {
     await this.ormRepository.softDelete(id);
   }
+
+
+  async findByLoanIdAndUserId(loanId: number, userId: number): Promise<ApprovalInternal | null> {
+  return await this.repo.findOne({
+    where: {
+      pengajuan_id: loanId,
+      user_id: userId,
+    },
+  });
+}
+
 }

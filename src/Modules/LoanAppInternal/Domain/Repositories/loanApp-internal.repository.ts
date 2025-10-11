@@ -69,6 +69,11 @@ export interface ILoanApplicationInternalRepository {
   ): Promise<[TypeLoanApplicationDetail[], TypeApprovalDetail[]]>;
   callSP_HM_GetAllTeams_Internal(hmId: number): Promise<any[]>;
 
+   callSP_HM_GetAllUsers(
+    page: number,
+    pageSize: number,
+  ): Promise<{ data: any[]; total: number }>;
+
   // ========== CREDIT ANALYST (CA) ==========
   callSP_CA_GetApprovalHistory_Internal(
     page: number,

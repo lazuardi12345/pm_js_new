@@ -107,4 +107,36 @@ export class UsersRepositoryImpl implements IUsersRepository {
   async softDelete(id: number): Promise<void> {
     await this.ormRepository.softDelete(id);
   }
+
+
+  async callSP_HM_GetAllUsers(
+  page: number,
+  pageSize: number,
+): Promise<{ data: any[]; total: number }> {
+  const offset = (page - 1) * pageSize;
+
+  // Panggil stored procedure, misal HM_GetAllUsers menerima param page dan pageSize
+  // Sesuaikan query ini dengan yang sesuai di DB kamu
+  const result = await this.ormRepository.query(
+    'CALL HM_GetAllUsers(?, ?)',
+    [page, pageSize],
+  );
+
+  // Struktur result biasanya result[0] adalah data, result[1] metadata (tergantung SP)
+  // Cek hasil dari SP-mu dan sesuaikan bagian ini
+
+  const data = result[0] || [];
+
+  // Jika total count ada di result[1][0].total_count atau di dalam data, sesuaikan juga
+  // Contoh asumsi total ada di result[1][0].total_count:
+  let total = 0;
+  if (result[1] && result[1][0] && 'total_count' in result[1][0]) {
+    total = Number(result[1][0].total_count);
+  } else {
+    total = data.length;
+  }
+
+  return { data, total };
+}
+
 }

@@ -349,4 +349,21 @@ async callSP_HM_GetAllApprovalRequest_Internal(
     return result[0];
   }
 
+
+async callSP_HM_GetAllUsers(
+  page: number,
+  pageSize: number,
+): Promise<{ data: any[]; total: number }> {
+  const [totalResult, dataResult] = await this.dataSource.query(
+    'CALL HM_GetAllUsers(?, ?)',
+    [page, pageSize],
+  );
+
+  const total = totalResult?.[0]?.total_count || 0;
+  const data = dataResult || [];
+
+  return { data, total };
+}
+
+
 }
