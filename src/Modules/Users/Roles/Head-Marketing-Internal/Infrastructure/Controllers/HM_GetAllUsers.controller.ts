@@ -6,6 +6,7 @@ import {
   HttpException,
   HttpStatus,
   Inject,
+  Logger,
 } from '@nestjs/common';
 import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/jwtAuth.guard';
@@ -15,12 +16,12 @@ import { HM_GetAllUsers_UseCase } from '../../Application/Services/HM_GetAllUser
 
 @Controller('hm/int/loan-apps/users')
 export class HM_GetAllUsers_Controller {
+  private readonly logger = new Logger(HM_GetAllUsers_Controller.name);
+
   constructor(
     @Inject(HM_GetAllUsers_UseCase)
     private readonly getAllUsersUseCase: HM_GetAllUsers_UseCase,
-  ) {
-    console.log('HM_GetAllUsers_Controller instantiated');
-  }
+  ) {}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(USERTYPE.HM)
@@ -29,13 +30,14 @@ export class HM_GetAllUsers_Controller {
     @Query('page') pageQuery?: string,
     @Query('pageSize') pageSizeQuery?: string,
   ) {
-    console.log('getAllUsers called with', { pageQuery, pageSizeQuery });
     const page = Number(pageQuery) > 0 ? Number(pageQuery) : 1;
     const pageSize = Number(pageSizeQuery) > 0 ? Number(pageSizeQuery) : 10;
 
+    this.logger.log(`Fetching users | Page: ${page}, PageSize: ${pageSize}`);
+
     try {
       const result = await this.getAllUsersUseCase.execute(page, pageSize);
-      console.log('UseCase result:', result);
+
       return {
         success: true,
         data: result.data,
@@ -44,18 +46,18 @@ export class HM_GetAllUsers_Controller {
         total: result.total,
       };
     } catch (err) {
-      console.error('Error in getAllUsers:', err);
+      const message = err instanceof Error ? err.message : 'Unexpected error';
+      this.logger.error(`Failed to fetch users: ${message}`);
+
       throw new HttpException(
         {
-          payload: {
-            error: 'Gagal mengambil data user',
-            message: err instanceof Error ? err.message : 'Unexpected error',
-            reference: 'HM_USERS_FETCH_ERROR',
-          },
+          success: false,
+          error: 'Gagal mengambil data user',
+          message,
+          reference: 'HM_USERS_FETCH_ERROR',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 }
-

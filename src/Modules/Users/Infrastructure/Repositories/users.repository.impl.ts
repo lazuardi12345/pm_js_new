@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 
 import { UsersEntity } from '../../Domain/Entities/users.entity';
 import { IUsersRepository } from '../../Domain/Repositories/users.repository';
@@ -8,9 +8,11 @@ import { Users_ORM_Entity } from '../Entities/users.orm-entity';
 
 @Injectable()
 export class UsersRepositoryImpl implements IUsersRepository {
+  connection: any;
   constructor(
     @InjectRepository(Users_ORM_Entity)
     private readonly ormRepository: Repository<Users_ORM_Entity>,
+     private readonly dataSource: DataSource,
   ) {}
 
   // =================================================================
@@ -109,34 +111,16 @@ export class UsersRepositoryImpl implements IUsersRepository {
   }
 
 
-  async callSP_HM_GetAllUsers(
-  page: number,
-  pageSize: number,
-): Promise<{ data: any[]; total: number }> {
-  const offset = (page - 1) * pageSize;
+   async callSP_HM_GetAllUsers(
+    page: number,
+    pageSize: number,
+  ): Promise<{ data: any[]; total: number }> {
+    const result = await this.dataSource.query(`CALL HM_GetAllUsers(?, ?)`, [page, pageSize]);
 
-  // Panggil stored procedure, misal HM_GetAllUsers menerima param page dan pageSize
-  // Sesuaikan query ini dengan yang sesuai di DB kamu
-  const result = await this.ormRepository.query(
-    'CALL HM_GetAllUsers(?, ?)',
-    [page, pageSize],
-  );
+    const total = result[0][0]?.total_count || 0;
+    const data = result[1] || [];
 
-  // Struktur result biasanya result[0] adalah data, result[1] metadata (tergantung SP)
-  // Cek hasil dari SP-mu dan sesuaikan bagian ini
-
-  const data = result[0] || [];
-
-  // Jika total count ada di result[1][0].total_count atau di dalam data, sesuaikan juga
-  // Contoh asumsi total ada di result[1][0].total_count:
-  let total = 0;
-  if (result[1] && result[1][0] && 'total_count' in result[1][0]) {
-    total = Number(result[1][0].total_count);
-  } else {
-    total = data.length;
+    return { total, data };
   }
-
-  return { data, total };
 }
 
-}
