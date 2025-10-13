@@ -15,7 +15,10 @@ import { LoanApplication_External_Module } from './Modules/loanApp-external.modu
 import { OtherExistLoans_External_Module } from './Modules/other-exist-loans-external.module';
 import { SurveyPhotos_External_Module } from './Modules/survey-photos-external.module';
 import { SurveyReports_External_Module } from './Modules/survey-reports-external.module';
+
+//Controller
 import { AddressExternalController } from './Presentation/Controllers/address-external.controller';
+import { ClientExternalController } from './Presentation/Controllers/client-external.controller';
 
 @Module({
   imports: [
@@ -34,10 +37,11 @@ import { AddressExternalController } from './Presentation/Controllers/address-ex
     OtherExistLoans_External_Module,
     SurveyPhotos_External_Module,
     SurveyReports_External_Module,
-    // kalau nanti ada module lain (RepeatOrderInternalModule, LoanInternalModule, dll) tinggal ditambahin sini
+
   ],
   controllers: [
-    AddressExternalController
+    AddressExternalController,
+    ClientExternalController,
   ],
   exports: [
     AddressExternalModule,

@@ -45,10 +45,13 @@ import { FamilyInternalModule } from 'src/Modules/LoanAppInternal/Modules/family
 import { LoanApplicationInternalModule } from 'src/Modules/LoanAppInternal/Modules/loanApp-internal.module';
 import { RelativeInternalModule } from 'src/Modules/LoanAppInternal/Modules/relative-internal.module';
 import { DataSource } from 'typeorm';
+import { HttpModule } from '@nestjs/axios';
+
 import { DraftLoanApplicationModule } from 'src/Shared/Modules/Drafts/Modules/CreateLoanAppInt.module';
 
 @Module({
   imports: [
+    HttpModule,
     AddressInternalModule,
     ApprovalInternalModule,
     ClientInternalModule,

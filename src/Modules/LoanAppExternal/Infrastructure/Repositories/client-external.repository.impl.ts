@@ -5,8 +5,6 @@ import { ClientExternal } from '../../Domain/Entities/client-external.entity';
 import { IClientExternalRepository } from '../../Domain/Repositories/client-external.repository';
 import { ClientExternal_ORM_Entity } from '../Entities/client-external.orm-entity';
 import { Users_ORM_Entity } from 'src/Modules/Users/Infrastructure/Entities/users.orm-entity';
-import { promises } from 'dns';
-import { CicilanLainEnum } from 'src/Shared/Enums/External/Other-Exist-Loans.enum';
 
 @Injectable()
 export class ClientExternalRepositoryImpl implements IClientExternalRepository {
@@ -15,117 +13,109 @@ export class ClientExternalRepositoryImpl implements IClientExternalRepository {
     private readonly ormRepository: Repository<ClientExternal_ORM_Entity>,
   ) {}
 
-  // ===================== MAPPER =====================
-  private toDomain(ormEntity: ClientExternal_ORM_Entity): ClientExternal {
+  //? MAPPER >==========================================================================
+
+  private toDomain(orm: ClientExternal_ORM_Entity): ClientExternal {
     return new ClientExternal(
-      ormEntity.marketing, // FK marketingId
-      ormEntity.nama_lengkap,
-      ormEntity.nik,
-      ormEntity.no_kk,
-      ormEntity.jenis_kelamin,
-      ormEntity.tempat_lahir,
-      ormEntity.tanggal_lahir,
-      ormEntity.no_hp,
-      ormEntity.status_nikah,
-      ormEntity.email,
-      ormEntity.foto_ktp,
-      ormEntity.foto_kk,
-      ormEntity.dokumen_pendukung,
-      ormEntity.validasi_nasabah,
-      ormEntity.catatan,
-      ormEntity.id,
-      ormEntity.created_at ?? new Date(),
-      ormEntity.updated_at ?? new Date(),
-      ormEntity.deleted_at ?? null,
+      orm.marketing,
+      orm.nama_lengkap,
+      orm.nik,
+      orm.no_kk,
+      orm.jenis_kelamin,
+      orm.tempat_lahir,
+      orm.tanggal_lahir,
+      orm.no_hp,
+      orm.status_nikah,
+      orm.id,
+      orm.email,
+      orm.foto_ktp,
+      orm.foto_kk,
+      orm.dokumen_pendukung,
+      orm.validasi_nasabah,
+      orm.catatan,
+      orm.created_at ?? new Date(),
+      orm.updated_at ?? new Date(),
+      orm.deleted_at ?? null,
     );
   }
 
-  private toOrm(domainEntity: ClientExternal): Partial<ClientExternal_ORM_Entity> {
-    return {
-      id: domainEntity.id,
-      marketing: { id: domainEntity.marketing.id } as Users_ORM_Entity,
-      nama_lengkap: domainEntity.namaLengkap,
-      nik: domainEntity.nik,
-      no_kk: domainEntity.noKk,
-      jenis_kelamin: domainEntity.jenisKelamin,
-      tempat_lahir: domainEntity.tempatLahir,
-      tanggal_lahir: domainEntity.tanggalLahir,
-      no_hp: domainEntity.noHp,
-      status_nikah: domainEntity.statusNikah,
-      email: domainEntity.email,
-      foto_ktp: domainEntity.fotoKtp,
-      foto_kk: domainEntity.fotoKk,
-      dokumen_pendukung: domainEntity.dokumenPendukung,
-      validasi_nasabah: domainEntity.validasiNasabah,
-      catatan: domainEntity.catatan,
-      created_at: domainEntity.createdAt,
-      updated_at: domainEntity.updatedAt,
-      deleted_at: domainEntity.deletedAt,
-    };
-  }
-
-  private toOrmPartial(partial: Partial<ClientExternal>): Partial<ClientExternal_ORM_Entity> {
+  private toOrmPartial(
+    partial: Partial<ClientExternal>,
+  ): Partial<ClientExternal_ORM_Entity> {
     const ormData: Partial<ClientExternal_ORM_Entity> = {};
 
-    if (partial.marketing) ormData.marketing! = { id: partial.marketing.id } as Users_ORM_Entity;
-    if (partial.namaLengkap) ormData.nama_lengkap = partial.namaLengkap;
+    if (partial.marketing)
+      ormData.marketing = { id: partial.marketing.id } as Users_ORM_Entity;
+    if (partial.nama_lengkap) ormData.nama_lengkap = partial.nama_lengkap;
     if (partial.nik) ormData.nik = partial.nik;
-    if (partial.noKk) ormData.no_kk = partial.noKk;
-    if (partial.jenisKelamin) ormData.jenis_kelamin = partial.jenisKelamin;
-    if (partial.tempatLahir) ormData.tempat_lahir = partial.tempatLahir;
-    if (partial.tanggalLahir) ormData.tanggal_lahir = partial.tanggalLahir;
-    if (partial.noHp) ormData.no_hp = partial.noHp;
-    if (partial.statusNikah) ormData.status_nikah = partial.statusNikah;
+    if (partial.no_kk) ormData.no_kk = partial.no_kk;
+    if (partial.jenis_kelamin) ormData.jenis_kelamin = partial.jenis_kelamin;
+    if (partial.tempat_lahir) ormData.tempat_lahir = partial.tempat_lahir;
+    if (partial.tanggal_lahir) ormData.tanggal_lahir = partial.tanggal_lahir;
+    if (partial.no_hp) ormData.no_hp = partial.no_hp;
+    if (partial.status_nikah) ormData.status_nikah = partial.status_nikah;
     if (partial.email) ormData.email = partial.email;
-    if (partial.fotoKtp) ormData.foto_ktp = partial.fotoKtp;
-    if (partial.fotoKk) ormData.foto_kk = partial.fotoKk;
-    if (partial.dokumenPendukung) ormData.dokumen_pendukung = partial.dokumenPendukung;
-    if (partial.validasiNasabah !== undefined) ormData.validasi_nasabah = partial.validasiNasabah;
+    if (partial.foto_ktp) ormData.foto_ktp = partial.foto_ktp;
+    if (partial.foto_kk) ormData.foto_kk = partial.foto_kk;
+    if (partial.dokumen_pendukung)
+      ormData.dokumen_pendukung = partial.dokumen_pendukung;
+    if (partial.validasi_nasabah !== undefined)
+      ormData.validasi_nasabah = partial.validasi_nasabah;
     if (partial.catatan) ormData.catatan = partial.catatan;
-    if (partial.createdAt) ormData.created_at = partial.createdAt;
-    if (partial.updatedAt) ormData.updated_at = partial.updatedAt;
-    if (partial.deletedAt) ormData.deleted_at = partial.deletedAt;
+    if (partial.created_at) ormData.created_at = partial.created_at;
+    if (partial.updated_at) ormData.updated_at = partial.updated_at;
+    if (partial.deleted_at) ormData.deleted_at = partial.deleted_at;
 
     return ormData;
   }
-  // ==================================================
+
+  //?===================================================================================
 
   async findById(id: number): Promise<ClientExternal | null> {
     const ormEntity = await this.ormRepository.findOne({
       where: { id },
+      relations: ['marketing'],
     });
+
     return ormEntity ? this.toDomain(ormEntity) : null;
   }
 
   async findByMarketingId(marketingId: number): Promise<ClientExternal[]> {
     const ormEntities = await this.ormRepository.find({
       where: { marketing: { id: marketingId } },
+      relations: ['marketing'],
     });
-    return ormEntities.map(this.toDomain);
+
+    return ormEntities.map((orm) => this.toDomain(orm));
   }
 
   async findAll(): Promise<ClientExternal[]> {
-    const ormEntities = await this.ormRepository.find();
-    return ormEntities.map(this.toDomain);
+    const ormEntities = await this.ormRepository.find({
+      relations: ['marketing'],
+    });
+    return ormEntities.map((orm) => this.toDomain(orm));
   }
 
   async save(client_external: ClientExternal): Promise<ClientExternal> {
-    const savedOrm = await this.ormRepository.save(client_external);
-    return savedOrm;
+    const ormData = this.toOrmPartial(client_external);
+    const saved = await this.ormRepository.save(ormData);
+    return this.toDomain(saved);
   }
-  
 
   async update(
     id: number,
     client_externalData: Partial<ClientExternal>,
   ): Promise<ClientExternal> {
     await this.ormRepository.update(id, this.toOrmPartial(client_externalData));
+
     const updated = await this.ormRepository.findOne({
-      where: {id},
+      where: { id },
       relations: ['marketing'],
     });
+
     if (!updated) throw new Error('Data not found');
-      return this.toDomain(updated);
+
+    return this.toDomain(updated);
   }
 
   async delete(id: number): Promise<void> {

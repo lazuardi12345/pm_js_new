@@ -1,8 +1,10 @@
+import { Type } from 'class-transformer';
 import {
   IsString,
   IsEnum,
   IsEmail,
   IsOptional,
+  IsNumber,
   IsDateString,
   IsBoolean,
   IsDate,
@@ -14,7 +16,8 @@ import { GENDER, MARRIAGE_STATUS } from 'src/Shared/Enums/External/Client-Extern
 // Definisi enum lokal DIHAPUS dari sini
 
 export class CreateClientExternalDto {
-  @IsString()
+ @Type(() => Number)
+  @IsNumber()
   marketing_id: number;
 
   @IsString()
@@ -26,16 +29,16 @@ export class CreateClientExternalDto {
   @IsString()
   no_kk: string;
 
-  // @IsEnum sekarang menggunakan enum yang diimpor
+ 
   @IsEnum(GENDER)
   jenis_kelamin: GENDER;
 
   @IsString()
   tempat_lahir: string;
 
-  @IsDateString()
-  @IsDate()
-  tanggal_lahir: Date;
+   @Type(() => Date)
+    @IsDate()
+    tanggal_lahir: Date;
 
   @IsString()
   no_hp: string;
@@ -44,7 +47,6 @@ export class CreateClientExternalDto {
   @IsOptional()
   email?: string;
 
-  // @IsEnum sekarang menggunakan enum yang diimpor
   @IsEnum(MARRIAGE_STATUS)
   status_nikah: MARRIAGE_STATUS;
 
