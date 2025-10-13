@@ -248,7 +248,7 @@ export class LoanApplicationInternalRepositoryImpl
     return result[0];
   }
 
-  async callSP_CA_GetAllApprovalHistory_Internal(
+  async callSP_CA_GetApprovalHistory_Internal(
     page: number,
     pageSize: number,
   ): Promise<{ data: any[]; total: number }> {
@@ -299,7 +299,17 @@ export class LoanApplicationInternalRepositoryImpl
     page: number,
     pageSize: number,
   ): Promise<{ data: any[]; total: number }> {
-    throw new Error('Method not implemented.');
+    const manager = this.ormRepository.manager;
+
+    const result = await manager.query(
+      `CALL HM_GetAllApprovalHistory_Internal(?, ?, ?)`,
+      [hmId, page, pageSize],
+    );
+
+    return {
+      total: result[0]?.[0]?.total_count || 0,
+      data: result[1] || [],
+    };
   }
 
   async callSP_HM_GetAllApprovalRequest_Internal(
@@ -313,11 +323,11 @@ export class LoanApplicationInternalRepositoryImpl
       [hmId, page, pageSize],
     );
 
-    console.log('ini res: >', result);
+    console.log('SP Result:', result);
 
     return {
-      data: result[1] || [], // <-- data actual
-      total: result[1] ? result[1][0]?.total_count || 0 : 0, // <-- total count
+      data: result[1] || [],
+      total: result[0]?.[0]?.total_count || 0,
     };
   }
 
@@ -336,15 +346,18 @@ export class LoanApplicationInternalRepositoryImpl
     return result[0];
   }
 
-  callSP_HM_GetAllApprovalHistory_ByTeam(
-    headMarketingId: number,
+  async callSP_HM_GetAllUsers(
     page: number,
     pageSize: number,
-  ): { data: any; total: any } | PromiseLike<{ data: any; total: any }> {
-    throw new Error('Method not implemented.');
-  }
-}
+  ): Promise<{ data: any[]; total: number }> {
+    const [totalResult, dataResult] = await this.dataSource.query(
+      'CALL HM_GetAllUsers(?, ?)',
+      [page, pageSize],
+    );
 
-function HM_GetAllApprovalRequest_Internal(): any[] | undefined {
-  throw new Error('Function not implemented.');
+    const total = totalResult?.[0]?.total_count || 0;
+    const data = dataResult || [];
+
+    return { data, total };
+  }
 }

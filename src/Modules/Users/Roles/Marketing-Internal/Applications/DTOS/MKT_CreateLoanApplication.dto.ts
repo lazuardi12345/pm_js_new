@@ -74,13 +74,12 @@ export class CreateLoanApplicationDto {
   jaminan_cg_penjamin: string;
   status_hubungan_penjamin: string;
   files?: {
-    foto_ktp?: Express.Multer.File[];
-    foto_kk?: Express.Multer.File[];
-    foto_id_card_penjamin?: Express.Multer.File[];
-    foto_ktp_penjamin?: Express.Multer.File[];
-    foto_id_card?: Express.Multer.File[];
-    bukti_absensi?: Express.Multer.File[];
-    foto_rekening?: Express.Multer.File[];
+    foto_ktp?: string; // URL / filepath
+    foto_kk?: string;
+    foto_id_card_penjamin?: string;
+    foto_ktp_penjamin?: string;
+    bukti_absensi?: string;
+    foto_rekening?: string;
   };
 }
 
@@ -148,7 +147,7 @@ export interface TypeLoanApplicationDetail {
   alamat_kerabat_kerja: string;
   no_hp_kerabat_kerja: string;
   nama_perusahaan_kerabat_kerja: string;
-  status_hubungan_kerabat_kerja: string
+  status_hubungan_kerabat_kerja: string;
 
   // Penjamin Internals
   jaminan_hrd: string;

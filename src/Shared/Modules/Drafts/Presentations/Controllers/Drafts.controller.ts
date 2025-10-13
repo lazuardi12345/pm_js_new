@@ -15,13 +15,14 @@ import { CreateDraftLoanApplicationDto } from '../../Applications/DTOS/LoanAppIn
 import { CreateDraftLoanApplicationUseCase } from '../../Applications/Services/LoanAppInternal/CreateLoanApplication_Marketing.usecase';
 import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
+import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/jwtAuth.guard';
 import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
 import { UpdateDraftLoanApplicationDto } from '../../Applications/DTOS/LoanAppInt_MarketingInput/UpdateDraft_LoanAppInt.dto';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
 import { merge, isEqual } from 'lodash';
 
-@UseGuards(RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('drafts')
 export class CreateDraftLoanApplicationController {
   updateDraftService: any;
