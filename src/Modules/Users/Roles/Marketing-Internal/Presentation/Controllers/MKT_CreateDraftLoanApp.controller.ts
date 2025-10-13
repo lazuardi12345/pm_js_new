@@ -36,6 +36,11 @@ export class MKT_CreateDraftLoanApplicationController {
       [
         { name: 'foto_ktp', maxCount: 1 },
         { name: 'foto_kk', maxCount: 1 },
+        { name: 'bukti_absensi', maxCount: 1},
+        { name: 'foto_id_card_penjamin', maxCount: 1},
+        { name: 'foto_ktp_penjamin', maxCount: 1},
+        { name: 'foto_rekening', maxCount: 1},
+
       ],
       {
         storage: multer.memoryStorage(), // ✅ WAJIB untuk akses file.buffer
@@ -106,6 +111,9 @@ export class MKT_CreateDraftLoanApplicationController {
       { name: 'foto_rekening', maxCount: 1 },
       { name: 'foto_id_card', maxCount: 1 },
       { name: 'foto_jaminan', maxCount: 3 },
+      { name: 'bukti_absensi', maxCount:1},
+      { name: 'foto_ktp_penjamin', maxCount:1},
+      { name: 'foto_id_card_penjamin', maxCount: 1 },
     ]),
   )
   async updateDraftById(

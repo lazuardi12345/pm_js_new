@@ -4,6 +4,7 @@ import { ApprovalInternal } from '../Entities/approval-internal.entity';
 export const APPROVAL_INTERNAL_REPOSITORY = Symbol('APPROVAL_INTERNAL_REPOSITORY');
 
 export interface IApprovalInternalRepository {
+  findByLoanIdAndUserId: any;
   findById(id: number): Promise<ApprovalInternal | null>;
   findByNasabahId(nasabahId: number): Promise<ApprovalInternal[]>;
   findAll(): Promise<ApprovalInternal[]>;

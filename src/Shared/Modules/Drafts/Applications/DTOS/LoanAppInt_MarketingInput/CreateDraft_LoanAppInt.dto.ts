@@ -106,7 +106,7 @@ class CollateralInternalDto {
   @IsOptional() @IsString() bagian?: string;
   @IsOptional() @IsString() absensi?: string;
   @IsOptional() @IsEnum(RiwayatPinjamPenjaminEnum) riwayat_pinjam_penjamin?: RiwayatPinjamPenjaminEnum;
-  @IsOptional() @IsNumber() riwayat_nominal_penjamin? : number
+  @IsOptional() @IsNumber() riwayat_nominal_penjamin? : number;
   @IsOptional() @IsNumber() riwayat_tenor_penjamin?: number;
   @IsOptional() @IsNumber() sisa_pinjaman_penjamin?: number;
   @IsOptional() @IsString() jaminan_cg_penjamin?: string;
