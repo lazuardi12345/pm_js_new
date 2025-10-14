@@ -6,40 +6,40 @@ import {
 
 export class LoanApplicationExternal {
   constructor(
-    public readonly nasabahId: number,
-    public readonly jenisPembiayaan: JenisPembiayaanEnum,
-    public readonly nominalPinjaman: number,
+    public readonly nasabah: {id: number},
+    public readonly jenis_pembiayaan: JenisPembiayaanEnum,
+    public readonly nominal_pinjaman: number,
     public readonly tenor: number,
-    public readonly berkasJaminan: string,
-    public readonly statusPinjaman: StatusPinjamanEnum = StatusPinjamanEnum.BARU,
+    public readonly berkas_jaminan: string,
+    public readonly status_pinjaman: StatusPinjamanEnum = StatusPinjamanEnum.BARU,
     public readonly id?: number,
-    public readonly pinjamanKe?: number,
-    public readonly pinjamanTerakhir?: number,
-    public readonly sisaPinjaman?: number,
-    public readonly realisasiPinjaman?: string,
-    public readonly cicilanPerbulan?: number,
-    public readonly statusPengajuan: StatusPengajuanEnum = StatusPengajuanEnum.PENDING,
-    public readonly validasiPengajuan?: boolean,
+    public readonly pinjaman_ke?: number,
+    public readonly pinjaman_terakhir?: number,
+    public readonly sisa_pinjaman?: number,
+    public readonly realisasi_pinjaman?: string,
+    public readonly cicilan_perbulan?: number,
+    public readonly status_pengajuan: StatusPengajuanEnum = StatusPengajuanEnum.PENDING,
+    public readonly validasi_pengajuan?: boolean,
     public readonly catatan?: string,
-    public readonly catatanSpv?: string,
-    public readonly catatanMarketing?: string,
-    public readonly isBanding: boolean = false,
-    public readonly alasanBanding?: string,
-    public readonly createdAt?: Date,
-    public readonly updatedAt?: Date,
-    public readonly deletedAt?: Date | null,
+    public readonly catatan_spv?: string,
+    public readonly catatan_marketing?: string,
+    public readonly is_banding: boolean = false,
+    public readonly alasan_banding?: string,
+    public readonly created_at?: Date,
+    public readonly updated_at?: Date,
+    public readonly deleted_at?: Date | null,
   ) {
     this.validate();
   }
 
   private validate() {
-    if (this.nominalPinjaman <= 0) {
+    if (this.nominal_pinjaman <= 0) {
       throw new Error('Nominal pinjaman harus lebih besar dari nol.');
     }
     if (this.tenor <= 0) {
       throw new Error('Tenor harus lebih besar dari nol.');
     }
-    if (!this.berkasJaminan) {
+    if (!this.berkas_jaminan) {
       throw new Error('Berkas jaminan wajib diisi.');
     }
     // Tambah validasi domain sesuai aturan bisnis

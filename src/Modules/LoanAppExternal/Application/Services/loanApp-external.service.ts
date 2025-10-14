@@ -1,4 +1,8 @@
-import { Injectable, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   ILoanApplicationExternalRepository,
   LOAN_APPLICATION_EXTERNAL_REPOSITORY,
@@ -6,7 +10,9 @@ import {
 import { LoanApplicationExternal } from '../../Domain/Entities/loanApp-external.entity';
 import { CreateLoanApplicationExternalDto } from '../DTOS/dto-Loan-Application/create-loan-application.dto';
 import { UpdateLoanApplicationExternalDto } from '../DTOS/dto-Loan-Application/update-loan-application.dto';
-export class EmergencyContactExternalService {
+
+@Injectable()
+export class LoanApplicationExternalService {
   constructor(
     @Inject(LOAN_APPLICATION_EXTERNAL_REPOSITORY)
     private readonly repo: ILoanApplicationExternalRepository,
@@ -17,42 +23,52 @@ export class EmergencyContactExternalService {
   ): Promise<LoanApplicationExternal> {
     const now = new Date();
 
-    const address = new LoanApplicationExternal(
-      dto.nasabah_id, // nasabahId
-      dto.jenis_pembiayaan, // jenisPembiayaan
-      dto.nominal_pinjaman, // nominalPinjaman
-      dto.tenor, // tenor
-      dto.berkas_jaminan, // berkasJaminan
-      dto.status_pinjaman, // statusPinjaman (default: BARU)
-      undefined, // id
-      dto.pinjaman_ke, // pinjamanKe (optional)
-      dto.pinjaman_terakhir, // pinjamanTerakhir (optional)
-      dto.sisa_pinjaman, // sisaPinjaman (optional)
-      dto.realisasi_pinjaman, // realisasiPinjaman (optional)
-      dto.cicilan_perbulan, // cicilanPerbulan (optional)
-      dto.status_pengajuan, // statusPengajuan (default: PENDING)
-      dto.validasi_pengajuan, // validasiPengajuan (optional)
-      dto.catatan, // catatan (optional)
-      dto.catatan_spv, // catatanSpv (optional)
-      dto.catatan_marketing, // catatanMarketing (optional)
-      dto.is_banding, // isBanding (default: false)
-      dto.alasan_banding, // alasanBanding (optional)
-      now, // createdAt
-      now, // updatedAt
-      undefined
+    const entity = new LoanApplicationExternal(
+      { id: dto.nasabah_id },
+      dto.jenis_pembiayaan,
+      dto.nominal_pinjaman,
+      dto.tenor,
+      dto.berkas_jaminan,
+      dto.status_pinjaman,
+      undefined,
+      dto.pinjaman_ke,
+      dto.pinjaman_terakhir,
+      dto.sisa_pinjaman,
+      dto.realisasi_pinjaman,
+      dto.cicilan_perbulan,
+      dto.status_pengajuan,
+      dto.validasi_pengajuan,
+      dto.catatan,
+      dto.catatan_spv,
+      dto.catatan_marketing,
+      dto.is_banding,
+      dto.alasan_banding,
+      now,
+      now,
+      null,
     );
-    return this.repo.save(address);
+
+    return this.repo.save(entity);
   }
 
   async update(
     id: number,
     dto: UpdateLoanApplicationExternalDto,
   ): Promise<LoanApplicationExternal> {
+    const existing = await this.repo.findById(id);
+    if (!existing) {
+      throw new NotFoundException(`Loan Application with ID ${id} not found`);
+    }
+
     return this.repo.update(id, dto);
   }
 
-  async findById(id: number): Promise<LoanApplicationExternal | null> {
-    return this.repo.findById(id);
+  async findById(id: number): Promise<LoanApplicationExternal> {
+    const data = await this.repo.findById(id);
+    if (!data) {
+      throw new NotFoundException(`Loan Application with ID ${id} not found`);
+    }
+    return data;
   }
 
   async findAll(): Promise<LoanApplicationExternal[]> {
@@ -60,6 +76,10 @@ export class EmergencyContactExternalService {
   }
 
   async delete(id: number): Promise<void> {
+    const existing = await this.repo.findById(id);
+    if (!existing) {
+      throw new NotFoundException(`Loan Application with ID ${id} not found`);
+    }
     return this.repo.delete(id);
   }
 }

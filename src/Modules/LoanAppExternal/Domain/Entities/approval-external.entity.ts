@@ -5,19 +5,19 @@ import {
 
 export class ApprovalExternal {
   constructor(
-    public readonly pengajuanId: number,
-    public readonly userId: number,
+    public readonly pengajuan: {id: number},
+    public readonly user_id: number,
     public readonly role: ApprovalExternalRole,
-    public readonly isBanding: boolean = false,
+    public readonly is_banding: boolean = false,
     public readonly id?: number,
     public readonly analisa?: string,
-    public readonly nominalPinjaman?: number,
+    public readonly nominal_pinjaman?: number,
     public readonly tenor?: number,
     public readonly status?: ApprovalExternalStatus,
     public readonly catatan?: string,
-    public readonly createdAt?: Date,
-    public readonly updatedAt?: Date,
-    public readonly deletedAt?: Date | null,
+    public readonly created_at?: Date,
+    public readonly updated_at?: Date,
+    public readonly deleted_at?: Date | null,
   ) {}
 
   public isApproved(): boolean {

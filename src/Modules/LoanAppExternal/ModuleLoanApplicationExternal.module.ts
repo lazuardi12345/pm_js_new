@@ -19,6 +19,9 @@ import { SurveyReports_External_Module } from './Modules/survey-reports-external
 //Controller
 import { AddressExternalController } from './Presentation/Controllers/address-external.controller';
 import { ClientExternalController } from './Presentation/Controllers/client-external.controller';
+import { JobExternalController } from './Presentation/Controllers/job-external.controller';
+import { ApprovalExternalController } from './Presentation/Controllers/approval-external.controller';
+import { LoanApplicationExternalController } from './Presentation/Controllers/loanApp-external.controller';
 
 @Module({
   imports: [
@@ -42,6 +45,9 @@ import { ClientExternalController } from './Presentation/Controllers/client-exte
   controllers: [
     AddressExternalController,
     ClientExternalController,
+    JobExternalController,
+    ApprovalExternalController,
+    LoanApplicationExternalController,
   ],
   exports: [
     AddressExternalModule,

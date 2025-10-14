@@ -34,7 +34,7 @@ export class CA_GetApprovalHistory_Controller {
   ) {
     try {
       console.log('Supervisor ID:', supervisorId, 'Page:', page, 'PageSize:', pageSize);
-      
+
       const result = await this.getAllApprovalHistoryUseCase.execute(
         page,
         pageSize,
@@ -51,8 +51,8 @@ export class CA_GetApprovalHistory_Controller {
     } catch (err) {
       console.error('Error in getAllLoanApplications:', err);
 
-      // Jika err adalah instance dari Error, bisa ambil pesan spesifiknya
-      const message = err instanceof Error ? err.message : 'Unexpected error';
+      const message =
+        err instanceof Error ? err.message : 'Unexpected error while retrieving data';
 
       throw new HttpException(
         {

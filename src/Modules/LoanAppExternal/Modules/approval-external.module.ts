@@ -4,10 +4,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ApprovalExternal_ORM_Entity } from '../Infrastructure/Entities/approval-external.orm-entity';
 import { ApprovalExternalRepositoryImpl } from '../Infrastructure/Repositories/approval-external.repository.impl';
 import { APPROVAL_EXTERNAL_REPOSITORY } from '../Domain/Repositories/approval-external.repository';
+import { ApprovalExternalService } from '../Application/Services/approval-external.service';
+
 
 @Module({
   imports: [TypeOrmModule.forFeature([ApprovalExternal_ORM_Entity])],
   providers: [
+    ApprovalExternalService,
     {
       provide: APPROVAL_EXTERNAL_REPOSITORY,
       useClass: ApprovalExternalRepositoryImpl,
@@ -15,6 +18,7 @@ import { APPROVAL_EXTERNAL_REPOSITORY } from '../Domain/Repositories/approval-ex
     // GetAddressByNasabahIdUseCase,
   ],
   exports: [
+    ApprovalExternalService,
     APPROVAL_EXTERNAL_REPOSITORY,
     // GetAddressByNasabahIdUseCase,
   ],

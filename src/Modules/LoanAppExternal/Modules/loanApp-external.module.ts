@@ -4,10 +4,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoanApplicationExternal_ORM_Entity } from '../Infrastructure/Entities/loan-application-external.orm-entity';
 import { LoanApplicationExternalRepositoryImpl } from '../Infrastructure/Repositories/loanApp-external.repository.impl';
 import { LOAN_APPLICATION_EXTERNAL_REPOSITORY } from '../Domain/Repositories/loanApp-external.repository';
+import { LoanApplicationExternalService } from '../Application/Services/loanApp-external.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([LoanApplicationExternal_ORM_Entity])],
   providers: [
+    LoanApplicationExternalService,
     {
       provide: LOAN_APPLICATION_EXTERNAL_REPOSITORY,
       useClass: LoanApplicationExternalRepositoryImpl,
@@ -15,6 +17,7 @@ import { LOAN_APPLICATION_EXTERNAL_REPOSITORY } from '../Domain/Repositories/loa
     // GetAddressByNasabahIdUseCase,
   ],
   exports: [
+    LoanApplicationExternalService,
     LOAN_APPLICATION_EXTERNAL_REPOSITORY,
     // GetAddressByNasabahIdUseCase,
   ],

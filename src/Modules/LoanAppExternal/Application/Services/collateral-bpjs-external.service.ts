@@ -18,7 +18,7 @@ export class ApprovalExternalService {
     const now = new Date();
 
     const address = new ApprovalExternal(
-    dto.pengajuan_id,             // pengajuanId
+    {id: dto.pengajuan_id},             // pengajuanId
     dto.user_id,                  // userId
     dto.role,                    // role
     dto.is_banding,               // isBanding (default false)
