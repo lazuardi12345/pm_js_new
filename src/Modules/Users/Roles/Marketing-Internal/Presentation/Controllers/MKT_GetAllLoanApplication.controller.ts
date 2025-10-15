@@ -1,4 +1,3 @@
-// src/Modules/LoanAppInternal/Presentation/Controllers/loanApp-internal.controller.ts
 import {
   Controller,
   Get,
@@ -7,9 +6,10 @@ import {
   UseGuards,
   HttpException,
   HttpStatus,
+  ParseIntPipe,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { MKT_GetAllLoanApplicationUseCase } from '../../Applications/Services/MKT_GetAllLoanApplication.usecase';
-import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
 import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
 import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/roles.decorator';
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
@@ -22,14 +22,13 @@ export class MKT_GetAllLoanApplicationController {
     private readonly getAllLoanAppUseCase: MKT_GetAllLoanApplicationUseCase,
   ) {}
 
-  // @Public()
   @UseGuards(RolesGuard)
   @Roles(USERTYPE.MARKETING)
   @Get()
   async getAllLoanApplications(
     @CurrentUser('id') marketingId: number,
-    @Query('page') page: number = 1,
-    @Query('pageSize') pageSize: number = 10,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('pageSize', new DefaultValuePipe(10), ParseIntPipe) pageSize: number,
     @Query('searchQuery') searchQuery = '',
   ) {
     try {
@@ -39,19 +38,14 @@ export class MKT_GetAllLoanApplicationController {
         pageSize,
         searchQuery,
       );
-      return {
-        success: true,
-        data: result.data,
-        page,
-        pageSize,
-        total: result.total,
-      };
+
+      return result; // ✅ Return langsung payload dari usecase
     } catch (err) {
       throw new HttpException(
         {
           payload: {
-            error: 'Unexpected error',
-            message: 'Unexpected error',
+            error: true,
+            message: err instanceof Error ? err.message : 'Unexpected error',
             reference: 'LOAN_UNKNOWN_ERROR',
           },
         },

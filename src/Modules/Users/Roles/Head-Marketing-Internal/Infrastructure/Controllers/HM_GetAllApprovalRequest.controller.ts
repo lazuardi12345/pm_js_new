@@ -1,66 +1,63 @@
+import { Injectable, Inject } from '@nestjs/common';
 import {
-  Controller,
-  Get,
-  Query,
-  UseGuards,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
-import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/jwtAuth.guard';
-import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
-import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/roles.decorator';
-import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
-import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
-import { HM_GetAllApprovalRequestUseCase } from '../../Application/Services/HM_GetAllApprovalRequest.Usecase';
+  ILoanApplicationInternalRepository,
+  LOAN_APPLICATION_INTERNAL_REPOSITORY,
+} from 'src/Modules/LoanAppInternal/Domain/Repositories/loanApp-internal.repository';
 
-@Controller('hm/int/loan-apps')
-export class HM_GetAllApprovalRequestController {
+@Injectable()
+export class HM_GetAllApprovalRequestUseCase {
   constructor(
-    private readonly getAllApprovalRequestByTeamUseCase: HM_GetAllApprovalRequestUseCase,
+    @Inject(LOAN_APPLICATION_INTERNAL_REPOSITORY)
+    private readonly loanAppRepo: ILoanApplicationInternalRepository,
   ) {}
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(USERTYPE.HM)
-  @Get('/request')
-  async getAllLoanApplications(
-    @CurrentUser('id') hmId: number,
-    @Query('page') page: number = 1,
-    @Query('pageSize') pageSize: number = 10,
-    @Query('searchQuery') searchQuery = '',
+  async execute(
+    hmId: number,
+    page = 1,
+    pageSize = 10,
+    searchQuery = '',
   ) {
     try {
-      const result = await this.getAllApprovalRequestByTeamUseCase.execute(
-        hmId,
-        page,
-        pageSize,
-        searchQuery,
-      );
+      // Panggil stored procedure dari repository
+      const { data, total } =
+        await this.loanAppRepo.callSP_HM_GetAllApprovalRequest_Internal(
+          hmId,
+          page,
+          pageSize,
+        );
+
+      // Bersihkan dan kecilkan searchQuery agar pencarian konsisten
+      const trimmedQuery = searchQuery.trim().toLowerCase();
+
+      // Filter data berdasarkan searchQuery jika ada
+      const filteredData = trimmedQuery.length > 0
+        ? data.filter(item =>
+            (item.nama_lengkap?.toLowerCase().includes(trimmedQuery)) ||
+            (item.nama_marketing?.toLowerCase().includes(trimmedQuery)) ||
+            (item.status?.toLowerCase().includes(trimmedQuery))
+          )
+        : data;
+
+      // Format data untuk response
+      const formattedData = filteredData.map(item => ({
+        id_pengajuan: Number(item.id_pengajuan),
+        id_nasabah: Number(item.nasabah_id),
+        nama_nasabah: item.nama_lengkap || '-',
+        nominal_pinjaman: new Intl.NumberFormat('id-ID', {
+          style: 'currency',
+          currency: 'IDR',
+        }).format(Number(item.nominal_pinjaman)),
+        nama_marketing: item.nama_marketing || '-',
+        nama_supervisor: item.nama_supervisor || '-',
+        status: item.status || '-',
+      }));
 
       return {
-        payload: {
-          error: false,
-          message: 'HM loan approval requests retrieved successfully',
-          reference: 'HM_LOAN_RETRIEVE_OK',
-          data: {
-            results: result.data,
-            page,
-            pageSize,
-            total: result.total,
-          },
-        },
+        data: formattedData,
+        total, // total dari SP tanpa filtering agar paging konsisten
       };
     } catch (err) {
-      console.error('❌ Controller error:', err);
-      throw new HttpException(
-        {
-          payload: {
-            error: true,
-            message: err.message || 'Unexpected error',
-            reference: 'HM_LOAN_UNKNOWN_ERROR',
-          },
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new Error(err.message || 'Gagal mengambil data approval request');
     }
   }
 }
