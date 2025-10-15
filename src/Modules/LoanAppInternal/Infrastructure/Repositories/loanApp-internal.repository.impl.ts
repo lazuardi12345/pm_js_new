@@ -12,13 +12,13 @@ import {
 import { StatusPengajuanEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
 @Injectable()
 export class LoanApplicationInternalRepositoryImpl
-  implements ILoanApplicationInternalRepository
-{
+  implements ILoanApplicationInternalRepository {
   dataSource: any;
+  db: any;
   constructor(
     @InjectRepository(LoanApplicationInternal_ORM_Entity)
     private readonly ormRepository: Repository<LoanApplicationInternal_ORM_Entity>,
-  ) {}
+  ) { }
 
   //? MAPPER >==========================================================================
 
@@ -207,7 +207,7 @@ export class LoanApplicationInternalRepositoryImpl
 
     return {
       data: result[1] || [],
-      total: result[0] ? result[1][0]?.total || 0 : 0,
+      total: result[0]?.[0]?.total_count || 0,
     };
   }
 
@@ -224,7 +224,7 @@ export class LoanApplicationInternalRepositoryImpl
 
     return {
       data: result[1] || [],
-      total: result[0] ? result[1][0]?.total || 0 : 0,
+      total: result[0]?.[0]?.total_count || 0,
     };
   }
 
@@ -251,18 +251,30 @@ export class LoanApplicationInternalRepositoryImpl
   async callSP_CA_GetApprovalHistory_Internal(
     page: number,
     pageSize: number,
-  ): Promise<{ data: any[]; total: number }> {
-    const ormEntities = this.ormRepository.manager;
-    const result = await ormEntities.query(
-      `CALL CA_GetApprovalHistory_Internal(?, ?);`,
+  ): Promise<{
+    results: any[];
+    data: any[];
+    total: number;
+  }> {
+    // Misal kamu punya repository/ORM yang bisa langsung akses query
+    const result = await this.ormRepository.manager.query(
+      'CALL CA_GetApprovalHistory_Internal(?, ?)',
       [page, pageSize],
     );
 
+    // result[0] = total count result set
+    // result[1] = data result set
+    const totalCountResult = result[0] ?? [];
+    const dataResult = result[1] ?? [];
+
     return {
-      data: result[1] || [],
-      total: result[0] ? result[1][0]?.total || 0 : 0,
+      results: dataResult,
+      data: dataResult,
+      total: totalCountResult.length > 0 ? totalCountResult[0].total_count : 0,
     };
   }
+
+
 
   async callSP_CA_GetAllApprovalRequest_Internal(
     page: number,
@@ -274,11 +286,15 @@ export class LoanApplicationInternalRepositoryImpl
       [page, pageSize],
     );
 
+    // result[0] --> [{ total_count: ... }]
+    // result[1] --> data rows
+
     return {
-      data: result[0] || [],
-      total: result[0] ? result[1][0]?.total || 0 : 0,
+      data: result[1] || [],
+      total: result[0]?.[0]?.total_count || 0,
     };
   }
+
 
   async callSP_CA_GetDetail_LoanApplicationsInternal_ById(
     loanAppId: number,
@@ -294,45 +310,45 @@ export class LoanApplicationInternalRepositoryImpl
 
   // ========== HEAD MARKETING (HM) ==========
 
-async callSP_HM_GetAllApprovalHistory_Internal(
-  hmId: number,
-  page: number,
-  pageSize: number,
-): Promise<{ data: any[]; total: number }> {
-  const manager = this.ormRepository.manager;
+  async callSP_HM_GetAllApprovalHistory_Internal(
+    hmId: number,
+    page: number,
+    pageSize: number,
+  ): Promise<{ data: any[]; total: number }> {
+    const manager = this.ormRepository.manager;
 
-  const result = await manager.query(
-    `CALL HM_GetAllApprovalHistory_Internal(?, ?, ?)`,
-    [hmId, page, pageSize],
-  );
+    const result = await manager.query(
+      `CALL HM_GetAllApprovalHistory_Internal(?, ?, ?)`,
+      [hmId, page, pageSize],
+    );
 
-  return {
-    total: result[0]?.[0]?.total_count || 0,
-    data: result[1] || [],
-  };
-}
-
-
+    return {
+      total: result[0]?.[0]?.total_count || 0,
+      data: result[1] || [],
+    };
+  }
 
 
-async callSP_HM_GetAllApprovalRequest_Internal(
-  hmId: number,
-  page: number,
-  pageSize: number,
-): Promise<{ data: any[]; total: number }> {
-  const manager = this.ormRepository.manager;
-  const result = await manager.query(
-    `CALL HM_GetAllApprovalRequest_Internal(?, ?, ?)`,
-    [hmId, page, pageSize],
-  );
 
-  console.log('SP Result:', result);
 
-  return {
-    data: result[1] || [],
-    total: result[0]?.[0]?.total_count || 0,
-  };
-}
+  async callSP_HM_GetAllApprovalRequest_Internal(
+    hmId: number,
+    page: number,
+    pageSize: number,
+  ): Promise<{ data: any[]; total: number }> {
+    const manager = this.ormRepository.manager;
+    const result = await manager.query(
+      `CALL HM_GetAllApprovalRequest_Internal(?, ?, ?)`,
+      [hmId, page, pageSize],
+    );
+
+    console.log('SP Result:', result);
+
+    return {
+      data: result[1] || [],
+      total: result[0]?.[0]?.total_count || 0,
+    };
+  }
 
   async callSP_HM_GetDetail_LoanApplicationsInternal_ById(
     loanAppId: number,
@@ -350,20 +366,20 @@ async callSP_HM_GetAllApprovalRequest_Internal(
   }
 
 
-async callSP_HM_GetAllUsers(
-  page: number,
-  pageSize: number,
-): Promise<{ data: any[]; total: number }> {
-  const [totalResult, dataResult] = await this.dataSource.query(
-    'CALL HM_GetAllUsers(?, ?)',
-    [page, pageSize],
-  );
+  async callSP_HM_GetAllUsers(
+    page: number,
+    pageSize: number,
+  ): Promise<{ data: any[]; total: number }> {
+    const [totalResult, dataResult] = await this.dataSource.query(
+      'CALL HM_GetAllUsers(?, ?)',
+      [page, pageSize],
+    );
 
-  const total = totalResult?.[0]?.total_count || 0;
-  const data = dataResult || [];
+    const total = totalResult?.[0]?.total_count || 0;
+    const data = dataResult || [];
 
-  return { data, total };
-}
+    return { data, total };
+  }
 
 
 }

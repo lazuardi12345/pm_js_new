@@ -78,7 +78,9 @@ export interface ILoanApplicationInternalRepository {
   callSP_CA_GetApprovalHistory_Internal(
     page: number,
     pageSize: number,
-  ): Promise<{ data: any[]; total: number }>;
+  ): Promise<{
+    results: any; data: any[]; total: number 
+}>;
   callSP_CA_GetAllApprovalRequest_Internal(
     page: number,
     pageSize: number,

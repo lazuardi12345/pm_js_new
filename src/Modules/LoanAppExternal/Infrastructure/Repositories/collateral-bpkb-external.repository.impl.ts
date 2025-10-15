@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CollateralByBPKB } from '../../Domain/Entities/collateral-bpkb-external.entity';
@@ -7,9 +7,7 @@ import { LoanApplicationExternal_ORM_Entity } from '../Entities/loan-application
 import { ICollateralByBPKBRepository } from '../../Domain/Repositories/collateral-bpkb-external.repository';
 
 @Injectable()
-export class CollateralByBPKBRepositoryImpl
-  implements ICollateralByBPKBRepository
-{
+export class CollateralByBPKBRepositoryImpl implements ICollateralByBPKBRepository {
   constructor(
     @InjectRepository(CollateralByBPKB_ORM_Entity)
     private readonly ormRepository: Repository<CollateralByBPKB_ORM_Entity>,
@@ -17,47 +15,47 @@ export class CollateralByBPKBRepositoryImpl
 
   private toDomain(ormEntity: CollateralByBPKB_ORM_Entity): CollateralByBPKB {
     return new CollateralByBPKB(
-      ormEntity.pengajuan.id,
-      ormEntity.atas_nama_bpkb,
-      ormEntity.no_stnk,
-      ormEntity.alamat_pemilik_bpkb,
-      ormEntity.type_kendaraan,
-      ormEntity.tahun_perakitan,
-      ormEntity.warna_kendaraan,
-      ormEntity.stransmisi,
-      ormEntity.no_rangka,
-      ormEntity.no_mesin,
-      ormEntity.no_bpkb,
-      ormEntity.foto_stnk,
-      ormEntity.foto_bpkb,
-      ormEntity.foto_motor,
-      ormEntity.id,
-      ormEntity.created_at,
-      ormEntity.updated_at,
-      ormEntity.deleted_at,
+      { id: ormEntity.pengajuan?.id },
+      ormEntity.atas_nama_bpkb ?? undefined,
+      ormEntity.no_stnk ?? undefined,
+      ormEntity.alamat_pemilik_bpkb ?? undefined,
+      ormEntity.type_kendaraan ?? undefined,
+      ormEntity.tahun_perakitan ?? undefined,
+      ormEntity.warna_kendaraan ?? undefined,
+      ormEntity.stransmisi ?? undefined,
+      ormEntity.no_rangka ?? undefined,
+      ormEntity.no_mesin ?? undefined,
+      ormEntity.no_bpkb ?? undefined,
+      ormEntity.foto_stnk ?? undefined,
+      ormEntity.foto_bpkb ?? undefined,
+      ormEntity.foto_motor ?? undefined,
+      ormEntity.id ?? undefined,
+      ormEntity.created_at ?? undefined,
+      ormEntity.updated_at ?? undefined,
+      ormEntity.deleted_at ?? null,
     );
   }
 
   private toOrm(domain: CollateralByBPKB): Partial<CollateralByBPKB_ORM_Entity> {
     return {
       id: domain.id,
-      pengajuan: { id: domain.pengajuanId } as LoanApplicationExternal_ORM_Entity,
-      atas_nama_bpkb: domain.atasNamaBpkb,
-      no_stnk: domain.noStnk,
-      alamat_pemilik_bpkb: domain.alamatPemilikBpkb,
-      type_kendaraan: domain.typeKendaraan,
-      tahun_perakitan: domain.tahunPerakitan,
-      warna_kendaraan: domain.warnaKendaraan,
+      pengajuan: domain.pengajuan ? { id: domain.pengajuan.id } as LoanApplicationExternal_ORM_Entity : undefined,
+      atas_nama_bpkb: domain.atas_nama_bpkb,
+      no_stnk: domain.no_stnk,
+      alamat_pemilik_bpkb: domain.alamat_pemilik_bpkb,
+      type_kendaraan: domain.type_kendaraan,
+      tahun_perakitan: domain.tahun_perakitan,
+      warna_kendaraan: domain.warna_kendaraan,
       stransmisi: domain.stransmisi,
-      no_rangka: domain.noRangka,
-      no_mesin: domain.noMesin,
-      no_bpkb: domain.noBpkb,
-      foto_stnk: domain.fotoStnk,
-      foto_bpkb: domain.fotoBpkb,
-      foto_motor: domain.fotoMotor,
-      created_at: domain.createdAt,
-      updated_at: domain.updatedAt,
-      deleted_at: domain.deletedAt,
+      no_rangka: domain.no_rangka,
+      no_mesin: domain.no_mesin,
+      no_bpkb: domain.no_bpkb,
+      foto_stnk: domain.foto_stnk,
+      foto_bpkb: domain.foto_bpkb,
+      foto_motor: domain.foto_motor,
+      created_at: domain.created_at,
+      updated_at: domain.updated_at,
+      deleted_at: domain.deleted_at,
     };
   }
 
@@ -66,24 +64,25 @@ export class CollateralByBPKBRepositoryImpl
   ): Partial<CollateralByBPKB_ORM_Entity> {
     const ormData: Partial<CollateralByBPKB_ORM_Entity> = {};
 
-    if (partial.pengajuanId)
-      ormData.pengajuan = { id: partial.pengajuanId } as LoanApplicationExternal_ORM_Entity;
-    if (partial.atasNamaBpkb) ormData.atas_nama_bpkb = partial.atasNamaBpkb;
-    if (partial.noStnk) ormData.no_stnk = partial.noStnk;
-    if (partial.alamatPemilikBpkb) ormData.alamat_pemilik_bpkb = partial.alamatPemilikBpkb;
-    if (partial.typeKendaraan) ormData.type_kendaraan = partial.typeKendaraan;
-    if (partial.tahunPerakitan) ormData.tahun_perakitan = partial.tahunPerakitan;
-    if (partial.warnaKendaraan) ormData.warna_kendaraan = partial.warnaKendaraan;
-    if (partial.stransmisi) ormData.stransmisi = partial.stransmisi;
-    if (partial.noRangka) ormData.no_rangka = partial.noRangka;
-    if (partial.noMesin) ormData.no_mesin = partial.noMesin;
-    if (partial.noBpkb) ormData.no_bpkb = partial.noBpkb;
-    if (partial.fotoStnk) ormData.foto_stnk = partial.fotoStnk;
-    if (partial.fotoBpkb) ormData.foto_bpkb = partial.fotoBpkb;
-    if (partial.fotoMotor) ormData.foto_motor = partial.fotoMotor;
-    if (partial.createdAt) ormData.created_at = partial.createdAt;
-    if (partial.updatedAt) ormData.updated_at = partial.updatedAt;
-    if (partial.deletedAt) ormData.deleted_at = partial.deletedAt;
+    if (partial.pengajuan?.id !== undefined) {
+      ormData.pengajuan = { id: partial.pengajuan.id } as LoanApplicationExternal_ORM_Entity;
+    }
+    if (partial.atas_nama_bpkb !== undefined) ormData.atas_nama_bpkb = partial.atas_nama_bpkb;
+    if (partial.no_stnk !== undefined) ormData.no_stnk = partial.no_stnk;
+    if (partial.alamat_pemilik_bpkb !== undefined) ormData.alamat_pemilik_bpkb = partial.alamat_pemilik_bpkb;
+    if (partial.type_kendaraan !== undefined) ormData.type_kendaraan = partial.type_kendaraan;
+    if (partial.tahun_perakitan !== undefined) ormData.tahun_perakitan = partial.tahun_perakitan;
+    if (partial.warna_kendaraan !== undefined) ormData.warna_kendaraan = partial.warna_kendaraan;
+    if (partial.stransmisi !== undefined) ormData.stransmisi = partial.stransmisi;
+    if (partial.no_rangka !== undefined) ormData.no_rangka = partial.no_rangka;
+    if (partial.no_mesin !== undefined) ormData.no_mesin = partial.no_mesin;
+    if (partial.no_bpkb !== undefined) ormData.no_bpkb = partial.no_bpkb;
+    if (partial.foto_stnk !== undefined) ormData.foto_stnk = partial.foto_stnk;
+    if (partial.foto_bpkb !== undefined) ormData.foto_bpkb = partial.foto_bpkb;
+    if (partial.foto_motor !== undefined) ormData.foto_motor = partial.foto_motor;
+    if (partial.created_at !== undefined) ormData.created_at = partial.created_at;
+    if (partial.updated_at !== undefined) ormData.updated_at = partial.updated_at;
+    if (partial.deleted_at !== undefined) ormData.deleted_at = partial.deleted_at;
 
     return ormData;
   }
@@ -123,7 +122,7 @@ export class CollateralByBPKBRepositoryImpl
       where: { id },
       relations: ['pengajuan'],
     });
-    if (!updated) throw new Error('CollateralByBPKB not found');
+    if (!updated) throw new NotFoundException(`CollateralByBPKB with ID ${id} not found`);
     return this.toDomain(updated);
   }
 
