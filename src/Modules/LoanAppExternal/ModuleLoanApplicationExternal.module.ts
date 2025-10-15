@@ -25,6 +25,8 @@ import { LoanApplicationExternalController } from './Presentation/Controllers/lo
 import { ColleteralBpjsExternalController } from './Presentation/Controllers/collateral-bpjs-external.controller';
 import { CollateralBpkbExternalController } from './Presentation/Controllers/collateral-bpkb-external.controller';
 import { CollateralKedinasanExternalController } from './Presentation/Controllers/collateral-kedinasan-external.controller';
+import { CollateralShmExternalController } from './Presentation/Controllers/collateral-shm-external.controller';
+
 
 @Module({
   imports: [
@@ -51,9 +53,17 @@ import { CollateralKedinasanExternalController } from './Presentation/Controller
     JobExternalController,
     ApprovalExternalController,
     LoanApplicationExternalController,
+
+
+
+
+
+
+    
     ColleteralBpjsExternalController,
     CollateralBpkbExternalController,
     CollateralKedinasanExternalController,
+    CollateralShmExternalController,
   ],
   exports: [
     AddressExternalModule,

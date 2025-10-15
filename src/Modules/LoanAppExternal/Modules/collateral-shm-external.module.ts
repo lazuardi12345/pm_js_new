@@ -4,10 +4,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CollateralBySHM_ORM_Entity } from '../Infrastructure/Entities/collateral-shm.orm-entity';
 import { CollateralBySHMRepositoryImpl } from '../Infrastructure/Repositories/collateral-shm-external.repository.impl';
 import { COLLATERAL_SHM_EXTERNAL_REPOSITORY } from '../Domain/Repositories/collateral-shm-external.repository';
+import { CollateralSHMService } from '../Application/Services/collateral-shm-external.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([CollateralBySHM_ORM_Entity])],
   providers: [
+    CollateralSHMService,
     {
       provide: COLLATERAL_SHM_EXTERNAL_REPOSITORY,
       useClass: CollateralBySHMRepositoryImpl,
@@ -15,6 +17,7 @@ import { COLLATERAL_SHM_EXTERNAL_REPOSITORY } from '../Domain/Repositories/colla
     // GetAddressByNasabahIdUseCase,
   ],
   exports: [
+    CollateralSHMService,
     COLLATERAL_SHM_EXTERNAL_REPOSITORY,
     // GetAddressByNasabahIdUseCase,
   ],
