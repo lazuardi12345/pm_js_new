@@ -1,7 +1,9 @@
 // Domain/Repositories/approval-internal.repository.ts
 import { ApprovalInternal } from '../Entities/approval-internal.entity';
 
-export const APPROVAL_INTERNAL_REPOSITORY = Symbol('APPROVAL_INTERNAL_REPOSITORY');
+export const APPROVAL_INTERNAL_REPOSITORY = Symbol(
+  'APPROVAL_INTERNAL_REPOSITORY',
+);
 
 export interface IApprovalInternalRepository {
   findByLoanIdAndUserId: any;

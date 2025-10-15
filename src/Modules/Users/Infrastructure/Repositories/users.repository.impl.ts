@@ -12,7 +12,7 @@ export class UsersRepositoryImpl implements IUsersRepository {
   constructor(
     @InjectRepository(Users_ORM_Entity)
     private readonly ormRepository: Repository<Users_ORM_Entity>,
-     private readonly dataSource: DataSource,
+    private readonly dataSource: DataSource,
   ) {}
 
   // =================================================================
@@ -53,7 +53,9 @@ export class UsersRepositoryImpl implements IUsersRepository {
     };
   }
 
-  private toOrmPartial(partial: Partial<UsersEntity>): Partial<Users_ORM_Entity> {
+  private toOrmPartial(
+    partial: Partial<UsersEntity>,
+  ): Partial<Users_ORM_Entity> {
     const ormData: Partial<Users_ORM_Entity> = {};
     if (partial.nama) ormData.nama = partial.nama;
     if (partial.email) ormData.email = partial.email;
@@ -110,12 +112,14 @@ export class UsersRepositoryImpl implements IUsersRepository {
     await this.ormRepository.softDelete(id);
   }
 
-
-   async callSP_HM_GetAllUsers(
+  async callSP_HM_GetAllUsers(
     page: number,
     pageSize: number,
   ): Promise<{ data: any[]; total: number }> {
-    const result = await this.dataSource.query(`CALL HM_GetAllUsers(?, ?)`, [page, pageSize]);
+    const result = await this.dataSource.query(`CALL HM_GetAllUsers(?, ?)`, [
+      page,
+      pageSize,
+    ]);
 
     const total = result[0][0]?.total_count || 0;
     const data = result[1] || [];
@@ -123,4 +127,3 @@ export class UsersRepositoryImpl implements IUsersRepository {
     return { total, data };
   }
 }
-

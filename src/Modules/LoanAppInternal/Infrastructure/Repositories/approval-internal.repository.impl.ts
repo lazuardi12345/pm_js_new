@@ -183,14 +183,15 @@ export class ApprovalInternalRepositoryImpl
     await this.ormRepository.softDelete(id);
   }
 
-
-  async findByLoanIdAndUserId(loanId: number, userId: number): Promise<ApprovalInternal | null> {
-  return await this.repo.findOne({
-    where: {
-      pengajuan_id: loanId,
-      user_id: userId,
-    },
-  });
-}
-
+  async findByLoanIdAndUserId(
+    loanId: number,
+    userId: number,
+  ): Promise<ApprovalInternal | null> {
+    return await this.repo.findOne({
+      where: {
+        pengajuan_id: loanId,
+        user_id: userId,
+      },
+    });
+  }
 }

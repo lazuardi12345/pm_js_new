@@ -10,7 +10,6 @@ export const LOAN_APPLICATION_INTERNAL_REPOSITORY = Symbol(
 );
 
 export interface ILoanApplicationInternalRepository {
-
   // ========== Basic CRUD ==========
   findById(id: number): Promise<LoanApplicationInternal | null>;
   findByNasabahId(nasabahId: number): Promise<LoanApplicationInternal[]>;
@@ -69,7 +68,7 @@ export interface ILoanApplicationInternalRepository {
   ): Promise<[TypeLoanApplicationDetail[], TypeApprovalDetail[]]>;
   callSP_HM_GetAllTeams_Internal(hmId: number): Promise<any[]>;
 
-   callSP_HM_GetAllUsers(
+  callSP_HM_GetAllUsers(
     page: number,
     pageSize: number,
   ): Promise<{ data: any[]; total: number }>;

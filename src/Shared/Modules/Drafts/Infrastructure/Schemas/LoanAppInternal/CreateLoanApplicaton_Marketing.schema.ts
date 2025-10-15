@@ -1,11 +1,19 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { IsEnum } from 'class-validator';
 import { HydratedDocument } from 'mongoose';
-import { DomisiliEnum, StatusRumahEnum } from 'src/Shared/Enums/Internal/Address.enum';
-import { GENDER, MARRIAGE_STATUS } from 'src/Shared/Enums/Internal/Clients.enum';
-import { PenjaminEnum, RiwayatPinjamPenjaminEnum } from 'src/Shared/Enums/Internal/Collateral.enum';
+import {
+  DomisiliEnum,
+  StatusRumahEnum,
+} from 'src/Shared/Enums/Internal/Address.enum';
+import {
+  GENDER,
+  MARRIAGE_STATUS,
+} from 'src/Shared/Enums/Internal/Clients.enum';
+import {
+  PenjaminEnum,
+  RiwayatPinjamPenjaminEnum,
+} from 'src/Shared/Enums/Internal/Collateral.enum';
 import { StatusPengajuanEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
-
 
 // ================= Client =================
 @Schema({ _id: false })
@@ -21,10 +29,6 @@ class ClientInternal {
   @Prop() no_rekening: string;
   @Prop() enable_edit: boolean;
   @Prop() points: string;
-
-
-
-
 
   @Prop() foto_ktp?: string;
   @Prop() foto_kk?: string;
@@ -62,7 +66,6 @@ class FamilyInternal {
   @Prop() jabatan?: string;
   @Prop() penghasilan?: number;
   @Prop() alamat_kerja?: string;
-
 }
 export const FamilyInternalSchema =
   SchemaFactory.createForClass(FamilyInternal);
@@ -79,7 +82,7 @@ class JobInternal {
   @Prop() nama_atasan?: string;
   @Prop() nama_hrd?: string;
   @Prop() absensi?: string;
-  @Prop() bukti_absensi?: string
+  @Prop() bukti_absensi?: string;
 }
 export const JobInternalSchema = SchemaFactory.createForClass(JobInternal);
 
@@ -91,7 +94,7 @@ class LoanApplicationInternal {
   @Prop() nominal_pinjaman?: number;
   @Prop() tenor?: number;
   @Prop() keperluan?: string;
-  @Prop() status?: StatusPengajuanEnum
+  @Prop() status?: StatusPengajuanEnum;
   @Prop() riwayat_nominal?: number;
   @Prop() riwayat_tenor?: number;
   @Prop() sisa_pinjaman?: number;
@@ -114,7 +117,7 @@ class CollateralInternal {
   @Prop() bagian?: string;
   @Prop() absensi?: string;
   @Prop() riwayat_pinjam_penjamin?: RiwayatPinjamPenjaminEnum;
-  @Prop() riwayat_nominal_penjamin? : number;
+  @Prop() riwayat_nominal_penjamin?: number;
   @Prop() riwayat_tenor_penjamin?: number;
   @Prop() sisa_pinjaman_penjamin?: number;
   @Prop() jaminan_cg_penjamin?: string;
@@ -139,6 +142,7 @@ export const RelativeInternalSchema =
   SchemaFactory.createForClass(RelativeInternal);
 
 // ================= Root LoanApplication =================
+
 @Schema({ timestamps: true })
 export class LoanApplication {
   @Prop({ required: true }) marketing_id: number;
@@ -156,6 +160,7 @@ export class LoanApplication {
   @Prop({ type: Object })
   uploaded_files?: Record<string, string[]>;
   @Prop({ default: false }) isDeleted: boolean; // flag soft delete
+  @Prop({ default: false }) isCompleted?: boolean;
 }
 
 export type LoanApplicationDocument = HydratedDocument<LoanApplication>;

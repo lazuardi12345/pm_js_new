@@ -22,46 +22,45 @@ export class HM_GetAllApprovalRequestController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(USERTYPE.HM)
   @Get('/request')
-async getAllLoanApplications(
-  @CurrentUser('id') hmId: number,
-  @Query('page') page: number = 1,
-  @Query('pageSize') pageSize: number = 10,
-  @Query('searchQuery') searchQuery = '',
-) {
-  try {
-    const result = await this.getAllApprovalRequestByTeamUseCase.execute(
-      hmId,
-      page,
-      pageSize,
-      searchQuery,
-    );
+  async getAllLoanApplications(
+    @CurrentUser('id') hmId: number,
+    @Query('page') page: number = 1,
+    @Query('pageSize') pageSize: number = 10,
+    @Query('searchQuery') searchQuery = '',
+  ) {
+    try {
+      const result = await this.getAllApprovalRequestByTeamUseCase.execute(
+        hmId,
+        page,
+        pageSize,
+        searchQuery,
+      );
 
-    return {
-      payload: {
-        error: false,
-        message: 'HM loan approval requests retrieved successfully',
-        reference: 'HM_LOAN_RETRIEVE_OK',
-        data: {
-          results: result.data,
-          page,
-          pageSize,
-          total: result.total,
-        },
-      },
-    };
-  } catch (err) {
-    console.error('❌ Controller error:', err);
-    throw new HttpException(
-      {
+      return {
         payload: {
-          error: true,
-          message: err.message || 'Unexpected error',
-          reference: 'HM_LOAN_UNKNOWN_ERROR',
+          error: false,
+          message: 'HM loan approval requests retrieved successfully',
+          reference: 'HM_LOAN_RETRIEVE_OK',
+          data: {
+            results: result.data,
+            page,
+            pageSize,
+            total: result.total,
+          },
         },
-      },
-      HttpStatus.INTERNAL_SERVER_ERROR,
-    );
+      };
+    } catch (err) {
+      console.error('❌ Controller error:', err);
+      throw new HttpException(
+        {
+          payload: {
+            error: true,
+            message: err.message || 'Unexpected error',
+            reference: 'HM_LOAN_UNKNOWN_ERROR',
+          },
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
-}
-
 }

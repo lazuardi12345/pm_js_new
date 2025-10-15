@@ -286,8 +286,7 @@ export class LoanApplicationInternalRepositoryImpl
       [page, pageSize],
     );
 
-    // result[0] --> [{ total_count: ... }]
-    // result[1] --> data rows
+
 
     return {
       data: result[1] || [],
@@ -356,7 +355,7 @@ export class LoanApplicationInternalRepositoryImpl
     throw new Error('Method not implemented.');
   }
 
-  // ✅ FIXED FUNCTION
+
   async callSP_HM_GetAllTeams_Internal(hmId: number): Promise<any[]> {
     const ormEntities = this.ormRepository.manager;
     const result = await ormEntities.query(`CALL HM_GetAllTeams_Internal(?)`, [

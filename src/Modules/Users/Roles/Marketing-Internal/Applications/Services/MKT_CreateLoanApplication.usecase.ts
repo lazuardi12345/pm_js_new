@@ -95,8 +95,12 @@ export class MKT_CreateLoanApplicationUseCase {
             client_internal.email,
             documents_files?.foto_ktp ?? client_internal.foto_ktp ?? null,
             documents_files?.foto_kk ?? client_internal.foto_kk ?? null,
-            documents_files?.foto_id_card ?? client_internal.foto_id_card ?? null,
-            documents_files?.foto_rekening ?? client_internal.foto_rekening ?? null,
+            documents_files?.foto_id_card ??
+              client_internal.foto_id_card ??
+              null,
+            documents_files?.foto_rekening ??
+              client_internal.foto_rekening ??
+              null,
             client_internal.no_rekening,
             client_internal.enable_edit ?? false,
             client_internal.points ?? 0,
@@ -162,13 +166,15 @@ export class MKT_CreateLoanApplicationUseCase {
             job_internal.yayasan,
             job_internal.lama_kerja_bulan,
             job_internal.lama_kerja_tahun,
-            documents_files?.bukti_absensi_file ?? job_internal.bukti_absensi_file,
+            documents_files?.bukti_absensi_file ??
+              job_internal.bukti_absensi_file,
             undefined,
           ),
         );
 
         // 5. Simpan Loan Application (foto pendukung ambil dari DTO langsung)
-        const foto_pendukung_url = loan_application_internal.foto_pendukung ?? null;
+        const foto_pendukung_url =
+          loan_application_internal.foto_pendukung ?? null;
 
         const loanApp = await this.loanAppRepo.save(
           new LoanApplicationInternal(
@@ -211,8 +217,12 @@ export class MKT_CreateLoanApplicationUseCase {
             collateral_internal.sisa_pinjaman_penjamin,
             collateral_internal.jaminan_cg_penjamin,
             collateral_internal.status_hubungan_penjamin,
-            documents_files?.foto_ktp_penjamin ?? collateral_internal.foto_ktp_penjamin ?? null,
-            documents_files?.foto_id_card_penjamin?? collateral_internal.foto_id_card_penjamin ?? null,
+            documents_files?.foto_ktp_penjamin ??
+              collateral_internal.foto_ktp_penjamin ??
+              null,
+            documents_files?.foto_id_card_penjamin ??
+              collateral_internal.foto_id_card_penjamin ??
+              null,
             undefined,
           ),
         );
