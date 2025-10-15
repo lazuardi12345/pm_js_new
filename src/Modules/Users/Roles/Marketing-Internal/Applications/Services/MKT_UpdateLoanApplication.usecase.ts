@@ -72,6 +72,7 @@ export class MKT_UpdateLoanApplicationUseCase {
         const loanAppInternal = payload?.loan_application_internal;
         const collateralInternal = payload?.collateral_internal;
         const relativeInternal = payload?.relative_internal;
+        const isCompleted = payload?.isCompleted;
 
         // 1. Ambil Client
         const client = await this.clientRepo.findById(clientId);
@@ -95,6 +96,7 @@ export class MKT_UpdateLoanApplicationUseCase {
           !loanAppInternal &&
           !collateralInternal &&
           !relativeInternal &&
+          !isCompleted &&
           Object.keys(filePaths).length === 0
         ) {
           console.log(
