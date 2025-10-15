@@ -1,117 +1,142 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
 import { AddressExternal } from '../../Domain/Entities/address-external.entity';
 import { IAddressExternalRepository } from '../../Domain/Repositories/address-external.repository';
 import { AddressExternal_ORM_Entity } from '../Entities/address-external.orm-entity';
 import { ClientExternal_ORM_Entity } from '../Entities/client-external.orm-entity';
 
 @Injectable()
-export class AddressExternalRepositoryImpl implements IAddressExternalRepository {
+export class AddressExternalRepositoryImpl
+  implements IAddressExternalRepository
+{
   constructor(
     @InjectRepository(AddressExternal_ORM_Entity)
     private readonly ormRepository: Repository<AddressExternal_ORM_Entity>,
   ) {}
 
-  // MAPPER =======================================================================
-  private toDomain(ormEntity: AddressExternal_ORM_Entity): AddressExternal {
-    return new AddressExternal(
-      ormEntity.nasabah.id,
-      ormEntity.alamat_ktp,
-      ormEntity.rt_rw,
-      ormEntity.kelurahan,
-      ormEntity.kecamatan,
-      ormEntity.kota,
-      ormEntity.provinsi,
-      ormEntity.status_rumah,
-      ormEntity.domisili,
-      ormEntity.rumah_domisili,
-      ormEntity.id,
-      ormEntity.alamat_domisili,
-      ormEntity.biaya_perbulan,
-      ormEntity.biaya_pertahun,
-      ormEntity.biaya_perbulan_domisili,
-      ormEntity.biaya_pertahun_domisili,
-      ormEntity.lama_tinggal,
-      ormEntity.atas_nama_listrik,
-      ormEntity.hubungan,
-      ormEntity.foto_meteran_listrik,
-      ormEntity.share_loc_link,
-      ormEntity.validasi_alamat,
-      ormEntity.catatan,
-      ormEntity.created_at,
-      ormEntity.updated_at,
-      ormEntity.deleted_at,
-    );
-  }
+  //? ============================== MAPPER ==========================================
 
-  private toOrm(domainEntity: AddressExternal): Partial<AddressExternal_ORM_Entity> {
+  //? ORM to Domain
+  private toDomain(orm: AddressExternal_ORM_Entity): AddressExternal {
+  return new AddressExternal(
+    orm.nasabah,
+    orm.alamat_ktp,
+    orm.rt_rw,
+    orm.kelurahan,
+    orm.kecamatan,
+    orm.kota,
+    orm.provinsi,
+    orm.status_rumah,
+    orm.domisili,
+    orm.rumah_domisili,
+    orm.id,
+    orm.created_at,
+    orm.deleted_at,
+
+    // Mutable
+    orm.alamat_domisili,
+    orm.biaya_perbulan,
+    orm.biaya_pertahun,
+    orm.biaya_perbulan_domisili,
+    orm.biaya_pertahun_domisili,
+    orm.lama_tinggal,
+    orm.atas_nama_listrik,
+    orm.hubungan,
+    orm.foto_meteran_listrik,
+    orm.share_loc_link,
+    orm.validasi_alamat,
+    orm.catatan,
+    orm.updated_at,
+  );
+}
+
+
+  //? Domain to ORM (Create / Save)
+  private toOrm(
+    domain: AddressExternal,
+  ): Partial<AddressExternal_ORM_Entity> {
     return {
-      id: domainEntity.id,
-      nasabah: { id: domainEntity.nasabahId } as ClientExternal_ORM_Entity,
-      alamat_ktp: domainEntity.alamatKtp,
-      rt_rw: domainEntity.rtRw,
-      kelurahan: domainEntity.kelurahan,
-      kecamatan: domainEntity.kecamatan,
-      kota: domainEntity.kota,
-      provinsi: domainEntity.provinsi,
-      status_rumah: domainEntity.statusRumah,
-      domisili: domainEntity.domisili,
-      rumah_domisili: domainEntity.rumahDomisili,
-      alamat_domisili: domainEntity.alamatDomisili,
-      biaya_perbulan: domainEntity.biayaPerBulan,
-      biaya_pertahun: domainEntity.biayaPerTahun,
-      biaya_perbulan_domisili: domainEntity.biayaPerBulanDomisili,
-      biaya_pertahun_domisili: domainEntity.biayaPerTahunDomisili,
-      lama_tinggal: domainEntity.lamaTinggal,
-      atas_nama_listrik: domainEntity.atasNamaListrik,
-      hubungan: domainEntity.hubungan,
-      foto_meteran_listrik: domainEntity.fotoMeteranListrik,
-      share_loc_link: domainEntity.shareLocLink,
-      validasi_alamat: domainEntity.validasiAlamat,
-      catatan: domainEntity.catatan,
-      created_at: domainEntity.createdAt,
-      updated_at: domainEntity.updatedAt,
-      deleted_at: domainEntity.deletedAt,
+      id: domain.id,
+      nasabah: { id: domain.nasabah.id } as ClientExternal_ORM_Entity,
+      alamat_ktp: domain.alamat_ktp,
+      rt_rw: domain.rt_rw,
+      kelurahan: domain.kelurahan,
+      kecamatan: domain.kecamatan,
+      kota: domain.kota,
+      provinsi: domain.provinsi,
+      status_rumah: domain.status_rumah,
+      domisili: domain.domisili,
+      rumah_domisili: domain.rumah_domisili,
+
+      alamat_domisili: domain.alamat_domisili,
+      biaya_perbulan: domain.biaya_perbulan,
+      biaya_pertahun: domain.biaya_pertahun,
+      biaya_perbulan_domisili: domain.biaya_perbulan_domisili,
+      biaya_pertahun_domisili: domain.biaya_pertahun_domisili,
+      lama_tinggal: domain.lama_tinggal,
+      atas_nama_listrik: domain.atas_nama_listrik,
+      hubungan: domain.hubungan,
+      foto_meteran_listrik: domain.foto_meteran_listrik,
+      share_loc_link: domain.share_loc_link,
+      validasi_alamat: domain.validasi_alamat,
+      catatan: domain.catatan,
+      created_at: domain.created_at,
+      updated_at: domain.updated_at,
+      deleted_at: domain.deleted_at,
     };
   }
 
-  private toOrmPartial(partial: Partial<AddressExternal>): Partial<AddressExternal_ORM_Entity> {
-    const ormData: Partial<AddressExternal_ORM_Entity> = {};
+  //? Partial update mapping
+  private toOrmPartial(
+    partial: Partial<AddressExternal>,
+  ): Partial<AddressExternal_ORM_Entity> {
+    const orm: Partial<AddressExternal_ORM_Entity> = {};
 
-    if (partial.nasabahId)
-      ormData.nasabah = { id: partial.nasabahId } as ClientExternal_ORM_Entity;
-    if (partial.alamatKtp) ormData.alamat_ktp = partial.alamatKtp;
-    if (partial.rtRw) ormData.rt_rw = partial.rtRw;
-    if (partial.kelurahan) ormData.kelurahan = partial.kelurahan;
-    if (partial.kecamatan) ormData.kecamatan = partial.kecamatan;
-    if (partial.kota) ormData.kota = partial.kota;
-    if (partial.provinsi) ormData.provinsi = partial.provinsi;
-    if (partial.statusRumah) ormData.status_rumah = partial.statusRumah;
-    if (partial.domisili) ormData.domisili = partial.domisili;
-    if (partial.rumahDomisili) ormData.rumah_domisili = partial.rumahDomisili;
-    if (partial.alamatDomisili) ormData.alamat_domisili = partial.alamatDomisili;
-    if (partial.biayaPerBulan) ormData.biaya_perbulan = partial.biayaPerBulan;
-    if (partial.biayaPerTahun) ormData.biaya_pertahun = partial.biayaPerTahun;
-    if (partial.biayaPerBulanDomisili) ormData.biaya_perbulan_domisili = partial.biayaPerBulanDomisili;
-    if (partial.biayaPerTahunDomisili) ormData.biaya_pertahun_domisili = partial.biayaPerTahunDomisili;
-    if (partial.lamaTinggal) ormData.lama_tinggal = partial.lamaTinggal;
-    if (partial.atasNamaListrik) ormData.atas_nama_listrik = partial.atasNamaListrik;
-    if (partial.hubungan) ormData.hubungan = partial.hubungan;
-    if (partial.fotoMeteranListrik) ormData.foto_meteran_listrik = partial.fotoMeteranListrik;
-    if (partial.shareLocLink) ormData.share_loc_link = partial.shareLocLink;
-    if (partial.validasiAlamat) ormData.validasi_alamat = partial.validasiAlamat;
-    if (partial.catatan) ormData.catatan = partial.catatan;
-    if (partial.createdAt) ormData.created_at = partial.createdAt;
-    if (partial.updatedAt) ormData.updated_at = partial.updatedAt;
-    if (partial.deletedAt) ormData.deleted_at = partial.deletedAt;
+    if (partial.nasabah)
+      orm.nasabah = { id: partial.nasabah.id } as ClientExternal_ORM_Entity;
+    if (partial.alamat_ktp) orm.alamat_ktp = partial.alamat_ktp;
+    if (partial.rt_rw) orm.rt_rw = partial.rt_rw;
+    if (partial.kelurahan) orm.kelurahan = partial.kelurahan;
+    if (partial.kecamatan) orm.kecamatan = partial.kecamatan;
+    if (partial.kota) orm.kota = partial.kota;
+    if (partial.provinsi) orm.provinsi = partial.provinsi;
+    if (partial.status_rumah) orm.status_rumah = partial.status_rumah;
+    if (partial.domisili) orm.domisili = partial.domisili;
+    if (partial.rumah_domisili) orm.rumah_domisili = partial.rumah_domisili;
 
-    return ormData;
+    if (partial.alamat_domisili) orm.alamat_domisili = partial.alamat_domisili;
+    if (partial.biaya_perbulan) orm.biaya_perbulan = partial.biaya_perbulan;
+    if (partial.biaya_pertahun) orm.biaya_pertahun = partial.biaya_pertahun;
+    if (partial.biaya_perbulan_domisili)
+      orm.biaya_perbulan_domisili = partial.biaya_perbulan_domisili;
+    if (partial.biaya_pertahun_domisili)
+      orm.biaya_pertahun_domisili = partial.biaya_pertahun_domisili;
+    if (partial.lama_tinggal) orm.lama_tinggal = partial.lama_tinggal;
+    if (partial.atas_nama_listrik)
+      orm.atas_nama_listrik = partial.atas_nama_listrik;
+    if (partial.hubungan) orm.hubungan = partial.hubungan;
+    if (partial.foto_meteran_listrik)
+      orm.foto_meteran_listrik = partial.foto_meteran_listrik;
+    if (partial.share_loc_link) orm.share_loc_link = partial.share_loc_link;
+    if (partial.validasi_alamat)
+      orm.validasi_alamat = partial.validasi_alamat;
+    if (partial.catatan) orm.catatan = partial.catatan;
+    if (partial.created_at) orm.created_at = partial.created_at;
+    if (partial.updated_at) orm.updated_at = partial.updated_at;
+    if (partial.deleted_at) orm.deleted_at = partial.deleted_at;
+
+    return orm;
   }
-  // ============================================================================
+
+  //? ============================== METHODS =========================================
 
   async findById(id: number): Promise<AddressExternal | null> {
-    const ormEntity = await this.ormRepository.findOne({ where: { id }, relations: ['nasabah'] });
+    const ormEntity = await this.ormRepository.findOne({
+      where: { id },
+      relations: ['nasabah'],
+    });
     return ormEntity ? this.toDomain(ormEntity) : null;
   }
 
@@ -125,13 +150,19 @@ export class AddressExternalRepositoryImpl implements IAddressExternalRepository
 
   async save(address: AddressExternal): Promise<AddressExternal> {
     const ormEntity = this.toOrm(address);
-    const savedOrm = await this.ormRepository.save(ormEntity);
-    return this.toDomain(savedOrm);
+    const saved = await this.ormRepository.save(ormEntity);
+    return this.toDomain(saved);
   }
 
-  async update(id: number, addressData: Partial<AddressExternal>): Promise<AddressExternal> {
+  async update(
+    id: number,
+    addressData: Partial<AddressExternal>,
+  ): Promise<AddressExternal> {
     await this.ormRepository.update(id, this.toOrmPartial(addressData));
-    const updated = await this.ormRepository.findOne({ where: { id }, relations: ['nasabah'] });
+    const updated = await this.ormRepository.findOne({
+      where: { id },
+      relations: ['nasabah'],
+    });
     if (!updated) throw new Error('AddressExternal not found');
     return this.toDomain(updated);
   }
@@ -141,7 +172,9 @@ export class AddressExternalRepositoryImpl implements IAddressExternalRepository
   }
 
   async findAll(): Promise<AddressExternal[]> {
-    const ormEntities = await this.ormRepository.find({ relations: ['nasabah'] });
+    const ormEntities = await this.ormRepository.find({
+      relations: ['nasabah'],
+    });
     return ormEntities.map(this.toDomain);
   }
 }

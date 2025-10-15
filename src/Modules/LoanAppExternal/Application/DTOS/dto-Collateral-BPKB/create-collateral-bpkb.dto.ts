@@ -1,6 +1,10 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsNumber } from 'class-validator';
 
 export class CreatePengajuanBPKBDto {
+
+  @IsNumber()
+  pengajuan_id: number;
+
   @IsOptional()
   @IsString()
   atas_nama_bpkb?: string;

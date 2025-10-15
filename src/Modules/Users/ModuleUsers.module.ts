@@ -8,6 +8,7 @@ import { UsersController } from './Presentation/Controllers/users.controller';
 import { UsersService } from './Application/Service/Users.service';
 import { ClientExternal_ORM_Entity } from '../LoanAppExternal/Infrastructure/Entities/client-external.orm-entity';
 
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([Users_ORM_Entity, ClientInternal_ORM_Entity, ClientExternal_ORM_Entity]),

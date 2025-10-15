@@ -14,39 +14,44 @@ export class AddressExternalService {
     private readonly repo: IAddressExternalRepository,
   ) {}
 
-  async create(dto: CreateAddressExternalDto): Promise<AddressExternal> {
-    const now = new Date();
+async create(dto: CreateAddressExternalDto): Promise<AddressExternal> {
+  const now = new Date();
 
-    const address = new AddressExternal(
-    dto.nasabah_id,                   // nasabahId
-    dto.alamat_ktp,                   // alamatKtp
-    dto.rt_rw,                        // rtRw
-    dto.kelurahan,                    // kelurahan
-    dto.kecamatan,                    // kecamatan
-    dto.kota,                         // kota
-    dto.provinsi,                     // provinsi
-    dto.status_rumah,                // statusRumah
-    dto.domisili,                    // domisili
-    dto.rumah_domisili,              // rumahDomisili
-    undefined,                        // id
-    dto.alamat_domisili,             // alamatDomisili
-    dto.biaya_perbulan,              // biayaPerBulan
-    dto.biaya_pertahun,              // biayaPerTahun
-    dto.biaya_perbulan_domisili,     // biayaPerBulanDomisili
-    dto.biaya_pertahun_domisili,     // biayaPerTahunDomisili
-    dto.lama_tinggal,                // lamaTinggal
-    dto.atas_nama_listrik,           // atasNamaListrik
-    dto.hubungan,                    // hubungan
-    dto.foto_meteran_listrik,        // fotoMeteranListrik
-    dto.share_loc_link,              // shareLocLink
-    dto.validasi_alamat,             // validasiAlamat
-    dto.catatan,                     // catatan
-    now,                             // createdAt
-    now,                             // updatedAt
-    null                             // deletedAt
-    );
-    return this.repo.save(address);
-  }
+  const address = new AddressExternal(
+    { id: dto.nasabah_id },
+    dto.alamat_ktp,
+    dto.rt_rw,
+    dto.kelurahan,
+    dto.kecamatan,
+    dto.kota,
+    dto.provinsi,
+    dto.status_rumah,
+    dto.domisili,
+    dto.rumah_domisili,
+    undefined,
+    now,
+    null,
+
+    // === Mutable fields ===
+    dto.alamat_domisili,                  // ← asumsi ini adalah alamat_lengkap
+    dto.biaya_perbulan,
+    dto.biaya_pertahun,
+    dto.biaya_perbulan_domisili,
+    dto.biaya_pertahun_domisili,
+    dto.lama_tinggal,
+    dto.atas_nama_listrik,
+    dto.hubungan,
+    dto.foto_meteran_listrik,
+    dto.share_loc_link,
+    dto.validasi_alamat,
+    dto.catatan,
+    now,
+  );
+
+  return this.repo.save(address);
+}
+
+
 
   async update(id: number, dto: UpdateAddressExternalDto): Promise<AddressExternal> {
     return this.repo.update(id, dto);

@@ -15,7 +15,15 @@ import { LoanApplication_External_Module } from './Modules/loanApp-external.modu
 import { OtherExistLoans_External_Module } from './Modules/other-exist-loans-external.module';
 import { SurveyPhotos_External_Module } from './Modules/survey-photos-external.module';
 import { SurveyReports_External_Module } from './Modules/survey-reports-external.module';
+
+//Controller
 import { AddressExternalController } from './Presentation/Controllers/address-external.controller';
+import { ClientExternalController } from './Presentation/Controllers/client-external.controller';
+import { JobExternalController } from './Presentation/Controllers/job-external.controller';
+import { ApprovalExternalController } from './Presentation/Controllers/approval-external.controller';
+import { LoanApplicationExternalController } from './Presentation/Controllers/loanApp-external.controller';
+import { ColleteralBpjsExternalController } from './Presentation/Controllers/collateral-bpjs-external.controller';
+import { CollateralBpkbExternalController } from './Presentation/Controllers/collateral-bpkb-external.controller';
 
 @Module({
   imports: [
@@ -34,10 +42,16 @@ import { AddressExternalController } from './Presentation/Controllers/address-ex
     OtherExistLoans_External_Module,
     SurveyPhotos_External_Module,
     SurveyReports_External_Module,
-    // kalau nanti ada module lain (RepeatOrderInternalModule, LoanInternalModule, dll) tinggal ditambahin sini
+
   ],
   controllers: [
-    AddressExternalController
+    AddressExternalController,
+    ClientExternalController,
+    JobExternalController,
+    ApprovalExternalController,
+    LoanApplicationExternalController,
+    ColleteralBpjsExternalController,
+    CollateralBpkbExternalController,
   ],
   exports: [
     AddressExternalModule,

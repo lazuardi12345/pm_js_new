@@ -6,8 +6,9 @@ import {
 import { JobExternal } from '../../Domain/Entities/job-external.entity';
 import { CreateJobExternalDto } from '../DTOS/dto-Job/create-job.dto';
 import { UpdateJobExternalDto } from '../DTOS/dto-Job/update-job.dto';
+
 @Injectable()
-export class EmergencyContactExternalService {
+export class JobExternalService {
   constructor(
     @Inject(JOB_EXTERNAL_REPOSITORY)
     private readonly repo: IJobExternalRepository,
@@ -15,28 +16,27 @@ export class EmergencyContactExternalService {
 
   async create(dto: CreateJobExternalDto): Promise<JobExternal> {
     const now = new Date();
-
-    const address = new JobExternal(
-      dto.nasabah_id, // nasabahId
-      dto.perusahaan, // perusahaan
-      dto.alamat_perusahaan, // alamatPerusahaan
-      dto.kontak_perusahaan, // kontakPerusahaan
-      dto.jabatan, // jabatan
-      dto.lama_kerja, // lamaKerja
-      dto.status_karyawan, // statusKaryawan
-      dto.pendapatan_perbulan, // pendapatanPerbulan
-      dto.slip_gaji, // slipGaji
-      dto.norek, // norek
-      dto.id_card, // idCard
-      dto.lama_kontrak, // lamaKontrak (optional)
-      dto.validasi_pekerjaan, // validasiPekerjaan (optional)
-      dto.catatan, // catatan (optional)
-      undefined, // id (optional)
-      now, // createdAt
-      now, // updatedAt
-      null, // deletedAt
+    const jobs = new JobExternal(
+      { id: dto.nasabah_id },
+      dto.perusahaan,
+      dto.alamat_perusahaan,
+      dto.kontak_perusahaan,
+      dto.jabatan,
+      dto.lama_kerja,
+      dto.status_karyawan,
+      dto.pendapatan_perbulan,
+      dto.slip_gaji,
+      dto.norek,
+      dto.id_card,
+      dto.lama_kontrak,
+      dto.validasi_pekerjaan,
+      dto.catatan,
+      undefined,
+      now,
+      now,
+      null,
     );
-    return this.repo.save(address);
+    return this.repo.save(jobs);
   }
 
   async update(id: number, dto: UpdateJobExternalDto): Promise<JobExternal> {

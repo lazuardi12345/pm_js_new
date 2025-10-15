@@ -1,12 +1,13 @@
 export enum USERTYPE {
   SUPERADMIN = 'superadmin',
-  ADMIN = 'admin',
+  ADMIN_KONTRAK = 'admin_kontrak',
   // MANAGER = 'manager',
   CA = 'credit_analyst',
   SPV = 'supervisor',
   SVY = 'surveyor',
   HM = 'head_marketing',
   MARKETING = 'marketing',
+  ADMIN_BI = 'admin_bi'
 }
 
 export enum TYPE {

@@ -16,62 +16,65 @@ export class ApprovalExternalRepositoryImpl implements IApprovalExternalReposito
   ) {}
 
   // MAPPER =======================================================================
-  private toDomain(ormEntity: ApprovalExternal_ORM_Entity): ApprovalExternal {
-    return new ApprovalExternal(
-      ormEntity.pengajuan_luar.id,
-      ormEntity.user.id,
-      ormEntity.role,
-      ormEntity.is_banding,
-      ormEntity.id,
-      ormEntity.analisa,
-      ormEntity.nominal_pinjaman,
-      ormEntity.tenor,
-      ormEntity.status,
-      ormEntity.catatan,
-      ormEntity.created_at,
-      ormEntity.updated_at,
-      ormEntity.deleted_at,
-    );
-  }
+ private toDomain(ormEntity: ApprovalExternal_ORM_Entity): ApprovalExternal {
+  return new ApprovalExternal(
+    { id: ormEntity.pengajuan_luar.id },   
+    ormEntity.user.id,
+    ormEntity.role,
+    ormEntity.is_banding,
+    ormEntity.id,
+    ormEntity.analisa,
+    ormEntity.nominal_pinjaman,
+    ormEntity.tenor,
+    ormEntity.status,
+    ormEntity.catatan,
+    ormEntity.created_at,
+    ormEntity.updated_at,
+    ormEntity.deleted_at,
+  );
+}
 
-  private toOrm(domainEntity: ApprovalExternal): Partial<ApprovalExternal_ORM_Entity> {
-    return {
-      id: domainEntity.id,
-      pengajuan_luar: { id: domainEntity.pengajuanId } as LoanApplicationExternal_ORM_Entity,
-      user: { id: domainEntity.userId } as Users_ORM_Entity,
-      role: domainEntity.role,
-      analisa: domainEntity.analisa,
-      nominal_pinjaman: domainEntity.nominalPinjaman,
-      tenor: domainEntity.tenor,
-      status: domainEntity.status,
-      catatan: domainEntity.catatan,
-      is_banding: domainEntity.isBanding,
-      created_at: domainEntity.createdAt,
-      updated_at: domainEntity.updatedAt,
-      deleted_at: domainEntity.deletedAt,
-    };
-  }
 
-  private toOrmPartial(partial: Partial<ApprovalExternal>): Partial<ApprovalExternal_ORM_Entity> {
-    const ormData: Partial<ApprovalExternal_ORM_Entity> = {};
+private toOrm(domainEntity: ApprovalExternal): Partial<ApprovalExternal_ORM_Entity> {
+  return {
+    id: domainEntity.id,
+    pengajuan_luar: { id: domainEntity.pengajuan.id } as LoanApplicationExternal_ORM_Entity,
+    user: { id: domainEntity.user_id } as Users_ORM_Entity,
+    role: domainEntity.role,
+    analisa: domainEntity.analisa,
+    nominal_pinjaman: domainEntity.nominal_pinjaman,
+    tenor: domainEntity.tenor,
+    status: domainEntity.status,
+    catatan: domainEntity.catatan,
+    is_banding: domainEntity.is_banding,
+    created_at: domainEntity.created_at,
+    updated_at: domainEntity.updated_at,
+    deleted_at: domainEntity.deleted_at,
+  };
+}
 
-    if (partial.pengajuanId)
-      ormData.pengajuan_luar = { id: partial.pengajuanId } as LoanApplicationExternal_ORM_Entity;
-    if (partial.userId)
-      ormData.user = { id: partial.userId } as Users_ORM_Entity;
-    if (partial.role) ormData.role = partial.role;
-    if (partial.analisa) ormData.analisa = partial.analisa;
-    if (partial.nominalPinjaman) ormData.nominal_pinjaman = partial.nominalPinjaman;
-    if (partial.tenor) ormData.tenor = partial.tenor;
-    if (partial.status) ormData.status = partial.status;
-    if (partial.catatan) ormData.catatan = partial.catatan;
-    if (partial.isBanding) ormData.is_banding = partial.isBanding;
-    if (partial.createdAt) ormData.created_at = partial.createdAt;
-    if (partial.updatedAt) ormData.updated_at = partial.updatedAt;
-    if (partial.deletedAt) ormData.deleted_at = partial.deletedAt;
 
-    return ormData;
-  }
+ private toOrmPartial(partial: Partial<ApprovalExternal>): Partial<ApprovalExternal_ORM_Entity> {
+  const ormData: Partial<ApprovalExternal_ORM_Entity> = {};
+
+  if (partial.pengajuan)
+    ormData.pengajuan_luar = { id: partial.pengajuan.id } as LoanApplicationExternal_ORM_Entity;
+  if (partial.user_id)
+    ormData.user = { id: partial.user_id } as Users_ORM_Entity;
+  if (partial.role) ormData.role = partial.role;
+  if (partial.analisa) ormData.analisa = partial.analisa;
+  if (partial.nominal_pinjaman) ormData.nominal_pinjaman = partial.nominal_pinjaman;
+  if (partial.tenor) ormData.tenor = partial.tenor;
+  if (partial.status) ormData.status = partial.status;
+  if (partial.catatan) ormData.catatan = partial.catatan;
+  if (partial.is_banding) ormData.is_banding = partial.is_banding;
+  if (partial.created_at) ormData.created_at = partial.created_at;
+  if (partial.updated_at) ormData.updated_at = partial.updated_at;
+  if (partial.deleted_at) ormData.deleted_at = partial.deleted_at;
+
+  return ormData;
+}
+
 
   // ============================================================================
 

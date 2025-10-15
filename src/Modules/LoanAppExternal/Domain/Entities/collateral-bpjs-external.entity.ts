@@ -1,27 +1,27 @@
 export class CollateralByBPJS {
   constructor(
-    public readonly pengajuanId: number,
-    public readonly saldoBpjs?: number,
-    public readonly tanggalBayarTerakhir?: Date,
+    public readonly pengajuan: {id: number},
+    public readonly saldo_bpjs?: number,
+    public readonly tanggal_bayar_terakhir?: Date,
     public readonly username?: string,
     public readonly password?: string,
-    public readonly fotoBpjs?: string,
-    public readonly fotoJaminanTambahan?: string,
+    public readonly foto_bpjs?: string,
+    public readonly foto_jaminan_tambahan?: string,
     public readonly id?: number,
-    public readonly createdAt?: Date,
-    public readonly updatedAt?: Date,
-    public readonly deletedAt?: Date | null,
+    public readonly created_at?: Date,
+    public readonly updated_at?: Date,
+    public readonly deleted_at?: Date | null,
   ) {
     this.validateMinimalRequirements();
   }
 
   //! RULE: Minimal saldo dan tanggal bayar terakhir harus ada
   private validateMinimalRequirements(): void {
-    if (this.saldoBpjs === undefined || this.saldoBpjs === null) {
+    if (this.saldo_bpjs === undefined || this.saldo_bpjs === null) {
       throw new Error('Saldo BPJS harus diisi.');
     }
 
-    if (!this.tanggalBayarTerakhir) {
+    if (!this.tanggal_bayar_terakhir) {
       throw new Error('Tanggal bayar terakhir BPJS harus diisi.');
     }
   }
@@ -31,10 +31,10 @@ export class CollateralByBPJS {
   }
 
   public isPhotoComplete(): boolean {
-    return !!this.fotoBpjs && !!this.fotoJaminanTambahan;
+    return !!this.foto_bpjs && !!this.foto_jaminan_tambahan;
   }
 
   public isValidForCollateral(): boolean {
-    return this.saldoBpjs! > 0 && this.isPhotoComplete();
+    return this.saldo_bpjs! > 0 && this.isPhotoComplete();
   }
 }

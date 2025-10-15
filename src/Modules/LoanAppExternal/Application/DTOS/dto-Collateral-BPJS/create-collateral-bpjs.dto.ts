@@ -1,6 +1,9 @@
-import { IsOptional, IsString, IsDateString, IsNumber } from 'class-validator';
+import { IsNumber, IsOptional, IsString, IsDateString } from 'class-validator';
 
 export class CreatePengajuanBPJSDto {
+  @IsNumber()
+  pengajuan_id: number;  
+
   @IsOptional()
   @IsNumber()
   saldo_bpjs?: number;

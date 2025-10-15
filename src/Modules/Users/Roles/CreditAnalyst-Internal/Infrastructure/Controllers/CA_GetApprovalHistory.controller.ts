@@ -33,33 +33,22 @@ export class CA_GetApprovalHistory_Controller {
     @Query('searchQuery') searchQuery = '',
   ) {
     try {
-      console.log('Supervisor ID:', supervisorId, 'Page:', page, 'PageSize:', pageSize);
-      
       const result = await this.getAllApprovalHistoryUseCase.execute(
         page,
         pageSize,
         searchQuery,
       );
 
-      return {
-        success: true,
-        data: result.data,
-        page,
-        pageSize,
-        total: result.total,
-      };
+      return result; 
+
     } catch (err) {
-      console.error('Error in getAllLoanApplications:', err);
-
-      // Jika err adalah instance dari Error, bisa ambil pesan spesifiknya
-      const message = err instanceof Error ? err.message : 'Unexpected error';
-
+      console.error(err);
       throw new HttpException(
         {
           payload: {
-            error: message,
-            message: message,
-            reference: 'LOAN_UNKNOWN_ERROR',
+            error: true,
+            message: err instanceof Error ? err.message : 'Unexpected error',
+            reference: 'APPROVAL_HISTORY_UNKNOWN_ERROR',
           },
         },
         HttpStatus.INTERNAL_SERVER_ERROR,

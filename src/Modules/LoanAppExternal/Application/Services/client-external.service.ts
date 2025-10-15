@@ -17,27 +17,28 @@ export class ClientExternalService {
   async create(dto: CreateClientExternalDto): Promise<ClientExternal> {
     const now = new Date();
 
-    const address = new ClientExternal(
-      {id: dto.marketing_id!}, // marketingId
-      dto.nama_lengkap, // namaLengkap
-      dto.nik, // nik
-      dto.no_kk, // noKk
-      dto.jenis_kelamin, // jenisKelamin
-      dto.tempat_lahir, // tempatLahir
-      dto.tanggal_lahir, // tanggalLahir
-      dto.no_hp, // noHp
-      dto.status_nikah, // statusNikah
-      dto.email, // email (optional)
-      dto.foto_ktp, // fotoKtp (optional)
-      dto.foto_kk, // fotoKk (optional)
-      dto.dokumen_pendukung, // dokumenPendukung (optional)
-      dto.validasi_nasabah, // validasiNasabah (optional)
-      dto.catatan, // catatan (optional)
-      undefined, // id (optional)
-      now, // createdAt
-      now, // updatedAt
-      null, // deletedAt
-    );
+   const address = new ClientExternal(
+  { id: dto.marketing_id },     
+  dto.nama_lengkap,              
+  dto.nik,                     
+  dto.no_kk,                   
+  dto.jenis_kelamin,            
+  dto.tempat_lahir,             
+  dto.tanggal_lahir,           
+  dto.no_hp,                  
+  dto.status_nikah!,          
+  undefined,                   
+  dto.email,                   
+  dto.foto_ktp,               
+  dto.foto_kk,                
+  dto.dokumen_pendukung,       
+  dto.validasi_nasabah,        
+  dto.catatan,                 
+  now,                        
+  now,                        
+  null                        
+);
+
     return this.repo.save(address);
   }
 

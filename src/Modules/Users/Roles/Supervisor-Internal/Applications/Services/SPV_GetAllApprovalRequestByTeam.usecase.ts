@@ -19,14 +19,8 @@ export class SPV_GetAllApprovalRequestByTeam_UseCase {
     searchQuery = '',
   ) {
     try {
-      console.log(
-        'spv: ',
-        supervisorId,
-        'page: ',
-        page,
-        'pageSize: ',
-        pageSize,
-      );
+      console.log('SPV:', supervisorId, 'Page:', page, 'PageSize:', pageSize);
+
       const { data, total } =
         await this.loanAppRepo.callSP_SPV_GetAllApprovalRequest_Internal(
           supervisorId,
@@ -34,37 +28,49 @@ export class SPV_GetAllApprovalRequestByTeam_UseCase {
           pageSize,
         );
 
-      if (!data) {
-        throw new Error('Data pengajuan tidak ditemukan');
+      if (!data || data.length === 0) {
+        return {
+          data: [],
+          total: 0,
+          page,
+          pageSize,
+        };
       }
 
-      // Jika ada searchQuery, filter hasilnya
+      // Lakukan pencarian jika searchQuery tidak kosong
       const filteredData = searchQuery
         ? data.filter((item) =>
-            item.nasabah_nama.toLowerCase().includes(searchQuery.toLowerCase()),
+            item.nasabah_nama
+              ?.toLowerCase()
+              .includes(searchQuery.toLowerCase()),
           )
         : data;
 
-      const parseNominalPinjaman = filteredData.map((data) => {
-        const nominal = Number(data.nominal_pinjaman);
+      // Format data
+      const formattedData = filteredData.map((item) => {
+        const nominal = Number(item.nominal_pinjaman);
         const formattedNominal = new Intl.NumberFormat('id-ID', {
           style: 'currency',
           currency: 'IDR',
-        }).format(nominal); 
-        return formattedNominal;
+        }).format(nominal);
+
+        return {
+          id_pengajuan: Number(item.loan_id),
+          id_nasabah: Number(item.nasabah_id),
+          nama_nasabah: item.nasabah_nama,
+          nominal_pinjaman: formattedNominal,
+          id_marketing: item.user_id ? Number(item.user_id) : null,
+          nama_marketing: item.marketing_nama || null,
+          status: item.loan_status,
+        };
       });
 
-      const formattedData = filteredData.map((item) => ({
-        id_pengajuan: Number(item.loan_id),
-        id_nasabah: Number(item.nasabah_id),
-        nama_nasabah: item.nasabah_nama,
-        nominal_pinjaman: parseNominalPinjaman[0],
-        id_marketing: Number(item.user_id),
-        nama_marketing: item.marketing_nama,
-        status: item.loan_status,
-      }));
-
-      return { data: formattedData, total }; // Total tetep pake nilai asli dari SP
+      return {
+        data: formattedData,
+        total: searchQuery ? filteredData.length : total, // Penting: ubah total jika search aktif
+        page,
+        pageSize,
+      };
     } catch (err) {
       throw new Error(err.message || 'Gagal mengambil data pengajuan');
     }

@@ -12,13 +12,13 @@ import {
 import { StatusPengajuanEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
 @Injectable()
 export class LoanApplicationInternalRepositoryImpl
-  implements ILoanApplicationInternalRepository
-{
+  implements ILoanApplicationInternalRepository {
   dataSource: any;
+  db: any;
   constructor(
     @InjectRepository(LoanApplicationInternal_ORM_Entity)
     private readonly ormRepository: Repository<LoanApplicationInternal_ORM_Entity>,
-  ) {}
+  ) { }
 
   //? MAPPER >==========================================================================
 
@@ -207,7 +207,7 @@ export class LoanApplicationInternalRepositoryImpl
 
     return {
       data: result[1] || [],
-      total: result[0] ? result[1][0]?.total || 0 : 0,
+      total: result[0]?.[0]?.total_count || 0,
     };
   }
 
@@ -224,7 +224,7 @@ export class LoanApplicationInternalRepositoryImpl
 
     return {
       data: result[1] || [],
-      total: result[0] ? result[1][0]?.total || 0 : 0,
+      total: result[0]?.[0]?.total_count || 0,
     };
   }
 
@@ -251,18 +251,30 @@ export class LoanApplicationInternalRepositoryImpl
   async callSP_CA_GetApprovalHistory_Internal(
     page: number,
     pageSize: number,
-  ): Promise<{ data: any[]; total: number }> {
-    const ormEntities = this.ormRepository.manager;
-    const result = await ormEntities.query(
-      `CALL CA_GetApprovalHistory_Internal(?, ?);`,
+  ): Promise<{
+    results: any[];
+    data: any[];
+    total: number;
+  }> {
+    // Misal kamu punya repository/ORM yang bisa langsung akses query
+    const result = await this.ormRepository.manager.query(
+      'CALL CA_GetApprovalHistory_Internal(?, ?)',
       [page, pageSize],
     );
 
+    // result[0] = total count result set
+    // result[1] = data result set
+    const totalCountResult = result[0] ?? [];
+    const dataResult = result[1] ?? [];
+
     return {
-      data: result[1] || [],
-      total: result[0] ? result[1][0]?.total || 0 : 0,
+      results: dataResult,
+      data: dataResult,
+      total: totalCountResult.length > 0 ? totalCountResult[0].total_count : 0,
     };
   }
+
+
 
   async callSP_CA_GetAllApprovalRequest_Internal(
     page: number,
@@ -274,11 +286,14 @@ export class LoanApplicationInternalRepositoryImpl
       [page, pageSize],
     );
 
+
+
     return {
-      data: result[0] || [],
-      total: result[0] ? result[1][0]?.total || 0 : 0,
+      data: result[1] || [],
+      total: result[0]?.[0]?.total_count || 0,
     };
   }
+
 
   async callSP_CA_GetDetail_LoanApplicationsInternal_ById(
     loanAppId: number,
@@ -312,6 +327,9 @@ export class LoanApplicationInternalRepositoryImpl
     };
   }
 
+
+
+
   async callSP_HM_GetAllApprovalRequest_Internal(
     hmId: number,
     page: number,
@@ -337,7 +355,7 @@ export class LoanApplicationInternalRepositoryImpl
     throw new Error('Method not implemented.');
   }
 
-  // ✅ FIXED FUNCTION
+
   async callSP_HM_GetAllTeams_Internal(hmId: number): Promise<any[]> {
     const ormEntities = this.ormRepository.manager;
     const result = await ormEntities.query(`CALL HM_GetAllTeams_Internal(?)`, [
@@ -345,6 +363,7 @@ export class LoanApplicationInternalRepositoryImpl
     ]);
     return result[0];
   }
+
 
   async callSP_HM_GetAllUsers(
     page: number,
@@ -360,4 +379,6 @@ export class LoanApplicationInternalRepositoryImpl
 
     return { data, total };
   }
+
+
 }

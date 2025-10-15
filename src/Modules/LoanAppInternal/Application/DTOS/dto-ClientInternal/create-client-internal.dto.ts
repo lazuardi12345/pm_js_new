@@ -32,7 +32,7 @@ export class CreateClientInternalDto {
   tempat_lahir: string;
 
   @Type(() => Date)
-  @IsDate() // Validate if it's a Date object after transformation
+  @IsDate()
   tanggal_lahir: Date;
 
   @IsString()
