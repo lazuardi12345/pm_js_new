@@ -12,6 +12,7 @@ export class LoanApplicationEntity {
 
   uploaded_files?: any;
   isDeleted?: boolean;
+  isCompleted?: boolean;
   payload: any;
 
   constructor(partial: Partial<LoanApplicationEntity>) {

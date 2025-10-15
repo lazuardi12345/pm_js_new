@@ -189,6 +189,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
         url: `${process.env.BACKEND_URI}/storage/${id}/${name}/${file.originalname}`,
       };
     } catch (error) {
+      console.log('fucking error', error);
       this.logger.error(`Error uploading file: ${error.message}`);
       throw error;
     }

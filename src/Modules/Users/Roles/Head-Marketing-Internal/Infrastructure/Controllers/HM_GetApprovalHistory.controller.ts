@@ -67,4 +67,3 @@ export class HM_GetApprovalHistoryController {
     }
   }
 }
-

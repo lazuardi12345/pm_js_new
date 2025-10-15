@@ -294,45 +294,42 @@ export class LoanApplicationInternalRepositoryImpl
 
   // ========== HEAD MARKETING (HM) ==========
 
-async callSP_HM_GetAllApprovalHistory_Internal(
-  hmId: number,
-  page: number,
-  pageSize: number,
-): Promise<{ data: any[]; total: number }> {
-  const manager = this.ormRepository.manager;
+  async callSP_HM_GetAllApprovalHistory_Internal(
+    hmId: number,
+    page: number,
+    pageSize: number,
+  ): Promise<{ data: any[]; total: number }> {
+    const manager = this.ormRepository.manager;
 
-  const result = await manager.query(
-    `CALL HM_GetAllApprovalHistory_Internal(?, ?, ?)`,
-    [hmId, page, pageSize],
-  );
+    const result = await manager.query(
+      `CALL HM_GetAllApprovalHistory_Internal(?, ?, ?)`,
+      [hmId, page, pageSize],
+    );
 
-  return {
-    total: result[0]?.[0]?.total_count || 0,
-    data: result[1] || [],
-  };
-}
+    return {
+      total: result[0]?.[0]?.total_count || 0,
+      data: result[1] || [],
+    };
+  }
 
+  async callSP_HM_GetAllApprovalRequest_Internal(
+    hmId: number,
+    page: number,
+    pageSize: number,
+  ): Promise<{ data: any[]; total: number }> {
+    const manager = this.ormRepository.manager;
+    const result = await manager.query(
+      `CALL HM_GetAllApprovalRequest_Internal(?, ?, ?)`,
+      [hmId, page, pageSize],
+    );
 
+    console.log('SP Result:', result);
 
-
-async callSP_HM_GetAllApprovalRequest_Internal(
-  hmId: number,
-  page: number,
-  pageSize: number,
-): Promise<{ data: any[]; total: number }> {
-  const manager = this.ormRepository.manager;
-  const result = await manager.query(
-    `CALL HM_GetAllApprovalRequest_Internal(?, ?, ?)`,
-    [hmId, page, pageSize],
-  );
-
-  console.log('SP Result:', result);
-
-  return {
-    data: result[1] || [],
-    total: result[0]?.[0]?.total_count || 0,
-  };
-}
+    return {
+      data: result[1] || [],
+      total: result[0]?.[0]?.total_count || 0,
+    };
+  }
 
   async callSP_HM_GetDetail_LoanApplicationsInternal_ById(
     loanAppId: number,
@@ -349,21 +346,18 @@ async callSP_HM_GetAllApprovalRequest_Internal(
     return result[0];
   }
 
+  async callSP_HM_GetAllUsers(
+    page: number,
+    pageSize: number,
+  ): Promise<{ data: any[]; total: number }> {
+    const [totalResult, dataResult] = await this.dataSource.query(
+      'CALL HM_GetAllUsers(?, ?)',
+      [page, pageSize],
+    );
 
-async callSP_HM_GetAllUsers(
-  page: number,
-  pageSize: number,
-): Promise<{ data: any[]; total: number }> {
-  const [totalResult, dataResult] = await this.dataSource.query(
-    'CALL HM_GetAllUsers(?, ?)',
-    [page, pageSize],
-  );
+    const total = totalResult?.[0]?.total_count || 0;
+    const data = dataResult || [];
 
-  const total = totalResult?.[0]?.total_count || 0;
-  const data = dataResult || [];
-
-  return { data, total };
-}
-
-
+    return { data, total };
+  }
 }

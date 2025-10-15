@@ -74,7 +74,7 @@ export class CreateLoanApplicationDto {
   jaminan_cg_penjamin: string;
   status_hubungan_penjamin: string;
   files?: {
-   foto_ktp?: string;              // URL / filepath
+    foto_ktp?: string; // URL / filepath
     foto_kk?: string;
     foto_id_card_penjamin?: string;
     foto_ktp_penjamin?: string;
@@ -147,7 +147,7 @@ export interface TypeLoanApplicationDetail {
   alamat_kerabat_kerja: string;
   no_hp_kerabat_kerja: string;
   nama_perusahaan_kerabat_kerja: string;
-  status_hubungan_kerabat_kerja: string
+  status_hubungan_kerabat_kerja: string;
 
   // Penjamin Internals
   jaminan_hrd: string;

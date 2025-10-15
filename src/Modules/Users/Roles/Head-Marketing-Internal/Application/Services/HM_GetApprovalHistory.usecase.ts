@@ -9,14 +9,9 @@ export class HM_GetAllApprovalHistoryUseCase {
   constructor(
     @Inject(LOAN_APPLICATION_INTERNAL_REPOSITORY)
     private readonly loanAppRepo: ILoanApplicationInternalRepository,
-  ) { }
+  ) {}
 
-  async execute(
-    hmId: number,
-    page = 1,
-    pageSize = 10,
-    searchQuery = '',
-  ) {
+  async execute(hmId: number, page = 1, pageSize = 10, searchQuery = '') {
     try {
       console.log('[HM_GetAllApprovalHistory] Params:', {
         hmId,
@@ -25,11 +20,12 @@ export class HM_GetAllApprovalHistoryUseCase {
         searchQuery,
       });
 
-      const { total, data } = await this.loanAppRepo.callSP_HM_GetAllApprovalHistory_Internal(
-        hmId,
-        page,
-        pageSize,
-      );
+      const { total, data } =
+        await this.loanAppRepo.callSP_HM_GetAllApprovalHistory_Internal(
+          hmId,
+          page,
+          pageSize,
+        );
       console.log('Total:', total);
       console.log('Data:', data);
 
@@ -40,8 +36,10 @@ export class HM_GetAllApprovalHistoryUseCase {
       // Filter pencarian nama nasabah (jika ada)
       const filtered = searchQuery
         ? data.filter((item) =>
-          item.nasabah_nama?.toLowerCase().includes(searchQuery.toLowerCase()),
-        )
+            item.nasabah_nama
+              ?.toLowerCase()
+              .includes(searchQuery.toLowerCase()),
+          )
         : data;
 
       // Mapping hasil agar sesuai response yang diharapkan
@@ -61,7 +59,7 @@ export class HM_GetAllApprovalHistoryUseCase {
           {
             approval_status: item.approval_status || '-',
             approval_role: item.approval_role || '-',
-          }
+          },
         ],
         is_banding: !!item.is_banding,
         keterangan: item.keterangan || '',
@@ -69,16 +67,15 @@ export class HM_GetAllApprovalHistoryUseCase {
         approval_created_at: item.approval_created_at || '',
       }));
 
-
       return {
         data: formatted,
         total,
       };
     } catch (error) {
       console.error('[HM_GetAllApprovalHistory] Error:', error);
-      throw new Error(error.message || 'Gagal mengambil data pengajuan oleh HM');
+      throw new Error(
+        error.message || 'Gagal mengambil data pengajuan oleh HM',
+      );
     }
   }
 }
-
-

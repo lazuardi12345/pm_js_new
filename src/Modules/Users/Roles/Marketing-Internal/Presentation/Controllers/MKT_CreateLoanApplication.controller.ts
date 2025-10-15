@@ -31,7 +31,8 @@ export class MKT_CreateLoanApplicationController {
       }
 
       // Jika payload berupa string, parse dulu ke objek
-      const payload = typeof dto.payload === 'string' ? JSON.parse(dto.payload) : dto.payload;
+      const payload =
+        typeof dto.payload === 'string' ? JSON.parse(dto.payload) : dto.payload;
 
       // Pastikan documents_files ada
       if (!payload.documents_files) {
@@ -58,7 +59,9 @@ export class MKT_CreateLoanApplicationController {
         try {
           new URL(url);
         } catch {
-          throw new BadRequestException(`Invalid URL format for document: ${key}`);
+          throw new BadRequestException(
+            `Invalid URL format for document: ${key}`,
+          );
         }
       }
 
@@ -71,7 +74,9 @@ export class MKT_CreateLoanApplicationController {
         throw error;
       }
 
-      throw new InternalServerErrorException('An error occurred while processing your request');
+      throw new InternalServerErrorException(
+        'An error occurred while processing your request',
+      );
     }
   }
 }

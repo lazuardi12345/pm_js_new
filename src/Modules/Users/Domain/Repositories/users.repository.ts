@@ -1,9 +1,12 @@
-import { UsersEntity } from "../Entities/users.entity";
+import { UsersEntity } from '../Entities/users.entity';
 
 export const USERS_REPOSITORY = 'USERS_REPOSITORY';
 
 export interface IUsersRepository {
- callSP_HM_GetAllUsers(page: number, pageSize: number): Promise<{
+  callSP_HM_GetAllUsers(
+    page: number,
+    pageSize: number,
+  ): Promise<{
     data: any[];
     total: number;
   }>;
@@ -14,4 +17,3 @@ export interface IUsersRepository {
   update(id: number, user: Partial<UsersEntity>): Promise<UsersEntity>;
   softDelete(id: number): Promise<void>;
 }
-
