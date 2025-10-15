@@ -1,6 +1,9 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsNumber } from 'class-validator';
 
 export class CreatePengajuanKedinasanDto {
+  @IsNumber()
+  pengajuan_id: number;
+
   @IsOptional()
   @IsString()
   instansi?: string;
