@@ -17,7 +17,7 @@ export class CollateralByBPJSRepositoryImpl
 
   private toDomain(ormEntity: CollateralByBPJS_ORM_Entity): CollateralByBPJS {
     return new CollateralByBPJS(
-      ormEntity.pengajuan.id,
+      {id: ormEntity.pengajuan.id},
       ormEntity.saldo_bpjs,
       ormEntity.tanggal_bayar_terakhir,
       ormEntity.username,
@@ -31,49 +31,51 @@ export class CollateralByBPJSRepositoryImpl
     );
   }
 
-  private toOrm(
-    domainEntity: CollateralByBPJS,
-  ): Partial<CollateralByBPJS_ORM_Entity> {
-    return {
-      id: domainEntity.id,
-      pengajuan: {
-        id: domainEntity.pengajuanId,
-      } as LoanApplicationExternal_ORM_Entity,
-      saldo_bpjs: domainEntity.saldoBpjs,
-      tanggal_bayar_terakhir: domainEntity.tanggalBayarTerakhir,
-      username: domainEntity.username,
-      password: domainEntity.password,
-      foto_bpjs: domainEntity.fotoBpjs,
-      foto_jaminan_tambahan: domainEntity.fotoJaminanTambahan,
-      created_at: domainEntity.createdAt,
-      updated_at: domainEntity.updatedAt,
-      deleted_at: domainEntity.deletedAt,
-    };
-  }
+ private toOrm(
+  domainEntity: CollateralByBPJS,
+): Partial<CollateralByBPJS_ORM_Entity> {
+  return {
+    id: domainEntity.id,
+    pengajuan: {
+      id: domainEntity.pengajuan.id,
+    } as LoanApplicationExternal_ORM_Entity,
+    saldo_bpjs: domainEntity.saldo_bpjs,
+    tanggal_bayar_terakhir: domainEntity.tanggal_bayar_terakhir,
+    username: domainEntity.username,
+    password: domainEntity.password,
+    foto_bpjs: domainEntity.foto_bpjs,
+    foto_jaminan_tambahan: domainEntity.foto_jaminan_tambahan,
+    created_at: domainEntity.created_at,
+    updated_at: domainEntity.updated_at,
+    deleted_at: domainEntity.deleted_at,
+  };
+}
 
-  private toOrmPartial(
-    partial: Partial<CollateralByBPJS>,
-  ): Partial<CollateralByBPJS_ORM_Entity> {
-    const ormData: Partial<CollateralByBPJS_ORM_Entity> = {};
 
-    if (partial.pengajuanId)
-      ormData.pengajuan = {
-        id: partial.pengajuanId,
-      } as LoanApplicationExternal_ORM_Entity;
-    if (partial.saldoBpjs !== undefined) ormData.saldo_bpjs = partial.saldoBpjs;
-    if (partial.tanggalBayarTerakhir)
-      ormData.tanggal_bayar_terakhir = partial.tanggalBayarTerakhir;
-    if (partial.username) ormData.username = partial.username;
-    if (partial.password) ormData.password = partial.password;
-    if (partial.fotoBpjs) ormData.foto_bpjs = partial.fotoBpjs;
-    if (partial.fotoJaminanTambahan)
-      ormData.foto_jaminan_tambahan = partial.fotoJaminanTambahan;
-    if (partial.createdAt) ormData.created_at = partial.createdAt;
-    if (partial.updatedAt) ormData.updated_at = partial.updatedAt;
-    if (partial.deletedAt) ormData.deleted_at = partial.deletedAt;
+private toOrmPartial(
+  partial: Partial<CollateralByBPJS>,
+): Partial<CollateralByBPJS_ORM_Entity> {
+  const ormData: Partial<CollateralByBPJS_ORM_Entity> = {};
 
-    return ormData;
-  }
+  if (partial.pengajuan)
+    ormData.pengajuan = {
+      id: partial.pengajuan.id,
+    } as LoanApplicationExternal_ORM_Entity;
+  if (partial.saldo_bpjs !== undefined) ormData.saldo_bpjs = partial.saldo_bpjs;
+  if (partial.tanggal_bayar_terakhir)
+    ormData.tanggal_bayar_terakhir = partial.tanggal_bayar_terakhir;
+  if (partial.username) ormData.username = partial.username;
+  if (partial.password) ormData.password = partial.password;
+  if (partial.foto_bpjs) ormData.foto_bpjs = partial.foto_bpjs;
+  if (partial.foto_jaminan_tambahan)
+    ormData.foto_jaminan_tambahan = partial.foto_jaminan_tambahan;
+  if (partial.created_at) ormData.created_at = partial.created_at;
+  if (partial.updated_at) ormData.updated_at = partial.updated_at;
+  if (partial.deleted_at) ormData.deleted_at = partial.deleted_at;
+
+  return ormData;
+}
+
 
   async findById(id: number): Promise<CollateralByBPJS | null> {
     const ormEntity = await this.ormRepository.findOne({
