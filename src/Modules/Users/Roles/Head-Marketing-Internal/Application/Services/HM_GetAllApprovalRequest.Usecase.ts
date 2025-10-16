@@ -58,8 +58,6 @@ export class HM_GetAllApprovalRequestUseCase {
         };
       });
 
-
-
       return {
         data: formattedData,
         total,

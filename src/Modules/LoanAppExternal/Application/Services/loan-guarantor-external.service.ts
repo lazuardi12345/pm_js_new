@@ -7,7 +7,7 @@ import { LoanGuarantorExternal } from '../../Domain/Entities/loan-guarantor-exte
 import { CreateLoanGuarantorExternalDto } from '../DTOS/dto-Loan-Guarantor/create-loan-guarantor.dto';
 import { UpdateLoanGuarantorExternalDto } from '../DTOS/dto-Loan-Guarantor/update-loan-guarantor.dto';
 @Injectable()
-export class EmergencyContactExternalService {
+export class LoanGuarantorExternalService {
   constructor(
     @Inject(LOAN_GUARANTOR_EXTERNAL_REPOSITORY)
     private readonly repo: ILoanGuarantorExternalRepository,
@@ -19,17 +19,17 @@ export class EmergencyContactExternalService {
     const now = new Date();
 
     const address = new LoanGuarantorExternal(
-      dto.nasabah_id, // nasabahId
-      dto.hubungan_penjamin, // hubunganPenjamin
-      dto.nama_penjamin, // namaPenjamin
-      dto.pekerjaan_penjamin, // pekerjaanPenjamin
-      dto.penghasilan_penjamin, // penghasilanPenjamin
-      dto.no_hp_penjamin, // noHpPenjamin
-      dto.persetujuan_penjamin, // persetujuanPenjamin
-      dto.foto_ktp_penjamin, // fotoKtpPenjamin
+     {id: dto.nasabah_id},
+      dto.hubungan_penjamin, 
+      dto.nama_penjamin, 
+      dto.pekerjaan_penjamin, 
+      dto.penghasilan_penjamin, 
+      dto.no_hp_penjamin, 
+      dto.persetujuan_penjamin,
+      dto.foto_ktp_penjamin,
       undefined, // id
-      dto.validasi_penjamin, // validasiPenjamin (optional)
-      dto.catatan, // catatan (optional)
+      dto.validasi_penjamin, 
+      dto.catatan, 
       now, // createdAt
       now, // updatedAt
     );

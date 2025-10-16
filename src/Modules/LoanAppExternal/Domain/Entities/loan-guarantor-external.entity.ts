@@ -5,32 +5,32 @@ import {
 
 export class LoanGuarantorExternal {
   constructor(
-    public readonly nasabahId: number,
-    public readonly hubunganPenjamin: HubunganPenjaminEnum,
-    public readonly namaPenjamin: string,
-    public readonly pekerjaanPenjamin: string,
-    public readonly penghasilanPenjamin: number,
-    public readonly noHpPenjamin: string,
-    public readonly persetujuanPenjamin: PersetujuanPenjaminEnum,
-    public readonly fotoKtpPenjamin: string,
+    public readonly nasabah: { id: number },
+    public readonly hubungan_penjamin: HubunganPenjaminEnum,
+    public readonly nama_penjamin: string,
+    public readonly pekerjaan_penjamin: string,
+    public readonly penghasilan_penjamin: number,
+    public readonly no_hp_penjamin: string,
+    public readonly persetujuan_penjamin: PersetujuanPenjaminEnum,
+    public readonly foto_ktp_penjamin: string,
     public readonly id?: number,
-    public readonly validasiPenjamin?: boolean,
+    public readonly validasi_penjamin?: boolean,
     public readonly catatan?: string,
-    public readonly createdAt?: Date,
-    public readonly updatedAt?: Date,
-    public readonly deletedAt?: Date,
+    public readonly created_at?: Date,
+    public readonly updated_at?: Date,
+    public readonly deleted_at?: Date,
   ) {
     this.validate();
   }
 
   private validate() {
-    if (this.penghasilanPenjamin < 0) {
+    if (this.penghasilan_penjamin < 0) {
       throw new Error('Penghasilan penjamin harus bernilai positif.');
     }
-    if (!this.namaPenjamin) {
+    if (!this.nama_penjamin) {
       throw new Error('Nama penjamin wajib diisi.');
     }
-    if (!this.noHpPenjamin) {
+    if (!this.no_hp_penjamin) {
       throw new Error('Nomor HP penjamin wajib diisi.');
     }
     // Bisa tambah validasi lain sesuai kebutuhan domain
