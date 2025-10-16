@@ -28,6 +28,7 @@ import { CollateralKedinasanExternalController } from './Presentation/Controller
 import { CollateralShmExternalController } from './Presentation/Controllers/collateral-shm-external.controller';
 import { EmergencyContactExternalController } from './Presentation/Controllers/emergency-contact-external.controller';
 import { FinancialDependentsExternalController } from './Presentation/Controllers/financial-dependents-external.controller';
+import { LoanGuarantorExternalController } from './Presentation/Controllers/loan-guarantor-external.controller';
 
 
 @Module({
@@ -61,6 +62,7 @@ import { FinancialDependentsExternalController } from './Presentation/Controller
     CollateralShmExternalController,
     EmergencyContactExternalController,
     FinancialDependentsExternalController ,
+    LoanGuarantorExternalController,
   ],
   exports: [
     AddressExternalModule,

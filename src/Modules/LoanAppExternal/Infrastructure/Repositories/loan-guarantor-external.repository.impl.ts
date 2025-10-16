@@ -1,4 +1,3 @@
-// Infrastructure/Repositories/loan-guarantor-external.repository.impl.ts
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -16,96 +15,102 @@ export class LoanGuarantorExternalRepositoryImpl
     private readonly ormRepository: Repository<LoanGuarantorExternal_ORM_Entity>,
   ) {}
 
-  private toDomain(entity: LoanGuarantorExternal_ORM_Entity): LoanGuarantorExternal {
+  private toDomain(orm: LoanGuarantorExternal_ORM_Entity): LoanGuarantorExternal {
     return new LoanGuarantorExternal(
-      entity.nasabah.id,
-      entity.hubungan_penjamin,
-      entity.nama_penjamin,
-      entity.pekerjaan_penjamin,
-      Number(entity.penghasilan_penjamin),
-      entity.no_hp_penjamin,
-      entity.persetujuan_penjamin,
-      entity.foto_ktp_penjamin,
-      entity.id,
-      entity.validasi_penjamin,
-      entity.catatan,
-      entity.created_at,
-      entity.updated_at,
-      entity.deleted_at,
+      { id: orm.nasabah.id },
+      orm.hubungan_penjamin,
+      orm.nama_penjamin,
+      orm.pekerjaan_penjamin,
+      Number(orm.penghasilan_penjamin),
+      orm.no_hp_penjamin,
+      orm.persetujuan_penjamin,
+      orm.foto_ktp_penjamin,
+      orm.id,
+      orm.validasi_penjamin,
+      orm.catatan,
+      orm.created_at,
+      orm.updated_at,
+      orm.deleted_at,
     );
   }
 
   private toOrm(domain: LoanGuarantorExternal): Partial<LoanGuarantorExternal_ORM_Entity> {
     return {
       id: domain.id,
-      nasabah: { id: domain.nasabahId } as ClientExternal_ORM_Entity,
-      hubungan_penjamin: domain.hubunganPenjamin,
-      nama_penjamin: domain.namaPenjamin,
-      pekerjaan_penjamin: domain.pekerjaanPenjamin,
-      penghasilan_penjamin: domain.penghasilanPenjamin,
-      no_hp_penjamin: domain.noHpPenjamin,
-      persetujuan_penjamin: domain.persetujuanPenjamin,
-      foto_ktp_penjamin: domain.fotoKtpPenjamin,
-      validasi_penjamin: domain.validasiPenjamin,
+      nasabah: { id: domain.nasabah.id } as ClientExternal_ORM_Entity,
+      hubungan_penjamin: domain.hubungan_penjamin,
+      nama_penjamin: domain.nama_penjamin,
+      pekerjaan_penjamin: domain.pekerjaan_penjamin,
+      penghasilan_penjamin: domain.penghasilan_penjamin,
+      no_hp_penjamin: domain.no_hp_penjamin,
+      persetujuan_penjamin: domain.persetujuan_penjamin,
+      foto_ktp_penjamin: domain.foto_ktp_penjamin,
+      validasi_penjamin: domain.validasi_penjamin,
       catatan: domain.catatan,
-      created_at: domain.createdAt,
-      updated_at: domain.updatedAt,
-      deleted_at: domain.deletedAt,
+      created_at: domain.created_at,
+      updated_at: domain.updated_at,
+      deleted_at: domain.deleted_at,
     };
   }
 
   private toOrmPartial(
     partial: Partial<LoanGuarantorExternal>,
   ): Partial<LoanGuarantorExternal_ORM_Entity> {
-    const ormData: Partial<LoanGuarantorExternal_ORM_Entity> = {};
+    const orm: Partial<LoanGuarantorExternal_ORM_Entity> = {};
 
-    if (partial.nasabahId)
-      ormData.nasabah = { id: partial.nasabahId } as ClientExternal_ORM_Entity;
-    if (partial.hubunganPenjamin)
-      ormData.hubungan_penjamin = partial.hubunganPenjamin;
-    if (partial.namaPenjamin) ormData.nama_penjamin = partial.namaPenjamin;
-    if (partial.pekerjaanPenjamin) ormData.pekerjaan_penjamin = partial.pekerjaanPenjamin;
-    if (partial.penghasilanPenjamin !== undefined)
-      ormData.penghasilan_penjamin = partial.penghasilanPenjamin;
-    if (partial.noHpPenjamin) ormData.no_hp_penjamin = partial.noHpPenjamin;
-    if (partial.persetujuanPenjamin)
-      ormData.persetujuan_penjamin = partial.persetujuanPenjamin;
-    if (partial.fotoKtpPenjamin)
-      ormData.foto_ktp_penjamin = partial.fotoKtpPenjamin;
-    if (partial.validasiPenjamin !== undefined)
-      ormData.validasi_penjamin = partial.validasiPenjamin;
-    if (partial.catatan) ormData.catatan = partial.catatan;
-    if (partial.createdAt) ormData.created_at = partial.createdAt;
-    if (partial.updatedAt) ormData.updated_at = partial.updatedAt;
-    if (partial.deletedAt) ormData.deleted_at = partial.deletedAt;
+    if (partial.nasabah?.id)
+      orm.nasabah = { id: partial.nasabah.id } as ClientExternal_ORM_Entity;
+    if (partial.hubungan_penjamin)
+      orm.hubungan_penjamin = partial.hubungan_penjamin;
+    if (partial.nama_penjamin)
+      orm.nama_penjamin = partial.nama_penjamin;
+    if (partial.pekerjaan_penjamin)
+      orm.pekerjaan_penjamin = partial.pekerjaan_penjamin;
+    if (partial.penghasilan_penjamin !== undefined)
+      orm.penghasilan_penjamin = partial.penghasilan_penjamin;
+    if (partial.no_hp_penjamin)
+      orm.no_hp_penjamin = partial.no_hp_penjamin;
+    if (partial.persetujuan_penjamin)
+      orm.persetujuan_penjamin = partial.persetujuan_penjamin;
+    if (partial.foto_ktp_penjamin)
+      orm.foto_ktp_penjamin = partial.foto_ktp_penjamin;
+    if (partial.validasi_penjamin !== undefined)
+      orm.validasi_penjamin = partial.validasi_penjamin;
+    if (partial.catatan)
+      orm.catatan = partial.catatan;
+    if (partial.created_at)
+      orm.created_at = partial.created_at;
+    if (partial.updated_at)
+      orm.updated_at = partial.updated_at;
+    if (partial.deleted_at)
+      orm.deleted_at = partial.deleted_at;
 
-    return ormData;
+    return orm;
   }
 
   async findById(id: number): Promise<LoanGuarantorExternal | null> {
-    const entity = await this.ormRepository.findOne({
+    const orm = await this.ormRepository.findOne({
       where: { id },
       relations: ['nasabah'],
     });
-    return entity ? this.toDomain(entity) : null;
+    return orm ? this.toDomain(orm) : null;
   }
 
   async findByNasabahId(nasabahId: number): Promise<LoanGuarantorExternal[]> {
-    const entities = await this.ormRepository.find({
+    const ormEntities = await this.ormRepository.find({
       where: { nasabah: { id: nasabahId } },
       relations: ['nasabah'],
     });
-    return entities.map((e) => this.toDomain(e));
+    return ormEntities.map((e) => this.toDomain(e));
   }
 
   async findAll(): Promise<LoanGuarantorExternal[]> {
-    const entities = await this.ormRepository.find({ relations: ['nasabah'] });
-    return entities.map((e) => this.toDomain(e));
+    const ormEntities = await this.ormRepository.find({ relations: ['nasabah'] });
+    return ormEntities.map((e) => this.toDomain(e));
   }
 
   async save(domain: LoanGuarantorExternal): Promise<LoanGuarantorExternal> {
-    const ormEntity = this.toOrm(domain);
-    const saved = await this.ormRepository.save(ormEntity);
+    const saved = await this.ormRepository.save(this.toOrm(domain));
     return this.toDomain(saved as LoanGuarantorExternal_ORM_Entity);
   }
 
