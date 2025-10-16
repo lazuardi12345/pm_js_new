@@ -6,6 +6,13 @@ import {
   FileMetadata,
 } from '../../Domain/Repositories/IFileStorage.repository';
 
+type MinioObject = {
+  name: string;
+  size?: number;
+  etag?: string;
+  lastModified?: Date;
+};
+
 @Injectable()
 export class MinioFileStorageService implements IFileStorageRepository {
   private readonly logger = new Logger(MinioFileStorageService.name);
@@ -313,6 +320,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
       try {
         await this.minioClient.statObject(bucket, encryptedName);
       } catch (error) {
+        console.log(error);
         throw new NotFoundException(`File not found: ${filename}`);
       }
 
@@ -347,6 +355,51 @@ export class MinioFileStorageService implements IFileStorageRepository {
       this.logger.error(`Error updating file: ${error.message}`);
       throw error;
     }
+  }
+
+  async updateFileDirectory(
+    customerId: number,
+    oldCustomerName: string,
+    newCustomerName: string,
+    // filename: string, // boleh diabaikan kalau mau rename seluruh folder
+  ) {
+    const bucket = 'customer-files';
+    const oldPrefix = `${customerId}-${oldCustomerName}/`;
+    const newPrefix = `${customerId}-${newCustomerName}/`;
+
+    const objects: MinioObject[] = [];
+    const stream = this.minioClient.listObjectsV2(bucket, oldPrefix, true);
+
+    // 1️⃣ Ambil semua file yang ada di folder lama
+    for await (const obj of stream) {
+      objects.push(obj);
+    }
+
+    if (objects.length === 0) {
+      throw new Error(`No files found in ${oldPrefix}`);
+    }
+
+    // 2️⃣ Copy semua file ke prefix baru
+    for (const obj of objects) {
+      const newKey = obj.name.replace(oldPrefix, newPrefix);
+      await this.minioClient.copyObject(
+        bucket,
+        newKey,
+        `/${bucket}/${obj.name}`,
+      );
+    }
+
+    // 3️⃣ Hapus file lama setelah berhasil dicopy
+    for (const obj of objects) {
+      await this.minioClient.removeObject(bucket, obj.name);
+    }
+
+    return {
+      oldPrefix,
+      newPrefix,
+      totalMoved: objects.length,
+      message: 'All files moved successfully',
+    };
   }
 
   // ============== DELETE ==============

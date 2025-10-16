@@ -58,7 +58,6 @@ export class MKT_UpdateLoanApplicationUseCase {
     @Inject(UNIT_OF_WORK)
     private readonly uow: IUnitOfWork,
   ) {}
-
   async execute(payload: any, files: any, clientId: number) {
     const now = new Date();
 
@@ -78,14 +77,47 @@ export class MKT_UpdateLoanApplicationUseCase {
         const client = await this.clientRepo.findById(clientId);
         if (!client) throw new BadRequestException('Client tidak ditemukan');
 
-        // 2. Upload files
-        const filePaths = files
-          ? await this.fileStorage.saveFiles(
-              client.id!,
-              client.nama_lengkap,
-              files,
-            )
-          : {};
+        // 2. Upload / Update files ke MinIO
+        let filePaths = {};
+
+        if (files && Object.keys(files).length > 0) {
+          filePaths = {};
+
+          for (const [fieldName, fileArray] of Object.entries(files)) {
+            const file = fileArray?.[0];
+            if (!file) continue;
+
+            // Nama file DB: {nama_customer}-{tipe}
+            const cleanName = client.nama_lengkap
+              .toLowerCase()
+              .replace(/\s+/g, '_');
+            const formattedName = `${cleanName}-${fieldName}`;
+
+            // Cek apakah client sudah punya file dengan field ini
+            const existingFile = client[fieldName];
+
+            // Kalau sudah ada file → pakai updateFile()
+            if (existingFile) {
+              await this.fileStorage.updateFile(
+                client.id!,
+                client.nama_lengkap,
+                fieldName,
+                file,
+              );
+            } else {
+              await this.fileStorage.saveFiles(
+                client.id!,
+                client.nama_lengkap,
+                { [fieldName]: [file] },
+              );
+            }
+
+            // Simpan hasil final untuk update DB
+            filePaths[fieldName] = formattedName;
+          }
+        }
+
+        console.log('File hasil upload/update: ', filePaths);
 
         // Logging jika payload kosong
         if (
@@ -108,11 +140,10 @@ export class MKT_UpdateLoanApplicationUseCase {
         if (clientInternal || Object.keys(filePaths).length > 0) {
           Object.assign(client, {
             ...clientInternal,
-            foto_ktp: filePaths['foto_ktp']?.[0] ?? client.foto_ktp,
-            foto_kk: filePaths['foto_kk']?.[0] ?? client.foto_kk,
-            foto_id_card: filePaths['foto_id_card']?.[0] ?? client.foto_id_card,
-            foto_rekening:
-              filePaths['foto_rekening']?.[0] ?? client.foto_rekening,
+            foto_ktp: filePaths['foto_ktp'] ?? client.foto_ktp,
+            foto_kk: filePaths['foto_kk'] ?? client.foto_kk,
+            foto_id_card: filePaths['foto_id_card'] ?? client.foto_id_card,
+            foto_rekening: filePaths['bukti_absensi'] ?? client.foto_rekening,
             updated_at: now,
           });
           await this.clientRepo.save(client);

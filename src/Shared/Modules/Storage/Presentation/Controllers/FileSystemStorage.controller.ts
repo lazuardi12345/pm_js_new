@@ -95,6 +95,22 @@ export class FileStorageController {
     return { message: 'File updated successfully', data: result };
   }
 
+  @Public()
+  @Put('change-directory/:customerId/:oldCustomerName/:newCustomerName')
+  async updateFileDirectory(
+    @Param('customerId', ParseIntPipe) customerId: number,
+    @Param('oldCustomerName') oldCustomerName: string,
+    @Param('newCustomerName') newCustomerName: string,
+    // @Param('filename') filename: string,
+  ) {
+    const result = await this.fileStorageService.updateFileDirectory(
+      customerId,
+      oldCustomerName,
+      newCustomerName,
+    );
+    return { message: 'Folder renamed successfully', data: result };
+  }
+
   @Delete(':customerId/:customerName/:filename')
   async deleteFile(
     @Param('customerId', ParseIntPipe) customerId: number,
