@@ -7,7 +7,7 @@ import { CollateralByBPJS_External_Module } from './Modules/collateral-bpjs-exte
 import { CollateralByBPKB_External_Module } from './Modules/collateral-bpkb-external.module';
 import { CollateralBySHM_External_Module } from './Modules/collateral-shm-external.module';
 import { CollateralByKedinasan_External_Module } from './Modules/collateral-kedinasan-external.module';
-import { EmergencyContact_External_Module } from './Modules/emergency-contact-internal.module';
+import { EmergencyContact_External_Module } from './Modules/emergency-contact-external.module';
 import { FinancialDependents_External_Module } from './Modules/financial-dependents-external.module';
 import { Jobs_External_Module } from './Modules/job-external.module';
 import { LoanGuarantor_External_Module } from './Modules/loan-guarantor-external.module';
@@ -26,6 +26,8 @@ import { ColleteralBpjsExternalController } from './Presentation/Controllers/col
 import { CollateralBpkbExternalController } from './Presentation/Controllers/collateral-bpkb-external.controller';
 import { CollateralKedinasanExternalController } from './Presentation/Controllers/collateral-kedinasan-external.controller';
 import { CollateralShmExternalController } from './Presentation/Controllers/collateral-shm-external.controller';
+import { EmergencyContactExternalController } from './Presentation/Controllers/emergency-contact-external.controller';
+import { FinancialDependentsExternalController } from './Presentation/Controllers/financial-dependents-external.controller';
 
 
 @Module({
@@ -53,17 +55,12 @@ import { CollateralShmExternalController } from './Presentation/Controllers/coll
     JobExternalController,
     ApprovalExternalController,
     LoanApplicationExternalController,
-
-
-
-
-
-
-    
     ColleteralBpjsExternalController,
     CollateralBpkbExternalController,
     CollateralKedinasanExternalController,
     CollateralShmExternalController,
+    EmergencyContactExternalController,
+    FinancialDependentsExternalController ,
   ],
   exports: [
     AddressExternalModule,

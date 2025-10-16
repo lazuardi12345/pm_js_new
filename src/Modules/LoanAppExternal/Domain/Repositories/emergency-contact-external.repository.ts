@@ -1,5 +1,5 @@
 // Domain/Repositories/approval-external.repository.ts
-import { EmergencyContactExternal } from "../Entities/emergency-contact-internal.entity";
+import { EmergencyContactExternal } from "../Entities/emergency-contact-external.entity";
 
 export const EMERGENCY_CONTACTS_EXTERNAL_REPOSITORY = 'EMERGENCY_CONTACTS_EXTERNAL_REPOSITORY';
 
