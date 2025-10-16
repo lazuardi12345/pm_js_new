@@ -7,19 +7,18 @@ import {
   HttpException,
   HttpStatus,
   UseGuards,
-  Inject,
 } from '@nestjs/common';
-import { HM_GetAllApprovalHistoryUseCase } from '../../Application/Services/HM_GetApprovalHistory.usecase';
+import { HM_GetAllApprovalRequestUseCase } from '../../Application/Services/HM_GetAllApprovalRequest.Usecase';
 import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/jwtAuth.guard';
 import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
 import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/roles.decorator';
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
 
-@Controller('hm/int/loan-apps/requests')
+@Controller('hm/int/loan-apps/request')
 export class HM_GetAllApprovalRequestController {
   constructor(
-    private readonly getAllApprovalRequestUseCase: HM_GetAllApprovalHistoryUseCase,
+    private readonly getAllApprovalRequestUseCase: HM_GetAllApprovalRequestUseCase,
   ) {}
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -27,11 +26,15 @@ export class HM_GetAllApprovalRequestController {
   @Get()
   async getAllRequests(
     @CurrentUser('id') hmId: number,
-    @Query('page') page: number = 1,
-    @Query('pageSize') pageSize: number = 10,
+    @Query('page') pageStr: string = '1',
+    @Query('pageSize') pageSizeStr: string = '10',
     @Query('searchQuery') searchQuery = '',
   ) {
     try {
+      // Convert query params ke number
+      const page = parseInt(pageStr, 10) || 1;
+      const pageSize = parseInt(pageSizeStr, 10) || 10;
+
       const result = await this.getAllApprovalRequestUseCase.execute(
         hmId,
         page,

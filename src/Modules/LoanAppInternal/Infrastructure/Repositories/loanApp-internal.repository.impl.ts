@@ -165,25 +165,25 @@ export class LoanApplicationInternalRepositoryImpl
     return ormEntities.map(this.toDomain);
   }
 
-async callSP_MKT_GetAllLoanApplications_Internal(
-  marketingId: number,
-  page: number,
-  pageSize: number,
-): Promise<{ data: any[]; total: number }> {
-  const ormEntities = this.ormRepository.manager;
+  async callSP_MKT_GetAllLoanApplications_Internal(
+    marketingId: number,
+    page: number,
+    pageSize: number,
+  ): Promise<{ data: any[]; total: number }> {
+    const ormEntities = this.ormRepository.manager;
 
-  const result = await ormEntities.query(
-    `CALL MKT_GetAllLoanApplications_Internal(?, ?, ?);`,
-    [marketingId, page, pageSize],
-  );
+    const result = await ormEntities.query(
+      `CALL MKT_GetAllLoanApplications_Internal(?, ?, ?);`,
+      [marketingId, page, pageSize],
+    );
 
-  console.log('SP result:', result);
+    console.log('SP result:', result);
 
-  return {
-    data: result[1] || [], // data hasil query ke-2
-    total: result[0]?.[0]?.total_count || 0, // total dari query pertama
-  };
-}
+    return {
+      data: result[1] || [], // data hasil query ke-2
+      total: result[0]?.[0]?.total_count || 0, // total dari query pertama
+    };
+  }
 
 
   async callSP_MKT_GetDetail_LoanApplicationsInternal_ById(
@@ -325,10 +325,10 @@ async callSP_MKT_GetAllLoanApplications_Internal(
       [hmId, page, pageSize],
     );
 
-   return {
-    data: result[1] || [], 
-    total: result[0]?.[0]?.total_count || 0, 
-  };
+    return {
+      data: result[1] || [],
+      total: result[0]?.[0]?.total_count || 0,
+    };
   }
 
 
@@ -347,10 +347,10 @@ async callSP_MKT_GetAllLoanApplications_Internal(
 
     console.log('SP Result:', result);
 
-   return {
-    data: result[1] || [], 
-    total: result[0]?.[0]?.total_count || 0, 
-  };
+    return {
+      data: result[1] || [],
+      total: result[0]?.[0]?.total_count || 0,
+    };
   }
 
   async callSP_HM_GetDetail_LoanApplicationsInternal_ById(
