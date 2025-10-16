@@ -97,7 +97,6 @@ export class CA_ApproveOrRejectUseCase {
         kesimpulan || '',
       );
 
-      console.log('uhuy cukay: >>>>>>>>>>>>>>>>>>>>>.', status);
 
       // Terapkan status approval
       let newLoanStatus: StatusPengajuanEnum;

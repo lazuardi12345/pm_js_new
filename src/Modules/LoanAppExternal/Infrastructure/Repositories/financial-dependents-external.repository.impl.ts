@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FinancialDependentsExternal } from '../../Domain/Entities/financial-dependents-external.entity';
@@ -19,14 +19,14 @@ export class FinancialDependentsExternalRepositoryImpl
     ormEntity: FinancialDependentsExternal_ORM_Entity,
   ): FinancialDependentsExternal {
     return new FinancialDependentsExternal(
-      ormEntity.nasabah.id,
-      ormEntity.kondisi_tanggungan,
-      ormEntity.validasi_tanggungan,
-      ormEntity.catatan,
-      ormEntity.id,
-      ormEntity.created_at,
-      ormEntity.updated_at,
-      ormEntity.deleted_at,
+      { id: ormEntity.nasabah?.id }, // using object for nasabah like your example
+      ormEntity.kondisi_tanggungan ?? undefined,
+      ormEntity.validasi_tanggungan ?? undefined,
+      ormEntity.catatan ?? undefined,
+      ormEntity.id ?? undefined,
+      ormEntity.created_at ?? undefined,
+      ormEntity.updated_at ?? undefined,
+      ormEntity.deleted_at ?? null,
     );
   }
 
@@ -35,13 +35,13 @@ export class FinancialDependentsExternalRepositoryImpl
   ): Partial<FinancialDependentsExternal_ORM_Entity> {
     return {
       id: domainEntity.id,
-      nasabah: { id: domainEntity.nasabahId } as ClientExternal_ORM_Entity,
-      kondisi_tanggungan: domainEntity.kondisiTanggungan,
-      validasi_tanggungan: domainEntity.validasiTanggungan,
+      nasabah: domainEntity.nasabah ? { id: domainEntity.nasabah.id } as ClientExternal_ORM_Entity : undefined,
+      kondisi_tanggungan: domainEntity.kondisi_tanggungan,
+      validasi_tanggungan: domainEntity.validasi_tanggungan,
       catatan: domainEntity.catatan,
-      created_at: domainEntity.createdAt,
-      updated_at: domainEntity.updatedAt,
-      deleted_at: domainEntity.deletedAt,
+      created_at: domainEntity.created_at,
+      updated_at: domainEntity.updated_at,
+      deleted_at: domainEntity.deleted_at,
     };
   }
 
@@ -50,16 +50,15 @@ export class FinancialDependentsExternalRepositoryImpl
   ): Partial<FinancialDependentsExternal_ORM_Entity> {
     const ormData: Partial<FinancialDependentsExternal_ORM_Entity> = {};
 
-    if (partial.nasabahId)
-      ormData.nasabah = { id: partial.nasabahId } as ClientExternal_ORM_Entity;
-    if (partial.kondisiTanggungan !== undefined)
-      ormData.kondisi_tanggungan = partial.kondisiTanggungan;
-    if (partial.validasiTanggungan !== undefined)
-      ormData.validasi_tanggungan = partial.validasiTanggungan;
+    if (partial.nasabah?.id !== undefined) {
+      ormData.nasabah = { id: partial.nasabah.id } as ClientExternal_ORM_Entity;
+    }
+    if (partial.kondisi_tanggungan !== undefined) ormData.kondisi_tanggungan = partial.kondisi_tanggungan;
+    if (partial.validasi_tanggungan !== undefined) ormData.validasi_tanggungan = partial.validasi_tanggungan;
     if (partial.catatan !== undefined) ormData.catatan = partial.catatan;
-    if (partial.createdAt) ormData.created_at = partial.createdAt;
-    if (partial.updatedAt) ormData.updated_at = partial.updatedAt;
-    if (partial.deletedAt) ormData.deleted_at = partial.deletedAt;
+    if (partial.created_at !== undefined) ormData.created_at = partial.created_at;
+    if (partial.updated_at !== undefined) ormData.updated_at = partial.updated_at;
+    if (partial.deleted_at !== undefined) ormData.deleted_at = partial.deleted_at;
 
     return ormData;
   }
@@ -77,15 +76,14 @@ export class FinancialDependentsExternalRepositoryImpl
       where: { nasabah: { id: nasabahId } },
       relations: ['nasabah'],
     });
-    return ormEntities.map((entity) => this.toDomain(entity));
+    return ormEntities.map((e) => this.toDomain(e));
   }
-
 
   async findAll(): Promise<FinancialDependentsExternal[]> {
     const ormEntities = await this.ormRepository.find({
       relations: ['nasabah'],
     });
-    return ormEntities.map((entity) => this.toDomain(entity));
+    return ormEntities.map((e) => this.toDomain(e));
   }
 
   async save(
@@ -105,7 +103,7 @@ export class FinancialDependentsExternalRepositoryImpl
       where: { id },
       relations: ['nasabah'],
     });
-    if (!updated) throw new Error('FinancialDependentsExternal not found');
+    if (!updated) throw new NotFoundException(`FinancialDependentsExternal with ID ${id} not found`);
     return this.toDomain(updated);
   }
 
