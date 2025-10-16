@@ -6,7 +6,7 @@ import {
 import { OtherExistLoansExternal } from '../../Domain/Entities/other-exist-loans-external.entity';
 import { CreateOtherExistLoansExternalDto } from '../DTOS/dto-Other-Exist-Loans/create-other-exist-loans.dto';
 import { UpdateOtherExistLoansExternalDto } from '../DTOS/dto-Other-Exist-Loans/update-other-exist-loans.dto';
-export class EmergencyContactExternalService {
+export class OtherExistLaonExternalService {
   constructor(
     @Inject(OTHER_EXIST_LOANS_EXTERNAL_REPOSITORY)
     private readonly repo: IOtherExistLoansExternalRepository,
@@ -18,15 +18,15 @@ export class EmergencyContactExternalService {
     const now = new Date();
 
     const address = new OtherExistLoansExternal(
-      dto.nasabah_id, // nasabahId
-      dto.cicilan_lain, // cicilanLain
-      dto.nama_pembiayaan, // namaPembiayaan
-      dto.cicilan_perbulan, // cicilanPerbulan
-      dto.sisa_tenor, // sisaTenor
+      {id: dto.nasabah_id}, 
+      dto.cicilan_lain, 
+      dto.nama_pembiayaan, 
+      dto.cicilan_perbulan, 
+      dto.sisa_tenor,
       undefined, // id (optional)
-      dto.total_pinjaman, // totalPinjaman (optional)
-      dto.validasi_pinjaman_lain, // validasiPinjamanLain (optional)
-      dto.catatan, // catatan (optional)
+      dto.total_pinjaman, 
+      dto.validasi_pinjaman_lain, 
+      dto.catatan, 
       now, // createdAt
       now, // updatedAt
       undefined,
