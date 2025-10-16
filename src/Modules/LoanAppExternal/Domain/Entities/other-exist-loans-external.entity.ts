@@ -2,32 +2,31 @@ import { CicilanLainEnum } from 'src/Shared/Enums/External/Other-Exist-Loans.enu
 
 export class OtherExistLoansExternal {
   constructor(
-    public readonly nasabahId: number,
-    public readonly cicilanLain: CicilanLainEnum,
-    public readonly namaPembiayaan: string,
-    public readonly cicilanPerbulan: number,
-    public readonly sisaTenor: number,
+    public readonly nasabah: { id: number },
+    public readonly cicilan_lain: CicilanLainEnum,
+    public readonly nama_pembiayaan: string,
+    public readonly cicilan_perbulan: number,
+    public readonly sisa_tenor: number,
     public readonly id?: number,
-    public readonly totalPinjaman?: string,
-    public readonly validasiPinjamanLain?: boolean,
+    public readonly total_pinjaman?: string,
+    public readonly validasi_pinjaman_lain?: boolean,
     public readonly catatan?: string,
-    public readonly createdAt?: Date,
-    public readonly updatedAt?: Date,
-    public readonly deletedAt?: Date,
+    public readonly created_at?: Date,
+    public readonly updated_at?: Date,
+    public readonly deleted_at?: Date,
   ) {
     this.validate();
   }
 
   private validate() {
-    if (!this.namaPembiayaan) {
+    if (!this.nama_pembiayaan) {
       throw new Error('Nama pembiayaan wajib diisi.');
     }
-    if (this.cicilanPerbulan <= 0) {
+    if (this.cicilan_perbulan <= 0) {
       throw new Error('Cicilan per bulan harus lebih besar dari nol.');
     }
-    if (this.sisaTenor <= 0) {
+    if (this.sisa_tenor <= 0) {
       throw new Error('Sisa tenor harus lebih besar dari nol.');
     }
-    // Validasi lain sesuai aturan bisnis domain
   }
 }

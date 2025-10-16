@@ -29,6 +29,7 @@ import { CollateralShmExternalController } from './Presentation/Controllers/coll
 import { EmergencyContactExternalController } from './Presentation/Controllers/emergency-contact-external.controller';
 import { FinancialDependentsExternalController } from './Presentation/Controllers/financial-dependents-external.controller';
 import { LoanGuarantorExternalController } from './Presentation/Controllers/loan-guarantor-external.controller';
+import { OtherExixtLoansExternalController } from './Presentation/Controllers/other-exixt-loan-external.controller';
 
 
 @Module({
@@ -63,6 +64,7 @@ import { LoanGuarantorExternalController } from './Presentation/Controllers/loan
     EmergencyContactExternalController,
     FinancialDependentsExternalController ,
     LoanGuarantorExternalController,
+     OtherExixtLoansExternalController,
   ],
   exports: [
     AddressExternalModule,
