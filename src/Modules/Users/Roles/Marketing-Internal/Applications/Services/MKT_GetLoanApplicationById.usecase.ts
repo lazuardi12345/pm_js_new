@@ -16,7 +16,7 @@ export class MKT_GetLoanApplicationByIdUseCase {
   constructor(
     @Inject(LOAN_APPLICATION_INTERNAL_REPOSITORY)
     private readonly loanAppRepo: ILoanApplicationInternalRepository,
-  ) { }
+  ) {}
 
   async execute(id: number) {
     // pastikan repository return shape: [TypeLoanApplicationDetail[], TypeApprovalDetail[]]
@@ -24,6 +24,8 @@ export class MKT_GetLoanApplicationByIdUseCase {
       await this.loanAppRepo.callSP_MKT_GetDetail_LoanApplicationsInternal_ById(
         id,
       );
+
+    console.log('aku gay', result[1]);
 
     // tulis explicit typing supaya TS gak bingung
     const [loanDataRows, approvals]: [
@@ -56,6 +58,7 @@ export class MKT_GetLoanApplicationByIdUseCase {
     (approvals ?? []).forEach((approval: TypeApprovalDetail) => {
       const roleKey = roleMap[approval.role] ?? approval.role;
 
+      console.log('aku sangat gay', approval);
       const data: TypeStatusApproval = {
         id_user: approval.user_id,
         name: approval.user_nama,
@@ -69,6 +72,8 @@ export class MKT_GetLoanApplicationByIdUseCase {
         },
       };
 
+      console.log('ragil kena tusbol', data);
+
       // handle both number and string just in case
       const isBanding = approval.is_banding === 1;
 
@@ -80,7 +85,6 @@ export class MKT_GetLoanApplicationByIdUseCase {
     });
 
     return {
-
       error: false,
       message: 'Loan Application Detail by ID retrieved successfully',
       reference: 'LOAN_RETRIEVE_OK',

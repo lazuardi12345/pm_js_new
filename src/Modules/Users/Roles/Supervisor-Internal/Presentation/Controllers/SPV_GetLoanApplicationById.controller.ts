@@ -13,8 +13,9 @@ export class SPV_GetLoanApplicationByIdController {
     private readonly getLoanAppByIdUseCase: SPV_GetLoanApplicationByIdUseCase,
   ) {}
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(USERTYPE.SPV)
+  @Public()
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles(USERTYPE.SPV)
   // @Public()
   @Get('detail/:id')
   async getLoanApplicationById(@Param('id') id: number) {

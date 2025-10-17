@@ -101,10 +101,21 @@ export class MKT_UpdateLoanApplicationUseCase {
               await this.fileStorage.updateFile(
                 client.id!,
                 client.nama_lengkap,
-                fieldName,
+                formattedName,
                 file,
               );
             } else {
+              const validFields = [
+                'foto_ktp',
+                'foto_kk',
+                'foto_id_card',
+                'foto_selfie',
+                'foto_ktp_penjamin',
+              ];
+              if (!validFields.includes(fieldName)) {
+                console.log(`Skip unknown field: ${fieldName}`);
+                continue;
+              }
               await this.fileStorage.saveFiles(
                 client.id!,
                 client.nama_lengkap,

@@ -111,7 +111,8 @@ export class FileStorageController {
     return { message: 'Folder renamed successfully', data: result };
   }
 
-  @Delete(':customerId/:customerName/:filename')
+  @Public()
+  @Delete('delete-file/:customerId/:customerName/:filename')
   async deleteFile(
     @Param('customerId', ParseIntPipe) customerId: number,
     @Param('customerName') customerName: string,

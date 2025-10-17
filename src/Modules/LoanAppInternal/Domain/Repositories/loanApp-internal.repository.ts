@@ -16,8 +16,8 @@ export interface MarketingStats {
 }
 export interface SupervisorStats {
   approval_request: number;
-  approval_approved: number;
-  approval_rejected: number;
+  approved_request: number;
+  rejected_request: number;
 }
 
 export interface ILoanApplicationInternalRepository {
@@ -93,6 +93,7 @@ export interface ILoanApplicationInternalRepository {
 
   //! ========== CREDIT ANALYST (CA) ==========
   callSP_CA_GetApprovalHistory_Internal(
+    creditAnalystId: number,
     page: number,
     pageSize: number,
   ): Promise<{
@@ -107,4 +108,7 @@ export interface ILoanApplicationInternalRepository {
   callSP_CA_GetDetail_LoanApplicationsInternal_ById(
     loanAppId: number,
   ): Promise<[TypeLoanApplicationDetail[], TypeApprovalDetail[]]>;
+  callSP_CA_GetDashboard_Internal(
+    creditAnalystId: number,
+  ): Promise<SupervisorStats>;
 }

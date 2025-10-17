@@ -190,7 +190,6 @@ export class LoanApplicationInternalRepositoryImpl
     };
   }
 
-
   async callSP_MKT_GetDetail_LoanApplicationsInternal_ById(
     loanAppId: number,
   ): Promise<[TypeLoanApplicationDetail[], TypeApprovalDetail[]]> {
@@ -282,6 +281,7 @@ export class LoanApplicationInternalRepositoryImpl
   }
 
   async callSP_CA_GetApprovalHistory_Internal(
+    creditAnalystId: number,
     page: number,
     pageSize: number,
   ): Promise<{
@@ -291,8 +291,8 @@ export class LoanApplicationInternalRepositoryImpl
   }> {
     // Misal kamu punya repository/ORM yang bisa langsung akses query
     const result = await this.ormRepository.manager.query(
-      'CALL CA_GetApprovalHistory_Internal(?, ?)',
-      [page, pageSize],
+      'CALL CA_GetApprovalHistory_Internal(?, ?, ?)',
+      [creditAnalystId, page, pageSize],
     );
 
     // result[0] = total count result set
@@ -333,6 +333,18 @@ export class LoanApplicationInternalRepositoryImpl
       );
 
     return results;
+  }
+
+  async callSP_CA_GetDashboard_Internal(
+    creditAnalystId: number,
+  ): Promise<SupervisorStats> {
+    const results: SupervisorStats = await this.ormRepository.manager.query(
+      `CALL CA_GetDashboardStats(?)`,
+      [creditAnalystId],
+    );
+
+    console.log(results[0][0]);
+    return results[0][0];
   }
 
   // ========== HEAD MARKETING (HM) ==========
@@ -377,7 +389,13 @@ export class LoanApplicationInternalRepositoryImpl
   async callSP_HM_GetDetail_LoanApplicationsInternal_ById(
     loanAppId: number,
   ): Promise<[TypeLoanApplicationDetail[], TypeApprovalDetail[]]> {
-    throw new Error('Method not implemented.');
+    const results: [TypeLoanApplicationDetail[], TypeApprovalDetail[]] =
+      await this.ormRepository.manager.query(
+        `CALL HM_GetLoanApplicationById_Internal(?)`,
+        [loanAppId],
+      );
+
+    return results;
   }
 
   async callSP_HM_GetAllTeams_Internal(hmId: number): Promise<any[]> {

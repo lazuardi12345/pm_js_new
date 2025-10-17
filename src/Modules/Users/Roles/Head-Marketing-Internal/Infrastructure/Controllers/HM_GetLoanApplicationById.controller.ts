@@ -14,9 +14,9 @@ export class HM_GetLoanApplicationByIdController {
     private readonly getLoanAppByIdUseCase: HM_GetLoanApplicationByIdUseCase,
   ) {}
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(USERTYPE.HM)
-  // @Public()
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles(USERTYPE.HM)
+  @Public()
   @Get('detail/:id')
   async getLoanApplicationById(@Param('id') id: number) {
     try {

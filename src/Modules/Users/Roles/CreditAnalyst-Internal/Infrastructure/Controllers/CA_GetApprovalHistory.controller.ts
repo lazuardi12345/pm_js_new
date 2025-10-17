@@ -27,20 +27,20 @@ export class CA_GetApprovalHistory_Controller {
   @Roles(USERTYPE.CA)
   @Get('/history')
   async getAllLoanApplications(
-    @CurrentUser('id') supervisorId: number,
+    @CurrentUser('id') creditAnalystId: number,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('pageSize', new DefaultValuePipe(10), ParseIntPipe) pageSize: number,
     @Query('searchQuery') searchQuery = '',
   ) {
     try {
       const result = await this.getAllApprovalHistoryUseCase.execute(
+        creditAnalystId,
         page,
         pageSize,
         searchQuery,
       );
 
-      return result; 
-
+      return result;
     } catch (err) {
       console.error(err);
       throw new HttpException(

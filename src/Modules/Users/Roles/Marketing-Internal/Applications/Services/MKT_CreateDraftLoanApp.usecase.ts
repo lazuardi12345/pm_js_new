@@ -39,8 +39,9 @@ export class MKT_CreateDraftLoanApplicationUseCase {
 
       if (files && Object.keys(files).length > 0) {
         filePaths = await this.fileStorage.saveDraftsFiles(
-          dto.marketing_id,
-          dto.client_internal?.nama_lengkap ?? `draft-${dto.marketing_id}`,
+          Number(dto?.client_internal?.no_ktp) ?? dto.client_internal.no_ktp,
+          dto?.client_internal?.nama_lengkap ??
+            `draft-${dto.client_internal.no_ktp}`,
           files,
         );
       }
@@ -229,10 +230,6 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     const { payload } = updateData;
     console.log('Unified: >', payload);
     let filePaths: Record<string, FileMetadata[]> = {};
-
-    console.log('🟢 [updateDraftById] START');
-    console.log('➡️ Incoming ID:', Id);
-    console.log('➡️ Incoming Payload:', JSON.stringify(payload, null, 2));
 
     if (files && Object.keys(files).length > 0) {
       filePaths = await this.fileStorage.saveDraftsFiles(
