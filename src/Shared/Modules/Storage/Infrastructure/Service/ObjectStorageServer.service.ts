@@ -6,6 +6,13 @@ import {
   FileMetadata,
 } from '../../Domain/Repositories/IFileStorage.repository';
 
+type MinioObject = {
+  name: string;
+  size?: number;
+  etag?: string;
+  lastModified?: Date;
+};
+
 @Injectable()
 export class MinioFileStorageService implements IFileStorageRepository {
   private readonly logger = new Logger(MinioFileStorageService.name);
@@ -15,8 +22,6 @@ export class MinioFileStorageService implements IFileStorageRepository {
   private readonly key: Buffer;
   private readonly mainBucket = 'customer-files';
   private readonly draftBucket = 'customer-drafts';
-
-  private readonly backend_uri = process.env.BACKEND_URI;
 
   constructor() {
     // Initialize MinIO Client
@@ -103,7 +108,16 @@ export class MinioFileStorageService implements IFileStorageRepository {
       savedFiles[field] = [];
 
       for (const file of fileList) {
-        const metadata = await this.uploadSingleFile(bucket, prefix, file);
+        const ext = file.originalname.split('.').pop();
+        const cleanName = customerName.toLowerCase().replace(/\s+/g, '_');
+        const newFileName = `${cleanName}-${field}.${ext}`;
+
+        const metadata = await this.uploadSingleFile(
+          bucket,
+          prefix,
+          file,
+          newFileName,
+        );
         savedFiles[field].push(metadata);
       }
     }
@@ -127,7 +141,18 @@ export class MinioFileStorageService implements IFileStorageRepository {
       savedFiles[field] = [];
 
       for (const file of fileList) {
-        const metadata = await this.uploadSingleFile(bucket, prefix, file);
+        // Ambil ekstensi file
+        const ext = file.originalname.split('.').pop();
+        // Buat nama file baru: <nama_nasabah>-<tipe_field>.<ext>
+        const newFileName = `${customerName}-${field}.${ext}`;
+
+        // Upload pake nama baru
+        const metadata = await this.uploadSingleFile(
+          bucket,
+          prefix,
+          file,
+          newFileName,
+        );
         savedFiles[field].push(metadata);
       }
     }
@@ -139,13 +164,17 @@ export class MinioFileStorageService implements IFileStorageRepository {
     bucket: string,
     prefix: string,
     file: Express.Multer.File,
+    customFileName?: string,
   ): Promise<FileMetadata> {
     try {
       // Encrypt file
       const { encrypted, iv } = this.encrypt(file.buffer);
-      const encryptedName = `${prefix}${file.originalname}.enc`;
 
-      // Upload to MinIO
+      // Tentukan nama file yang akan di-upload
+      const filenameToUse = customFileName || file.originalname;
+      const encryptedName = `${prefix}${filenameToUse}.enc`;
+
+      // Upload ke MinIO
       await this.minioClient.putObject(
         bucket,
         encryptedName,
@@ -160,7 +189,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
         },
       );
 
-      const prefixParser = (prefix) => {
+      const prefixParser = (prefix: string) => {
         const trimmed = prefix.endsWith('/') ? prefix.slice(0, -1) : prefix;
         const [id, ...rest] = trimmed.split('-');
         const name = rest.join('-');
@@ -177,8 +206,9 @@ export class MinioFileStorageService implements IFileStorageRepository {
         filename: file.filename,
         path: file.path,
         stream: file.stream,
-        orginalName: file.originalname,
+        originalName: file.originalname,
         prefix: prefix,
+        usedFilename: filenameToUse,
       });
 
       return {
@@ -186,10 +216,10 @@ export class MinioFileStorageService implements IFileStorageRepository {
         mimetype: file.mimetype,
         encryptedName: encryptedName,
         size: file.size,
-        url: `${process.env.BACKEND_URI}/storage/${id}/${name}/${file.originalname}`,
+        url: `${process.env.BACKEND_URI}/storage/${id}/${name}/${filenameToUse}`,
       };
-    } catch (error) {
-      console.log('fucking error', error);
+    } catch (error: any) {
+      console.log('Error uploading file', error);
       this.logger.error(`Error uploading file: ${error.message}`);
       throw error;
     }
@@ -313,6 +343,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
       try {
         await this.minioClient.statObject(bucket, encryptedName);
       } catch (error) {
+        console.log(error);
         throw new NotFoundException(`File not found: ${filename}`);
       }
 
@@ -347,6 +378,51 @@ export class MinioFileStorageService implements IFileStorageRepository {
       this.logger.error(`Error updating file: ${error.message}`);
       throw error;
     }
+  }
+
+  async updateFileDirectory(
+    customerId: number,
+    oldCustomerName: string,
+    newCustomerName: string,
+    // filename: string, // boleh diabaikan kalau mau rename seluruh folder
+  ) {
+    const bucket = 'customer-files';
+    const oldPrefix = `${customerId}-${oldCustomerName}/`;
+    const newPrefix = `${customerId}-${newCustomerName}/`;
+
+    const objects: MinioObject[] = [];
+    const stream = this.minioClient.listObjectsV2(bucket, oldPrefix, true);
+
+    // 1️⃣ Ambil semua file yang ada di folder lama
+    for await (const obj of stream) {
+      objects.push(obj);
+    }
+
+    if (objects.length === 0) {
+      throw new Error(`No files found in ${oldPrefix}`);
+    }
+
+    // 2️⃣ Copy semua file ke prefix baru
+    for (const obj of objects) {
+      const newKey = obj.name.replace(oldPrefix, newPrefix);
+      await this.minioClient.copyObject(
+        bucket,
+        newKey,
+        `/${bucket}/${obj.name}`,
+      );
+    }
+
+    // 3️⃣ Hapus file lama setelah berhasil dicopy
+    for (const obj of objects) {
+      await this.minioClient.removeObject(bucket, obj.name);
+    }
+
+    return {
+      oldPrefix,
+      newPrefix,
+      totalMoved: objects.length,
+      message: 'All files moved successfully',
+    };
   }
 
   // ============== DELETE ==============

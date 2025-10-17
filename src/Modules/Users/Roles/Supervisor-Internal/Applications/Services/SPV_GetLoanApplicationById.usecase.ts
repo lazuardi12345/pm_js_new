@@ -69,7 +69,6 @@ export class SPV_GetLoanApplicationByIdUseCase {
         },
       };
 
-      // handle both number and string just in case
       const isBanding = approval.is_banding === 1;
 
       if (isBanding) {
@@ -82,7 +81,7 @@ export class SPV_GetLoanApplicationByIdUseCase {
     return {
       error: false,
       message: 'Loan Application Detail by ID retrieved successfully',
-      reference: 'LOAN_RETRIEVE_OK',
+      reference: 'CA_LOAN_RETRIEVE_OK',
       data: {
         client_and_loan_detail: {
           clients_internal: {
@@ -174,6 +173,8 @@ export class SPV_GetLoanApplicationByIdUseCase {
             foto_id_card: loanData.foto_id_card,
             foto_rekening: loanData.foto_rekening,
             bukti_absensi_file: loanData.bukti_absensi_file,
+            foto_ktp_penjamin: loanData.foto_ktp_penjamin,
+            foto_id_card_penjamin: loanData.foto_id_card_penjamin,
           },
         },
 

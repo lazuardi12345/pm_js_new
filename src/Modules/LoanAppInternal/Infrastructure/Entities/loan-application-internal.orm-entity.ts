@@ -12,17 +12,27 @@ import {
 import { ClientInternal_ORM_Entity } from './client-internal.orm-entity';
 // import { Notification } from 'src/Shared/Modules/Notifications/entities/notification.entity';
 import { ApprovalInternal_ORM_Entity } from './approval-internal.orm-entity';
-import { StatusPinjamanEnum, StatusPengajuanEnum} from 'src/Shared/Enums/Internal/LoanApp.enum';
+import {
+  StatusPinjamanEnum,
+  StatusPengajuanEnum,
+} from 'src/Shared/Enums/Internal/LoanApp.enum';
 
 @Entity('loan_application_internal')
 export class LoanApplicationInternal_ORM_Entity {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
 
-  @ManyToOne(() => ClientInternal_ORM_Entity, (clientInternal) => clientInternal.id, {
-    onDelete: 'CASCADE',
+  @ManyToOne(
+    () => ClientInternal_ORM_Entity,
+    (clientInternal) => clientInternal.id,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
+  @JoinColumn({
+    name: 'nasabah_id',
+    foreignKeyConstraintName: 'FK_ClientInternalID_at_LoanApplicationInternal',
   })
-  @JoinColumn({ name: 'nasabah_id', foreignKeyConstraintName: 'FK_ClientInternalID_at_LoanApplicationInternal' })
   nasabah: ClientInternal_ORM_Entity;
 
   @Column({
@@ -32,8 +42,8 @@ export class LoanApplicationInternal_ORM_Entity {
   })
   status_pinjaman: StatusPinjamanEnum;
 
-  @Column({ type: 'int', nullable: true })
-  pinjaman_ke?: number;
+  @Column({ type: 'int', default: 1 })
+  pinjaman_ke: number;
 
   @Column({ type: 'decimal', precision: 15, scale: 2 })
   nominal_pinjaman: number;

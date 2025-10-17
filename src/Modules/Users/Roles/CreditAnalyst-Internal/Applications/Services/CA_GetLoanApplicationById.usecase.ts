@@ -174,6 +174,8 @@ export class CA_GetLoanApplicationByIdUseCase {
             foto_id_card: loanData.foto_id_card,
             foto_rekening: loanData.foto_rekening,
             bukti_absensi_file: loanData.bukti_absensi_file,
+            foto_ktp_penjamin: loanData.foto_ktp_penjamin,
+            foto_id_card_penjamin: loanData.foto_id_card_penjamin,
           },
         },
 

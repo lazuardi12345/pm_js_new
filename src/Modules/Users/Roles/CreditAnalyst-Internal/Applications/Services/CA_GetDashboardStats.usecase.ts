@@ -5,22 +5,22 @@ import {
 } from 'src/Modules/LoanAppInternal/Domain/Repositories/loanApp-internal.repository';
 
 @Injectable()
-export class SPV_GetDashboardStatsUseCase {
+export class CA_GetDashboardStatsUseCase {
   constructor(
     @Inject(LOAN_APPLICATION_INTERNAL_REPOSITORY)
     private readonly loanAppRepo: ILoanApplicationInternalRepository,
   ) {}
 
-  async execute(supervisorId: number) {
+  async execute(creditAnalystId: number) {
     // ambil data dari SP
     const stats =
-      await this.loanAppRepo.callSP_SPV_GetDashboard_Internal(supervisorId);
+      await this.loanAppRepo.callSP_CA_GetDashboard_Internal(creditAnalystId);
 
     // kalau gak ada data dari SP
     if (!stats) {
       return {
         error: true,
-        message: `Dashboard stats for SPV ID ${supervisorId} not found`,
+        message: `Dashboard stats for SPV ID ${creditAnalystId} not found`,
         reference: 'DASHBOARD_STATS_NOT_FOUND',
         data: null,
       };
