@@ -11,10 +11,11 @@ export class CA_GetApprovalHistory_UseCase {
     private readonly loanAppRepo: ILoanApplicationInternalRepository,
   ) {}
 
-  async execute(page = 1, pageSize = 10, searchQuery = '') {
+  async execute(creditAnalystId, page = 1, pageSize = 10, searchQuery = '') {
     try {
       const result =
         await this.loanAppRepo.callSP_CA_GetApprovalHistory_Internal(
+          creditAnalystId,
           page,
           pageSize,
         );
@@ -26,10 +27,11 @@ export class CA_GetApprovalHistory_UseCase {
 
       const filteredData =
         trimmedQuery.length > 0
-          ? data.filter((item) =>
-              (item.nama_lengkap?.toLowerCase().includes(trimmedQuery)) ||
-              (item.nama_marketing?.toLowerCase().includes(trimmedQuery)) ||
-              (item.nama_supervisor?.toLowerCase().includes(trimmedQuery))
+          ? data.filter(
+              (item) =>
+                item.nama_lengkap?.toLowerCase().includes(trimmedQuery) ||
+                item.nama_marketing?.toLowerCase().includes(trimmedQuery) ||
+                item.nama_supervisor?.toLowerCase().includes(trimmedQuery),
             )
           : data;
 
@@ -62,9 +64,7 @@ export class CA_GetApprovalHistory_UseCase {
       };
     } catch (err) {
       throw new Error(
-        err instanceof Error
-          ? err.message
-          : 'Gagal mengambil data pengajuan',
+        err instanceof Error ? err.message : 'Gagal mengambil data pengajuan',
       );
     }
   }

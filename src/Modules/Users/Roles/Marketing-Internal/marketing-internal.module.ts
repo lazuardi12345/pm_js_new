@@ -24,6 +24,7 @@ import { MKT_GetAllLoanApplicationUseCase } from './Applications/Services/MKT_Ge
 import { MKT_GetLoanApplicationByIdUseCase } from './Applications/Services/MKT_GetLoanApplicationById.usecase';
 import { MKT_CreateDraftLoanApplicationUseCase } from './Applications/Services/MKT_CreateDraftLoanApp.usecase';
 import { MKT_UpdateLoanApplicationUseCase } from './Applications/Services/MKT_UpdateLoanApplication.usecase';
+import { MKT_GetDashboardStatsUseCase } from './Applications/Services/MKT_GetDashboardStats.usecase';
 // import { MKT_GetAllLoanApplicationUseCase } from './usecases/MKT_GetAllLoanApplication.usecase';
 // import { MKT_GetLoanApplicationByIdUseCase } from './usecases/MKT_GetLoanApplicationById.usecase';
 // import { MKT_UpdateLoanApplicationByIdUseCase } from './usecases/MKT_UpdateLoanApplication.usecase';
@@ -35,6 +36,7 @@ import { MKT_GetAllLoanApplicationController } from './Presentation/Controllers/
 import { MKT_UpdateLoanApplicationController } from './Presentation/Controllers/MKT_UpdateLoanApplication.controller';
 import { MKT_GetLoanApplicationByIdController } from './Presentation/Controllers/MKT_GetLoanApplicationById.controller';
 import { MKT_CreateDraftLoanApplicationController } from './Presentation/Controllers/MKT_CreateDraftLoanApp.controller';
+import { MKT_GetDashboardStatsController } from './Presentation/Controllers/MKT_GetDashboardStats.controller';
 
 import { AddressInternalModule } from 'src/Modules/LoanAppInternal/Modules/address-internal.module';
 import { ApprovalInternalModule } from 'src/Modules/LoanAppInternal/Modules/approval-internal.module';
@@ -75,6 +77,7 @@ import { DraftLoanApplicationModule } from 'src/Shared/Modules/Drafts/Modules/Cr
   ],
   controllers: [
     // controllers
+    MKT_GetDashboardStatsController,
     MKT_CreateDraftLoanApplicationController,
     MKT_CreateLoanApplicationController,
     MKT_GetAllLoanApplicationController,
@@ -83,6 +86,7 @@ import { DraftLoanApplicationModule } from 'src/Shared/Modules/Drafts/Modules/Cr
   ],
   providers: [
     // usecases
+    MKT_GetDashboardStatsUseCase,
     MKT_CreateDraftLoanApplicationUseCase,
     MKT_CreateLoanApplicationUseCase,
     MKT_GetAllLoanApplicationUseCase,

@@ -1,26 +1,25 @@
 // src/Modules/LoanAppInternal/Presentation/Controllers/loanApp-internal.controller.ts
 import { Controller, Get, Inject, UseGuards, Param } from '@nestjs/common';
-import { CA_GetLoanApplicationByIdUseCase } from '../../Applications/Services/CA_GetLoanApplicationById.usecase';
-import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/jwtAuth.guard';
+import { SPV_GetDashboardStatsUseCase } from '../../Applications/Services/SPV_GetDashboardStats.usecase';
 import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
 import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/roles.decorator';
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
-@Controller('ca/int/loan-apps')
-export class CA_GetLoanApplicationByIdController {
+import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
+@Controller('spv/int/loan-apps')
+export class SPV_GetDashboardStatsController {
   constructor(
-    @Inject(CA_GetLoanApplicationByIdUseCase)
-    private readonly getLoanAppByIdUseCase: CA_GetLoanApplicationByIdUseCase,
+    @Inject(SPV_GetDashboardStatsUseCase)
+    private readonly getDashboardStatsUseCase: SPV_GetDashboardStatsUseCase,
   ) {}
 
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(USERTYPE.CA)
-  @Public()
-  @Get('detail/:id')
-  async getLoanApplicationById(@Param('id') id: number) {
+  @UseGuards(RolesGuard)
+  @Roles(USERTYPE.SPV)
+  // @Public()
+  @Get('dashboard-stats')
+  async getDashboardStats(@CurrentUser('id') supervisorId: number) {
     try {
-      const payload = await this.getLoanAppByIdUseCase.execute(id);
-
+      const payload = await this.getDashboardStatsUseCase.execute(supervisorId);
       return {
         payload,
       };

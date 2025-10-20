@@ -48,6 +48,20 @@ export interface IFileStorageRepository {
     isDraft?: boolean,
   ): Promise<FileMetadata>;
 
+  // Update
+  // IFileStorageRepository.ts
+  updateFileDirectory(
+    customerId: number,
+    oldCustomerName: string,
+    newCustomerName: string,
+    // filename: string,
+  ): Promise<{
+    oldPrefix: string;
+    newPrefix: string;
+    totalMoved: number;
+    message: string;
+  }>;
+
   // Delete
   deleteFile(
     customerId: number,

@@ -9,6 +9,17 @@ export const LOAN_APPLICATION_INTERNAL_REPOSITORY = Symbol(
   'LOAN_APPLICATION_INTERNAL_REPOSITORY',
 );
 
+export interface MarketingStats {
+  total_loans: number;
+  approved_loans: number;
+  rejected_loans: number;
+}
+export interface SupervisorStats {
+  approval_request: number;
+  approved_request: number;
+  rejected_request: number;
+}
+
 export interface ILoanApplicationInternalRepository {
   // ========== Basic CRUD ==========
   findById(id: number): Promise<LoanApplicationInternal | null>;
@@ -26,7 +37,7 @@ export interface ILoanApplicationInternalRepository {
     status: StatusPengajuanEnum,
   ): Promise<void>;
 
-  // ========== MARKETING ==========
+  //! ========== MARKETING ==========
   callSP_MKT_GetAllLoanApplications_Internal(
     marketingId: number,
     page: number,
@@ -36,7 +47,11 @@ export interface ILoanApplicationInternalRepository {
     loanAppId: number,
   ): Promise<[TypeLoanApplicationDetail[], TypeApprovalDetail[]]>;
 
-  // ========== SUPERVISOR (SPV) ==========
+  callSP_MKT_GetDashboard_Internal(
+    marketingId: number,
+  ): Promise<MarketingStats>;
+
+  //! ========== SUPERVISOR (SPV) ==========
   callSP_SPV_GetAllApprovalHistory_ByTeam(
     supervisorId: number,
     page: number,
@@ -51,8 +66,11 @@ export interface ILoanApplicationInternalRepository {
     loanAppId: number,
   ): Promise<[TypeLoanApplicationDetail[], TypeApprovalDetail[]]>;
   callSP_SPV_GetAllTeams_Internal(supervisorId: number): Promise<any[]>;
+  callSP_SPV_GetDashboard_Internal(
+    supervisorId: number,
+  ): Promise<SupervisorStats>;
 
-  // ========== HEAD MARKETING (HM) ==========
+  //!========== HEAD MARKETING (HM) ==========
   callSP_HM_GetAllApprovalHistory_Internal(
     hmId: number,
     page: number,
@@ -73,13 +91,16 @@ export interface ILoanApplicationInternalRepository {
     pageSize: number,
   ): Promise<{ data: any[]; total: number }>;
 
-  // ========== CREDIT ANALYST (CA) ==========
+  //! ========== CREDIT ANALYST (CA) ==========
   callSP_CA_GetApprovalHistory_Internal(
+    creditAnalystId: number,
     page: number,
     pageSize: number,
   ): Promise<{
-    results: any; data: any[]; total: number 
-}>;
+    results: any;
+    data: any[];
+    total: number;
+  }>;
   callSP_CA_GetAllApprovalRequest_Internal(
     page: number,
     pageSize: number,
@@ -87,4 +108,7 @@ export interface ILoanApplicationInternalRepository {
   callSP_CA_GetDetail_LoanApplicationsInternal_ById(
     loanAppId: number,
   ): Promise<[TypeLoanApplicationDetail[], TypeApprovalDetail[]]>;
+  callSP_CA_GetDashboard_Internal(
+    creditAnalystId: number,
+  ): Promise<SupervisorStats>;
 }

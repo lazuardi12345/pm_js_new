@@ -2,7 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LoanApplicationInternal } from '../../Domain/Entities/loan-application-internal.entity';
-import { ILoanApplicationInternalRepository } from '../../Domain/Repositories/loanApp-internal.repository';
+import {
+  MarketingStats,
+  ILoanApplicationInternalRepository,
+  SupervisorStats,
+} from '../../Domain/Repositories/loanApp-internal.repository';
 import { LoanApplicationInternal_ORM_Entity } from '../Entities/loan-application-internal.orm-entity';
 import { ClientInternal_ORM_Entity } from '../Entities/client-internal.orm-entity';
 import {
@@ -12,13 +16,14 @@ import {
 import { StatusPengajuanEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
 @Injectable()
 export class LoanApplicationInternalRepositoryImpl
-  implements ILoanApplicationInternalRepository {
+  implements ILoanApplicationInternalRepository
+{
   dataSource: any;
   db: any;
   constructor(
     @InjectRepository(LoanApplicationInternal_ORM_Entity)
     private readonly ormRepository: Repository<LoanApplicationInternal_ORM_Entity>,
-  ) { }
+  ) {}
 
   //? MAPPER >==========================================================================
 
@@ -185,7 +190,6 @@ export class LoanApplicationInternalRepositoryImpl
     };
   }
 
-
   async callSP_MKT_GetDetail_LoanApplicationsInternal_ById(
     loanAppId: number,
   ): Promise<[TypeLoanApplicationDetail[], TypeApprovalDetail[]]> {
@@ -196,6 +200,18 @@ export class LoanApplicationInternalRepositoryImpl
       );
 
     return results;
+  }
+
+  async callSP_MKT_GetDashboard_Internal(
+    marketingId: number,
+  ): Promise<MarketingStats> {
+    const results: MarketingStats = await this.ormRepository.manager.query(
+      `CALL MKT_GetDashboardStats(?)`,
+      [marketingId],
+    );
+
+    console.log(results[0][0]);
+    return results[0][0];
   }
 
   async callSP_SPV_GetAllApprovalHistory_ByTeam(
@@ -252,7 +268,20 @@ export class LoanApplicationInternalRepositoryImpl
     return result[0];
   }
 
+  async callSP_SPV_GetDashboard_Internal(
+    supervisorId: number,
+  ): Promise<SupervisorStats> {
+    const results: SupervisorStats = await this.ormRepository.manager.query(
+      `CALL SPV_GetDashboardStats(?)`,
+      [supervisorId],
+    );
+
+    console.log(results[0][0]);
+    return results[0][0];
+  }
+
   async callSP_CA_GetApprovalHistory_Internal(
+    creditAnalystId: number,
     page: number,
     pageSize: number,
   ): Promise<{
@@ -262,8 +291,8 @@ export class LoanApplicationInternalRepositoryImpl
   }> {
     // Misal kamu punya repository/ORM yang bisa langsung akses query
     const result = await this.ormRepository.manager.query(
-      'CALL CA_GetApprovalHistory_Internal(?, ?)',
-      [page, pageSize],
+      'CALL CA_GetApprovalHistory_Internal(?, ?, ?)',
+      [creditAnalystId, page, pageSize],
     );
 
     // result[0] = total count result set
@@ -278,8 +307,6 @@ export class LoanApplicationInternalRepositoryImpl
     };
   }
 
-
-
   async callSP_CA_GetAllApprovalRequest_Internal(
     page: number,
     pageSize: number,
@@ -290,14 +317,11 @@ export class LoanApplicationInternalRepositoryImpl
       [page, pageSize],
     );
 
-
-
     return {
       data: result[1] || [],
       total: result[0]?.[0]?.total_count || 0,
     };
   }
-
 
   async callSP_CA_GetDetail_LoanApplicationsInternal_ById(
     loanAppId: number,
@@ -309,6 +333,18 @@ export class LoanApplicationInternalRepositoryImpl
       );
 
     return results;
+  }
+
+  async callSP_CA_GetDashboard_Internal(
+    creditAnalystId: number,
+  ): Promise<SupervisorStats> {
+    const results: SupervisorStats = await this.ormRepository.manager.query(
+      `CALL CA_GetDashboardStats(?)`,
+      [creditAnalystId],
+    );
+
+    console.log(results[0][0]);
+    return results[0][0];
   }
 
   // ========== HEAD MARKETING (HM) ==========
@@ -330,9 +366,6 @@ export class LoanApplicationInternalRepositoryImpl
       total: result[0]?.[0]?.total_count || 0,
     };
   }
-
-
-
 
   async callSP_HM_GetAllApprovalRequest_Internal(
     hmId: number,
@@ -356,9 +389,14 @@ export class LoanApplicationInternalRepositoryImpl
   async callSP_HM_GetDetail_LoanApplicationsInternal_ById(
     loanAppId: number,
   ): Promise<[TypeLoanApplicationDetail[], TypeApprovalDetail[]]> {
-    throw new Error('Method not implemented.');
-  }
+    const results: [TypeLoanApplicationDetail[], TypeApprovalDetail[]] =
+      await this.ormRepository.manager.query(
+        `CALL HM_GetLoanApplicationById_Internal(?)`,
+        [loanAppId],
+      );
 
+    return results;
+  }
 
   async callSP_HM_GetAllTeams_Internal(hmId: number): Promise<any[]> {
     const ormEntities = this.ormRepository.manager;
@@ -367,7 +405,6 @@ export class LoanApplicationInternalRepositoryImpl
     ]);
     return result[0];
   }
-
 
   async callSP_HM_GetAllUsers(
     page: number,
@@ -383,6 +420,4 @@ export class LoanApplicationInternalRepositoryImpl
 
     return { data, total };
   }
-
-
 }

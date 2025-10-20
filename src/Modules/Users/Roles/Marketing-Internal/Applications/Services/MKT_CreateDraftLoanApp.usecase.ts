@@ -52,11 +52,16 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         );
 
         filePaths = await this.fileStorage.saveDraftsFiles(
-          Number(noKtp) || 0, // fallback ke 0 jika gagal konversi
-          clientNameSafe,
-          files,
-        );
-      }
+const noKtp = dto?.client_internal?.no_ktp;
+const clientNameSafe =
+  dto?.client_internal?.nama_lengkap ?? `draft-${noKtp}`;
+
+someFunction(
+  Number(noKtp) || 0,
+  clientNameSafe,
+  files
+);
+
 
       const loanApp = await this.loanAppDraftRepo.create({
         ...dto,
@@ -237,13 +242,15 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     const { payload } = updateData;
     console.log('Update payload:', payload);
 
-    let filePaths: Record<string, FileMetadata[]> = {};
+let filePaths: Record<string, FileMetadata[]> = {};
 
-    if (files && Object.keys(files).length > 0) {
-      const clientNameSafe = this.sanitizeClientName(
-        payload?.client_internal?.nama_lengkap,
-        `draft-${Id}`,
-      );
+if (files && Object.keys(files).length > 0) {
+  const clientNameSafe = this.sanitizeClientName(
+    payload?.client_internal?.nama_lengkap,
+    `draft-${Id}`,
+  );
+  // lanjutkan proses...
+}
 
       const noKtp = payload?.client_internal?.no_ktp;
 

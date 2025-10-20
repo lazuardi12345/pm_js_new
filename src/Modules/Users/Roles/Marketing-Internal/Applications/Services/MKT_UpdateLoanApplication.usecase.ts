@@ -59,7 +59,7 @@ export class MKT_UpdateLoanApplicationUseCase {
     private readonly fileStorage: IFileStorageRepository,
     @Inject(UNIT_OF_WORK)
     private readonly uow: IUnitOfWork,
-  ) { }
+  ) {}
 
   private sanitizeName(name: string): string {
     return name?.toLowerCase().replace(/\s+/g, '_') ?? 'unknown_client';
@@ -70,21 +70,11 @@ export class MKT_UpdateLoanApplicationUseCase {
     return match ? match[0] : '';
   }
 
-  private extractFileNameFromUrl(url: string): string | null {
-    if (!url) return null;
-    try {
-      const decoded = decodeURIComponent(url);
-      return decoded.split('/').pop() ?? null;
-    } catch {
-      return null;
-    }
-  }
-
   async execute(
     payload: any,
     files: Record<string, Express.Multer.File[]>,
     clientId: number,
-    marketingId: number,
+    marketingId?: number,
   ) {
     const now = new Date();
 
@@ -101,17 +91,15 @@ export class MKT_UpdateLoanApplicationUseCase {
           isCompleted,
         } = payload;
 
-        // 1. Ambil data client
         const client = await this.clientRepo.findById(clientId);
         if (!client) throw new BadRequestException('Client tidak ditemukan');
 
-        // 2. Proses upload/update files
-        // 2. Proses upload/update files
+        // ==== PROSES FILE ====
         const filePaths: Record<string, string> = {};
+
         if (files && Object.keys(files).length > 0) {
           const cleanName = this.sanitizeName(client.nama_lengkap);
           const folderPath = `${client.no_ktp}/${cleanName}`;
-
           const validFields = [
             'foto_ktp',
             'foto_kk',
@@ -125,7 +113,6 @@ export class MKT_UpdateLoanApplicationUseCase {
           for (const [fieldName, fileArray] of Object.entries(files)) {
             const file = fileArray?.[0];
             if (!file) continue;
-
             if (!validFields.includes(fieldName)) {
               console.log(`Skip unknown file field: ${fieldName}`);
               continue;
@@ -134,29 +121,28 @@ export class MKT_UpdateLoanApplicationUseCase {
             const extension = this.getFileExtension(file.originalname);
             const formattedFileName = `${cleanName}-${fieldName}${extension}`;
 
-            // Ambil nama file lama dari URL
+            // Hapus file lama jika ada
             const oldFileUrl = client[fieldName];
-            const oldFileName = oldFileUrl ? oldFileUrl.split('/').pop() : undefined;
+            const oldFileName = oldFileUrl ? decodeURIComponent(oldFileUrl.split('/').pop()) : null;
 
             if (oldFileName) {
-              // Hapus file lama dulu
               await this.fileStorage.deleteFile(client.id!, cleanName, oldFileName);
             }
 
-            // Simpan file baru dengan nama standar (overwrite jika ada)
-            await this.fileStorage.saveFiles(client.id!, cleanName, { [formattedFileName]: [file] });
+            // Simpan file baru
+            await this.fileStorage.saveFiles(client.id!, cleanName, {
+              [formattedFileName]: [file],
+            });
 
-            // Update path/file URL di DB
+            // Simpan path URL
             filePaths[fieldName] = `${this.baseFileUrl}/${client.no_ktp}/${cleanName}/${encodeURIComponent(formattedFileName)}`;
           }
         }
 
-
-        // 3. Update client data dan file path
+        // ==== UPDATE DATA ====
         if (clientInternal || Object.keys(filePaths).length > 0) {
           Object.assign(client, {
             ...clientInternal,
-
             foto_ktp: filePaths['foto_ktp'] ?? client.foto_ktp,
             foto_kk: filePaths['foto_kk'] ?? client.foto_kk,
             foto_id_card: filePaths['foto_id_card'] ?? client.foto_id_card,
@@ -164,28 +150,24 @@ export class MKT_UpdateLoanApplicationUseCase {
             foto_ktp_penjamin: filePaths['foto_ktp_penjamin'] ?? client.foto_ktp_penjamin,
             foto_id_card_penjamin: filePaths['foto_id_card_penjamin'] ?? client.foto_id_card_penjamin,
             foto_rekening: filePaths['foto_rekening'] ?? client.foto_rekening,
-
             updated_at: now,
           });
+
           await this.clientRepo.save(client);
         }
 
-        // 4. Update Address
         if (addressInternal) {
           await this.addressRepo.update(client.id!, { ...addressInternal, updated_at: now });
         }
 
-        // 5. Update Family
         if (familyInternal) {
           await this.familyRepo.update(client.id!, { ...familyInternal, updated_at: now });
         }
 
-        // 6. Update Job
         if (jobInternal) {
           await this.jobRepo.update(client.id!, { ...jobInternal, updated_at: now });
         }
 
-        // 7. Update Loan Application
         if (loanAppInternal) {
           const loanApps = await this.loanAppRepo.findByNasabahId(client.id!);
           const loanApp = loanApps?.[0];
@@ -194,12 +176,10 @@ export class MKT_UpdateLoanApplicationUseCase {
           }
         }
 
-        // 8. Update Collateral
         if (collateralInternal) {
           await this.collateralRepo.update(client.id!, { ...collateralInternal, updated_at: now });
         }
 
-        // 9. Update Relative
         if (relativeInternal) {
           await this.relativeRepo.update(client.id!, { ...relativeInternal, updated_at: now });
         }

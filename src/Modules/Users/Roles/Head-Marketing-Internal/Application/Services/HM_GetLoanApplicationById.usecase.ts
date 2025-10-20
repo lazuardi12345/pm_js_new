@@ -20,10 +20,9 @@ export class HM_GetLoanApplicationByIdUseCase {
   async execute(id: number) {
     // Memanggil stored procedure khusus HM (nama SP bisa sama seperti SPV jika logika sama)
     const result =
-      await this.loanAppRepo.callSP_MKT_GetDetail_LoanApplicationsInternal_ById(
+      await this.loanAppRepo.callSP_HM_GetDetail_LoanApplicationsInternal_ById(
         id,
       );
-
     const [loanDataRows, approvals]: [
       TypeLoanApplicationDetail[] | undefined,
       TypeApprovalDetail[] | undefined,
@@ -168,6 +167,8 @@ export class HM_GetLoanApplicationByIdUseCase {
             foto_id_card: loanData.foto_id_card,
             foto_rekening: loanData.foto_rekening,
             bukti_absensi_file: loanData.bukti_absensi_file,
+            foto_ktp_penjamin: loanData.foto_ktp_penjamin,
+            foto_id_card_penjamin: loanData.foto_id_card_penjamin,
           },
         },
         loan_app_status: loanAppStatus,
