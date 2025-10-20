@@ -7,10 +7,12 @@ import {
   UseInterceptors,
   BadRequestException,
   InternalServerErrorException,
+  ValidationPipe,
 } from '@nestjs/common';
 import { MKT_UpdateLoanApplicationUseCase } from '../../Applications/Services/MKT_UpdateLoanApplication.usecase';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
+import { CreateLoanApplicationDto } from '../../Applications/DTOS/MKT_CreateLoanApplication.dto';
 
 @Controller('mkt/int/loan-apps')
 export class MKT_UpdateLoanApplicationController {
@@ -18,7 +20,7 @@ export class MKT_UpdateLoanApplicationController {
     private readonly updateLoanApplication: MKT_UpdateLoanApplicationUseCase,
   ) {}
 
-  @Patch('update/:id')
+ @Patch('update/:id')
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'foto_ktp', maxCount: 1 },
@@ -33,17 +35,8 @@ export class MKT_UpdateLoanApplicationController {
   async update(
     @Param('id') clientIdParam: string,
     @CurrentUser('id') marketingId: number,
-    @Body() dto: any,
-    @UploadedFiles()
-    files: {
-      foto_ktp?: Express.Multer.File[];
-      foto_kk?: Express.Multer.File[];
-      foto_id_card_penjamin?: Express.Multer.File[];
-      foto_ktp_penjamin?: Express.Multer.File[];
-      foto_id_card?: Express.Multer.File[];
-      bukti_absensi?: Express.Multer.File[];
-      foto_rekening?: Express.Multer.File[];
-    },
+    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true })) dto: CreateLoanApplicationDto,
+    @UploadedFiles() files: { [key: string]: Express.Multer.File[] },
   ) {
     try {
       const clientId = Number(clientIdParam);
@@ -51,29 +44,24 @@ export class MKT_UpdateLoanApplicationController {
         throw new BadRequestException('Invalid client ID');
       }
 
-      if (!dto || typeof dto !== 'object') {
-        throw new BadRequestException('Request body must be a valid object');
+      // Debug: cek files masuk apa enggak
+      console.log('Received files:', Object.keys(files));
+
+      // Pastikan tiap file punya buffer
+      for (const key of Object.keys(files)) {
+        if (!files[key] || !files[key][0] || !files[key][0].buffer) {
+          throw new BadRequestException(`File buffer for ${key} is missing`);
+        }
       }
 
-      console.log('Request body (payload):', dto);
-      console.log('Uploaded files:', files);
-      console.log('Client ID (parsed):', clientId);
-
-      const result = await this.updateLoanApplication.execute(dto, files, clientId);
-
-      console.log('Update result:', result);
+      const result = await this.updateLoanApplication.execute(dto, files, clientId, marketingId);
 
       return result;
     } catch (error) {
-      console.log('Error occurred in controller:', error);
+      console.error('Error in update controller:', error);
+      if (error instanceof BadRequestException) throw error;
 
-      if (error instanceof BadRequestException) {
-        throw error;
-      } else {
-        throw new InternalServerErrorException(
-          'An error occurred while processing your request',
-        );
-      }
+      throw new InternalServerErrorException('An error occurred while processing your request');
     }
   }
 }

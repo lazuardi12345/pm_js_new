@@ -30,6 +30,12 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     private readonly fileStorage: IFileStorageRepository,
   ) {}
 
+  // Utility: sanitize client name for file/folder names
+  private sanitizeClientName(name: string | undefined, fallback: string): string {
+    const rawName = name?.trim() || fallback;
+    return rawName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_-]/g, '');
+  }
+
   async executeCreateDraft(
     dto: PayloadDTO,
     files?: Record<string, Express.Multer.File[]>,
@@ -38,15 +44,19 @@ export class MKT_CreateDraftLoanApplicationUseCase {
       let filePaths: Record<string, FileMetadata[]> = {};
 
       if (files && Object.keys(files).length > 0) {
+        // Pastikan no_ktp string atau number
+        const noKtp = dto?.client_internal?.no_ktp;
+        const clientNameSafe = this.sanitizeClientName(
+          dto?.client_internal?.nama_lengkap,
+          `draft-${noKtp ?? 'unknown'}`,
+        );
+
         filePaths = await this.fileStorage.saveDraftsFiles(
-          dto.marketing_id,
-          dto.client_internal?.nama_lengkap ?? `draft-${dto.marketing_id}`,
+          Number(noKtp) || 0, // fallback ke 0 jika gagal konversi
+          clientNameSafe,
           files,
         );
       }
-
-      console.log('File paths:', files);
-      console.log('Payload (with marketingId):', dto);
 
       const loanApp = await this.loanAppDraftRepo.create({
         ...dto,
@@ -62,7 +72,8 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         },
       };
     } catch (err) {
-      console.log(err);
+      console.error('CreateDraft Error:', err);
+
       if (err.name === 'ValidationError') {
         throw new HttpException(
           {
@@ -123,13 +134,11 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         message: 'Draft loan applications retrieved',
         reference: 'LOAN_RETRIEVE_OK',
         data: {
-          client_and_loan_detail: {
-            ...loanApp,
-          },
+          client_and_loan_detail: loanApp,
         },
       };
     } catch (error) {
-      console.log(error);
+      console.error('RenderDraftById Error:', error);
 
       if (error instanceof HttpException) {
         throw error;
@@ -150,10 +159,9 @@ export class MKT_CreateDraftLoanApplicationUseCase {
 
   async renderDraftByMarketingId(marketingId: number) {
     try {
-      const loanApps =
-        await this.loanAppDraftRepo.findByMarketingId(marketingId);
+      const loanApps = await this.loanAppDraftRepo.findByMarketingId(marketingId);
 
-      if (loanApps.length === 0) {
+      if (!loanApps || loanApps.length === 0) {
         throw new HttpException(
           {
             payload: {
@@ -170,11 +178,11 @@ export class MKT_CreateDraftLoanApplicationUseCase {
           error: false,
           message: 'Draft loan applications retrieved',
           reference: 'LOAN_RETRIEVE_OK',
-          data: [...loanApps],
+          data: loanApps,
         },
       };
     } catch (error) {
-      console.log(error);
+      console.error('RenderDraftByMarketingId Error:', error);
 
       if (error instanceof HttpException) {
         throw error;
@@ -206,7 +214,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         },
       };
     } catch (error) {
-      console.error('DeleteDraft Error >>>', error);
+      console.error('DeleteDraft Error:', error);
       throw new HttpException(
         {
           payload: {
@@ -227,17 +235,21 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     files?: Record<string, Express.Multer.File[]>,
   ) {
     const { payload } = updateData;
-    console.log('Unified: >', payload);
+    console.log('Update payload:', payload);
+
     let filePaths: Record<string, FileMetadata[]> = {};
 
-    console.log('🟢 [updateDraftById] START');
-    console.log('➡️ Incoming ID:', Id);
-    console.log('➡️ Incoming Payload:', JSON.stringify(payload, null, 2));
-
     if (files && Object.keys(files).length > 0) {
+      const clientNameSafe = this.sanitizeClientName(
+        payload?.client_internal?.nama_lengkap,
+        `draft-${Id}`,
+      );
+
+      const noKtp = payload?.client_internal?.no_ktp;
+
       filePaths = await this.fileStorage.saveDraftsFiles(
-        Number(payload?.client_internal?.no_ktp) ?? Id,
-        payload?.client_internal?.nama_lengkap ?? `draft-${Id}`,
+        Number(noKtp) || 0,
+        clientNameSafe,
         files,
       );
     }
@@ -249,22 +261,29 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         throw new NotFoundException(`Draft with id ${Id} not found`);
       }
 
-      const mergedFiles = {
-        ...(existingDraft.uploaded_files || {}),
-        ...(Object.keys(filePaths).length > 0 ? filePaths : {}),
+      // Merge uploaded files baru dengan yang lama, hati-hati overwrite key sama
+      const mergedFiles: Record<string, FileMetadata[]> = {
+        ...existingDraft.uploaded_files,
       };
+
+      // Append or overwrite keys from new files
+      for (const key in filePaths) {
+        if (filePaths.hasOwnProperty(key)) {
+          if (!mergedFiles[key]) {
+            mergedFiles[key] = [];
+          }
+          mergedFiles[key] = mergedFiles[key].concat(filePaths[key]);
+        }
+      }
 
       const entityUpdate: Partial<LoanApplicationEntity> = {
         ...payload,
         uploaded_files: mergedFiles,
       };
-      const loanApp = await this.loanAppDraftRepo.updateDraftById(
-        Id,
-        entityUpdate,
-      );
-      console.log('Repository returned => :', JSON.stringify(loanApp, null, 2));
 
-      // Verifikasi apakah hasilnya berubah
+      const loanApp = await this.loanAppDraftRepo.updateDraftById(Id, entityUpdate);
+      console.log('Repository returned:', JSON.stringify(loanApp, null, 2));
+
       const verifyAfterUpdate = await this.loanAppDraftRepo.findById(Id);
 
       return {
@@ -276,7 +295,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         },
       };
     } catch (error) {
-      console.error('Update error:', error);
+      console.error('UpdateDraft Error:', error);
 
       if (error instanceof HttpException) {
         throw error;
