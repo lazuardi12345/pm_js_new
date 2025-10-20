@@ -43,7 +43,7 @@ export class LoanApplicationInternal_ORM_Entity {
   status_pinjaman: StatusPinjamanEnum;
 
   @Column({ type: 'int', default: 1 })
-  pinjaman_ke: number;
+  pinjaman_ke?: number;
 
   @Column({ type: 'decimal', precision: 15, scale: 2 })
   nominal_pinjaman: number;
