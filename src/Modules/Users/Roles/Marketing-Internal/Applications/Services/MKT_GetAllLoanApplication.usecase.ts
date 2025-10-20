@@ -22,7 +22,7 @@ async execute(
     const { data } = await this.loanAppRepo.callSP_MKT_GetAllLoanApplications_Internal(
       marketingId,
       1,
-      999999, // Angka besar untuk ambil semua data
+      500, // Angka besar untuk ambil semua data
     );
 
     const trimmedQuery = searchQuery.trim().toLowerCase();

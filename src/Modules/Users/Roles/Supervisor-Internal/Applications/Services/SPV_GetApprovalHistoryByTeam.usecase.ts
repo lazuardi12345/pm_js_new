@@ -33,7 +33,7 @@ async execute(
     const { data } = await this.loanAppRepo.callSP_SPV_GetAllApprovalHistory_ByTeam(
       supervisorId,
       1,
-      999999, // Ambil semua data, pagination dilakukan di sini
+      500, // Ambil semua data, pagination dilakukan di sini
     );
 
     if (!data || data.length === 0) {

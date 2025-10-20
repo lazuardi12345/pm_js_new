@@ -19,7 +19,7 @@ async execute(hmId: number, page = 1, pageSize = 10, searchQuery = '') {
     const { data } = await this.loanAppRepo.callSP_HM_GetAllApprovalRequest_Internal(
       hmId,
       1,
-      999999, // Ambil semua data
+      500, // Ambil semua data
     );
 
     if (!data || data.length === 0) {

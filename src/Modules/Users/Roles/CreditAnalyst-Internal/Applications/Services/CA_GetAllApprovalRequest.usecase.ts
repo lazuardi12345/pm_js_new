@@ -18,7 +18,7 @@ export class CA_GetAllApprovalRequest_UseCase {
     // Step 1: Ambil semua data tanpa pagination dari SP
     const { data } = await this.loanAppRepo.callSP_CA_GetAllApprovalRequest_Internal(
       1,
-      999999 // Ambil semua data untuk kebutuhan search
+      500 // Ambil semua data untuk kebutuhan search
     );
 
     if (!data || data.length === 0) {

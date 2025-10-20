@@ -25,7 +25,7 @@ export class SPV_GetAllApprovalRequestByTeam_UseCase {
     const { data } = await this.loanAppRepo.callSP_SPV_GetAllApprovalRequest_Internal(
       supervisorId,
       1,
-      999999, // Ambil semua data
+      500, // Ambil semua data
     );
 
     if (!data || data.length === 0) {

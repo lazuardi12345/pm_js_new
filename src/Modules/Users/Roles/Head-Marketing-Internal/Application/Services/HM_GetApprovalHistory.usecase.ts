@@ -19,7 +19,7 @@ export class HM_GetAllApprovalHistoryUseCase {
     const { data } = await this.loanAppRepo.callSP_HM_GetAllApprovalRequest_Internal(
       hmId,
       1,
-      999999, // Ambil semua data
+      500, // Ambil semua data
     );
 
     if (!data || data.length === 0) {

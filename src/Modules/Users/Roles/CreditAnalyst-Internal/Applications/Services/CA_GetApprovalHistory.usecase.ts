@@ -17,7 +17,7 @@ async execute(creditAnalystId, page = 1, pageSize = 10, searchQuery = '') {
     const result = await this.loanAppRepo.callSP_CA_GetApprovalHistory_Internal(
       creditAnalystId,
       1,
-      999999, // Ambil semua data
+      500, // Ambil semua data
     );
 
     const data = result.data ?? [];
