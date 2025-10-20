@@ -22,6 +22,9 @@ export class ClientInternal {
   public enable_edit: boolean;
   public points?: string;
   public updated_at: Date;
+  foto_ktp_penjamin: import("c:/Users/lazuardi/Documents/FIx/pm_js_new/src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository").FileMetadata;
+  foto_id_card_penjamin: import("c:/Users/lazuardi/Documents/FIx/pm_js_new/src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository").FileMetadata;
+  bukti_absensi_file: import("c:/Users/lazuardi/Documents/FIx/pm_js_new/src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository").FileMetadata;
 
   constructor(
     marketing: { id: number },
