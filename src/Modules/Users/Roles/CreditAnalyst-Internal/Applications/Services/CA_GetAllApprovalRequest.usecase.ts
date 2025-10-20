@@ -11,59 +11,64 @@ export class CA_GetAllApprovalRequest_UseCase {
     private readonly loanAppRepo: ILoanApplicationInternalRepository,
   ) {}
 
-  async execute(page = 1, pageSize = 10, searchQuery = '') {
-    try {
-      console.log('page:', page, 'pageSize:', pageSize);
+ async execute(page = 1, pageSize = 10, searchQuery = '') {
+  try {
+    console.log('page:', page, 'pageSize:', pageSize, 'searchQuery:', searchQuery);
 
-      const { data, total: totalFromSP } =
-        await this.loanAppRepo.callSP_CA_GetAllApprovalRequest_Internal(
-          page,
-          pageSize,
-        );
+    // Step 1: Ambil semua data tanpa pagination dari SP
+    const { data } = await this.loanAppRepo.callSP_CA_GetAllApprovalRequest_Internal(
+      1,
+      500 // Ambil semua data untuk kebutuhan search
+    );
 
-      if (!data || data.length === 0) {
-        return {
-          data: [],
-          page,
-          pageSize,
-          total: 0,
-        };
-      }
-
-      // Filter jika ada search query
-      const filteredData = searchQuery
-        ? data.filter((item) =>
-            item.nama_nasabah
-              ?.toLowerCase()
-              .includes(searchQuery.toLowerCase()),
-          )
-        : data;
-
-      const formattedData = filteredData.map((item) => {
-        const nominal = Number(item.nominal_pinjaman);
-        const formattedNominal = new Intl.NumberFormat('id-ID', {
-          style: 'currency',
-          currency: 'IDR',
-        }).format(nominal);
-
-        return {
-          id_pengajuan: Number(item.loan_id),
-          nama_nasabah: item.nama_nasabah,
-          nominal_pinjaman: formattedNominal,
-          nama_marketing: item.nama_marketing,
-          nama_supervisor: item.nama_supervisor,
-          status: item.status_pengajuan,
-        };
-      });
-
+    if (!data || data.length === 0) {
       return {
-        data: formattedData,
+        data: [],
         page,
         pageSize,
-        total: searchQuery ? filteredData.length : totalFromSP,
+        total: 0,
       };
-    } catch (err) {
-      throw new Error(err.message || 'Gagal mengambil data pengajuan');
     }
+
+    // Step 2: Filter jika ada search query
+    const trimmedQuery = searchQuery.trim().toLowerCase();
+    const filteredData = trimmedQuery
+      ? data.filter((item) =>
+          item.nama_nasabah?.toLowerCase().includes(trimmedQuery)
+        )
+      : data;
+
+    // Step 3: Pagination manual
+    const startIndex = (page - 1) * pageSize;
+    const paginatedData = filteredData.slice(startIndex, startIndex + pageSize);
+
+    // Step 4: Format hasil
+    const formattedData = paginatedData.map((item) => {
+      const nominal = Number(item.nominal_pinjaman);
+      const formattedNominal = new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+      }).format(nominal);
+
+      return {
+        id_pengajuan: Number(item.loan_id),
+        nama_nasabah: item.nama_nasabah,
+        nominal_pinjaman: formattedNominal,
+        nama_marketing: item.nama_marketing,
+        nama_supervisor: item.nama_supervisor,
+        status: item.status_pengajuan,
+      };
+    });
+
+    return {
+      data: formattedData,
+      page,
+      pageSize,
+      total: filteredData.length, // total setelah filter
+    };
+  } catch (err) {
+    throw new Error(err.message || 'Gagal mengambil data pengajuan');
   }
+}
+
 }

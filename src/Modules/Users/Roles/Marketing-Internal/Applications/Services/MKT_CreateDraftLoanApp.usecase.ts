@@ -30,12 +30,6 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     private readonly fileStorage: IFileStorageRepository,
   ) {}
 
-  // Utility: sanitize client name for file/folder names
-  private sanitizeClientName(name: string | undefined, fallback: string): string {
-    const rawName = name?.trim() || fallback;
-    return rawName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_-]/g, '');
-  }
-
   async executeCreateDraft(
     dto: PayloadDTO,
     files?: Record<string, Express.Multer.File[]>,
@@ -44,24 +38,16 @@ export class MKT_CreateDraftLoanApplicationUseCase {
       let filePaths: Record<string, FileMetadata[]> = {};
 
       if (files && Object.keys(files).length > 0) {
-        // Pastikan no_ktp string atau number
-        const noKtp = dto?.client_internal?.no_ktp;
-        const clientNameSafe = this.sanitizeClientName(
-          dto?.client_internal?.nama_lengkap,
-          `draft-${noKtp ?? 'unknown'}`,
-        );
-
         filePaths = await this.fileStorage.saveDraftsFiles(
-const noKtp = dto?.client_internal?.no_ktp;
-const clientNameSafe =
-  dto?.client_internal?.nama_lengkap ?? `draft-${noKtp}`;
+          Number(dto?.client_internal?.no_ktp) ?? dto.client_internal.no_ktp,
+          dto?.client_internal?.nama_lengkap ??
+            `draft-${dto.client_internal.no_ktp}`,
+          files,
+        );
+      }
 
-someFunction(
-  Number(noKtp) || 0,
-  clientNameSafe,
-  files
-);
-
+      console.log('File paths:', files);
+      console.log('Payload (with marketingId):', dto);
 
       const loanApp = await this.loanAppDraftRepo.create({
         ...dto,
@@ -77,8 +63,7 @@ someFunction(
         },
       };
     } catch (err) {
-      console.error('CreateDraft Error:', err);
-
+      console.log(err);
       if (err.name === 'ValidationError') {
         throw new HttpException(
           {
@@ -139,11 +124,13 @@ someFunction(
         message: 'Draft loan applications retrieved',
         reference: 'LOAN_RETRIEVE_OK',
         data: {
-          client_and_loan_detail: loanApp,
+          client_and_loan_detail: {
+            ...loanApp,
+          },
         },
       };
     } catch (error) {
-      console.error('RenderDraftById Error:', error);
+      console.log(error);
 
       if (error instanceof HttpException) {
         throw error;
@@ -164,9 +151,10 @@ someFunction(
 
   async renderDraftByMarketingId(marketingId: number) {
     try {
-      const loanApps = await this.loanAppDraftRepo.findByMarketingId(marketingId);
+      const loanApps =
+        await this.loanAppDraftRepo.findByMarketingId(marketingId);
 
-      if (!loanApps || loanApps.length === 0) {
+      if (loanApps.length === 0) {
         throw new HttpException(
           {
             payload: {
@@ -183,11 +171,11 @@ someFunction(
           error: false,
           message: 'Draft loan applications retrieved',
           reference: 'LOAN_RETRIEVE_OK',
-          data: loanApps,
+          data: [...loanApps],
         },
       };
     } catch (error) {
-      console.error('RenderDraftByMarketingId Error:', error);
+      console.log(error);
 
       if (error instanceof HttpException) {
         throw error;
@@ -219,7 +207,7 @@ someFunction(
         },
       };
     } catch (error) {
-      console.error('DeleteDraft Error:', error);
+      console.error('DeleteDraft Error >>>', error);
       throw new HttpException(
         {
           payload: {
@@ -240,23 +228,13 @@ someFunction(
     files?: Record<string, Express.Multer.File[]>,
   ) {
     const { payload } = updateData;
-    console.log('Update payload:', payload);
+    console.log('Unified: >', payload);
+    let filePaths: Record<string, FileMetadata[]> = {};
 
-let filePaths: Record<string, FileMetadata[]> = {};
-
-if (files && Object.keys(files).length > 0) {
-  const clientNameSafe = this.sanitizeClientName(
-    payload?.client_internal?.nama_lengkap,
-    `draft-${Id}`,
-  );
-  // lanjutkan proses...
-}
-
-      const noKtp = payload?.client_internal?.no_ktp;
-
+    if (files && Object.keys(files).length > 0) {
       filePaths = await this.fileStorage.saveDraftsFiles(
-        Number(noKtp) || 0,
-        clientNameSafe,
+        Number(payload?.client_internal?.no_ktp) ?? Id,
+        payload?.client_internal?.nama_lengkap ?? `draft-${Id}`,
         files,
       );
     }
@@ -268,29 +246,22 @@ if (files && Object.keys(files).length > 0) {
         throw new NotFoundException(`Draft with id ${Id} not found`);
       }
 
-      // Merge uploaded files baru dengan yang lama, hati-hati overwrite key sama
-      const mergedFiles: Record<string, FileMetadata[]> = {
-        ...existingDraft.uploaded_files,
+      const mergedFiles = {
+        ...(existingDraft.uploaded_files || {}),
+        ...(Object.keys(filePaths).length > 0 ? filePaths : {}),
       };
-
-      // Append or overwrite keys from new files
-      for (const key in filePaths) {
-        if (filePaths.hasOwnProperty(key)) {
-          if (!mergedFiles[key]) {
-            mergedFiles[key] = [];
-          }
-          mergedFiles[key] = mergedFiles[key].concat(filePaths[key]);
-        }
-      }
 
       const entityUpdate: Partial<LoanApplicationEntity> = {
         ...payload,
         uploaded_files: mergedFiles,
       };
+      const loanApp = await this.loanAppDraftRepo.updateDraftById(
+        Id,
+        entityUpdate,
+      );
+      console.log('Repository returned => :', JSON.stringify(loanApp, null, 2));
 
-      const loanApp = await this.loanAppDraftRepo.updateDraftById(Id, entityUpdate);
-      console.log('Repository returned:', JSON.stringify(loanApp, null, 2));
-
+      // Verifikasi apakah hasilnya berubah
       const verifyAfterUpdate = await this.loanAppDraftRepo.findById(Id);
 
       return {
@@ -302,7 +273,7 @@ if (files && Object.keys(files).length > 0) {
         },
       };
     } catch (error) {
-      console.error('UpdateDraft Error:', error);
+      console.error('Update error:', error);
 
       if (error instanceof HttpException) {
         throw error;

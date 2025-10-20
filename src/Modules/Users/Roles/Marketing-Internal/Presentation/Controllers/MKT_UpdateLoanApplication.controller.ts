@@ -32,36 +32,25 @@ export class MKT_UpdateLoanApplicationController {
       { name: 'foto_rekening', maxCount: 1 },
     ]),
   )
-  async update(
-    @Param('id') clientIdParam: string,
-    @CurrentUser('id') marketingId: number,
-    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true })) dto: CreateLoanApplicationDto,
-    @UploadedFiles() files: { [key: string]: Express.Multer.File[] },
-  ) {
-    try {
-      const clientId = Number(clientIdParam);
-      if (isNaN(clientId)) {
-        throw new BadRequestException('Invalid client ID');
-      }
-
-      // Debug: cek files masuk apa enggak
-      console.log('Received files:', Object.keys(files));
-
-      // Pastikan tiap file punya buffer
-      for (const key of Object.keys(files)) {
-        if (!files[key] || !files[key][0] || !files[key][0].buffer) {
-          throw new BadRequestException(`File buffer for ${key} is missing`);
-        }
-      }
-
-      const result = await this.updateLoanApplication.execute(dto, files, clientId, marketingId);
-
-      return result;
-    } catch (error) {
-      console.error('Error in update controller:', error);
-      if (error instanceof BadRequestException) throw error;
-
-      throw new InternalServerErrorException('An error occurred while processing your request');
+async update(
+  @Param('id') clientIdParam: string,
+  @CurrentUser('id') marketingId: number,
+  @Body('payload', new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  dto: CreateLoanApplicationDto,
+  @UploadedFiles() files: { [key: string]: Express.Multer.File[] },
+) {
+  try {
+    const clientId = Number(clientIdParam);
+    if (isNaN(clientId)) {
+      throw new BadRequestException('Invalid client ID');
     }
+
+    const result = await this.updateLoanApplication.execute(dto, files, clientId, marketingId);
+    return result;
+  } catch (error) {
+    console.error('Error in update controller:', error);
+    if (error instanceof BadRequestException) throw error;
+    throw new InternalServerErrorException('An error occurred while processing your request');
   }
+}
 }

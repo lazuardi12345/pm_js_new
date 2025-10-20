@@ -120,9 +120,9 @@ export class MKT_CreateLoanApplicationUseCase {
           parseFileUrl(documents_files?.foto_kk ?? client_internal.foto_kk ?? null),
           parseFileUrl(documents_files?.foto_id_card ?? null),
           parseFileUrl(documents_files?.foto_rekening ?? null),
-          client_internal.no_rekening as string,  
-          client_internal.enable_edit,  
-          String(client_internal.points), 
+          client_internal.no_rekening as string,
+          client_internal.enable_edit,
+          String(client_internal.points),
           now,
           now,
           undefined,
@@ -191,21 +191,22 @@ export class MKT_CreateLoanApplicationUseCase {
         const loanAppEntity = new LoanApplicationInternal(
           { id: customer.id! },
           loan_application_internal.status_pinjaman as StatusPinjamanEnum,
-          loan_application_internal.nominal_pinjaman,
-          loan_application_internal.tenor,
-          loan_application_internal.keperluan,
+          loan_application_internal.nominal_pinjaman ?? 0, // Handle undefined
+          loan_application_internal.tenor ?? 0,
+          loan_application_internal.keperluan ?? '',
           undefined,
           undefined,
           undefined,
-          loan_application_internal.status as StatusPengajuanEnum,
-          loan_application_internal.pinjaman_ke,
-          loan_application_internal.riwayat_nominal!,
-          loan_application_internal.riwayat_tenor!,
-          loan_application_internal.sisa_pinjaman!,
-          loan_application_internal.notes!,
+          (loan_application_internal.status ?? 'pending') as StatusPengajuanEnum, 
+          loan_application_internal.pinjaman_ke ?? 1,
+          loan_application_internal.riwayat_nominal ?? 0,
+          loan_application_internal.riwayat_tenor ?? 0,
+          loan_application_internal.sisa_pinjaman ?? 0,
+          loan_application_internal.notes ?? '',
           Boolean(loan_application_internal.is_banding),
-          loan_application_internal.alasan_banding!,
+          loan_application_internal.alasan_banding ?? '',
         );
+
         const loanApp = await this.loanAppRepo.save(loanAppEntity);
 
         // **6. Simpan CollateralInternal**

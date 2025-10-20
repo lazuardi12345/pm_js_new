@@ -11,31 +11,37 @@ export class MKT_GetAllLoanApplicationUseCase {
     private readonly loanAppRepo: ILoanApplicationInternalRepository,
   ) {}
 
- async execute(
+async execute(
   marketingId: number,
   page = 1,
   pageSize = 10,
   searchQuery = '',
 ) {
   try {
-    // Ambil data dan total dari SP
-    const { data, total } = await this.loanAppRepo.callSP_MKT_GetAllLoanApplications_Internal(
+    // Step 1: Ambil semua data tanpa pagination
+    const { data } = await this.loanAppRepo.callSP_MKT_GetAllLoanApplications_Internal(
       marketingId,
-      page,
-      pageSize,
+      1,
+      500, // Angka besar untuk ambil semua data
     );
 
     const trimmedQuery = searchQuery.trim().toLowerCase();
 
-    // Filter data sesuai searchQuery (case insensitive)
+    // Step 2: Filter berdasarkan searchQuery
     const filteredData = trimmedQuery
       ? data.filter((item) =>
-          item.nama_lengkap?.toLowerCase().includes(trimmedQuery),
+          (item.nama_lengkap?.toLowerCase().includes(trimmedQuery)) ||
+          (item.status?.toLowerCase().includes(trimmedQuery)) ||
+          (item.no_ktp?.toLowerCase().includes(trimmedQuery)) ||
+          (item.email?.toLowerCase().includes(trimmedQuery))
         )
       : data;
 
-    // Format data sesuai kebutuhan output
-    const formattedData = filteredData.map((item) => ({
+    // Step 3: Apply manual pagination ke hasil filter
+    const startIndex = (page - 1) * pageSize;
+    const paginatedData = filteredData.slice(startIndex, startIndex + pageSize);
+
+    const formattedData = paginatedData.map((item) => ({
       clientId: Number(item.clientId),
       loanAppId: Number(item.loanAppId),
       nominal_pinjaman: Number(item.nominal_pinjaman),
@@ -44,7 +50,6 @@ export class MKT_GetAllLoanApplicationUseCase {
       status: item.status,
     }));
 
-    // Return dengan payload standar
     return {
       payload: {
         error: false,
@@ -54,7 +59,7 @@ export class MKT_GetAllLoanApplicationUseCase {
           results: formattedData,
           page,
           pageSize,
-          total: total.toString(),
+          total: filteredData.length.toString(), // total hasil setelah filter
         },
       },
     };
@@ -62,4 +67,6 @@ export class MKT_GetAllLoanApplicationUseCase {
     throw new Error(err.message || 'Gagal mengambil data pengajuan');
   }
 }
+
+
 }
