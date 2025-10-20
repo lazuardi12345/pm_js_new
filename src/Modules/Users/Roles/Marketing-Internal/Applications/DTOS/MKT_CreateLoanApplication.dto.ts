@@ -71,19 +71,19 @@ export class ClientInternalDto {
 
   @IsOptional()
   @IsString()
-  no_rekening?: string | null;
+  no_rekening?: string ;
 
   @IsOptional()
-  foto_ktp?: string | Express.Multer.File | null;
+  foto_ktp?: string | Express.Multer.File ;
 
   @IsOptional()
-  foto_kk?: string | Express.Multer.File | null;
+  foto_kk?: string | Express.Multer.File ;
   
   @IsOptional()
-  points: string;
+  points?: string;
 
   @IsOptional()
-  enable_edit: boolean;
+  enable_edit?: boolean;
 
 
   // Hilangkan enable_edit dan points supaya validasi gak error
@@ -154,7 +154,7 @@ export class FamilyInternalDto {
 
   @IsOptional()
   @IsString()
-  jabatan?: string | null;
+  jabatan?: string;
 
   @IsOptional()
   @IsNumber()
@@ -190,35 +190,35 @@ export class JobInternalDto {
 
   @IsOptional()
   @IsEnum(GolonganEnum)
-  golongan?: GolonganEnum | null;
+  golongan?: GolonganEnum;
 
   @IsOptional()
   @IsString()
-  yayasan?: string | null;
+  yayasan?: string;
 
   @IsOptional()
   @IsString()
-  nama_atasan?: string | null;
+  nama_atasan?: string;
 
   @IsOptional()
   @IsString()
-  nama_hrd?: string | null;
+  nama_hrd?: string;
 
   @IsOptional()
   @IsString()
-  absensi?: string | null;
+  absensi?: string;
 
   @IsOptional()
   @IsString()
-  bukti_absensi?: string | null;
+  bukti_absensi?: string;
 }
 //#endregion
 
 //#region Loan
 export class LoanInternalDto {
-  @IsNotEmpty()
+  @IsOptional()
   @IsEnum(StatusPinjamanEnum)
-  status_pinjaman: StatusPinjamanEnum;
+  status_pinjaman?: StatusPinjamanEnum;
 
   @IsOptional()
   @IsNumber()
@@ -242,27 +242,27 @@ export class LoanInternalDto {
 
   @IsOptional()
   @IsNumber()
-  riwayat_nominal?: number | null;
+  riwayat_nominal?: number;
 
   @IsOptional()
   @IsNumber()
-  riwayat_tenor?: number | null;
+  riwayat_tenor?: number;
 
   @IsOptional()
   @IsNumber()
-  sisa_pinjaman?: number | null;
+  sisa_pinjaman?: number;
 
   @IsOptional()
   @IsString()
-  notes?: string | null;
+  notes?: string;
 
   @IsOptional()
   @IsNumber()
-  is_banding?: number | null;
+  is_banding?: number;
 
   @IsOptional()
   @IsString()
-  alasan_banding?: string | null;
+  alasan_banding?: string;
 }
 //#endregion
 
@@ -314,11 +314,11 @@ export class CollateralInternalDto {
 
   @IsOptional()
   @IsString()
-  lama_kerja_penjamin?: string | null;
+  lama_kerja_penjamin?: string;
 
   @IsOptional()
   @IsString()
-  bagian?: string | null;
+  bagian?: string;
 
   @IsOptional()
   @IsString()
@@ -326,56 +326,56 @@ export class CollateralInternalDto {
 
   @IsOptional()
   @IsString()
-  absensi_penjamin?: string | null;
+  absensi_penjamin?: string;
 
   @IsOptional()
   @IsEnum(RiwayatPinjamPenjaminEnum)
-  riwayat_pinjam_penjamin?: RiwayatPinjamPenjaminEnum | null;
+  riwayat_pinjam_penjamin?: RiwayatPinjamPenjaminEnum;
 
   @IsOptional()
   @IsNumber()
-  riwayat_nominal_penjamin?: number | null;
+  riwayat_nominal_penjamin?: number;
 
   @IsOptional()
   @IsNumber()
-  riwayat_tenor_penjamin?: number | null;
+  riwayat_tenor_penjamin?: number;
 
   @IsOptional()
   @IsNumber()
-  sisa_pinjaman_penjamin?: number | null;
+  sisa_pinjaman_penjamin?: number;
 
   @IsOptional()
   @IsString()
-  jaminan_cg_penjamin?: string | null;
+  jaminan_cg_penjamin?: string;
 
   @IsOptional()
   @IsString()
-  status_hubungan_penjamin?: string | null;
+  status_hubungan_penjamin?: string;
 }
 //#endregion
 
 //#region Files
 export class FilesDto {
   @IsOptional()
-  foto_ktp?: string | Express.Multer.File | null;
+  foto_ktp?: string | Express.Multer.File;
 
   @IsOptional()
-  foto_kk?: string | Express.Multer.File | null;
+  foto_kk?: string | Express.Multer.File;
 
   @IsOptional()
-  foto_id_card?: string | Express.Multer.File | null;
+  foto_id_card?: string | Express.Multer.File;
 
   @IsOptional()
-  bukti_absensi_file?: string | Express.Multer.File | null;
+  bukti_absensi_file?: string | Express.Multer.File;
 
   @IsOptional()
-  foto_ktp_penjamin?: string | Express.Multer.File | null;
+  foto_ktp_penjamin?: string | Express.Multer.File;
 
   @IsOptional()
-  foto_id_card_penjamin?: string | Express.Multer.File | null;
+  foto_id_card_penjamin?: string | Express.Multer.File;
 
   @IsOptional()
-  foto_rekening?: string | Express.Multer.File | null;
+  foto_rekening?: string | Express.Multer.File;
 }
 //#endregion
 
@@ -436,7 +436,7 @@ export interface TypeLoanApplicationDetail {
   no_hp: string;
   email: string;
   status_nikah: string;
-  no_rekening: string | null;
+  no_rekening?: string;
 
   // Address
   alamat_ktp: string;
@@ -454,76 +454,76 @@ export interface TypeLoanApplicationDetail {
   family_hubungan: string;
   nama_keluarga: string;
   bekerja: string;
-  nama_perusahaan: string | null;
-  jabatan: string | null;
-  penghasilan: number;
-  alamat_kerja: string;
-  no_hp_keluarga: string;
+  nama_perusahaan?: string;
+  jabatan?: string;
+  penghasilan?: number;
+  alamat_kerja?: string;
+  no_hp_keluarga?: string;
 
   // Job
   perusahaan: string;
   divisi: string;
-  lama_kerja_bulan: number;
-  lama_kerja_tahun: number;
-  golongan: string | null;
-  yayasan: string | null;
-  nama_atasan: string | null;
-  nama_hrd: string | null;
-  absensi: string | null;
-  bukti_absensi: string | null;
+  lama_kerja_bulan?: number;
+  lama_kerja_tahun?: number;
+  golongan?: string;
+  yayasan?: string ;
+  nama_atasan?: string ;
+  nama_hrd?: string ;
+  absensi?: string ;
+  bukti_absensi?: string ;
 
   // Loan
-  status_pinjaman: string;
-  pinjaman_ke: number;
-  nominal_pinjaman: number;
-  tenor: number;
-  keperluan: string;
-  status: string;
-  riwayat_nominal: number | null;
-  riwayat_tenor: number | null;
-  sisa_pinjaman: number | null;
-  notes: string | null;
-  is_banding: number | null;
-  alasan_banding: string | null;
+  status_pinjaman?: string;
+  pinjaman_ke?: number;
+  nominal_pinjaman?: number;
+  tenor?: number;
+  keperluan?: string;
+  status?: string;
+  riwayat_nominal?: number ;
+  riwayat_tenor?: number ;
+  sisa_pinjaman?: number ;
+  notes?: string ;
+  is_banding?: number ;
+  alasan_banding?: string ;
 
   // Relative (Optional)
-  kerabat_kerja: string | null;
-  nama_kerabat_kerja: string | null;
-  alamat_kerabat_kerja: string | null;
-  no_hp_kerabat_kerja: string | null;
-  nama_perusahaan_kerabat_kerja: string | null;
-  status_hubungan_kerabat_kerja: string | null;
+  kerabat_kerja?: string ;
+  nama_kerabat_kerja?: string ;
+  alamat_kerabat_kerja?: string ;
+  no_hp_kerabat_kerja?: string ;
+  nama_perusahaan_kerabat_kerja?: string ;
+  status_hubungan_kerabat_kerja?: string ;
 
   // Collateral
-  jaminan_hrd: string;
-  jaminan_cg: string;
-  penjamin: string;
-  nama_penjamin: string;
-  lama_kerja_penjamin: string | null;
-  bagian: string | null;
-  absensi_penjamin: string | null;
-  riwayat_pinjam_penjamin: string | null;
-  riwayat_nominal_penjamin: number | null;
-  riwayat_tenor_penjamin: number | null;
-  sisa_pinjaman_penjamin: number | null;
-  jaminan_cg_penjamin: string | null;
-  status_hubungan_penjamin: string | null;
+  jaminan_hrd?: string;
+  jaminan_cg?: string;
+  penjamin?: string;
+  nama_penjamin?: string;
+  lama_kerja_penjamin?: string ;
+  bagian?: string ;
+  absensi_penjamin?: string ;
+  riwayat_pinjam_penjamin?: string ;
+  riwayat_nominal_penjamin?: number ;
+  riwayat_tenor_penjamin?: number ;
+  sisa_pinjaman_penjamin?: number ;
+  jaminan_cg_penjamin?: string ;
+  status_hubungan_penjamin?: string ;
 
   // Files (Optional)
-  foto_ktp: string | null;
-  foto_kk: string | null;
-  foto_id_card_penjamin: string | null;
-  foto_ktp_penjamin: string | null;
-  foto_id_card: string | null;
-  bukti_absensi_file: string | null;
-  foto_rekening: string | null;
+  foto_ktp?: string;
+  foto_kk?: string ;
+  foto_id_card_penjamin?: string ;
+  foto_ktp_penjamin?: string ;
+  foto_id_card?: string ;
+  bukti_absensi_file?: string ;
+  foto_rekening?: string ;
 
   // Approval Metadata
   approval_id: number;
   role: string;
   // status: string;
-  keterangan: string | null;
-  kesimpulan: string | null;
+  keterangan: string ;
+  kesimpulan: string ;
   created_at: string;
   updated_at: string;
 
@@ -537,9 +537,9 @@ export interface TypeApprovalDetail {
   approval_id: number;
   role: string;
   status: string;
-  is_banding: number | null;
-  keterangan: string | null;
-  kesimpulan: string | null;
+  is_banding: number ;
+  keterangan: string ;
+  kesimpulan: string ;
   created_at: string;
   updated_at: string;
   user_id: number;
@@ -552,8 +552,8 @@ export interface TypeStatusApproval {
   data: {
     id_approval: number;
     status: string;
-    keterangan: string | null;
-    kesimpulan: string | null;
+    keterangan: string ;
+    kesimpulan: string ;
     created_at: string;
     updated_at: string;
   };
