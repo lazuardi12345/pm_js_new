@@ -1,4 +1,8 @@
-import { GENDER, MARRIAGE_STATUS } from "src/Shared/Enums/Internal/Clients.enum";
+import {
+  GENDER,
+  MARRIAGE_STATUS,
+} from 'src/Shared/Enums/Internal/Clients.enum';
+import { FileMetadata } from 'src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository';
 
 export class ClientInternal {
   public readonly id?: number;
@@ -22,9 +26,9 @@ export class ClientInternal {
   public enable_edit: boolean;
   public points?: string;
   public updated_at: Date;
-  foto_ktp_penjamin: import("c:/Users/lazuardi/Documents/FIx/pm_js_new/src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository").FileMetadata;
-  foto_id_card_penjamin: import("c:/Users/lazuardi/Documents/FIx/pm_js_new/src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository").FileMetadata;
-  bukti_absensi_file: import("c:/Users/lazuardi/Documents/FIx/pm_js_new/src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository").FileMetadata;
+  foto_ktp_penjamin?: FileMetadata;
+  foto_id_card_penjamin?: FileMetadata;
+  bukti_absensi_file?: FileMetadata;
 
   constructor(
     marketing: { id: number },
@@ -64,14 +68,14 @@ export class ClientInternal {
     this.foto_id_card = foto_id_card;
     this.foto_rekening = foto_rekening;
     this.no_rekening = no_rekening;
-    this. enable_edit =  enable_edit;
+    this.enable_edit = enable_edit;
     this.points = points;
 
     this.created_at = created_at;
     this.updated_at = updated_at;
     this.deleted_at = deleted_at;
   }
-    // Validations
+  // Validations
   public isKtpValid(): boolean {
     return this.no_ktp.length === 16;
   }
@@ -79,5 +83,4 @@ export class ClientInternal {
   public isMarriageStatusValid(): boolean {
     return Object.values(MARRIAGE_STATUS).includes(this.status_nikah);
   }
-
 }
