@@ -367,7 +367,7 @@ export class LoanApplicationInternalRepositoryImpl
     };
   }
 
-  async callSP_HM_GetAllApprovalRequest_Internal(
+async callSP_HM_GetAllApprovalRequest_Internal(
     hmId: number,
     page: number,
     pageSize: number,
