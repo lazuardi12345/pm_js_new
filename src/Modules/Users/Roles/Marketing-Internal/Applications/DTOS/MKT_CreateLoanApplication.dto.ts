@@ -128,9 +128,9 @@ export class AddressInternalDto {
   @IsEnum(DomisiliEnum)
   domisili: DomisiliEnum;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  alamat_lengkap: string;
+  alamat_lengkap?: string;
 }
 //#endregion
 
@@ -257,6 +257,7 @@ export class LoanInternalDto {
   notes?: string;
 
   @IsOptional()
+  @Type(()=> Number)
   @IsNumber()
   is_banding?: number;
 
@@ -290,7 +291,8 @@ export class RelativeInternalDto {
 
   @IsOptional()
   @IsString()
-  hubungan: string;
+  status_hubungan: string;
+
 }
 //#endregion
 
@@ -448,7 +450,7 @@ export interface TypeLoanApplicationDetail {
   status_rumah_ktp: string;
   status_rumah: string;
   domisili: string;
-  alamat_lengkap: string;
+  alamat_lengkap?: string;
 
   // Family
   family_hubungan: string;
@@ -537,7 +539,7 @@ export interface TypeApprovalDetail {
   approval_id: number;
   role: string;
   status: string;
-  is_banding: number ;
+  is_banding?: number ;
   keterangan: string ;
   kesimpulan: string ;
   created_at: string;

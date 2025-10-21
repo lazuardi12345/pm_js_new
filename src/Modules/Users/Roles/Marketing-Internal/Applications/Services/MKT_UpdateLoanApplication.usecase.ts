@@ -35,6 +35,7 @@ import {
   IUnitOfWork,
   UNIT_OF_WORK,
 } from 'src/Modules/LoanAppInternal/Domain/Repositories/IUnitOfWork.repository';
+import { LoanInternalDto } from '../DTOS/MKT_CreateLoanApplication.dto';
 
 @Injectable()
 export class MKT_UpdateLoanApplicationUseCase {
@@ -70,31 +71,35 @@ export class MKT_UpdateLoanApplicationUseCase {
     return match ? match[0] : '';
   }
 
+  private sanitizeDate(date: Date | string): Date {
+    return new Date(date);
+  }
+
   async execute(
     payload: any,
     files: Record<string, Express.Multer.File[]>,
     clientId: number,
     marketingId?: number,
   ) {
-    const now = new Date();
+    const now = this.sanitizeDate(new Date());
 
     try {
       return await this.uow.start(async () => {
         const {
-          client_internal: clientInternal,
-          address_internal: addressInternal,
-          family_internal: familyInternal,
-          job_internal: jobInternal,
-          loan_application_internal: loanAppInternal,
-          collateral_internal: collateralInternal,
-          relative_internal: relativeInternal,
-          isCompleted,
+          client_internal,
+          address_internal,
+          family_internal,
+          job_internal,
+          loan_application_internal,
+          collateral_internal,
+          relative_internal,
         } = payload;
+
+        console.log('multiple files: >>>>>>>>>', files)
 
         const client = await this.clientRepo.findById(clientId);
         if (!client) throw new BadRequestException('Client tidak ditemukan');
 
-        // ==== PROSES FILE ====
         const filePaths: Record<string, string> = {};
         let isUpdated = false;
 
@@ -113,16 +118,11 @@ export class MKT_UpdateLoanApplicationUseCase {
 
           for (const [fieldName, fileArray] of Object.entries(files)) {
             const file = fileArray?.[0];
-            if (!file) continue;
-            if (!validFields.includes(fieldName)) {
-              console.log(`Skip unknown file field: ${fieldName}`);
-              continue;
-            }
+            if (!file || !validFields.includes(fieldName)) continue;
 
             const extension = this.getFileExtension(file.originalname);
             const formattedFileName = `${cleanName}-${fieldName}${extension}`;
 
-            // Hapus file lama jika ada
             const oldFileUrl = client[fieldName];
             const oldFileName = oldFileUrl ? decodeURIComponent(oldFileUrl.split('/').pop()) : null;
 
@@ -130,14 +130,11 @@ export class MKT_UpdateLoanApplicationUseCase {
               await this.fileStorage.deleteFile(client.id!, cleanName, oldFileName);
             }
 
-            // Simpan file baru
             await this.fileStorage.saveFiles(client.id!, cleanName, {
               [formattedFileName]: [file],
             });
 
-            // Simpan path URL
             const newFilePath = `${this.baseFileUrl}/${client.no_ktp}/${cleanName}/${encodeURIComponent(formattedFileName)}`;
-
             filePaths[fieldName] = newFilePath;
 
             if (newFilePath !== oldFileUrl) {
@@ -146,27 +143,18 @@ export class MKT_UpdateLoanApplicationUseCase {
           }
         }
 
-        // ==== UPDATE DATA CLIENT ====
         let updatedClientData = {};
-        if (clientInternal || Object.keys(filePaths).length > 0) {
+        if (client_internal || Object.keys(filePaths).length > 0) {
           updatedClientData = {
-            ...clientInternal,
-            foto_ktp: filePaths['foto_ktp'] ?? client.foto_ktp,
-            foto_kk: filePaths['foto_kk'] ?? client.foto_kk,
-            foto_id_card: filePaths['foto_id_card'] ?? client.foto_id_card,
-            bukti_absensi_file: filePaths['bukti_absensi_file'] ?? client.bukti_absensi_file,
-            foto_ktp_penjamin: filePaths['foto_ktp_penjamin'] ?? client.foto_ktp_penjamin,
-            foto_id_card_penjamin: filePaths['foto_id_card_penjamin'] ?? client.foto_id_card_penjamin,
-            foto_rekening: filePaths['foto_rekening'] ?? client.foto_rekening,
+            ...client_internal,
+            ...filePaths,
             updated_at: now,
           };
 
-          // Hapus properti undefined supaya gak overwrite dengan undefined
           Object.keys(updatedClientData).forEach(key => {
             if (updatedClientData[key] === undefined) delete updatedClientData[key];
           });
 
-          // Cek perubahan data client
           const hasClientChanged = Object.entries(updatedClientData).some(([key, val]) => {
             return client[key] !== val;
           });
@@ -175,10 +163,10 @@ export class MKT_UpdateLoanApplicationUseCase {
             await this.clientRepo.save({
               ...client,
               ...updatedClientData,
-              isKtpValid: function (): boolean {
+              isKtpValid: () => {
                 throw new Error('Function not implemented.');
               },
-              isMarriageStatusValid: function (): boolean {
+              isMarriageStatusValid: () => {
                 throw new Error('Function not implemented.');
               },
             });
@@ -186,82 +174,57 @@ export class MKT_UpdateLoanApplicationUseCase {
           }
         }
 
-        // ==== UPDATE ADDRESS ====
-        let updatedAddressData = {};
-        if (addressInternal && Object.keys(addressInternal).length > 0) {
-          const existingAddress = await this.addressRepo.findById(client.id!);
+        const updateIfExist = async (repo, data, clientField) => {
+          if (!data || Object.keys(data).length === 0) return {};
 
-          if (!existingAddress) {
-            // Buat alamat baru
-            await this.addressRepo.findByNasabahId({
-              nasabah_id: client.id!,
-              ...addressInternal,
-              created_at: now,
-              updated_at: now,
+          const existing = await repo.findById(clientId);
+          const timestampedData = { ...data, updated_at: now };
+
+          if (!existing) {
+            await repo.save({
+              ...data,
+              nasabah: { id: clientId },
+              createdAt: now,
+              updatedAt: now,
             });
-            updatedAddressData = addressInternal;
             isUpdated = true;
+            return data;
           } else {
-            // Pastikan existingAddress.id ada
-            if (!existingAddress.id) {
-              throw new BadRequestException('Address ID tidak ditemukan, update gagal');
-            }
-            await this.addressRepo.update(existingAddress.id, { ...addressInternal, updated_at: now });
-            updatedAddressData = addressInternal;
+            if (!existing.id) throw new BadRequestException(`${clientField} ID tidak ditemukan, update gagal`);
+            await repo.update(existing.id, timestampedData);
             isUpdated = true;
+            return data;
           }
-        }
+        };
 
+        const updatedAddressData = await updateIfExist(this.addressRepo, address_internal, 'Address');
+        const updatedFamilyData = await updateIfExist(this.familyRepo, family_internal, 'Family');
+        const updatedJobData = await updateIfExist(this.jobRepo, job_internal, 'Job');
+        const updatedCollateralData = await updateIfExist(this.collateralRepo, collateral_internal, 'Collateral');
+        const updatedRelativeData = await updateIfExist(this.relativeRepo, relative_internal, 'Relative');
 
-        // ==== UPDATE FAMILY ====
-        let updatedFamilyData = {};
-        if (familyInternal && Object.keys(familyInternal).length > 0) {
-          await this.familyRepo.update(client.id!, { ...familyInternal, updated_at: now });
-          updatedFamilyData = familyInternal;
-          isUpdated = true;
-        }
+        // Loan application (khusus karena pakai findByNasabahId)
+        let updatedLoanAppData: Partial<LoanInternalDto> = {};
 
-        // ==== UPDATE JOB ====
-        let updatedJobData = {};
-        if (jobInternal && Object.keys(jobInternal).length > 0) {
-          await this.jobRepo.update(client.id!, { ...jobInternal, updated_at: now });
-          updatedJobData = jobInternal;
-          isUpdated = true;
-        }
-
-        // ==== UPDATE LOAN APPLICATION ====
-        let updatedLoanAppData = {};
-        if (loanAppInternal && Object.keys(loanAppInternal).length > 0) {
+        if (loan_application_internal && Object.keys(loan_application_internal).length > 0) {
           const loanApps = await this.loanAppRepo.findByNasabahId(client.id!);
           const loanApp = loanApps?.[0];
           if (loanApp) {
-            await this.loanAppRepo.update(loanApp.id!, { ...loanAppInternal, updated_at: now });
-            updatedLoanAppData = loanAppInternal;
+            await this.loanAppRepo.update(loanApp.id!, {
+              ...loan_application_internal,
+              is_banding: loan_application_internal.is_banding ? 1 : 0,
+              updated_at: now,
+            });
+            updatedLoanAppData = loan_application_internal;
             isUpdated = true;
           }
         }
 
-        // ==== UPDATE COLLATERAL ====
-        let updatedCollateralData = {};
-        if (collateralInternal && Object.keys(collateralInternal).length > 0) {
-          await this.collateralRepo.update(client.id!, { ...collateralInternal, updated_at: now });
-          updatedCollateralData = collateralInternal;
-          isUpdated = true;
-        }
-
-        // ==== UPDATE RELATIVE ====
-        let updatedRelativeData = {};
-        if (relativeInternal && Object.keys(relativeInternal).length > 0) {
-          await this.relativeRepo.update(client.id!, { ...relativeInternal, updated_at: now });
-          updatedRelativeData = relativeInternal;
-          isUpdated = true;
-        }
 
         if (!isUpdated) {
           throw new BadRequestException('Tidak ada data yang diupdate');
         }
 
-        // Gabung semua data yang diupdate
         const updatedFields = {
           ...updatedClientData,
           ...updatedAddressData,
@@ -290,3 +253,4 @@ export class MKT_UpdateLoanApplicationUseCase {
     }
   }
 }
+
