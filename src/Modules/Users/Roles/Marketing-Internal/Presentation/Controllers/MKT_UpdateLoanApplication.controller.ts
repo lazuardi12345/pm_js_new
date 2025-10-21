@@ -12,11 +12,13 @@ import {
 import { MKT_UpdateLoanApplicationUseCase } from '../../Applications/Services/MKT_UpdateLoanApplication.usecase';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
+import { LoanApplicationInternalService } from 'src/Modules/LoanAppInternal/Application/Services/loan-app-internal.service';
 
 @Controller('mkt/int/loan-apps')
 export class MKT_UpdateLoanApplicationController {
   constructor(
     private readonly updateLoanApplication: MKT_UpdateLoanApplicationUseCase,
+    private readonly loanAppService: LoanApplicationInternalService,
   ) {}
 
   @Patch('update/:id')
@@ -32,13 +34,16 @@ export class MKT_UpdateLoanApplicationController {
     ]),
   )
   async update(
-    @Param('id') clientIdParam: string,
+    @Param('id') loanId: string,
     @CurrentUser('id') marketingId: number,
     @Body('payload') rawPayload: string,
     @UploadedFiles() files: { [key: string]: Express.Multer.File[] },
   ) {
+    const fixTypeParams = Number(loanId);
+    const results = await this.loanAppService.findById(fixTypeParams);
+    const getClientId = Number(results?.nasabah.id);
     try {
-      const clientId = Number(clientIdParam);
+      const clientId = Number(getClientId);
       if (isNaN(clientId)) {
         throw new BadRequestException('Invalid client ID');
       }
