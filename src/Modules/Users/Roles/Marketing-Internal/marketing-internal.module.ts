@@ -24,6 +24,7 @@ import { MKT_GetAllLoanApplicationUseCase } from './Applications/Services/MKT_Ge
 import { MKT_GetLoanApplicationByIdUseCase } from './Applications/Services/MKT_GetLoanApplicationById.usecase';
 import { MKT_CreateDraftLoanApplicationUseCase } from './Applications/Services/MKT_CreateDraftLoanApp.usecase';
 import { MKT_UpdateLoanApplicationUseCase } from './Applications/Services/MKT_UpdateLoanApplication.usecase';
+import { MKT_TriggerAppealUseCase } from './Applications/Services/MKT_TriggerAppeal.usecase';
 import { MKT_GetDashboardStatsUseCase } from './Applications/Services/MKT_GetDashboardStats.usecase';
 // import { MKT_GetAllLoanApplicationUseCase } from './usecases/MKT_GetAllLoanApplication.usecase';
 // import { MKT_GetLoanApplicationByIdUseCase } from './usecases/MKT_GetLoanApplicationById.usecase';
@@ -37,6 +38,7 @@ import { MKT_UpdateLoanApplicationController } from './Presentation/Controllers/
 import { MKT_GetLoanApplicationByIdController } from './Presentation/Controllers/MKT_GetLoanApplicationById.controller';
 import { MKT_CreateDraftLoanApplicationController } from './Presentation/Controllers/MKT_CreateDraftLoanApp.controller';
 import { MKT_GetDashboardStatsController } from './Presentation/Controllers/MKT_GetDashboardStats.controller';
+import { MKT_TriggerAppealController } from './Presentation/Controllers/MKT_TriggerAppeal.controller';
 
 import { AddressInternalModule } from 'src/Modules/LoanAppInternal/Modules/address-internal.module';
 import { ApprovalInternalModule } from 'src/Modules/LoanAppInternal/Modules/approval-internal.module';
@@ -83,6 +85,7 @@ import { DraftLoanApplicationModule } from 'src/Shared/Modules/Drafts/Modules/Cr
     MKT_GetAllLoanApplicationController,
     MKT_GetLoanApplicationByIdController,
     MKT_UpdateLoanApplicationController,
+    MKT_TriggerAppealController,
   ],
   providers: [
     // usecases
@@ -92,7 +95,7 @@ import { DraftLoanApplicationModule } from 'src/Shared/Modules/Drafts/Modules/Cr
     MKT_GetAllLoanApplicationUseCase,
     MKT_GetLoanApplicationByIdUseCase,
     MKT_UpdateLoanApplicationUseCase,
-
+    MKT_TriggerAppealUseCase,
     // infra
     {
       provide: UNIT_OF_WORK,

@@ -36,6 +36,7 @@ import {
   UNIT_OF_WORK,
 } from 'src/Modules/LoanAppInternal/Domain/Repositories/IUnitOfWork.repository';
 import { LoanInternalDto } from '../DTOS/MKT_CreateLoanApplication.dto';
+import sharp from 'sharp';
 
 @Injectable()
 export class MKT_UpdateLoanApplicationUseCase {
@@ -124,19 +125,35 @@ export class MKT_UpdateLoanApplicationUseCase {
             const file = fileArray?.[0];
             if (!file || !validFields.includes(fieldName)) continue;
 
-            const extension = this.getFileExtension(file.originalname);
-            console.log(
-              'client original name file? :>>>>>>>>>>>>>>>',
-              file.originalname,
-            );
-            const formattedFileName = `${CleanClientName}-${fieldName}${extension}.enc`;
+            let processedBuffer = file.buffer;
+            let newExtension = this.getFileExtension(file.originalname); // default
+            const imageFields = [
+              'foto_ktp',
+              'foto_kk',
+              'foto_id_card',
+              'bukti_absensi_file',
+              'foto_ktp_penjamin',
+              'foto_id_card_penjamin',
+              'foto_rekening',
+            ];
 
-            // use updateFile instead of saveFiles
+            // jika file termasuk gambar, konversi ke .webp pakai sharp
+            if (imageFields.includes(fieldName)) {
+              processedBuffer = await sharp(file.buffer)
+                .jpeg({ quality: 90 })
+                .toBuffer();
+              newExtension = '.jpeg';
+            }
+
+            const CleanClientName = client.nama_lengkap;
+            const formattedFileName = `${CleanClientName}-${fieldName}${newExtension}.enc`;
+
+            // upload pakai fileStorage
             await this.fileStorage.updateFile(
               prepareForClientId,
               prepareForClientName,
               formattedFileName,
-              file,
+              { ...file, buffer: processedBuffer }, // override buffer
               false,
             );
 

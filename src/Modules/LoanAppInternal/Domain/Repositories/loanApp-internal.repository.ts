@@ -37,6 +37,8 @@ export interface ILoanApplicationInternalRepository {
     status: StatusPengajuanEnum,
   ): Promise<void>;
 
+  triggerBanding(loan_id: number, alasan_banding: string);
+
   //! ========== MARKETING ==========
   callSP_MKT_GetAllLoanApplications_Internal(
     marketingId: number,
