@@ -11,7 +11,10 @@ import {
   Res,
   ParseIntPipe,
 } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import {
+  FileFieldsInterceptor,
+  FilesInterceptor,
+} from '@nestjs/platform-express';
 import { Response } from 'express';
 import {
   FILE_STORAGE_SERVICE,
@@ -78,7 +81,17 @@ export class FileStorageController {
   }
 
   @Put(':customerId/:customerName/:filename')
-  @UseInterceptors(FilesInterceptor('file'))
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'foto_ktp', maxCount: 1 },
+      { name: 'foto_kk', maxCount: 1 },
+      { name: 'foto_id_card_penjamin', maxCount: 1 },
+      { name: 'foto_ktp_penjamin', maxCount: 1 },
+      { name: 'foto_id_card', maxCount: 1 },
+      { name: 'bukti_absensi_file', maxCount: 1 },
+      { name: 'foto_rekening', maxCount: 1 },
+    ]),
+  )
   async updateFile(
     @Param('customerId', ParseIntPipe) customerId: number,
     @Param('customerName') customerName: string,
