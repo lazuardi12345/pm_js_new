@@ -4,6 +4,7 @@ import {
   Injectable,
   Inject,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY,
@@ -19,6 +20,7 @@ import {
   FileMetadata,
   IFileStorageRepository,
 } from 'src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository';
+import sharp from 'sharp';
 
 @Injectable()
 export class MKT_CreateDraftLoanApplicationUseCase {
@@ -37,18 +39,45 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     try {
       let filePaths: Record<string, FileMetadata[]> = {};
 
+      // Proses file kalau ada
       if (files && Object.keys(files).length > 0) {
+        for (const [field, fileArray] of Object.entries(files)) {
+          for (const file of fileArray) {
+            // convert gambar ke JPEG tanpa resize
+            if (file.mimetype.startsWith('image/')) {
+              const outputBuffer = await sharp(file.buffer)
+                .jpeg({ quality: 100 })
+                .toBuffer();
+
+              file.buffer = outputBuffer;
+              file.originalname = file.originalname.replace(/\.\w+$/, '.jpeg');
+            }
+          }
+        }
+
+        // simpan file ke storage
         filePaths = await this.fileStorage.saveDraftsFiles(
           Number(dto?.client_internal?.no_ktp) ?? dto.client_internal.no_ktp,
           dto?.client_internal?.nama_lengkap ??
             `draft-${dto.client_internal.no_ktp}`,
           files,
         );
+
+        // Assign hasil upload ke DTO sesuai field
+        for (const [field, paths] of Object.entries(filePaths)) {
+          if (paths && paths.length > 0) {
+            // misal foto_ktp → simpan nama file atau path lengkap
+            dto.client_internal[field] = paths[0].url;
+            // jika mau simpan path lengkap:
+            // dto.client_internal[field] = `${paths[0].prefix}${paths[0].usedFilename}`;
+          }
+        }
       }
 
-      console.log('File paths:', files);
+      console.log('File paths:', filePaths);
       console.log('Payload (with marketingId):', dto);
 
+      // 3️⃣ Simpan draft loan application
       const loanApp = await this.loanAppDraftRepo.create({
         ...dto,
         uploaded_files: filePaths,
@@ -64,6 +93,8 @@ export class MKT_CreateDraftLoanApplicationUseCase {
       };
     } catch (err) {
       console.log(err);
+
+      // Mongoose validation error
       if (err.name === 'ValidationError') {
         throw new HttpException(
           {
@@ -79,6 +110,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         );
       }
 
+      // Duplicate key error
       if (err.code === 11000) {
         throw new HttpException(
           {
@@ -90,6 +122,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         );
       }
 
+      // fallback error
       throw new HttpException(
         {
           payload: {
@@ -228,15 +261,47 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     files?: Record<string, Express.Multer.File[]>,
   ) {
     const { payload } = updateData;
-    console.log('Unified: >', payload);
+
+    if (!payload) {
+      throw new BadRequestException('Payload is required');
+    }
+
     let filePaths: Record<string, FileMetadata[]> = {};
 
+    // Simpan file ke storage
     if (files && Object.keys(files).length > 0) {
       filePaths = await this.fileStorage.saveDraftsFiles(
         Number(payload?.client_internal?.no_ktp) ?? Id,
         payload?.client_internal?.nama_lengkap ?? `draft-${Id}`,
         files,
       );
+
+      // Assign URL ke payload sesuai field
+      for (const [field, paths] of Object.entries(filePaths)) {
+        if (paths && paths.length > 0) {
+          // Tentukan di object mana field ini berada
+          const parentKeys = [
+            'client_internal',
+            'job_internal',
+            'collateral_internal',
+            'relative_internal',
+          ];
+          let assigned = false;
+
+          for (const key of parentKeys) {
+            if (payload[key] && field in payload[key]) {
+              payload[key][field] = paths[0].url; // assign URL string, bukan object
+              assigned = true;
+              break;
+            }
+          }
+
+          if (!assigned) {
+            // fallback: assign di root payload
+            payload[field] = paths[0].url;
+          }
+        }
+      }
     }
 
     try {
@@ -246,6 +311,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         throw new NotFoundException(`Draft with id ${Id} not found`);
       }
 
+      // Merge uploaded files sebelumnya
       const mergedFiles = {
         ...(existingDraft.uploaded_files || {}),
         ...(Object.keys(filePaths).length > 0 ? filePaths : {}),
@@ -255,13 +321,13 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         ...payload,
         uploaded_files: mergedFiles,
       };
+
       const loanApp = await this.loanAppDraftRepo.updateDraftById(
         Id,
         entityUpdate,
       );
-      console.log('Repository returned => :', JSON.stringify(loanApp, null, 2));
 
-      // Verifikasi apakah hasilnya berubah
+      // Verifikasi hasil update
       const verifyAfterUpdate = await this.loanAppDraftRepo.findById(Id);
 
       return {

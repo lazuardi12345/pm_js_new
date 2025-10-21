@@ -162,6 +162,19 @@ export class LoanApplicationInternalRepositoryImpl
     await this.ormRepository.update({ id: loan_id }, { status: status });
   }
 
+  async triggerBanding(loan_id: number, alasan_banding: string): Promise<void> {
+    const now = new Date();
+    await this.ormRepository.update(
+      { id: loan_id },
+      {
+        status: StatusPengajuanEnum.BANDING,
+        is_banding: true,
+        alasan_banding: alasan_banding,
+        updated_at: now,
+      },
+    );
+  }
+
   async delete(id: number): Promise<void> {
     await this.ormRepository.softDelete(id);
   }
