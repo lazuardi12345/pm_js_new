@@ -142,4 +142,5 @@ private toDomain(orm: ClientInternal_ORM_Entity): ClientInternal {
     const ormEntities = await this.ormRepository.find();
     return ormEntities.map(this.toDomain);
   }
+  
 }

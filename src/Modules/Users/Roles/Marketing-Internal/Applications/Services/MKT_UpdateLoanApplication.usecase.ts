@@ -59,7 +59,7 @@ export class MKT_UpdateLoanApplicationUseCase {
     private readonly fileStorage: IFileStorageRepository,
     @Inject(UNIT_OF_WORK)
     private readonly uow: IUnitOfWork,
-  ) {}
+  ) { }
 
   private sanitizeName(name: string): string {
     return name?.toLowerCase().replace(/\s+/g, '_') ?? 'unknown_client';
@@ -96,6 +96,7 @@ export class MKT_UpdateLoanApplicationUseCase {
 
         // ==== PROSES FILE ====
         const filePaths: Record<string, string> = {};
+        let isUpdated = false;
 
         if (files && Object.keys(files).length > 0) {
           const cleanName = this.sanitizeName(client.nama_lengkap);
@@ -135,13 +136,20 @@ export class MKT_UpdateLoanApplicationUseCase {
             });
 
             // Simpan path URL
-            filePaths[fieldName] = `${this.baseFileUrl}/${client.no_ktp}/${cleanName}/${encodeURIComponent(formattedFileName)}`;
+            const newFilePath = `${this.baseFileUrl}/${client.no_ktp}/${cleanName}/${encodeURIComponent(formattedFileName)}`;
+
+            filePaths[fieldName] = newFilePath;
+
+            if (newFilePath !== oldFileUrl) {
+              isUpdated = true;
+            }
           }
         }
 
-        // ==== UPDATE DATA ====
+        // ==== UPDATE DATA CLIENT ====
+        let updatedClientData = {};
         if (clientInternal || Object.keys(filePaths).length > 0) {
-          Object.assign(client, {
+          updatedClientData = {
             ...clientInternal,
             foto_ktp: filePaths['foto_ktp'] ?? client.foto_ktp,
             foto_kk: filePaths['foto_kk'] ?? client.foto_kk,
@@ -151,45 +159,128 @@ export class MKT_UpdateLoanApplicationUseCase {
             foto_id_card_penjamin: filePaths['foto_id_card_penjamin'] ?? client.foto_id_card_penjamin,
             foto_rekening: filePaths['foto_rekening'] ?? client.foto_rekening,
             updated_at: now,
+          };
+
+          // Hapus properti undefined supaya gak overwrite dengan undefined
+          Object.keys(updatedClientData).forEach(key => {
+            if (updatedClientData[key] === undefined) delete updatedClientData[key];
           });
 
-          await this.clientRepo.save(client);
+          // Cek perubahan data client
+          const hasClientChanged = Object.entries(updatedClientData).some(([key, val]) => {
+            return client[key] !== val;
+          });
+
+          if (hasClientChanged) {
+            await this.clientRepo.save({
+              ...client,
+              ...updatedClientData,
+              isKtpValid: function (): boolean {
+                throw new Error('Function not implemented.');
+              },
+              isMarriageStatusValid: function (): boolean {
+                throw new Error('Function not implemented.');
+              },
+            });
+            isUpdated = true;
+          }
         }
 
-        if (addressInternal) {
-          await this.addressRepo.update(client.id!, { ...addressInternal, updated_at: now });
+        // ==== UPDATE ADDRESS ====
+        let updatedAddressData = {};
+        if (addressInternal && Object.keys(addressInternal).length > 0) {
+          const existingAddress = await this.addressRepo.findById(client.id!);
+
+          if (!existingAddress) {
+            // Buat alamat baru
+            await this.addressRepo.findByNasabahId({
+              nasabah_id: client.id!,
+              ...addressInternal,
+              created_at: now,
+              updated_at: now,
+            });
+            updatedAddressData = addressInternal;
+            isUpdated = true;
+          } else {
+            // Pastikan existingAddress.id ada
+            if (!existingAddress.id) {
+              throw new BadRequestException('Address ID tidak ditemukan, update gagal');
+            }
+            await this.addressRepo.update(existingAddress.id, { ...addressInternal, updated_at: now });
+            updatedAddressData = addressInternal;
+            isUpdated = true;
+          }
         }
 
-        if (familyInternal) {
+
+        // ==== UPDATE FAMILY ====
+        let updatedFamilyData = {};
+        if (familyInternal && Object.keys(familyInternal).length > 0) {
           await this.familyRepo.update(client.id!, { ...familyInternal, updated_at: now });
+          updatedFamilyData = familyInternal;
+          isUpdated = true;
         }
 
-        if (jobInternal) {
+        // ==== UPDATE JOB ====
+        let updatedJobData = {};
+        if (jobInternal && Object.keys(jobInternal).length > 0) {
           await this.jobRepo.update(client.id!, { ...jobInternal, updated_at: now });
+          updatedJobData = jobInternal;
+          isUpdated = true;
         }
 
-        if (loanAppInternal) {
+        // ==== UPDATE LOAN APPLICATION ====
+        let updatedLoanAppData = {};
+        if (loanAppInternal && Object.keys(loanAppInternal).length > 0) {
           const loanApps = await this.loanAppRepo.findByNasabahId(client.id!);
           const loanApp = loanApps?.[0];
           if (loanApp) {
             await this.loanAppRepo.update(loanApp.id!, { ...loanAppInternal, updated_at: now });
+            updatedLoanAppData = loanAppInternal;
+            isUpdated = true;
           }
         }
 
-        if (collateralInternal) {
+        // ==== UPDATE COLLATERAL ====
+        let updatedCollateralData = {};
+        if (collateralInternal && Object.keys(collateralInternal).length > 0) {
           await this.collateralRepo.update(client.id!, { ...collateralInternal, updated_at: now });
+          updatedCollateralData = collateralInternal;
+          isUpdated = true;
         }
 
-        if (relativeInternal) {
+        // ==== UPDATE RELATIVE ====
+        let updatedRelativeData = {};
+        if (relativeInternal && Object.keys(relativeInternal).length > 0) {
           await this.relativeRepo.update(client.id!, { ...relativeInternal, updated_at: now });
+          updatedRelativeData = relativeInternal;
+          isUpdated = true;
         }
+
+        if (!isUpdated) {
+          throw new BadRequestException('Tidak ada data yang diupdate');
+        }
+
+        // Gabung semua data yang diupdate
+        const updatedFields = {
+          ...updatedClientData,
+          ...updatedAddressData,
+          ...updatedFamilyData,
+          ...updatedJobData,
+          ...updatedLoanAppData,
+          ...updatedCollateralData,
+          ...updatedRelativeData,
+        };
 
         return {
           payload: {
             error: false,
             message: 'Pengajuan berhasil diupdate',
             reference: 'LOAN_UPDATE_OK',
-            data: { filePaths },
+            data: {
+              filePaths,
+              updatedFields,
+            },
           },
         };
       });

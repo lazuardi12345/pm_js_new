@@ -13,6 +13,9 @@ export class RelativeInternalRepositoryImpl
     @InjectRepository(RelativeInternal_ORM_Entity)
     private readonly ormRepository: Repository<RelativeInternal_ORM_Entity>,
   ) {}
+  findByClientId(clientId: number): unknown {
+    throw new Error('Method not implemented.');
+  }
 
   //? MAPPER >==========================================================================
 

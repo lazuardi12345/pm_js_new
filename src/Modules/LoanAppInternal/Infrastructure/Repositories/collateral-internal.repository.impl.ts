@@ -13,6 +13,11 @@ export class CollateralInternalRepositoryImpl
     @InjectRepository(CollateralInternal_ORM_Entity)
     private readonly ormRepository: Repository<CollateralInternal_ORM_Entity>,
   ) { }
+  findByClientId(clientId: number): unknown;
+  findByClientId(clientId: number): unknown;
+  findByClientId(clientId: unknown): unknown {
+    throw new Error('Method not implemented.');
+  }
 
   //? MAPPER >==========================================================================
 

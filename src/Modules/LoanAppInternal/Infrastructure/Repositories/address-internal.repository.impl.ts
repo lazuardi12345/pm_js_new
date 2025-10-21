@@ -11,10 +11,16 @@ import { ClientInternal_ORM_Entity } from '../Entities/client-internal.orm-entit
 export class AddressInternalRepositoryImpl
   implements IAddressInternalRepository
 {
+  addressRepository: any;
   constructor(
     @InjectRepository(AddressInternal_ORM_Entity)
     private readonly ormRepository: Repository<AddressInternal_ORM_Entity>,
   ) {}
+  create(arg0: any): unknown {
+    throw new Error('Method not implemented.');
+  }
+
+
 
   //? MAPPER >==========================================================================
 
@@ -131,4 +137,8 @@ export class AddressInternalRepositoryImpl
     const ormEntities = await this.ormRepository.find();
     return ormEntities.map(this.toDomain);
   }
+    async findByClientId(clientId: number): Promise<AddressInternal_ORM_Entity | null> {
+    return await this.addressRepository.findOne({ where: { clientId } });
+  }
+  
 }
