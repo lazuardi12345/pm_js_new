@@ -144,7 +144,7 @@ export class MKT_CreateLoanApplicationUseCase {
           now,
           undefined,
           address_internal.status_rumah_ktp as StatusRumahEnum,
-          address_internal.alamat_lengkap,
+          address_internal.alamat_lengkap ?? '',
           now,
         );
         await this.addressRepo.save(addressEntity);
@@ -188,24 +188,31 @@ export class MKT_CreateLoanApplicationUseCase {
         await this.jobRepo.save(jobEntity);
 
         // **5. Simpan LoanApplicationInternal**
+        const isBandingBoolean = loan_application_internal.is_banding === 1 ? true : false;
+
         const loanAppEntity = new LoanApplicationInternal(
           { id: customer.id! },
           loan_application_internal.status_pinjaman as StatusPinjamanEnum,
-          loan_application_internal.nominal_pinjaman ?? 0, // Handle undefined
+          loan_application_internal.nominal_pinjaman ?? 0,
           loan_application_internal.tenor ?? 0,
           loan_application_internal.keperluan ?? '',
           undefined,
           undefined,
           undefined,
-          (loan_application_internal.status ?? 'pending') as StatusPengajuanEnum, 
+          (loan_application_internal.status ?? 'pending') as StatusPengajuanEnum,
           loan_application_internal.pinjaman_ke ?? 1,
           loan_application_internal.riwayat_nominal ?? 0,
           loan_application_internal.riwayat_tenor ?? 0,
           loan_application_internal.sisa_pinjaman ?? 0,
           loan_application_internal.notes ?? '',
-          Boolean(loan_application_internal.is_banding),
+          isBandingBoolean,
           loan_application_internal.alasan_banding ?? '',
         );
+
+
+
+
+
 
         const loanApp = await this.loanAppRepo.save(loanAppEntity);
 
@@ -243,7 +250,7 @@ export class MKT_CreateLoanApplicationUseCase {
             relative_internal.nama,
             relative_internal.alamat,
             relative_internal.no_hp,
-            relative_internal.hubungan!,
+            relative_internal.status_hubungan!,
             relative_internal.nama_perusahaan!,
             undefined,
             undefined,
