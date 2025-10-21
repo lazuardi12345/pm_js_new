@@ -118,6 +118,7 @@ export class LoanApplicationInternalRepositoryImpl
   async findById(id: number): Promise<LoanApplicationInternal | null> {
     const ormEntity = await this.ormRepository.findOne({
       where: { id },
+      relations: ['nasabah'],
     });
     return ormEntity ? this.toDomain(ormEntity) : null;
   }
@@ -367,7 +368,7 @@ export class LoanApplicationInternalRepositoryImpl
     };
   }
 
-async callSP_HM_GetAllApprovalRequest_Internal(
+  async callSP_HM_GetAllApprovalRequest_Internal(
     hmId: number,
     page: number,
     pageSize: number,

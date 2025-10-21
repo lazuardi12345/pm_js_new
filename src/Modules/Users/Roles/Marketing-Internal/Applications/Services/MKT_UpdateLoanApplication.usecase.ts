@@ -95,8 +95,6 @@ export class MKT_UpdateLoanApplicationUseCase {
           relative_internal,
         } = payload;
 
-        console.log('multiple files: >>>>>>>>>', files);
-
         const client = await this.clientRepo.findById(clientId);
         if (!client) throw new BadRequestException('Client tidak ditemukan');
 
@@ -104,8 +102,6 @@ export class MKT_UpdateLoanApplicationUseCase {
         let isUpdated = false;
 
         if (files && Object.keys(files).length > 0) {
-          console.log('IKHWAAAAANNNN @#$%^&*()', client);
-
           //! buat bucket name di Minio
           const prepareForClientName = client.nama_lengkap
             .trim()
