@@ -11,6 +11,9 @@ export class FamilyInternalRepositoryImpl implements IFamilyInternalRepository {
     @InjectRepository(FamilyInternal_ORM_Entity)
     private readonly ormRepository: Repository<FamilyInternal_ORM_Entity>,
   ) {}
+  findByClientId(clientId: number): unknown {
+    throw new Error('Method not implemented.');
+  }
 
   //? MAPPER >==========================================================================
 

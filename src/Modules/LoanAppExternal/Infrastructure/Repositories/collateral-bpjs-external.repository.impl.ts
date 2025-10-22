@@ -15,23 +15,29 @@ export class CollateralByBPJSRepositoryImpl
     private readonly ormRepository: Repository<CollateralByBPJS_ORM_Entity>,
   ) {}
 
-  private toDomain(ormEntity: CollateralByBPJS_ORM_Entity): CollateralByBPJS {
-    return new CollateralByBPJS(
-      {id: ormEntity.pengajuan.id},
-      ormEntity.saldo_bpjs,
-      ormEntity.tanggal_bayar_terakhir,
-      ormEntity.username,
-      ormEntity.password,
-      ormEntity.foto_bpjs,
-      ormEntity.foto_jaminan_tambahan,
-      ormEntity.id,
-      ormEntity.created_at,
-      ormEntity.updated_at,
-      ormEntity.deleted_at,
-    );
-  }
+private toDomain(ormEntity: CollateralByBPJS_ORM_Entity): CollateralByBPJS {
+  return new CollateralByBPJS(
+    { id: ormEntity.pengajuan.id },
+    ormEntity.saldo_bpjs,
+    ormEntity.tanggal_bayar_terakhir,
+    ormEntity.username,
+    ormEntity.password,
+    ormEntity.foto_bpjs,
+    ormEntity.foto_ktp_suami_istri,
+    ormEntity.foto_ktp_penjamin,
+    ormEntity.foto_kk_pemohon_penjamin,
+    ormEntity.foto_id_card_suami_istri,        
+    ormEntity.slip_gaji,                      
+    ormEntity.rekening_koran,                 
+    ormEntity.foto_jaminan_tambahan,
+    ormEntity.id,
+    ormEntity.created_at,
+    ormEntity.updated_at,
+    ormEntity.deleted_at,
+  );
+}
 
- private toOrm(
+private toOrm(
   domainEntity: CollateralByBPJS,
 ): Partial<CollateralByBPJS_ORM_Entity> {
   return {
@@ -44,13 +50,18 @@ export class CollateralByBPJSRepositoryImpl
     username: domainEntity.username,
     password: domainEntity.password,
     foto_bpjs: domainEntity.foto_bpjs,
+    foto_ktp_suami_istri: domainEntity.foto_ktp_suami_istri,
+    foto_ktp_penjamin: domainEntity.foto_kk_pemohon_penjamin,
+    foto_kk_pemohon_penjamin: domainEntity.foto_kk_pemohon_penjamin,
+    foto_id_card_suami_istri: domainEntity.foto_id_card_suami_istri, 
+    slip_gaji: domainEntity.slip_gaji,                            
+    rekening_koran: domainEntity.rekening_koran,                    
     foto_jaminan_tambahan: domainEntity.foto_jaminan_tambahan,
     created_at: domainEntity.created_at,
     updated_at: domainEntity.updated_at,
     deleted_at: domainEntity.deleted_at,
   };
 }
-
 
 private toOrmPartial(
   partial: Partial<CollateralByBPJS>,
@@ -67,6 +78,13 @@ private toOrmPartial(
   if (partial.username) ormData.username = partial.username;
   if (partial.password) ormData.password = partial.password;
   if (partial.foto_bpjs) ormData.foto_bpjs = partial.foto_bpjs;
+  if (partial.foto_ktp_suami_istri) ormData.foto_ktp_suami_istri = partial.foto_ktp_suami_istri;
+  if (partial.foto_ktp_penjamin) ormData.foto_ktp_penjamin = partial.foto_ktp_penjamin;
+  if (partial.foto_kk_pemohon_penjamin) ormData.foto_kk_pemohon_penjamin = partial.foto_kk_pemohon_penjamin;
+  if (partial.foto_id_card_suami_istri)
+    ormData.foto_id_card_suami_istri = partial.foto_id_card_suami_istri;   
+  if (partial.slip_gaji) ormData.slip_gaji = partial.slip_gaji;            
+  if (partial.rekening_koran) ormData.rekening_koran = partial.rekening_koran; 
   if (partial.foto_jaminan_tambahan)
     ormData.foto_jaminan_tambahan = partial.foto_jaminan_tambahan;
   if (partial.created_at) ormData.created_at = partial.created_at;

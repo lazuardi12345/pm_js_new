@@ -16,7 +16,7 @@ import { GENDER, MARRIAGE_STATUS } from 'src/Shared/Enums/External/Client-Extern
 // Definisi enum lokal DIHAPUS dari sini
 
 export class CreateClientExternalDto {
- @Type(() => Number)
+  @Type(() => Number)
   @IsNumber()
   marketing_id: number;
 
@@ -29,16 +29,20 @@ export class CreateClientExternalDto {
   @IsString()
   no_kk: string;
 
- 
+
   @IsEnum(GENDER)
   jenis_kelamin: GENDER;
 
   @IsString()
   tempat_lahir: string;
 
-   @Type(() => Date)
-    @IsDate()
-    tanggal_lahir: Date;
+  @Type(() => Date)
+  @IsDate()
+  tanggal_lahir: Date;
+
+
+ @IsString()
+  no_rekening: string;
 
   @IsString()
   no_hp: string;

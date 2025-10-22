@@ -37,6 +37,24 @@ export class CollateralByBPJS_ORM_Entity {
   foto_bpjs?: string;
 
   @Column({ nullable: true })
+  foto_ktp_suami_istri?: string;
+
+  @Column({ nullable: true })
+  foto_ktp_penjamin?: string;
+
+  @Column({ nullable: true })
+  foto_kk_pemohon_penjamin?: string;
+
+  @Column({ nullable: true })
+  foto_id_card_suami_istri?: string;
+
+  @Column({ nullable: true })
+  slip_gaji?: string;
+
+  @Column({ nullable: true })
+  rekening_koran?: string;
+
+  @Column({ nullable: true })
   foto_jaminan_tambahan?: string;
 
   @CreateDateColumn()

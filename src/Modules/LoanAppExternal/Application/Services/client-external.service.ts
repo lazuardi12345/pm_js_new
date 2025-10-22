@@ -24,7 +24,8 @@ export class ClientExternalService {
   dto.no_kk,                   
   dto.jenis_kelamin,            
   dto.tempat_lahir,             
-  dto.tanggal_lahir,           
+  dto.tanggal_lahir, 
+  dto.no_rekening,          
   dto.no_hp,                  
   dto.status_nikah!,          
   undefined,                   
@@ -36,7 +37,6 @@ export class ClientExternalService {
   dto.catatan,                 
   now,                        
   now,                        
-  null                        
 );
 
     return this.repo.save(address);

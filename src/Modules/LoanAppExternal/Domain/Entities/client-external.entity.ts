@@ -17,6 +17,7 @@ export class ClientExternal {
   public jenis_kelamin: GENDER;
   public tempat_lahir: string;
   public tanggal_lahir: Date;
+  public no_rekening: string;
   public no_hp: string;
   public status_nikah: MARRIAGE_STATUS;
 
@@ -36,6 +37,7 @@ export class ClientExternal {
     jenis_kelamin: GENDER,
     tempat_lahir: string,
     tanggal_lahir: Date,
+    no_rekening: string,
     no_hp: string,
     status_nikah: MARRIAGE_STATUS,
     id?: number,
@@ -56,6 +58,7 @@ export class ClientExternal {
     this.jenis_kelamin = jenis_kelamin;
     this.tempat_lahir = tempat_lahir;
     this.tanggal_lahir = tanggal_lahir;
+    this.no_rekening = no_rekening;
     this.no_hp = no_hp;
     this.status_nikah = status_nikah;
 

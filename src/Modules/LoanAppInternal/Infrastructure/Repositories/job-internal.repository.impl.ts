@@ -11,6 +11,9 @@ export class JobInternalRepositoryImpl implements IJobInternalRepository {
     @InjectRepository(JobInternal_ORM_Entity)
     private readonly ormRepository: Repository<JobInternal_ORM_Entity>,
   ) {}
+  findByClientId(clientId: number): unknown {
+    throw new Error('Method not implemented.');
+  }
 
   //? MAPPER >==========================================================================
 

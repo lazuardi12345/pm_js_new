@@ -3,6 +3,7 @@ import { JobInternal } from '../Entities/job-internal.entity';
 export const JOB_INTERNAL_REPOSITORY = Symbol('JOB_INTERNAL_REPOSITORY');
 
 export interface IJobInternalRepository {
+  findByClientId(clientId: number): unknown;
   findById(id: number): Promise<JobInternal | null>;
   findByNasabahId(nasabahId: number): Promise<JobInternal[]>;
   findAll(): Promise<JobInternal[]>;

@@ -57,6 +57,9 @@ export class ClientExternal_ORM_Entity {
   tanggal_lahir: Date;
 
   @Column()
+  no_rekening: string;
+
+  @Column()
   no_hp: string;
 
   @Column({ nullable: true })

@@ -24,6 +24,7 @@ export class ClientExternalRepositoryImpl implements IClientExternalRepository {
       orm.jenis_kelamin,
       orm.tempat_lahir,
       orm.tanggal_lahir,
+      orm.no_rekening,
       orm.no_hp,
       orm.status_nikah,
       orm.id,
@@ -52,6 +53,7 @@ export class ClientExternalRepositoryImpl implements IClientExternalRepository {
     if (partial.jenis_kelamin) ormData.jenis_kelamin = partial.jenis_kelamin;
     if (partial.tempat_lahir) ormData.tempat_lahir = partial.tempat_lahir;
     if (partial.tanggal_lahir) ormData.tanggal_lahir = partial.tanggal_lahir;
+    if (partial.no_rekening) ormData.no_rekening = partial.no_rekening;
     if (partial.no_hp) ormData.no_hp = partial.no_hp;
     if (partial.status_nikah) ormData.status_nikah = partial.status_nikah;
     if (partial.email) ormData.email = partial.email;

@@ -1,11 +1,17 @@
 export class CollateralByBPJS {
   constructor(
-    public readonly pengajuan: {id: number},
+    public readonly pengajuan: { id: number },
     public readonly saldo_bpjs?: number,
     public readonly tanggal_bayar_terakhir?: Date,
     public readonly username?: string,
     public readonly password?: string,
     public readonly foto_bpjs?: string,
+    public readonly foto_ktp_suami_istri?: string,
+    public readonly foto_ktp_penjamin?: string,
+    public readonly foto_kk_pemohon_penjamin?: string,
+    public readonly foto_id_card_suami_istri?: string,
+    public readonly slip_gaji?: string,
+    public readonly rekening_koran?: string,
     public readonly foto_jaminan_tambahan?: string,
     public readonly id?: number,
     public readonly created_at?: Date,
