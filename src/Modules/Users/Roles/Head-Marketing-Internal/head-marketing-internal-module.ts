@@ -18,13 +18,15 @@ import { HM_GetAllApprovalRequestUseCase } from './Application/Services/HM_GetAl
 import { HM_GetAllApprovalHistoryUseCase } from './Application/Services/HM_GetApprovalHistory.usecase';
 import { HM_ApproveOrRejectUseCase } from './Application/Services/HM_ApprovedOrReject.usecase';
 import { HM_GetAllUsers_UseCase } from './Application/Services/HM_GetAllUsers.usecase';
+import { HM_LoanAppealResponseUseCase } from './Application/Services/HM_LoanAppealResponse.usecase';
 
 // Controllers
-import { HM_GetLoanApplicationByIdController } from './Infrastructure/Controllers/HM_GetLoanApplicationById.controller';
-import { HM_GetAllApprovalRequestController } from './Infrastructure/Controllers/HM_GetAllApprovalRequest.controller';
-import { HM_GetApprovalHistoryController } from './Infrastructure/Controllers/HM_GetApprovalHistory.controller';
-import { HM_ApprovedOrRejectController } from './Infrastructure/Controllers/HM_ApprovedOrReject.controller';
-import { HM_GetAllUsers_Controller } from './Infrastructure/Controllers/HM_GetAllUsers.controller';
+import { HM_GetLoanApplicationByIdController } from './Presentation/Controllers/HM_GetLoanApplicationById.controller';
+import { HM_GetAllApprovalRequestController } from './Presentation/Controllers/HM_GetAllApprovalRequest.controller';
+import { HM_GetApprovalHistoryController } from './Presentation/Controllers/HM_GetApprovalHistory.controller';
+import { HM_ApprovedOrRejectController } from './Presentation/Controllers/HM_ApprovedOrReject.controller';
+import { HM_GetAllUsers_Controller } from './Presentation/Controllers/HM_GetAllUsers.controller';
+import { HM_LoanAppealResponseController } from './Presentation/Controllers/HM_LoanAppealResponse.controller';
 
 @Module({
   imports: [
@@ -43,6 +45,7 @@ import { HM_GetAllUsers_Controller } from './Infrastructure/Controllers/HM_GetAl
     HM_GetApprovalHistoryController,
     HM_ApprovedOrRejectController,
     HM_GetAllUsers_Controller,
+    HM_LoanAppealResponseController,
   ],
   providers: [
     HM_GetLoanApplicationByIdUseCase,
@@ -50,10 +53,11 @@ import { HM_GetAllUsers_Controller } from './Infrastructure/Controllers/HM_GetAl
     HM_GetAllApprovalHistoryUseCase,
     HM_ApproveOrRejectUseCase,
     HM_GetAllUsers_UseCase,
-    {
-      provide: LOAN_APPLICATION_INTERNAL_REPOSITORY,
-      useClass: LoanApplicationInternalRepositoryImpl,
-    },
+    HM_LoanAppealResponseUseCase,
+    // {
+    //   provide: LOAN_APPLICATION_INTERNAL_REPOSITORY,
+    //   useClass: LoanApplicationInternalRepositoryImpl,
+    // },
   ],
 })
 export class HeadMarketingInternalUsecaseModule {}

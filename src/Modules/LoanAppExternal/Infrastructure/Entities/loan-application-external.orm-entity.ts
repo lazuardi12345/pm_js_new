@@ -6,6 +6,7 @@ import { CollateralByKedinasan_ORM_Entity } from 'src/Modules/LoanAppExternal/In
 import { CollateralBySHM_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/collateral-shm.orm-entity';
 import { SurveyReports_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/survey-reports.orm-entity';
 // import { Notification } from 'src/Shared/Modules/Notifications/entities/notification.entity';
+import { ApprovalRecommendation_ORM_Entity } from 'src/Modules/Admin/BI-Checking/Infrastructure/Entities/approval-recommendation.orm-entity';
 import {
   Entity,
   Column,
@@ -19,17 +20,28 @@ import {
   OneToOne,
 } from 'typeorm';
 
-import { JenisPembiayaanEnum, StatusPinjamanEnum, StatusPengajuanEnum } from 'src/Shared/Enums/External/Loan-Application.enum';
+import {
+  JenisPembiayaanEnum,
+  StatusPinjamanEnum,
+  StatusPengajuanEnum,
+} from 'src/Shared/Enums/External/Loan-Application.enum';
 
 @Entity('loan_application_external')
 export class LoanApplicationExternal_ORM_Entity {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
 
-  @ManyToOne(() => ClientExternal_ORM_Entity, (clientExternal) => clientExternal.id, {
-    onDelete: 'CASCADE',
+  @ManyToOne(
+    () => ClientExternal_ORM_Entity,
+    (clientExternal) => clientExternal.id,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
+  @JoinColumn({
+    name: 'nasabah_id',
+    foreignKeyConstraintName: 'FK_ClientExternalID_at_LoanApplicationExternal',
   })
-  @JoinColumn({ name: 'nasabah_id', foreignKeyConstraintName: 'FK_ClientExternalID_at_LoanApplicationExternal' })
   nasabah: ClientExternal_ORM_Entity;
 
   @Column({ type: 'enum', enum: JenisPembiayaanEnum })
@@ -105,6 +117,11 @@ export class LoanApplicationExternal_ORM_Entity {
   // @OneToMany(() => Notification, (notif) => notif.pengajuan_luar)
   // notifications: Notification[];
   @OneToMany(
+    () => ApprovalRecommendation_ORM_Entity,
+    (approvalRecommendation) => approvalRecommendation.loanApplicationExternal,
+  )
+  approvalRecommendations: ApprovalRecommendation_ORM_Entity[];
+  @OneToMany(
     () => ApprovalExternal_ORM_Entity,
     (approvalExternal) => approvalExternal.pengajuan_luar,
   )
@@ -113,7 +130,10 @@ export class LoanApplicationExternal_ORM_Entity {
   bpkb: CollateralByBPKB_ORM_Entity;
   @OneToOne(() => CollateralByBPJS_ORM_Entity, (bpjs) => bpjs.pengajuan)
   bpjs: CollateralByBPJS_ORM_Entity;
-  @OneToOne(() => CollateralByKedinasan_ORM_Entity, (kedinasan) => kedinasan.pengajuan)
+  @OneToOne(
+    () => CollateralByKedinasan_ORM_Entity,
+    (kedinasan) => kedinasan.pengajuan,
+  )
   kedinasan: CollateralByKedinasan_ORM_Entity;
   @OneToOne(() => CollateralBySHM_ORM_Entity, (shm) => shm.pengajuan)
   shm: CollateralBySHM_ORM_Entity;

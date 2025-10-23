@@ -20,8 +20,14 @@ import {
   DomisiliEnum,
 } from 'src/Shared/Enums/Internal/Address.enum';
 
-import { HubunganEnum, BekerjaEnum } from 'src/Shared/Enums/Internal/Family.enum';
-import { GolonganEnum, PerusahaanEnum } from 'src/Shared/Enums/Internal/Job.enum';
+import {
+  HubunganEnum,
+  BekerjaEnum,
+} from 'src/Shared/Enums/Internal/Family.enum';
+import {
+  GolonganEnum,
+  PerusahaanEnum,
+} from 'src/Shared/Enums/Internal/Job.enum';
 
 import {
   StatusPinjamanEnum,
@@ -33,8 +39,6 @@ import {
   PenjaminEnum,
   RiwayatPinjamPenjaminEnum,
 } from 'src/Shared/Enums/Internal/Collateral.enum';
-
-
 
 export class ClientInternalDto {
   @IsNotEmpty()
@@ -71,20 +75,19 @@ export class ClientInternalDto {
 
   @IsOptional()
   @IsString()
-  no_rekening?: string ;
+  no_rekening?: string;
 
   @IsOptional()
-  foto_ktp?: string | Express.Multer.File ;
+  foto_ktp?: string | Express.Multer.File;
 
   @IsOptional()
-  foto_kk?: string | Express.Multer.File ;
-  
+  foto_kk?: string | Express.Multer.File;
+
   @IsOptional()
   points?: string;
 
   @IsOptional()
   enable_edit?: boolean;
-
 
   // Hilangkan enable_edit dan points supaya validasi gak error
 }
@@ -257,7 +260,7 @@ export class LoanInternalDto {
   notes?: string;
 
   @IsOptional()
-  @Type(()=> Number)
+  @Type(() => Number)
   @IsNumber()
   is_banding?: number;
 
@@ -292,7 +295,6 @@ export class RelativeInternalDto {
   @IsOptional()
   @IsString()
   status_hubungan: string;
-
 }
 //#endregion
 
@@ -417,13 +419,11 @@ export class CreateLoanApplicationDto {
   relative_internal?: RelativeInternalDto;
 
   @ValidateNested()
-  
   @IsOptional()
   @Type(() => FilesDto)
   documents_files?: FilesDto;
 }
 //#endregion
-
 
 //#region Exported Types
 export interface TypeLoanApplicationDetail {
@@ -468,11 +468,11 @@ export interface TypeLoanApplicationDetail {
   lama_kerja_bulan?: number;
   lama_kerja_tahun?: number;
   golongan?: string;
-  yayasan?: string ;
-  nama_atasan?: string ;
-  nama_hrd?: string ;
-  absensi?: string ;
-  bukti_absensi?: string ;
+  yayasan?: string;
+  nama_atasan?: string;
+  nama_hrd?: string;
+  absensi?: string;
+  bukti_absensi?: string;
 
   // Loan
   status_pinjaman?: string;
@@ -480,52 +480,53 @@ export interface TypeLoanApplicationDetail {
   nominal_pinjaman?: number;
   tenor?: number;
   keperluan?: string;
+  status_pengajuan: string;
   status?: string;
-  riwayat_nominal?: number ;
-  riwayat_tenor?: number ;
-  sisa_pinjaman?: number ;
-  notes?: string ;
-  is_banding?: number ;
-  alasan_banding?: string ;
+  riwayat_nominal?: number;
+  riwayat_tenor?: number;
+  sisa_pinjaman?: number;
+  notes?: string;
+  loan_is_banding?: number;
+  loan_alasan_banding?: string;
 
   // Relative (Optional)
-  kerabat_kerja?: string ;
-  nama_kerabat_kerja?: string ;
-  alamat_kerabat_kerja?: string ;
-  no_hp_kerabat_kerja?: string ;
-  nama_perusahaan_kerabat_kerja?: string ;
-  status_hubungan_kerabat_kerja?: string ;
+  kerabat_kerja?: string;
+  nama_kerabat_kerja?: string;
+  alamat_kerabat_kerja?: string;
+  no_hp_kerabat_kerja?: string;
+  nama_perusahaan_kerabat_kerja?: string;
+  status_hubungan_kerabat_kerja?: string;
 
   // Collateral
   jaminan_hrd?: string;
   jaminan_cg?: string;
   penjamin?: string;
   nama_penjamin?: string;
-  lama_kerja_penjamin?: string ;
-  bagian?: string ;
-  absensi_penjamin?: string ;
-  riwayat_pinjam_penjamin?: string ;
-  riwayat_nominal_penjamin?: number ;
-  riwayat_tenor_penjamin?: number ;
-  sisa_pinjaman_penjamin?: number ;
-  jaminan_cg_penjamin?: string ;
-  status_hubungan_penjamin?: string ;
+  lama_kerja_penjamin?: string;
+  bagian?: string;
+  absensi_penjamin?: string;
+  riwayat_pinjam_penjamin?: string;
+  riwayat_nominal_penjamin?: number;
+  riwayat_tenor_penjamin?: number;
+  sisa_pinjaman_penjamin?: number;
+  jaminan_cg_penjamin?: string;
+  status_hubungan_penjamin?: string;
 
   // Files (Optional)
   foto_ktp?: string;
-  foto_kk?: string ;
-  foto_id_card_penjamin?: string ;
-  foto_ktp_penjamin?: string ;
-  foto_id_card?: string ;
-  bukti_absensi_file?: string ;
-  foto_rekening?: string ;
+  foto_kk?: string;
+  foto_id_card_penjamin?: string;
+  foto_ktp_penjamin?: string;
+  foto_id_card?: string;
+  bukti_absensi_file?: string;
+  foto_rekening?: string;
 
   // Approval Metadata
   approval_id: number;
   role: string;
   // status: string;
-  keterangan: string ;
-  kesimpulan: string ;
+  keterangan: string;
+  kesimpulan: string;
   created_at: string;
   updated_at: string;
 
@@ -534,14 +535,13 @@ export interface TypeLoanApplicationDetail {
   user_nama: string;
 }
 
-
 export interface TypeApprovalDetail {
   approval_id: number;
   role: string;
   status: string;
-  is_banding?: number ;
-  keterangan: string ;
-  kesimpulan: string ;
+  is_banding?: number;
+  keterangan: string;
+  kesimpulan: string;
   created_at: string;
   updated_at: string;
   user_id: number;
@@ -554,8 +554,8 @@ export interface TypeStatusApproval {
   data: {
     id_approval: number;
     status: string;
-    keterangan: string ;
-    kesimpulan: string ;
+    keterangan: string;
+    kesimpulan: string;
     created_at: string;
     updated_at: string;
   };

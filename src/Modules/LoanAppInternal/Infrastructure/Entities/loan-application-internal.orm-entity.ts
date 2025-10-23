@@ -16,6 +16,7 @@ import {
   StatusPinjamanEnum,
   StatusPengajuanEnum,
 } from 'src/Shared/Enums/Internal/LoanApp.enum';
+import { ApprovalRecommendation_ORM_Entity } from 'src/Modules/Admin/BI-Checking/Infrastructure/Entities/approval-recommendation.orm-entity';
 
 @Entity('loan_application_internal')
 export class LoanApplicationInternal_ORM_Entity {
@@ -96,4 +97,10 @@ export class LoanApplicationInternal_ORM_Entity {
     (approvalInternal) => approvalInternal.pengajuan,
   )
   approvalsInternal: ApprovalInternal_ORM_Entity[];
+
+  @OneToMany(
+    () => ApprovalRecommendation_ORM_Entity,
+    (approvalRecommendation) => approvalRecommendation.loanApplicationInternal,
+  )
+  approvalRecommendations: ApprovalRecommendation_ORM_Entity[];
 }

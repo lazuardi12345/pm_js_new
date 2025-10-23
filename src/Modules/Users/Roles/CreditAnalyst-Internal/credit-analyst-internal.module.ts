@@ -17,12 +17,14 @@ import { CA_GetApprovalHistory_UseCase } from './Applications/Services/CA_GetApp
 import { CA_GetAllApprovalRequest_UseCase } from './Applications/Services/CA_GetAllApprovalRequest.usecase';
 import { CA_GetLoanApplicationByIdUseCase } from './Applications/Services/CA_GetLoanApplicationById.usecase';
 import { CA_GetDashboardStatsUseCase } from './Applications/Services/CA_GetDashboardStats.usecase';
+import { CA_LoanAppealResponseUseCase } from './Applications/Services/CA_LoanAppealResponse.usecase';
 //? CONTROLLER
-import { CA_ApprovedOrRejectController } from './Infrastructure/Controllers/CA_ApprovedOrReject.controller';
-import { CA_GetDashboardStatsController } from './Infrastructure/Controllers/CA_GetDashboardStats.controller';
-import { CA_GetLoanApplicationByIdController } from './Infrastructure/Controllers/CA_GetLoanApplicatonById.controller';
-import { CA_GetAllApprovalRequest_Controller } from './Infrastructure/Controllers/CA_GetAlllAppprovalRequest.controller';
-import { CA_GetApprovalHistory_Controller } from './Infrastructure/Controllers/CA_GetApprovalHistory.controller';
+import { CA_ApprovedOrRejectController } from './Presentation/Controllers/CA_ApprovedOrReject.controller';
+import { CA_GetDashboardStatsController } from './Presentation/Controllers/CA_GetDashboardStats.controller';
+import { CA_GetLoanApplicationByIdController } from './Presentation/Controllers/CA_GetLoanApplicationById.controller';
+import { CA_GetAllApprovalRequest_Controller } from './Presentation/Controllers/CA_GetAlllAppprovalRequest.controller';
+import { CA_GetApprovalHistory_Controller } from './Presentation/Controllers/CA_GetApprovalHistory.controller';
+import { CA_LoanAppealResponseController } from './Presentation/Controllers/CA_LoanAppealResponse.controller';
 
 @Module({
   imports: [
@@ -41,6 +43,7 @@ import { CA_GetApprovalHistory_Controller } from './Infrastructure/Controllers/C
     CA_GetApprovalHistory_Controller,
     CA_GetAllApprovalRequest_Controller,
     CA_GetLoanApplicationByIdController,
+    CA_LoanAppealResponseController,
   ],
   providers: [
     CA_ApproveOrRejectUseCase,
@@ -48,6 +51,7 @@ import { CA_GetApprovalHistory_Controller } from './Infrastructure/Controllers/C
     CA_GetAllApprovalRequest_UseCase,
     CA_GetApprovalHistory_UseCase,
     CA_GetLoanApplicationByIdUseCase,
+    CA_LoanAppealResponseUseCase,
   ],
 })
 export class CreditAnalystInternalUseCaseModule {}
