@@ -4,6 +4,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 
 import { ModuleLoanApplicationInternal } from './Modules/LoanAppInternal/ModuleLoanApplicationInternal.module';
 import { ModuleLoanApplicationExternal } from './Modules/LoanAppExternal/ModuleLoanApplicationExternal.module';
+import { AllTypeAdminsModule } from './Modules/Admin/ModuleAllTypeAdmins.module';
 import { UsersModule } from './Modules/Users/ModuleUsers.module';
 import { AuthModule } from './Shared/Modules/Authentication/ModuleAuth.module';
 import { DraftsModule } from './Shared/Modules/Drafts/ModuleDrafts.module';
@@ -54,6 +55,7 @@ import { FileSystemStorageModules } from './Shared/Modules/Storage/ModuleStorage
     //? --- Boundaries Modules ---
     ModuleLoanApplicationInternal,
     ModuleLoanApplicationExternal,
+    AllTypeAdminsModule,
     UsersModule,
     AuthModule,
     DraftsModule,

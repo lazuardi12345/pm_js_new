@@ -21,10 +21,11 @@ export class CA_GetLoanApplicationByIdUseCase {
   async execute(id: number) {
     // pastikan repository return shape: [TypeLoanApplicationDetail[], TypeApprovalDetail[]]
     const result =
-      await this.loanAppRepo.callSP_SPV_GetDetail_LoanApplicationsInternal_ById(
+      await this.loanAppRepo.callSP_CA_GetDetail_LoanApplicationsInternal_ById(
         id,
       );
 
+    console.log('SP Result:', result);
     // tulis explicit typing supaya TS gak bingung
     const [loanDataRows, approvals]: [
       TypeLoanApplicationDetail[] | undefined,
@@ -32,6 +33,13 @@ export class CA_GetLoanApplicationByIdUseCase {
     ] = result as any;
 
     const loanData = loanDataRows?.[0];
+    console.log(
+      'Loan Data:',
+      loanData?.loan_alasan_banding,
+      loanData?.loan_is_banding,
+      loanData?.status_pengajuan,
+    );
+
     if (!loanData) {
       throw new NotFoundException(`Loan Application with id ${id} not found`);
     }
@@ -152,13 +160,12 @@ export class CA_GetLoanApplicationByIdUseCase {
             pinjaman_ke: loanData.pinjaman_ke,
             tenor: loanData.tenor,
             keperluan: loanData.keperluan,
-            status: loanData.status,
             riwayat_nominal: loanData.riwayat_nominal,
             riwayat_tenor: loanData.riwayat_tenor,
             sisa_pinjaman: loanData.sisa_pinjaman,
             notes: loanData.notes,
-            is_banding: loanData.is_banding,
-            alasan_banding: loanData.alasan_banding,
+            is_banding: loanData.loan_is_banding,
+            alasan_banding: loanData.loan_alasan_banding,
           },
           relatives_internal: {
             kerabat_kerja: loanData.kerabat_kerja,
@@ -178,7 +185,7 @@ export class CA_GetLoanApplicationByIdUseCase {
             foto_id_card_penjamin: loanData.foto_id_card_penjamin,
           },
         },
-
+        loan_latest_status: loanData.status_pengajuan,
         loan_app_status: loanAppStatus,
         appeal_status: appealStatus,
       },

@@ -150,8 +150,8 @@ export class HM_GetLoanApplicationByIdUseCase {
             riwayat_tenor: loanData.riwayat_tenor,
             sisa_pinjaman: loanData.sisa_pinjaman,
             notes: loanData.notes,
-            is_banding: loanData.is_banding,
-            alasan_banding: loanData.alasan_banding,
+            is_banding: loanData.loan_is_banding,
+            alasan_banding: loanData.loan_alasan_banding,
           },
           relatives_internal: {
             kerabat_kerja: loanData.kerabat_kerja,
