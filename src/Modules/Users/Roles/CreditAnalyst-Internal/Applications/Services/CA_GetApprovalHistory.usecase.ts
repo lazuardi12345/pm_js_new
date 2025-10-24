@@ -43,6 +43,8 @@ export class CA_GetApprovalHistory_UseCase {
         startIndex + pageSize,
       );
 
+      console.log('tol kontol kontol kimak', paginatedData);
+
       // Step 4: Format data
       const formattedData = paginatedData.map((item) => ({
         id_pengajuan: Number(item.loan_id),
@@ -55,8 +57,10 @@ export class CA_GetApprovalHistory_UseCase {
         id_marketing: item.id_marketing ? Number(item.id_marketing) : null,
         nama_marketing: item.nama_marketing || null,
         nama_supervisor: item.nama_supervisor || null,
-        status: item.approval_status,
+        approval_status: item.approval_status || '-',
         loan_app_status: item.loan_status || '-',
+        approve_response_date: item.approval_date || '-',
+        is_it_appeal: item.is_banding ? item.is_banding : 0,
       }));
 
       return {

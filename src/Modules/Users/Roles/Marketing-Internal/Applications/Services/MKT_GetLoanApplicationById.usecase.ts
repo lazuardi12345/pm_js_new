@@ -96,7 +96,9 @@ export class MKT_GetLoanApplicationByIdUseCase {
             no_ktp: loanData.no_ktp,
             jenis_kelamin: loanData.jenis_kelamin,
             tempat_lahir: loanData.tempat_lahir,
-            tanggal_lahir: loanData.tanggal_lahir,
+            tanggal_lahir: new Date(loanData.tanggal_lahir)
+              .toISOString()
+              .split('T')[0],
             no_hp: loanData.no_hp,
             status_nikah: loanData.status_nikah,
             email: loanData.email,
