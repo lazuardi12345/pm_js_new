@@ -20,8 +20,6 @@ export class AddressInternalRepositoryImpl
     throw new Error('Method not implemented.');
   }
 
-
-
   //? MAPPER >==========================================================================
 
   //? All Transactions that using for get datas
@@ -119,9 +117,8 @@ export class AddressInternalRepositoryImpl
     id: number,
     addressData: Partial<AddressInternal>,
   ): Promise<AddressInternal> {
-
     await this.ormRepository.update(id, this.toOrmPartial(addressData));
-    console.log("id>>>>>>>>>>>>>>", id)
+    console.log('id>>>>>>>>>>>>>>', id);
     const updated = await this.ormRepository.findOne({
       where: { id },
     });
@@ -137,8 +134,9 @@ export class AddressInternalRepositoryImpl
     const ormEntities = await this.ormRepository.find();
     return ormEntities.map(this.toDomain);
   }
-    async findByClientId(clientId: number): Promise<AddressInternal_ORM_Entity | null> {
+  async findByClientId(
+    clientId: number,
+  ): Promise<AddressInternal_ORM_Entity | null> {
     return await this.addressRepository.findOne({ where: { clientId } });
   }
-  
 }

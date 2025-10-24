@@ -5,6 +5,8 @@ export enum StatusPinjamanEnum {
 
 export enum StatusPengajuanEnum {
   PENDING = 'pending',
+  DONE = 'done',
+  CLOSED = 'closed',
   APPROVED_SPV = 'approved spv',
   REJECTED_SPV = 'rejected spv',
   APPROVED_CA = 'approved ca',

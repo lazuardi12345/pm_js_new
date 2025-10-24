@@ -1,6 +1,6 @@
 // Presentation/ModuleLoanApplicationInternal.module.ts
 import { Module } from '@nestjs/common';
-import { AdminBICheckingModule } from './BI-Checking/Modules/admin-bi-checking.module';
+import { AdminBICheckingModule } from './BI-Checking/admin-bi-checking.module';
 @Module({
   imports: [
     AdminBICheckingModule,
@@ -12,16 +12,6 @@ import { AdminBICheckingModule } from './BI-Checking/Modules/admin-bi-checking.m
     // LoanApplicationInternalModule,
     // RelativeInternalModule,
     // kalau nanti ada module lain (RepeatOrderInternalModule, LoanInternalModule, dll) tinggal ditambahin sini
-  ],
-  controllers: [
-    // AddressInternalController,
-    // ApprovalInternalController,
-    // ClientInternalController,
-    // CollateralInternalController,
-    // FamilyInternalController,
-    // JobInternalController,
-    // LoanApplicationInternalController,
-    // RelativeInternalController,
   ],
   exports: [
     AdminBICheckingModule,

@@ -3,11 +3,6 @@
 import { LoanApplicationInternal_ORM_Entity } from 'src/Modules/LoanAppInternal/Infrastructure/Entities/loan-application-internal.orm-entity';
 import { LoanApplicationExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/loan-application-external.orm-entity';
 // ... import lainnya
-
-export enum LoanTypeEnum {
-  INTERNAL = 'internal',
-  EXTERNAL = 'external',
-}
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -17,15 +12,31 @@ import {
   DeleteDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
+import { RecommendationEnum } from 'src/Shared/Enums/Admins/BI/approval-recommendation.enum';
 
 @Entity('approval_recommendation')
 export class ApprovalRecommendation_ORM_Entity {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
 
-  @Column({ type: 'enum', enum: LoanTypeEnum })
-  type: LoanTypeEnum;
+  // @Column({ type: 'enum', enum: LoanTypeEnum })
+  // type: LoanTypeEnum;
+
+  @Column({ type: 'enum', enum: RecommendationEnum })
+  recommendation: RecommendationEnum;
+
+  @Column({ type: 'varchar' })
+  filePath: string;
+
+  @Column({ type: 'char', length: 16 })
+  @Index('IDX_NIK_at_ApprovalRecommendation', ['nik']) // <- index explicit name
+  nik: string;
+
+  @Column({ type: 'char', length: 24, nullable: true })
+  @Index('IDX_DraftID_at_ApprovalRecommendation', ['draft_id']) // <- index explicit name
+  draft_id?: string;
 
   @ManyToOne(
     () => LoanApplicationInternal_ORM_Entity,
