@@ -25,7 +25,7 @@ export class CA_GetApprovalHistory_Controller {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(USERTYPE.CA)
-  @Get('/history')
+  @Get('history')
   async getAllLoanApplications(
     @CurrentUser('id') creditAnalystId: number,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
