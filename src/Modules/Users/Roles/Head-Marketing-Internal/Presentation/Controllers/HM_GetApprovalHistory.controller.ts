@@ -16,7 +16,7 @@ import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorato
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
 
-@Controller('hm/int/loan-apps/history')
+@Controller('hm/int/loan-apps')
 export class HM_GetApprovalHistoryController {
   constructor(
     private readonly getApprovalHistoryByTeamUseCase: HM_GetAllApprovalHistoryUseCase,
@@ -24,7 +24,7 @@ export class HM_GetApprovalHistoryController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(USERTYPE.HM)
-  @Get()
+  @Get('history')
   async getHistory(
     @CurrentUser('id') hmId: number,
     @Query('page') page: number = 1,
