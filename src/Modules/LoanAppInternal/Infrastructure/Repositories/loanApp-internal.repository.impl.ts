@@ -14,6 +14,10 @@ import {
   TypeLoanApplicationDetail,
 } from 'src/Modules/Users/Roles/Marketing-Internal/Applications/DTOS/MKT_CreateLoanApplication.dto';
 import { StatusPengajuanEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
+import {
+  RoleSearchEnum,
+  TypeSearchEnum,
+} from 'src/Shared/Enums/General/General.enum';
 @Injectable()
 export class LoanApplicationInternalRepositoryImpl
   implements ILoanApplicationInternalRepository
@@ -173,6 +177,22 @@ export class LoanApplicationInternalRepositoryImpl
         updated_at: now,
       },
     );
+  }
+
+  async callSP_GENERAL_GetAllPreviewDataLoanBySearch_Internal(
+    role: RoleSearchEnum,
+    type: TypeSearchEnum,
+    keyword: string,
+  ): Promise<{ data: any[] }> {
+    const result = await this.dataSource.query(
+      'CALL SP_GENERAL_GetAllPreviewDataLoanBySearch_Internal(?, ?, ?)',
+      [keyword, role, type],
+    );
+
+    const data = result[0] || [];
+    const total = data.length;
+
+    return { data };
   }
 
   async delete(id: number): Promise<void> {

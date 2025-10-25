@@ -5,7 +5,10 @@ import { FamilyInternal_ORM_Entity } from './family-internal.orm-entity';
 import { JobInternal_ORM_Entity } from './job-internal.orm-entity';
 import { RelativeInternal_ORM_Entity } from './relative-internal.orm-entity';
 import { Users_ORM_Entity } from 'src/Modules/Users/Infrastructure/Entities/users.orm-entity';
-import { GENDER, MARRIAGE_STATUS } from 'src/Shared/Enums/Internal/Clients.enum';
+import {
+  GENDER,
+  MARRIAGE_STATUS,
+} from 'src/Shared/Enums/Internal/Clients.enum';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -16,9 +19,13 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
+  Index,
 } from 'typeorm';
 
 @Entity('client_internal')
+@Index('IDX_CLIENT_INTERNAL_SEARCH', ['nama_lengkap', 'no_ktp', 'no_hp'], {
+  fulltext: true,
+})
 export class ClientInternal_ORM_Entity {
   @PrimaryGeneratedColumn('increment')
   id: number;
@@ -98,7 +105,10 @@ export class ClientInternal_ORM_Entity {
     (collateralInternal) => collateralInternal.nasabah_id,
   )
   collateralInternal: CollateralInternal_ORM_Entity[];
-  @OneToMany(() => FamilyInternal_ORM_Entity, (familyInternal) => familyInternal.nasabah)
+  @OneToMany(
+    () => FamilyInternal_ORM_Entity,
+    (familyInternal) => familyInternal.nasabah,
+  )
   familyInternal: FamilyInternal_ORM_Entity[];
   @OneToMany(
     () => RelativeInternal_ORM_Entity,

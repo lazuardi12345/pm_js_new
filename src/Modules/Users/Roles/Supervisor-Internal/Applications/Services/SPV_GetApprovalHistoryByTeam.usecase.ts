@@ -78,6 +78,9 @@ export class SPV_GetAllApproval_ByTeam_UseCase {
           nama_marketing: item.marketing_nama,
           loan_status: item.loan_status,
           approval_status: item.approval_status,
+          is_appeal: item.is_appeal,
+          reason_for_appeal: item.reason_for_appeal,
+          approve_response_date: item.approval_created_at,
         };
       });
 
