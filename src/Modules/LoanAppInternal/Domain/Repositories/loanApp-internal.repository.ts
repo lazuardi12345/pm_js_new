@@ -4,6 +4,10 @@ import {
 } from 'src/Modules/Users/Roles/Marketing-Internal/Applications/DTOS/MKT_CreateLoanApplication.dto';
 import { LoanApplicationInternal } from '../Entities/loan-application-internal.entity';
 import { StatusPengajuanEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
+import {
+  RoleSearchEnum,
+  TypeSearchEnum,
+} from 'src/Shared/Enums/General/General.enum';
 
 export const LOAN_APPLICATION_INTERNAL_REPOSITORY = Symbol(
   'LOAN_APPLICATION_INTERNAL_REPOSITORY',
@@ -38,6 +42,14 @@ export interface ILoanApplicationInternalRepository {
   ): Promise<void>;
 
   triggerBanding(loan_id: number, alasan_banding: string);
+
+  //! ========== GENERAL ==========
+
+  callSP_GENERAL_GetAllPreviewDataLoanBySearch_Internal(
+    role: RoleSearchEnum,
+    type: TypeSearchEnum,
+    keyword: string,
+  ): Promise<{ data: any[] }>;
 
   //! ========== MARKETING ==========
   callSP_MKT_GetAllLoanApplications_Internal(

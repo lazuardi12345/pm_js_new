@@ -1,9 +1,19 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { ILoanApplicationInternalRepository, LOAN_APPLICATION_INTERNAL_REPOSITORY } from '../../Domain/Repositories/loanApp-internal.repository';
+import {
+  ILoanApplicationInternalRepository,
+  LOAN_APPLICATION_INTERNAL_REPOSITORY,
+} from '../../Domain/Repositories/loanApp-internal.repository';
 import { LoanApplicationInternal } from '../../Domain/Entities/loan-application-internal.entity';
 import { CreateLoanApplicationInternalDto } from '../DTOS/dto-LoanApp/create-loan-application.dto';
 import { UpdateLoanAplicationInternalDto } from '../DTOS/dto-LoanApp/update-loan-application.dto';
-import { StatusPengajuanEnum, StatusPinjamanEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
+import {
+  StatusPengajuanEnum,
+  StatusPinjamanEnum,
+} from 'src/Shared/Enums/Internal/LoanApp.enum';
+import {
+  RoleSearchEnum,
+  TypeSearchEnum,
+} from 'src/Shared/Enums/General/General.enum';
 
 @Injectable()
 export class LoanApplicationInternalService {
@@ -12,10 +22,12 @@ export class LoanApplicationInternalService {
     private readonly repo: ILoanApplicationInternalRepository,
   ) {}
 
-  async create(dto: CreateLoanApplicationInternalDto): Promise<LoanApplicationInternal> {
+  async create(
+    dto: CreateLoanApplicationInternalDto,
+  ): Promise<LoanApplicationInternal> {
     const now = new Date();
     const address = new LoanApplicationInternal(
-      {id: dto.nasabah_id},
+      { id: dto.nasabah_id },
       dto.status_pinjaman ?? StatusPinjamanEnum.BARU,
       dto.nominal_pinjaman,
       dto.tenor,
@@ -36,7 +48,10 @@ export class LoanApplicationInternalService {
     return this.repo.save(address);
   }
 
-  async update(id: number, dto: UpdateLoanAplicationInternalDto): Promise<LoanApplicationInternal> {
+  async update(
+    id: number,
+    dto: UpdateLoanAplicationInternalDto,
+  ): Promise<LoanApplicationInternal> {
     return this.repo.update(id, dto);
   }
 
@@ -50,5 +65,17 @@ export class LoanApplicationInternalService {
 
   async delete(id: number): Promise<void> {
     return this.repo.delete(id);
+  }
+
+  async searchLoans(
+    role: RoleSearchEnum,
+    type: TypeSearchEnum,
+    keyword: string,
+  ): Promise<{ data: any[] }> {
+    return this.repo.callSP_GENERAL_GetAllPreviewDataLoanBySearch_Internal(
+      role,
+      type,
+      keyword,
+    );
   }
 }
