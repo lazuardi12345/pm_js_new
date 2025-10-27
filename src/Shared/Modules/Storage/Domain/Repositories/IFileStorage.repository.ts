@@ -24,6 +24,12 @@ export interface IFileStorageRepository {
     isDraft?: boolean,
   ): Promise<Record<string, FileMetadata[]>>;
 
+  saveApprovalRecommedationFiles(
+    customerId: number,
+    customerName: string,
+    files: Record<string, Express.Multer.File[] | undefined>,
+  ): Promise<Record<string, FileMetadata[]>>;
+
   // Read/Get
   getFile(
     customerId: number,

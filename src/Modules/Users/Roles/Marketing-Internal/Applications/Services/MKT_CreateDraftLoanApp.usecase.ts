@@ -136,6 +136,184 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     }
   }
 
+  async updateDraftById(
+    Id: string,
+    updateData: Partial<CreateDraftLoanApplicationDto>,
+    files?: Record<string, Express.Multer.File[]>,
+  ) {
+    const { payload } = updateData;
+
+    if (!payload) {
+      throw new BadRequestException('Payload is required');
+    }
+
+    try {
+      let filePaths: Record<string, FileMetadata[]> = {};
+
+      if (files && Object.keys(files).length > 0) {
+        // Convert gambar ke JPEG tanpa resize
+        for (const [field, fileArray] of Object.entries(files)) {
+          for (const file of fileArray) {
+            if (file.mimetype.startsWith('image/')) {
+              const outputBuffer = await sharp(file.buffer)
+                .jpeg({ quality: 100 })
+                .toBuffer();
+
+              file.buffer = outputBuffer;
+              file.originalname = file.originalname.replace(/\.\w+$/, '.jpeg');
+            }
+          }
+        }
+
+        filePaths = await this.fileStorage.saveDraftsFiles(
+          Number(payload?.client_internal?.no_ktp) ?? Id,
+          payload?.client_internal?.nama_lengkap ?? `draft-${Id}`,
+          files,
+        );
+
+        for (const [field, paths] of Object.entries(filePaths)) {
+          if (paths && paths.length > 0) {
+            // Tentukan di object mana field ini berada
+            const parentKeys = [
+              'client_internal',
+              'job_internal',
+              'collateral_internal',
+              'relative_internal',
+            ];
+            let assigned = false;
+
+            for (const key of parentKeys) {
+              if (payload[key] && field in payload[key]) {
+                payload[key][field] = paths[0].url; // assign URL string
+                assigned = true;
+                break;
+              }
+            }
+
+            if (!assigned) {
+              // fallback: assign di root payload
+              payload[field] = paths[0].url;
+            }
+          }
+        }
+      }
+
+      console.log('File paths:', filePaths);
+      console.log('Payload (update):', payload);
+
+      const existingDraft = await this.loanAppDraftRepo.findById(Id);
+
+      if (!existingDraft) {
+        throw new NotFoundException(`Draft with id ${Id} not found`);
+      }
+
+      // HAPUS file lama dengan field name yang sama (base name tanpa ekstensi)
+      const existingFiles = { ...(existingDraft.uploaded_files || {}) };
+
+      // Helper function untuk dapat base name (tanpa ekstensi)
+      const getBaseName = (fieldName: string): string => {
+        // Hapus ekstensi: foto_kk.jpeg.enc → foto_kk
+        return fieldName.split('.')[0];
+      };
+
+      // Hapus file lama yang field name-nya sama dengan file baru
+      for (const newFieldName of Object.keys(filePaths)) {
+        const newBaseName = getBaseName(newFieldName);
+
+        // Cari dan hapus semua file lama dengan base name yang sama
+        for (const existingFieldName of Object.keys(existingFiles)) {
+          const existingBaseName = getBaseName(existingFieldName);
+
+          if (existingBaseName === newBaseName) {
+            console.log(
+              `* Removing old file: ${existingFieldName} (replaced by ${newFieldName})`,
+            );
+            delete existingFiles[existingFieldName];
+          }
+        }
+      }
+
+      const mergedFiles = {
+        ...existingFiles, // ← File lama yang sudah di-cleanup
+        ...filePaths, // ← File baru
+      };
+
+      console.log('Old files (after cleanup):', existingFiles);
+      console.log('New files:', filePaths);
+      console.log('Merged files:', mergedFiles);
+
+      const entityUpdate: Partial<LoanApplicationEntity> = {
+        ...payload,
+        uploaded_files: mergedFiles,
+      };
+
+      const loanApp = await this.loanAppDraftRepo.updateDraftById(
+        Id,
+        entityUpdate,
+      );
+
+      const verifyAfterUpdate = await this.loanAppDraftRepo.findById(Id);
+
+      return {
+        payload: {
+          error: false,
+          message: 'Draft loan application updated',
+          reference: 'LOAN_UPDATE_OK',
+          data: verifyAfterUpdate,
+        },
+      };
+    } catch (err) {
+      console.error('Update error:', err);
+
+      // Re-throw HttpException (termasuk NotFoundException)
+      if (err instanceof HttpException) {
+        throw err;
+      }
+
+      // Mongoose validation error
+      if (err.name === 'ValidationError') {
+        throw new HttpException(
+          {
+            payload: {
+              error: 'BAD REQUEST',
+              message: Object.values(err.errors)
+                .map((e: any) => e.message)
+                .join(', '),
+              reference: 'LOAN_VALIDATION_ERROR',
+            },
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Duplicate key error
+      if (err.code === 11000) {
+        throw new HttpException(
+          {
+            payload: {
+              error: 'DUPLICATE KEY',
+              message: `Duplicate field: ${Object.keys(err.keyValue).join(', ')}`,
+              reference: 'LOAN_DUPLICATE_KEY',
+            },
+          },
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      // Fallback error
+      throw new HttpException(
+        {
+          payload: {
+            error: true,
+            message: 'Unexpected error',
+            reference: 'LOAN_UNKNOWN_ERROR',
+          },
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   async renderDraftById(Id: string) {
     try {
       const loanApp = await this.loanAppDraftRepo.findById(Id);
@@ -248,109 +426,6 @@ export class MKT_CreateDraftLoanApplicationUseCase {
             message:
               error.message || 'Draft tidak ditemukan atau unexpected error',
             reference: 'LOAN_DELETE_ERROR',
-          },
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  async updateDraftById(
-    Id: string,
-    updateData: Partial<CreateDraftLoanApplicationDto>,
-    files?: Record<string, Express.Multer.File[]>,
-  ) {
-    const { payload } = updateData;
-
-    if (!payload) {
-      throw new BadRequestException('Payload is required');
-    }
-
-    let filePaths: Record<string, FileMetadata[]> = {};
-
-    // Simpan file ke storage
-    if (files && Object.keys(files).length > 0) {
-      filePaths = await this.fileStorage.saveDraftsFiles(
-        Number(payload?.client_internal?.no_ktp) ?? Id,
-        payload?.client_internal?.nama_lengkap ?? `draft-${Id}`,
-        files,
-      );
-
-      // Assign URL ke payload sesuai field
-      for (const [field, paths] of Object.entries(filePaths)) {
-        if (paths && paths.length > 0) {
-          // Tentukan di object mana field ini berada
-          const parentKeys = [
-            'client_internal',
-            'job_internal',
-            'collateral_internal',
-            'relative_internal',
-          ];
-          let assigned = false;
-
-          for (const key of parentKeys) {
-            if (payload[key] && field in payload[key]) {
-              payload[key][field] = paths[0].url; // assign URL string, bukan object
-              assigned = true;
-              break;
-            }
-          }
-
-          if (!assigned) {
-            // fallback: assign di root payload
-            payload[field] = paths[0].url;
-          }
-        }
-      }
-    }
-
-    try {
-      const existingDraft = await this.loanAppDraftRepo.findById(Id);
-
-      if (!existingDraft) {
-        throw new NotFoundException(`Draft with id ${Id} not found`);
-      }
-
-      // Merge uploaded files sebelumnya
-      const mergedFiles = {
-        ...(existingDraft.uploaded_files || {}),
-        ...(Object.keys(filePaths).length > 0 ? filePaths : {}),
-      };
-
-      const entityUpdate: Partial<LoanApplicationEntity> = {
-        ...payload,
-        uploaded_files: mergedFiles,
-      };
-
-      const loanApp = await this.loanAppDraftRepo.updateDraftById(
-        Id,
-        entityUpdate,
-      );
-
-      // Verifikasi hasil update
-      const verifyAfterUpdate = await this.loanAppDraftRepo.findById(Id);
-
-      return {
-        payload: {
-          error: false,
-          message: 'Draft loan applications updated',
-          reference: 'LOAN_UPDATE_OK',
-          data: verifyAfterUpdate,
-        },
-      };
-    } catch (error) {
-      console.error('Update error:', error);
-
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      throw new HttpException(
-        {
-          payload: {
-            error: true,
-            message: 'Unexpected error',
-            reference: 'LOAN_UNKNOWN_ERROR',
           },
         },
         HttpStatus.INTERNAL_SERVER_ERROR,

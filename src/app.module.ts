@@ -21,6 +21,7 @@ import { CreditAnalystInternalUseCaseModule } from './Modules/Users/Roles/Credit
 import { HeadMarketingInternalUsecaseModule } from './Modules/Users/Roles/Head-Marketing-Internal/head-marketing-internal-module';
 
 import { FileSystemStorageModules } from './Shared/Modules/Storage/ModuleStorage.module';
+import { AdminBICheckingUseCaseModule } from './Modules/Users/Roles/Admin/BI/admin-bi.module';
 @Module({
   imports: [
     //? --- MySQL Connection ---
@@ -67,6 +68,7 @@ import { FileSystemStorageModules } from './Shared/Modules/Storage/ModuleStorage
     SupervisorInternalUseCaseModule,
     CreditAnalystInternalUseCaseModule,
     HeadMarketingInternalUsecaseModule,
+    AdminBICheckingUseCaseModule,
 
     //? --- Persistence Config Modules ---
     PersistenceLoanAppModule,

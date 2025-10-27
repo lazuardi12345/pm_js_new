@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable, Inject, BadRequestException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Inject,
+  BadRequestException,
+} from '@nestjs/common';
 import {
   CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY,
   ILoanApplicationDraftRepository,
@@ -7,7 +13,6 @@ import { CreateDraftLoanApplicationDto } from '../../DTOS/LoanAppInt_MarketingIn
 import { LoanApplicationEntity } from '../../../Domain/Entities/LoanAppInt.entity';
 import { UpdateDraftLoanApplicationDto } from '../../DTOS/LoanAppInt_MarketingInput/UpdateDraft_LoanAppInt.dto';
 import { isEqual, merge } from 'lodash';
-
 
 @Injectable()
 export class CreateDraftLoanApplicationUseCase {
@@ -21,7 +26,7 @@ export class CreateDraftLoanApplicationUseCase {
     dto: CreateDraftLoanApplicationDto,
   ) {
     try {
-      console.log(dto)
+      console.log(dto);
       const loanApp = await this.loanAppDraftRepo.create({
         marketing_id: marketingId,
         client_internal: dto.payload.client_internal,
@@ -50,7 +55,7 @@ export class CreateDraftLoanApplicationUseCase {
               .join(', '),
             reference: 'LOAN_VALIDATION_ERROR',
           },
-          HttpStatus.BAD_REQUEST, // ⬅️ 400 bukan 201
+          HttpStatus.BAD_REQUEST,
         );
       }
 
@@ -61,7 +66,7 @@ export class CreateDraftLoanApplicationUseCase {
             message: `Duplicate field: ${Object.keys(err.keyValue).join(', ')}`,
             reference: 'LOAN_DUPLICATE_KEY',
           },
-          HttpStatus.CONFLICT, // ⬅️ 409 untuk duplicate
+          HttpStatus.CONFLICT,
         );
       }
 
@@ -120,77 +125,85 @@ export class CreateDraftLoanApplicationUseCase {
     }
   }
 
-async updateDraftById(id: string, updateData: any, files?: any) {
-  console.log('🟢 [updateDraftById] START');
-  console.log('➡️ Incoming ID:', id);
-  console.log('➡️ Incoming Raw Body:', updateData);
+  async updateDraftById(id: string, updateData: any, files?: any) {
+    console.log('🟢 [updateDraftById] START');
+    console.log('➡️ Incoming ID:', id);
+    console.log('➡️ Incoming Raw Body:', updateData);
 
-  const existingDraft = await this.loanAppDraftRepo.findById(id);
-  if (!existingDraft) throw new Error('Draft tidak ditemukan');
+    const existingDraft = await this.loanAppDraftRepo.findById(id);
+    if (!existingDraft) throw new Error('Draft tidak ditemukan');
 
-  console.log('🔍 Existing Draft:', JSON.stringify(existingDraft, null, 2));
+    console.log('🔍 Existing Draft:', JSON.stringify(existingDraft, null, 2));
 
-  // Ambil payload dari body atau dari updateData.payload
-  let payloadData: any = updateData.payload ?? updateData;
+    // Ambil payload dari body atau dari updateData.payload
+    let payloadData: any = updateData.payload ?? updateData;
 
-  // Jika payload berupa string (FormData JSON), parse
-  if (typeof payloadData === 'string') {
-    try {
-      payloadData = JSON.parse(payloadData);
-      console.log('✅ Payload parsed from string JSON');
-    } catch (err) {
-      console.error('⚠️ Payload JSON invalid:', err);
-      throw new BadRequestException('Payload JSON tidak valid');
-    }
-  }
-
-  // Ambil file yang dikirim
-  const uploaded_files: Record<string, any> = {};
-  if (files) {
-    for (const [field, fileArray] of Object.entries(files) as [string, Express.Multer.File[]][]) {
-      if (Array.isArray(fileArray) && fileArray.length > 0) {
-        uploaded_files[field] = fileArray.map(f => f.filename);
+    // Jika payload berupa string (FormData JSON), parse
+    if (typeof payloadData === 'string') {
+      try {
+        payloadData = JSON.parse(payloadData);
+        console.log('✅ Payload parsed from string JSON');
+      } catch (err) {
+        console.error('⚠️ Payload JSON invalid:', err);
+        throw new BadRequestException('Payload JSON tidak valid');
       }
     }
-  }
 
-  // Merge payload lama dengan payload baru, merge files juga
-  const mergedPayload = merge({}, existingDraft.payload || {}, payloadData);
-  const mergedFiles = merge({}, existingDraft.uploaded_files || {}, uploaded_files);
+    // Ambil file yang dikirim
+    const uploaded_files: Record<string, any> = {};
+    if (files) {
+      for (const [field, fileArray] of Object.entries(files) as [
+        string,
+        Express.Multer.File[],
+      ][]) {
+        if (Array.isArray(fileArray) && fileArray.length > 0) {
+          uploaded_files[field] = fileArray.map((f) => f.filename);
+        }
+      }
+    }
 
-  const isPayloadChanged = !isEqual(existingDraft.payload, mergedPayload);
-  const isFilesChanged = !isEqual(existingDraft.uploaded_files, mergedFiles);
+    // Merge payload lama dengan payload baru, merge files juga
+    const mergedPayload = merge({}, existingDraft.payload || {}, payloadData);
+    const mergedFiles = merge(
+      {},
+      existingDraft.uploaded_files || {},
+      uploaded_files,
+    );
 
-  if (!isPayloadChanged && !isFilesChanged) {
-    console.log('⚠️ Tidak ada perubahan data. Update dibatalkan.');
+    const isPayloadChanged = !isEqual(existingDraft.payload, mergedPayload);
+    const isFilesChanged = !isEqual(existingDraft.uploaded_files, mergedFiles);
+
+    if (!isPayloadChanged && !isFilesChanged) {
+      console.log('⚠️ Tidak ada perubahan data. Update dibatalkan.');
+      return {
+        error: true,
+        message: 'Tidak ada data yang diubah',
+        reference: 'LOAN_UPDATE_NO_CHANGES',
+        data: existingDraft,
+      };
+    }
+
+    const entityUpdate: Partial<LoanApplicationEntity> = {
+      payload: mergedPayload,
+      uploaded_files: mergedFiles,
+    };
+
+    console.log(
+      '🔍 Final entityUpdate to save:',
+      JSON.stringify(entityUpdate, null, 2),
+    );
+
+    const result = await this.loanAppDraftRepo.updateDraftById(
+      id,
+      entityUpdate,
+    );
+    console.log('✅ Repository returned:', JSON.stringify(result, null, 2));
+
     return {
-      error: true,
-      message: 'Tidak ada data yang diubah',
-      reference: 'LOAN_UPDATE_NO_CHANGES',
-      data: existingDraft,
+      error: false,
+      message: 'Draft loan applications updated',
+      reference: 'LOAN_UPDATE_OK',
+      data: result.entity,
     };
   }
-
-  const entityUpdate: Partial<LoanApplicationEntity> = {
-    payload: mergedPayload,
-    uploaded_files: mergedFiles,
-  };
-
-  console.log('🔍 Final entityUpdate to save:', JSON.stringify(entityUpdate, null, 2));
-
-  const result = await this.loanAppDraftRepo.updateDraftById(id, entityUpdate);
-  console.log('✅ Repository returned:', JSON.stringify(result, null, 2));
-
-  return {
-    error: false,
-    message: 'Draft loan applications updated',
-    reference: 'LOAN_UPDATE_OK',
-    data: result.entity,
-  };
 }
-
-
-}
-
-
-

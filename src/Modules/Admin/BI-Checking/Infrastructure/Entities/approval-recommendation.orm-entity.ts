@@ -34,6 +34,15 @@ export class ApprovalRecommendation_ORM_Entity {
   @Index('IDX_NIK_at_ApprovalRecommendation', ['nik']) // <- index explicit name
   nik: string;
 
+  @Column({ type: 'char', length: 14 })
+  no_telp: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  email: string;
+
+  @Column({ type: 'varchar', length: 14, nullable: true })
+  nama_nasabah: string;
+
   @Column({ type: 'char', length: 24, nullable: true })
   @Index('IDX_DraftID_at_ApprovalRecommendation', ['draft_id']) // <- index explicit name
   draft_id?: string;

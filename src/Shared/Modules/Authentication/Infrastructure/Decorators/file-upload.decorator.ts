@@ -30,7 +30,7 @@ export class FileUploadAuthGuard extends AuthGuard('jwt') {
     // Untuk multipart, bypass body parsing
     if (contentType?.includes('multipart/form-data')) {
       console.log(
-        '🔐 FileUploadAuthGuard: Multipart request detected, using header-only auth',
+        'FileUploadAuthGuard: Multipart request detected, using header-only auth',
       );
     }
 
