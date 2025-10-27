@@ -22,6 +22,8 @@ export class MinioFileStorageService implements IFileStorageRepository {
   private readonly key: Buffer;
   private readonly mainBucket = 'customer-files';
   private readonly draftBucket = 'customer-drafts';
+  private readonly approvalRecommendationBucket =
+    'approval-recommendation-files';
 
   constructor() {
     // Initialize MinIO Client
@@ -132,6 +134,40 @@ export class MinioFileStorageService implements IFileStorageRepository {
     isDraft: boolean = false,
   ): Promise<Record<string, FileMetadata[]>> {
     const bucket = this.getBucketName(isDraft);
+    const prefix = this.getCustomerPrefix(customerId, customerName);
+    const savedFiles: Record<string, FileMetadata[]> = {};
+
+    for (const [field, fileList] of Object.entries(files)) {
+      if (!fileList || fileList.length === 0) continue;
+
+      savedFiles[field] = [];
+
+      for (const file of fileList) {
+        // Ambil ekstensi file
+        const ext = file.originalname.split('.').pop();
+        // Buat nama file baru: <nama_nasabah>-<tipe_field>.<ext>
+        const newFileName = `${customerName}-${field}.${ext}`;
+
+        // Upload pake nama baru
+        const metadata = await this.uploadSingleFile(
+          bucket,
+          prefix,
+          file,
+          newFileName,
+        );
+        savedFiles[field].push(metadata);
+      }
+    }
+
+    return savedFiles;
+  }
+
+  async saveApprovalRecommedationFiles(
+    customerId: number,
+    customerName: string,
+    files: Record<string, Express.Multer.File[] | undefined>,
+  ): Promise<Record<string, FileMetadata[]>> {
+    const bucket = this.approvalRecommendationBucket;
     const prefix = this.getCustomerPrefix(customerId, customerName);
     const savedFiles: Record<string, FileMetadata[]> = {};
 

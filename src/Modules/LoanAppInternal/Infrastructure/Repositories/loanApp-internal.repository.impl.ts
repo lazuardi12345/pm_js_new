@@ -184,13 +184,16 @@ export class LoanApplicationInternalRepositoryImpl
     type: TypeSearchEnum,
     keyword: string,
   ): Promise<{ data: any[] }> {
-    const result = await this.dataSource.query(
-      'CALL SP_GENERAL_GetAllPreviewDataLoanBySearch_Internal(?, ?, ?)',
+    console.log('CALL SP with params > : ', keyword, role, type);
+
+    const result = await this.ormRepository.manager.query(
+      'CALL GENERAL_GetAllPreviewDataLoanBySearch_Internal(?, ?, ?)',
       [keyword, role, type],
     );
 
+    console.log('res:', result);
+
     const data = result[0] || [];
-    const total = data.length;
 
     return { data };
   }

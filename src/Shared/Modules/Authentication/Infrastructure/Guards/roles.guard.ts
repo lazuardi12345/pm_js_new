@@ -21,18 +21,18 @@ export class RolesGuard implements CanActivate {
     );
 
     if (!requiredRoles) {
-      console.log('✅ RolesGuard: No roles required, allowing access');
+      console.log('RolesGuard: No roles required, allowing access');
       return true;
     }
 
     const { user } = context.switchToHttp().getRequest();
 
-    console.log('🔐 RolesGuard: Checking roles');
+    console.log('* RolesGuard: Checking roles');
     console.log('   - Required roles:', requiredRoles);
     console.log('   - User:', user);
 
     if (!user) {
-      console.log('❌ RolesGuard: No user in request');
+      console.log('* RolesGuard: No user in request');
       throw new UnauthorizedException(
         'Masalah dengan autentikasi, silahkan login kembali',
       );

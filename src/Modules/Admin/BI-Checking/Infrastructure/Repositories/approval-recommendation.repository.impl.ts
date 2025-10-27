@@ -30,6 +30,9 @@ export class ApprovalRecommendationRepositoryImpl
       ormEntity.id,
       ormEntity.draft_id,
       ormEntity.nik,
+      ormEntity.no_telp,
+      ormEntity.email,
+      ormEntity.nama_nasabah,
       ormEntity.loanApplicationInternal.id,
       ormEntity.loanApplicationExternal.id,
       ormEntity.created_at,
@@ -48,6 +51,9 @@ export class ApprovalRecommendationRepositoryImpl
       filePath: domainEntity.filePath,
       draft_id: domainEntity.draft_id,
       nik: domainEntity.nik,
+      no_telp: domainEntity.no_telp,
+      email: domainEntity.email,
+      nama_nasabah: domainEntity.nama_nasabah,
       loanApplicationInternal: {
         id: domainEntity.id,
       } as LoanApplicationInternal_ORM_Entity,
@@ -74,6 +80,9 @@ export class ApprovalRecommendationRepositoryImpl
     if (partial.filePath) ormData.filePath = partial.filePath;
     if (partial.draft_id) ormData.draft_id = partial.draft_id;
     if (partial.nik) ormData.nik = partial.nik;
+    if (partial.no_telp) ormData.no_telp = partial.no_telp;
+    if (partial.email) ormData.email = partial.email;
+    if (partial.nama_nasabah) ormData.nama_nasabah = partial.nama_nasabah;
     if (partial.loan_application_internal_id)
       ormData.loanApplicationInternal = {
         id: partial.loan_application_internal_id,
@@ -142,8 +151,20 @@ export class ApprovalRecommendationRepositoryImpl
     await this.ormRepository.softDelete(id);
   }
 
-  async findAll(): Promise<ApprovalRecommendation[]> {
-    const ormEntities = await this.ormRepository.find();
-    return ormEntities.map(this.toDomain);
+  async findAllRecommendationHistory(): Promise<any[]> {
+    return await this.ormRepository
+      .createQueryBuilder('rec')
+      .select([
+        'rec.id',
+        'rec.recommendation',
+        'rec.nik',
+        'rec.nama_nasabah',
+        'rec.no_telp',
+        'rec.email',
+        'rec.filePath',
+        'rec.created_at',
+      ])
+      // .where('rec.loanApplicationInternal IS NOT NULL')
+      .getMany();
   }
 }

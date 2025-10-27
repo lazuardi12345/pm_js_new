@@ -8,6 +8,7 @@ import {
   Param,
   Req,
   Query,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { LoanApplicationInternalService } from '../../Application/Services/loan-app-internal.service';
 import { CreateLoanApplicationInternalDto } from '../../Application/DTOS/dto-LoanApp/create-loan-application.dto';
@@ -47,11 +48,12 @@ export class LoanApplicationInternalController {
   @Get('search/history')
   @Roles(USERTYPE.HM, USERTYPE.SPV, USERTYPE.MARKETING, USERTYPE.CA)
   async searchLoanHistory(@Req() req: any, @Query('keyword') keyword?: string) {
-    const userRole: USERTYPE = req.user.role;
-    const role: RoleSearchEnum = this.mapUserTypeToSearchEnum(userRole);
+    const { usertype } = req.user;
+    if (!usertype) throw new UnauthorizedException('Invalid User Session');
+    const role = this.mapUserTypeToSearchEnum(usertype as USERTYPE);
     return this.loanApplicationService.searchLoans(
-      role, // langsung
-      TypeSearchEnum.REQUEST,
+      role,
+      TypeSearchEnum.HISTORY,
       keyword ?? '',
     );
   }
@@ -59,11 +61,12 @@ export class LoanApplicationInternalController {
   @Get('search/request')
   @Roles(USERTYPE.HM, USERTYPE.SPV, USERTYPE.MARKETING, USERTYPE.CA)
   async searchLoanRequest(@Req() req: any, @Query('keyword') keyword?: string) {
-    const userRole: USERTYPE = req.user.role;
-    const role: RoleSearchEnum = this.mapUserTypeToSearchEnum(userRole);
+    const { usertype } = req.user;
+    if (!usertype) throw new UnauthorizedException('Invalid User Session');
+    const role = this.mapUserTypeToSearchEnum(usertype as USERTYPE);
     return this.loanApplicationService.searchLoans(
-      role, // langsung
-      TypeSearchEnum.HISTORY,
+      role,
+      TypeSearchEnum.REQUEST,
       keyword ?? '',
     );
   }
