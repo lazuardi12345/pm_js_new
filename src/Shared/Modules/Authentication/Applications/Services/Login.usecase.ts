@@ -25,6 +25,6 @@ export class LoginUseCase {
     };
     const token = await this.tokenSign.sign(payload);
 
-    return { accessToken: token, expiresIn: 3600 }; // 1 jam
+    return { accessToken: token, expiresIn: 36000 }; // 10 jam
   }
 }

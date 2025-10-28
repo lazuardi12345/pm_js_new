@@ -25,7 +25,7 @@ export class AdBIC_CreateApprovalResponseController {
   @Roles(USERTYPE.ADMIN_BI)
   @Post('response/add')
   @UseInterceptors(
-    FileFieldsInterceptor([{ name: 'attachments', maxCount: 3 }], {
+    FileFieldsInterceptor([{ name: 'files', maxCount: 3 }], {
       storage: multer.memoryStorage(),
       limits: { fileSize: 5 * 1024 * 1024 },
     }),

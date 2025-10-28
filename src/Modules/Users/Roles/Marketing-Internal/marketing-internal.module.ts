@@ -26,6 +26,7 @@ import { MKT_CreateDraftLoanApplicationUseCase } from './Applications/Services/M
 import { MKT_UpdateLoanApplicationUseCase } from './Applications/Services/MKT_UpdateLoanApplication.usecase';
 import { MKT_TriggerAppealUseCase } from './Applications/Services/MKT_TriggerAppeal.usecase';
 import { MKT_GetDashboardStatsUseCase } from './Applications/Services/MKT_GetDashboardStats.usecase';
+import { MKT_TriggerFinalLoanStatusUseCase } from './Applications/Services/MKT_TriggerFinalLoan.usecase';
 // import { MKT_GetAllLoanApplicationUseCase } from './usecases/MKT_GetAllLoanApplication.usecase';
 // import { MKT_GetLoanApplicationByIdUseCase } from './usecases/MKT_GetLoanApplicationById.usecase';
 // import { MKT_UpdateLoanApplicationByIdUseCase } from './usecases/MKT_UpdateLoanApplication.usecase';
@@ -39,6 +40,7 @@ import { MKT_GetLoanApplicationByIdController } from './Presentation/Controllers
 import { MKT_CreateDraftLoanApplicationController } from './Presentation/Controllers/MKT_CreateDraftLoanApp.controller';
 import { MKT_GetDashboardStatsController } from './Presentation/Controllers/MKT_GetDashboardStats.controller';
 import { MKT_TriggerAppealController } from './Presentation/Controllers/MKT_TriggerAppeal.controller';
+import { MKT_TriggerFinalLoanStatusController } from './Presentation/Controllers/MKT_TriggerFinalLoan.controller';
 
 import { AddressInternalModule } from 'src/Modules/LoanAppInternal/Modules/address-internal.module';
 import { ApprovalInternalModule } from 'src/Modules/LoanAppInternal/Modules/approval-internal.module';
@@ -86,6 +88,7 @@ import { DraftLoanApplicationModule } from 'src/Shared/Modules/Drafts/Modules/Cr
     MKT_GetLoanApplicationByIdController,
     MKT_UpdateLoanApplicationController,
     MKT_TriggerAppealController,
+    MKT_TriggerFinalLoanStatusController,
   ],
   providers: [
     // usecases
@@ -96,6 +99,7 @@ import { DraftLoanApplicationModule } from 'src/Shared/Modules/Drafts/Modules/Cr
     MKT_GetLoanApplicationByIdUseCase,
     MKT_UpdateLoanApplicationUseCase,
     MKT_TriggerAppealUseCase,
+    MKT_TriggerFinalLoanStatusUseCase,
     // infra
     {
       provide: UNIT_OF_WORK,

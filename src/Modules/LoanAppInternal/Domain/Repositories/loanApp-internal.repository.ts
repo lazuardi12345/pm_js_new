@@ -42,6 +42,7 @@ export interface ILoanApplicationInternalRepository {
   ): Promise<void>;
 
   triggerBanding(loan_id: number, alasan_banding: string);
+  triggerFinalLoanStatus(loan_id: number, status: string);
 
   //! ========== GENERAL ==========
 

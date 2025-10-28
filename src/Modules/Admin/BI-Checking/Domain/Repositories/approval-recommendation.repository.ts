@@ -12,6 +12,7 @@ export interface IApprovalRecommendationRepository {
     id: number,
     entity: Partial<ApprovalRecommendation>,
   ): Promise<ApprovalRecommendation>;
+  triggerIsNeedCheckBeingTrue(draft_id?: string): Promise<void>;
   findAllRecommendationHistory(): Promise<ApprovalRecommendation[]>;
   findAllRecommendationRequests(): Promise<ApprovalRecommendation[]>;
   findById(id: number): Promise<ApprovalRecommendation | null>;

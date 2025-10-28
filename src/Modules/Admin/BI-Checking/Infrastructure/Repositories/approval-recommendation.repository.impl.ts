@@ -160,6 +160,21 @@ export class ApprovalRecommendationRepositoryImpl
     await this.ormRepository.softDelete(id);
   }
 
+  async triggerIsNeedCheckBeingTrue(draft_id: string): Promise<void> {
+    if (!draft_id) {
+      throw new Error('draft_id is required');
+    }
+    const response = await this.mongoDraftRepository.updateOne(
+      { _id: draft_id },
+      { isNeedCheck: false },
+    );
+    if (response.matchedCount === 0) {
+      throw new Error('Draft not found');
+    } else {
+      console.log('Updated isNeedCheck to true for draft_id:', draft_id);
+    }
+  }
+
   async findAllRecommendationHistory(): Promise<any[]> {
     return await this.ormRepository
       .createQueryBuilder('rec')

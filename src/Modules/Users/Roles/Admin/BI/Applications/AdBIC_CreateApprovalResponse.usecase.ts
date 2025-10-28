@@ -83,6 +83,22 @@ export class AdBIC_CreateApprovalResponseUseCase {
       // 5️⃣ Save
       const loanApp = await this.approvalRecommendation.create(entity);
 
+      if (!loanApp) {
+        throw new HttpException(
+          {
+            payload: {
+              error: 'CREATION FAILED',
+              message: 'Failed to create approval recommendation',
+              reference: 'APPROVAL_RECOMMENDATION_CREATE_FAILED',
+            },
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+      await this.approvalRecommendation.triggerIsNeedCheckBeingTrue(
+        dto!.draft_id,
+      );
+
       return {
         dto: {
           error: false,

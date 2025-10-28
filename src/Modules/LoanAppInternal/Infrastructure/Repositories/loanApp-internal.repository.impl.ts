@@ -179,6 +179,27 @@ export class LoanApplicationInternalRepositoryImpl
     );
   }
 
+  async triggerFinalLoanStatus(
+    loan_id: number,
+    status: StatusPengajuanEnum.CLOSED | StatusPengajuanEnum.DONE,
+  ): Promise<void> {
+    const now = new Date();
+
+    if (
+      ![StatusPengajuanEnum.CLOSED, StatusPengajuanEnum.DONE].includes(status)
+    ) {
+      throw new Error('Invalid status for final loan status trigger');
+    }
+
+    await this.ormRepository.update(
+      { id: loan_id },
+      {
+        status: status,
+        updated_at: now,
+      },
+    );
+  }
+
   async callSP_GENERAL_GetAllPreviewDataLoanBySearch_Internal(
     role: RoleSearchEnum,
     type: TypeSearchEnum,

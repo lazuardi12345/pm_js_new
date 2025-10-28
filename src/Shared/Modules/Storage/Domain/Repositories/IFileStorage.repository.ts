@@ -38,6 +38,13 @@ export interface IFileStorageRepository {
     isDraft?: boolean,
   ): Promise<{ buffer: Buffer; mimetype: string; originalName: string }>;
 
+  getFilesForApprovalRecommendations(
+    customerId: number,
+    customerName: string,
+    filename: string,
+    isDraft?: boolean,
+  ): Promise<{ buffer: Buffer; mimetype: string; originalName: string }>;
+
   // List files
   listFiles(
     customerId: number,
