@@ -1,7 +1,7 @@
 import { Controller, InternalServerErrorException, Get } from '@nestjs/common';
 import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/roles.decorator';
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
-import { AdBIC_FindAllRecommendationHistoryUseCase } from '../Applications/AdBIC_GetAllApprovalRecommendation.usecase';
+import { AdBIC_FindAllRecommendationHistoryUseCase } from '../Applications/AdBIC_GetAllApprovalRecommendationHistory.usecase';
 
 @Controller('admin-bi/int')
 export class AdBIC_FindAllRecommendationHistoryController {

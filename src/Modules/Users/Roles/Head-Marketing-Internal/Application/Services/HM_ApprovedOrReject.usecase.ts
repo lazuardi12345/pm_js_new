@@ -40,7 +40,6 @@ export class HM_ApproveOrRejectUseCase {
         `HM_ApproveOrRejectUseCase.execute(loan_id: ${loan_id}, user_id: ${user_id}, role: ${role}, status: ${status}, keterangan: ${keterangan})`,
       );
 
-      // ✅ Validasi loan
       const loan = await this.loanAppRepo.findById(loan_id);
       if (!loan) {
         throw new HttpException(
@@ -53,7 +52,6 @@ export class HM_ApproveOrRejectUseCase {
         );
       }
 
-      // ✅ Validasi user
       const user = await this.userRepo.findById(user_id);
       if (!user) {
         throw new HttpException(
@@ -66,7 +64,6 @@ export class HM_ApproveOrRejectUseCase {
         );
       }
 
-      // ✅ Validasi role
       if (role !== USERTYPE.HM) {
         throw new HttpException(
           {
@@ -79,7 +76,6 @@ export class HM_ApproveOrRejectUseCase {
         );
       }
 
-      // ✅ Buat entitas approval
       const approval = new ApprovalInternal(
         loan_id,
         { id: user.id! },
@@ -90,8 +86,6 @@ export class HM_ApproveOrRejectUseCase {
         keterangan || '',
         undefined,
       );
-
-      console.log('uhuy cukay: >>>>>>>>>>>>>>>>>>>>>.', status);
 
       // Terapkan status approval
       let newLoanStatus: StatusPengajuanEnum;

@@ -6,9 +6,13 @@ import { ApprovalRecommendationRepositoryImpl } from '../Infrastructure/Reposito
 import { APPROVAL_RECOMMENDATION_REPOSITORY } from '../Domain/Repositories/approval-recommendation.repository';
 import { ApprovalRecommendationService } from '../Applications/Services/approval-recommendation.entity';
 import { ApprovalRecommendationController } from '../Presentation/Controllers/approval-recommendation.controller';
+import { DraftsModule } from 'src/Shared/Modules/Drafts/ModuleDrafts.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ApprovalRecommendation_ORM_Entity])],
+  imports: [
+    TypeOrmModule.forFeature([ApprovalRecommendation_ORM_Entity]),
+    DraftsModule,
+  ],
   controllers: [ApprovalRecommendationController],
   providers: [
     {

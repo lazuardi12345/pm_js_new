@@ -7,15 +7,22 @@ import { IApprovalRecommendationRepository } from '../../Domain/Repositories/app
 import { ApprovalRecommendation_ORM_Entity } from '../Entities/approval-recommendation.orm-entity';
 import { LoanApplicationInternal_ORM_Entity } from 'src/Modules/LoanAppInternal/Infrastructure/Entities/loan-application-internal.orm-entity';
 import { LoanApplicationExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/loan-application-external.orm-entity';
+import { InjectModel } from '@nestjs/mongoose';
+import {
+  LoanApplication,
+  LoanApplicationDocument,
+} from 'src/Shared/Modules/Drafts/Infrastructure/Schemas/LoanAppInternal/CreateLoanApplicaton_Marketing.schema';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class ApprovalRecommendationRepositoryImpl
   implements IApprovalRecommendationRepository
 {
-  addressRepository: any;
   constructor(
     @InjectRepository(ApprovalRecommendation_ORM_Entity)
     private readonly ormRepository: Repository<ApprovalRecommendation_ORM_Entity>,
+    @InjectModel(LoanApplication.name, 'mongoConnection')
+    private readonly mongoDraftRepository: Model<LoanApplicationDocument>,
   ) {}
 
   //? MAPPER >==========================================================================
@@ -125,8 +132,10 @@ export class ApprovalRecommendationRepositoryImpl
     return ormEntity ? this.toDomain(ormEntity) : null;
   }
 
-  async save(address: ApprovalRecommendation): Promise<ApprovalRecommendation> {
-    const ormEntity = this.toOrm(address);
+  async save(
+    approvalRecommendation: ApprovalRecommendation,
+  ): Promise<ApprovalRecommendation> {
+    const ormEntity = this.toOrm(approvalRecommendation);
     const savedOrm = await this.ormRepository.save(ormEntity);
     return this.toDomain(savedOrm);
   }
@@ -143,7 +152,7 @@ export class ApprovalRecommendationRepositoryImpl
     const updated = await this.ormRepository.findOne({
       where: { id },
     });
-    if (!updated) throw new Error('Address not found');
+    if (!updated) throw new Error('Approval Recommendation not found');
     return this.toDomain(updated);
   }
 
@@ -166,5 +175,21 @@ export class ApprovalRecommendationRepositoryImpl
       ])
       // .where('rec.loanApplicationInternal IS NOT NULL')
       .getMany();
+  }
+  async findAllRecommendationRequests(): Promise<any[]> {
+    return this.mongoDraftRepository
+      .find(
+        { isNeedCheck: true },
+        {
+          marketing_id: 1,
+          'client_internal.nama_lengkap': 1,
+          'client_internal.no_ktp': 1,
+          'client_internal.no_hp': 1,
+          'client_internal.email': 1,
+          'client_internal.foto_ktp': 1,
+          // kamu bisa tambah field lain kalau perlu
+        },
+      )
+      .exec();
   }
 }

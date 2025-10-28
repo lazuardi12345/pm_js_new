@@ -161,6 +161,7 @@ export class LoanApplication {
   uploaded_files?: Record<string, string[]>;
   @Prop({ default: false }) isDeleted: boolean; // flag soft delete
   @Prop({ default: false }) isCompleted?: boolean;
+  @Prop({ default: true }) isNeedCheck?: boolean;
 }
 
 export type LoanApplicationDocument = HydratedDocument<LoanApplication>;

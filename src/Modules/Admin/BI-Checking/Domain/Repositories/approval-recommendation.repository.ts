@@ -13,6 +13,7 @@ export interface IApprovalRecommendationRepository {
     entity: Partial<ApprovalRecommendation>,
   ): Promise<ApprovalRecommendation>;
   findAllRecommendationHistory(): Promise<ApprovalRecommendation[]>;
+  findAllRecommendationRequests(): Promise<ApprovalRecommendation[]>;
   findById(id: number): Promise<ApprovalRecommendation | null>;
   findByDraftId(draft_id: string): Promise<ApprovalRecommendation | null>;
   findByNIK(nik: string): Promise<ApprovalRecommendation | null>;
