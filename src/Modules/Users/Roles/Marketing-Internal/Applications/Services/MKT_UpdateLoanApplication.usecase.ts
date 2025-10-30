@@ -4,6 +4,10 @@ import {
   CLIENT_INTERNAL_REPOSITORY,
 } from 'src/Modules/LoanAppInternal/Domain/Repositories/client-internal.repository';
 import {
+  IClientInternalProfileRepository,
+  CLIENT_INTERNAL_PROFILE_REPOSITORY,
+} from 'src/Modules/LoanAppInternal/Domain/Repositories/client-internal-profile.repository';
+import {
   IAddressInternalRepository,
   ADDRESS_INTERNAL_REPOSITORY,
 } from 'src/Modules/LoanAppInternal/Domain/Repositories/address-internal.repository';

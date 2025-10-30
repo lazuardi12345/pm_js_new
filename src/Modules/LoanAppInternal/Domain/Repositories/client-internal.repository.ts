@@ -7,9 +7,6 @@ export interface IClientInternalRepository {
   findByMarketingId(marketingId: number): Promise<ClientInternal[]>;
   findAll(): Promise<ClientInternal[]>;
   save(address: ClientInternal): Promise<ClientInternal>;
-  update(
-    id: number,
-    address: Partial<ClientInternal>,
-  ): Promise<ClientInternal>;
+  update(id: number, address: Partial<ClientInternal>): Promise<ClientInternal>;
   delete(id: number): Promise<void>;
 }

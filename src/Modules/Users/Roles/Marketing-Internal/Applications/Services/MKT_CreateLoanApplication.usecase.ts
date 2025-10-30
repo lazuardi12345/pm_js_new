@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException, Inject } from '@nestjs/common';
 import { ClientInternal } from 'src/Modules/LoanAppInternal/Domain/Entities/client-internal.entity';
+import { ClientInternalProfile } from 'src/Modules/LoanAppInternal/Domain/Entities/client-internal-profile.entity';
 import { AddressInternal } from 'src/Modules/LoanAppInternal/Domain/Entities/address-internal.entity';
 import { FamilyInternal } from 'src/Modules/LoanAppInternal/Domain/Entities/family-internal.entity';
 import { JobInternal } from 'src/Modules/LoanAppInternal/Domain/Entities/job-internal.entity';
@@ -11,6 +12,10 @@ import {
   IClientInternalRepository,
   CLIENT_INTERNAL_REPOSITORY,
 } from 'src/Modules/LoanAppInternal/Domain/Repositories/client-internal.repository';
+import {
+  CLIENT_INTERNAL_PROFILE_REPOSITORY,
+  IClientInternalProfileRepository,
+} from 'src/Modules/LoanAppInternal/Domain/Repositories/client-internal-profile.repository';
 import {
   IAddressInternalRepository,
   ADDRESS_INTERNAL_REPOSITORY,
@@ -78,6 +83,8 @@ export class MKT_CreateLoanApplicationUseCase {
   constructor(
     @Inject(CLIENT_INTERNAL_REPOSITORY)
     private readonly clientRepo: IClientInternalRepository,
+    @Inject(CLIENT_INTERNAL_PROFILE_REPOSITORY)
+    private readonly clientProfileRepo: IClientInternalProfileRepository,
     @Inject(ADDRESS_INTERNAL_REPOSITORY)
     private readonly addressRepo: IAddressInternalRepository,
     @Inject(FAMILY_INTERNAL_REPOSITORY)
@@ -118,9 +125,25 @@ export class MKT_CreateLoanApplicationUseCase {
           client_internal.jenis_kelamin as GENDER,
           client_internal.tempat_lahir,
           new Date(client_internal.tanggal_lahir),
+          // Property ekstra jika ada, misalnya “role” atau id marketing, atau biarkan undefined
+          undefined,
+          client_internal.enable_edit,
+          String(client_internal.points),
+          now,
+          now,
+          undefined,
+        );
+        const customer = await this.clientRepo.save(client);
+
+        console.log('AMBATUKAAAAAAAAAAAAAAAAAAAAAAAAMMM', customer.id);
+
+        // **1A. Mapping Dulu ke Profile
+        const clientProfileEntity = new ClientInternalProfile(
+          { id: customer.id! },
+          client_internal.nama_lengkap,
+          client_internal.jenis_kelamin,
           client_internal.no_hp,
           client_internal.status_nikah as MARRIAGE_STATUS,
-          // Property ekstra jika ada, misalnya “role” atau id marketing, atau biarkan undefined
           undefined,
           client_internal.email,
           parseFileUrl(
@@ -132,13 +155,8 @@ export class MKT_CreateLoanApplicationUseCase {
           parseFileUrl(documents_files?.foto_id_card ?? null),
           parseFileUrl(documents_files?.foto_rekening ?? null),
           client_internal.no_rekening as string,
-          client_internal.enable_edit,
-          String(client_internal.points),
-          now,
-          now,
-          undefined,
         );
-        const customer = await this.clientRepo.save(client);
+        await this.clientProfileRepo.save(clientProfileEntity);
 
         // **2. Simpan AddressInternal**
         const addressEntity = new AddressInternal(

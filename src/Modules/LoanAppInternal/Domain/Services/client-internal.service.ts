@@ -1,7 +1,10 @@
 // src/Modules/ClientInternal/Domain/Services/client-validation.service.ts
 
 import { ClientInternal } from '../Entities/client-internal.entity';
-import { GENDER, MARRIAGE_STATUS } from 'src/Shared/Enums/Internal/Clients.enum';
+import {
+  GENDER,
+  MARRIAGE_STATUS,
+} from 'src/Shared/Enums/Internal/Clients.enum';
 
 export class ClientValidationService {
   /**
@@ -14,9 +17,9 @@ export class ClientValidationService {
   /**
    * Cek apakah status pernikahan valid sesuai enum
    */
-  static isMarriageStatusValid(client: ClientInternal): boolean {
-    return Object.values(MARRIAGE_STATUS).includes(client.status_nikah);
-  }
+  // static isMarriageStatusValid(client: ClientInternal): boolean {
+  //   return Object.values(MARRIAGE_STATUS).includes(client.status_nikah);
+  // }
 
   /**
    * Cek apakah semua field mandatory valid
@@ -33,9 +36,9 @@ export class ClientValidationService {
       return false;
     }
 
-    if (!this.isMarriageStatusValid(client)) {
-      return false;
-    }
+    // if (!this.isMarriageStatusValid(client)) {
+    //   return false;
+    // }
 
     return true;
   }

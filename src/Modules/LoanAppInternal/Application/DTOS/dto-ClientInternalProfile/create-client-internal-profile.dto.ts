@@ -8,6 +8,7 @@ import {
   IsBoolean,
   IsNumber,
   IsDate,
+  IsNotEmpty,
 } from 'class-validator';
 
 import {
@@ -15,9 +16,10 @@ import {
   MARRIAGE_STATUS,
 } from 'src/Shared/Enums/Internal/Clients.enum';
 
-export class CreateClientInternalDto {
+export class CreateClientInternalProfileDto {
+  @IsNotEmpty()
   @IsNumber()
-  marketing_id: number;
+  user_id: number;
 
   @IsString()
   nama_lengkap: string;
@@ -29,17 +31,32 @@ export class CreateClientInternalDto {
   jenis_kelamin: GENDER;
 
   @IsString()
-  tempat_lahir: string;
+  no_hp: string;
 
-  @Type(() => Date)
-  @IsDate()
-  tanggal_lahir: Date;
-
-  @IsBoolean()
+  @IsEmail()
   @IsOptional()
-  enable_edit?: boolean;
+  email?: string;
+
+  @IsEnum(MARRIAGE_STATUS)
+  status_nikah: MARRIAGE_STATUS;
 
   @IsOptional()
   @IsString()
-  points?: string;
+  foto_ktp?: string;
+
+  @IsOptional()
+  @IsString()
+  foto_kk?: string;
+
+  @IsOptional()
+  @IsString()
+  foto_id_card?: string;
+
+  @IsOptional()
+  @IsString()
+  foto_rekening?: string;
+
+  @IsOptional()
+  @IsString()
+  no_rekening?: string;
 }

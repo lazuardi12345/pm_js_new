@@ -54,6 +54,8 @@ import { DataSource } from 'typeorm';
 import { HttpModule } from '@nestjs/axios';
 
 import { DraftLoanApplicationModule } from 'src/Shared/Modules/Drafts/Modules/CreateLoanAppInt.module';
+import { ClientInternalProfileModule } from 'src/Modules/LoanAppInternal/Modules/client-internal-profile.module';
+import { ClientInternalProfile_ORM_Entity } from 'src/Modules/LoanAppInternal/Infrastructure/Entities/client-internal-profile.orm-entity';
 
 @Module({
   imports: [
@@ -61,6 +63,7 @@ import { DraftLoanApplicationModule } from 'src/Shared/Modules/Drafts/Modules/Cr
     AddressInternalModule,
     ApprovalInternalModule,
     ClientInternalModule,
+    ClientInternalProfileModule,
     CollateralInternalModule,
     JobInternalModule,
     FamilyInternalModule,
@@ -68,6 +71,7 @@ import { DraftLoanApplicationModule } from 'src/Shared/Modules/Drafts/Modules/Cr
     RelativeInternalModule,
     TypeOrmModule.forFeature([
       ClientInternal_ORM_Entity,
+      ClientInternalProfile_ORM_Entity,
       AddressInternal_ORM_Entity,
       FamilyInternal_ORM_Entity,
       JobInternal_ORM_Entity,
