@@ -50,7 +50,9 @@ export interface ILoanApplicationInternalRepository {
     role: RoleSearchEnum,
     type: TypeSearchEnum,
     keyword: string,
-  ): Promise<{ data: any[] }>;
+    page?: number,
+    pageSize?: number,
+  ): Promise<{ data: any[]; totalData: number; approvals?: any[] }>;
 
   //! ========== MARKETING ==========
   callSP_MKT_GetAllLoanApplications_Internal(

@@ -437,7 +437,12 @@ export class MinioFileStorageService implements IFileStorageRepository {
 
       // Check if file exists
       try {
-        await this.minioClient.statObject(bucket, encryptedName);
+        await this.minioClient.putObject(
+          bucket,
+          encryptedName,
+          file.buffer,
+          file.size,
+        );
       } catch (error) {
         console.log(error);
         throw new NotFoundException(`File not found: ${filename}`);

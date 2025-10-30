@@ -159,6 +159,10 @@ export class LoanApplicationInternalRepositoryImpl
     return this.toDomain(updated);
   }
 
+  async delete(id: number): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
   async updateLoanAppInternalStatus(
     loan_id: number,
     status: StatusPengajuanEnum,
@@ -204,23 +208,42 @@ export class LoanApplicationInternalRepositoryImpl
     role: RoleSearchEnum,
     type: TypeSearchEnum,
     keyword: string,
-  ): Promise<{ data: any[] }> {
-    console.log('CALL SP with params > : ', keyword, role, type);
-
-    const result = await this.ormRepository.manager.query(
-      'CALL GENERAL_GetAllPreviewDataLoanBySearch_Internal(?, ?, ?)',
-      [keyword, role, type],
+    page?: number,
+    pageSize?: number,
+  ): Promise<{ data: any[]; totalData: any; approvals?: any[] }> {
+    console.log(
+      'CALL SP with params > : ',
+      keyword,
+      role,
+      type,
+      page,
+      pageSize,
     );
 
-    console.log('res:', result);
+    const result = await this.ormRepository.manager.query(
+      'CALL GENERAL_GetAllPreviewDataLoanBySearch_Internal(?, ?, ?, ?, ?)',
+      [keyword, role, type, page, pageSize],
+    );
+    const totalData = result[0][0].total;
+    const data = result[1] || [];
 
-    const data = result[0] || [];
+    // Gabungkan approvals hanya untuk head_marketing (yang punya 4+ result sets)
+    const approvals =
+      role === 'head_marketing' && result.length >= 4
+        ? [...(result[2] || []), ...(result[3] || [])].sort((a, b) =>
+            a.loan_id !== b.loan_id
+              ? Number(a.loan_id) - Number(b.loan_id)
+              : new Date(a.responded_at).getTime() -
+                new Date(b.responded_at).getTime(),
+          )
+        : undefined;
 
-    return { data };
-  }
+    console.log('totalData:', totalData);
+    approvals && console.log('approvals count:', approvals.length);
 
-  async delete(id: number): Promise<void> {
-    await this.ormRepository.softDelete(id);
+    return role === 'head_marketing'
+      ? { data, totalData, approvals }
+      : { data, totalData };
   }
 
   async findAll(): Promise<LoanApplicationInternal[]> {
