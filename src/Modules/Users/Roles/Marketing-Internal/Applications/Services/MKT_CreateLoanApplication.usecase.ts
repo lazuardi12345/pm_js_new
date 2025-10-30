@@ -52,12 +52,19 @@ import {
   DomisiliEnum,
 } from 'src/Shared/Enums/Internal/Address.enum';
 
-import { HubunganEnum, BekerjaEnum } from 'src/Shared/Enums/Internal/Family.enum';
-import { GolonganEnum, PerusahaanEnum } from 'src/Shared/Enums/Internal/Job.enum';
+import {
+  HubunganEnum,
+  BekerjaEnum,
+} from 'src/Shared/Enums/Internal/Family.enum';
+import {
+  GolonganEnum,
+  PerusahaanEnum,
+} from 'src/Shared/Enums/Internal/Job.enum';
 
 import {
   StatusPinjamanEnum,
   StatusPengajuanEnum,
+  StatusPengajuanAkhirEnum,
 } from 'src/Shared/Enums/Internal/LoanApp.enum';
 
 import { KerabatKerjaEnum } from 'src/Shared/Enums/Internal/Relative.enum';
@@ -85,7 +92,7 @@ export class MKT_CreateLoanApplicationUseCase {
     private readonly relativeRepo: IRelativesInternalRepository,
     @Inject(UNIT_OF_WORK)
     private readonly uow: IUnitOfWork,
-  ) { }
+  ) {}
 
   async execute(dto: CreateLoanApplicationDto, marketing_id: number) {
     const now = new Date();
@@ -116,8 +123,12 @@ export class MKT_CreateLoanApplicationUseCase {
           // Property ekstra jika ada, misalnya “role” atau id marketing, atau biarkan undefined
           undefined,
           client_internal.email,
-          parseFileUrl(documents_files?.foto_ktp ?? client_internal.foto_ktp ?? null),
-          parseFileUrl(documents_files?.foto_kk ?? client_internal.foto_kk ?? null),
+          parseFileUrl(
+            documents_files?.foto_ktp ?? client_internal.foto_ktp ?? null,
+          ),
+          parseFileUrl(
+            documents_files?.foto_kk ?? client_internal.foto_kk ?? null,
+          ),
           parseFileUrl(documents_files?.foto_id_card ?? null),
           parseFileUrl(documents_files?.foto_rekening ?? null),
           client_internal.no_rekening as string,
@@ -182,13 +193,16 @@ export class MKT_CreateLoanApplicationUseCase {
           job_internal.yayasan!,
           job_internal.lama_kerja_bulan,
           job_internal.lama_kerja_tahun,
-          parseFileUrl(documents_files?.bukti_absensi_file ?? job_internal.bukti_absensi!),
+          parseFileUrl(
+            documents_files?.bukti_absensi_file ?? job_internal.bukti_absensi!,
+          ),
           undefined,
         );
         await this.jobRepo.save(jobEntity);
 
         // **5. Simpan LoanApplicationInternal**
-        const isBandingBoolean = loan_application_internal.is_banding === 1 ? true : false;
+        const isBandingBoolean =
+          loan_application_internal.is_banding === 1 ? true : false;
 
         const loanAppEntity = new LoanApplicationInternal(
           { id: customer.id! },
@@ -199,7 +213,10 @@ export class MKT_CreateLoanApplicationUseCase {
           undefined,
           undefined,
           undefined,
-          (loan_application_internal.status ?? 'pending') as StatusPengajuanEnum,
+          (loan_application_internal.status ??
+            'pending') as StatusPengajuanEnum,
+          (loan_application_internal.status_akhir_pengajuan ??
+            'done') as StatusPengajuanAkhirEnum,
           loan_application_internal.pinjaman_ke ?? 1,
           loan_application_internal.riwayat_nominal ?? 0,
           loan_application_internal.riwayat_tenor ?? 0,
@@ -208,11 +225,6 @@ export class MKT_CreateLoanApplicationUseCase {
           isBandingBoolean,
           loan_application_internal.alasan_banding ?? '',
         );
-
-
-
-
-
 
         const loanApp = await this.loanAppRepo.save(loanAppEntity);
 
@@ -278,7 +290,9 @@ export class MKT_CreateLoanApplicationUseCase {
   }
 }
 
-function parseFileUrl(input: string | Express.Multer.File | null | undefined): string | undefined {
+function parseFileUrl(
+  input: string | Express.Multer.File | null | undefined,
+): string | undefined {
   if (!input) return undefined;
   if (typeof input === 'string') {
     return input;
@@ -289,7 +303,9 @@ function parseFileUrl(input: string | Express.Multer.File | null | undefined): s
   return undefined;
 }
 
-function parseNumber(value: string | number | null | undefined): number | undefined {
+function parseNumber(
+  value: string | number | null | undefined,
+): number | undefined {
   if (value === null || value === undefined) return undefined;
   const num = Number(value);
   return isNaN(num) ? undefined : num;

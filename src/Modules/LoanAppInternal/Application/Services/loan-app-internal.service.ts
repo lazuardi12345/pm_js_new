@@ -7,6 +7,7 @@ import { LoanApplicationInternal } from '../../Domain/Entities/loan-application-
 import { CreateLoanApplicationInternalDto } from '../DTOS/dto-LoanApp/create-loan-application.dto';
 import { UpdateLoanAplicationInternalDto } from '../DTOS/dto-LoanApp/update-loan-application.dto';
 import {
+  StatusPengajuanAkhirEnum,
   StatusPengajuanEnum,
   StatusPinjamanEnum,
 } from 'src/Shared/Enums/Internal/LoanApp.enum';
@@ -26,7 +27,7 @@ export class LoanApplicationInternalService {
     dto: CreateLoanApplicationInternalDto,
   ): Promise<LoanApplicationInternal> {
     const now = new Date();
-    const address = new LoanApplicationInternal(
+    const loanApplication = new LoanApplicationInternal(
       { id: dto.nasabah_id },
       dto.status_pinjaman ?? StatusPinjamanEnum.BARU,
       dto.nominal_pinjaman,
@@ -36,6 +37,7 @@ export class LoanApplicationInternalService {
       now,
       null,
       dto.status ?? StatusPengajuanEnum.PENDING,
+      dto.status_akhir_pengajuan ?? StatusPengajuanAkhirEnum.DONE,
       dto.pinjaman_ke,
       dto.riwayat_nominal,
       dto.riwayat_tenor,
@@ -45,7 +47,7 @@ export class LoanApplicationInternalService {
       dto.alasan_banding,
       now,
     );
-    return this.repo.save(address);
+    return this.repo.save(loanApplication);
   }
 
   async update(

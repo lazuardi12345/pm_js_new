@@ -5,8 +5,6 @@ export enum StatusPinjamanEnum {
 
 export enum StatusPengajuanEnum {
   PENDING = 'pending',
-  DONE = 'done',
-  CLOSED = 'closed',
   APPROVED_SPV = 'approved spv',
   REJECTED_SPV = 'rejected spv',
   APPROVED_CA = 'approved ca',
@@ -18,4 +16,9 @@ export enum StatusPengajuanEnum {
   REJECTED_BANDING_CA = 'rejected banding ca',
   APPROVED_BANDING_HM = 'approved banding hm',
   REJECTED_BANDING_HM = 'rejected banding hm',
+}
+
+export enum StatusPengajuanAkhirEnum {
+  DONE = 'done',
+  CLOSED = 'closed',
 }

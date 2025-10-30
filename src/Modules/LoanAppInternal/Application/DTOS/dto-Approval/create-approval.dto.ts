@@ -27,6 +27,13 @@ export class CreateApprovalDto {
   status?: ApprovalInternalStatusEnum;
 
   @IsOptional()
+  tenor_persetujuan?: number;
+
+  @IsOptional()
+  @IsEnum(ApprovalInternalStatusEnum)
+  nominal_persetujuan?: number;
+
+  @IsOptional()
   @IsBoolean()
   is_banding?: boolean;
 

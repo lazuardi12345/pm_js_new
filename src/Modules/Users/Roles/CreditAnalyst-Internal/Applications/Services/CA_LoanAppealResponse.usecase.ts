@@ -29,6 +29,8 @@ export class CA_LoanAppealResponseUseCase {
       | ApprovalInternalStatusEnum.REJECTED,
     appeal_consideration?: string, //! di database tetep nilainya keterangan, tapi di FE ini pertimbangan
     appeal_conclusion?: string,
+    nominal_persetujuan?: number,
+    tenor_persetujuan?: number,
   ) {
     try {
       const now = new Date();
@@ -37,6 +39,8 @@ export class CA_LoanAppealResponseUseCase {
         { id: creditAnalystId },
         USERTYPE.CA,
         appeal_response,
+        tenor_persetujuan,
+        nominal_persetujuan,
         true,
         undefined,
         appeal_consideration,

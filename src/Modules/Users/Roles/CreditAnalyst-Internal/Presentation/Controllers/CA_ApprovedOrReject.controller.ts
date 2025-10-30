@@ -22,6 +22,8 @@ export class CA_ApprovedOrRejectController {
       status: ApprovalInternalStatusEnum;
       keterangan?: string;
       kesimpulan?: string;
+      tenor_persetujuan?: number;
+      nominal_persetujuan?: number;
     },
     @CurrentUser('id') creditAnalystId: number,
   ) {
@@ -36,8 +38,10 @@ export class CA_ApprovedOrRejectController {
       creditAnalystId,
       USERTYPE.CA,
       body.status,
+      body.tenor_persetujuan,
+      body.nominal_persetujuan,
       body.keterangan,
-      body.kesimpulan
+      body.kesimpulan,
     );
 
     // Return response

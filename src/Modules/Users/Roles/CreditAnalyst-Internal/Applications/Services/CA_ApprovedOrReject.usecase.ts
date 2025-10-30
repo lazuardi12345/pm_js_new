@@ -39,6 +39,8 @@ export class CA_ApproveOrRejectUseCase {
     user_id: number,
     role: USERTYPE,
     status: ApprovalInternalStatusEnum,
+    tenor_persetujuan?: number,
+    nominal_persetujuan?: number,
     keterangan?: string,
     kesimpulan?: string,
   ) {
@@ -91,12 +93,13 @@ export class CA_ApproveOrRejectUseCase {
         { id: user_id! },
         role,
         ApprovalInternalStatusEnum.PENDING,
+        tenor_persetujuan,
+        nominal_persetujuan,
         false,
         undefined,
         keterangan || '',
         kesimpulan || '',
       );
-
 
       // Terapkan status approval
       let newLoanStatus: StatusPengajuanEnum;

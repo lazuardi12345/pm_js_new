@@ -15,6 +15,7 @@ import { ApprovalInternal_ORM_Entity } from './approval-internal.orm-entity';
 import {
   StatusPinjamanEnum,
   StatusPengajuanEnum,
+  StatusPengajuanAkhirEnum,
 } from 'src/Shared/Enums/Internal/LoanApp.enum';
 import { ApprovalRecommendation_ORM_Entity } from 'src/Modules/Admin/BI-Checking/Infrastructure/Entities/approval-recommendation.orm-entity';
 
@@ -61,6 +62,13 @@ export class LoanApplicationInternal_ORM_Entity {
     default: StatusPengajuanEnum.PENDING,
   })
   status: StatusPengajuanEnum;
+
+  @Column({
+    type: 'enum',
+    enum: StatusPengajuanAkhirEnum,
+    default: StatusPengajuanAkhirEnum.DONE,
+  })
+  status_akhir_pengajuan: StatusPengajuanAkhirEnum;
 
   @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
   riwayat_nominal?: number;

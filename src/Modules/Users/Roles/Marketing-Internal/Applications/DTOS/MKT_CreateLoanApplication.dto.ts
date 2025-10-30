@@ -32,6 +32,7 @@ import {
 import {
   StatusPinjamanEnum,
   StatusPengajuanEnum,
+  StatusPengajuanAkhirEnum,
 } from 'src/Shared/Enums/Internal/LoanApp.enum';
 
 import { KerabatKerjaEnum } from 'src/Shared/Enums/Internal/Relative.enum';
@@ -242,6 +243,10 @@ export class LoanInternalDto {
   @IsOptional()
   @IsEnum(StatusPengajuanEnum)
   status: StatusPengajuanEnum;
+
+  @IsOptional()
+  @IsEnum(StatusPengajuanAkhirEnum)
+  status_akhir_pengajuan: StatusPengajuanAkhirEnum;
 
   @IsOptional()
   @IsNumber()

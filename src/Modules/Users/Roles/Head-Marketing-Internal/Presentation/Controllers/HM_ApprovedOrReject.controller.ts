@@ -16,7 +16,12 @@ export class HM_ApprovedOrRejectController {
     @Req() req: Request,
     @Param('id') loan_id: number,
     @Body('payload')
-    payload: { status: ApprovalInternalStatusEnum; keterangan?: string },
+    payload: {
+      status: ApprovalInternalStatusEnum;
+      keterangan?: string;
+      tenor_persetujuan?: number;
+      nominal_persetujuan?: number;
+    },
     @CurrentUser('id') headMarketingId: number,
   ) {
     console.log('--- HM_ApprovedOrRejectController ---');
@@ -38,6 +43,8 @@ export class HM_ApprovedOrRejectController {
         headMarketingId,
         USERTYPE.HM,
         payload.status,
+        payload.tenor_persetujuan,
+        payload.nominal_persetujuan,
         payload.keterangan,
       );
 

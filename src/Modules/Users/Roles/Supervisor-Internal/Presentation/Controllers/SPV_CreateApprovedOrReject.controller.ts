@@ -18,6 +18,8 @@ export class SPV_ApprovedOrRejectController {
     @Body()
     body: {
       status: ApprovalInternalStatusEnum;
+      tenor_persetujuan?: number;
+      nominal_persetujuan?: number;
       keterangan?: string;
     },
     @CurrentUser('id') supervisorId: number,
@@ -33,6 +35,8 @@ export class SPV_ApprovedOrRejectController {
       supervisorId,
       USERTYPE.SPV,
       body.status,
+      body.tenor_persetujuan,
+      body.nominal_persetujuan,
       body.keterangan,
     );
 
