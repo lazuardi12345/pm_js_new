@@ -33,6 +33,8 @@ export class HM_ApproveOrRejectUseCase {
     user_id: number,
     role: USERTYPE,
     status: ApprovalInternalStatusEnum,
+    tenor_persetujuan?: number,
+    nominal_persetujuan?: number,
     keterangan?: string,
   ) {
     try {
@@ -81,6 +83,8 @@ export class HM_ApproveOrRejectUseCase {
         { id: user.id! },
         role,
         ApprovalInternalStatusEnum.PENDING,
+        tenor_persetujuan,
+        nominal_persetujuan,
         false,
         undefined,
         keterangan || '',

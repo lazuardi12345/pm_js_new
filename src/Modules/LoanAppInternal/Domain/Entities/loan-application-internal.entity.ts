@@ -3,12 +3,13 @@
 import {
   StatusPinjamanEnum,
   StatusPengajuanEnum,
+  StatusPengajuanAkhirEnum,
 } from 'src/Shared/Enums/Internal/LoanApp.enum';
 
 export class LoanApplicationInternal {
   constructor(
     // === Immutable ===
-    public readonly nasabah: {id: number}, // ID of ClientInternal
+    public readonly nasabah: { id: number }, // ID of ClientInternal
     public readonly status_pinjaman: StatusPinjamanEnum,
     public readonly nominal_pinjaman: number,
     public readonly tenor: number, // bulan
@@ -19,6 +20,7 @@ export class LoanApplicationInternal {
 
     // === Mutable ===
     public status: StatusPengajuanEnum = StatusPengajuanEnum.PENDING,
+    public status_akhir_pengajuan: StatusPengajuanAkhirEnum = StatusPengajuanAkhirEnum.DONE,
     public pinjaman_ke?: number,
     public riwayat_nominal?: number,
     public riwayat_tenor?: number,

@@ -8,7 +8,10 @@ import {
   UNIT_OF_WORK,
 } from 'src/Modules/LoanAppInternal/Domain/Repositories/IUnitOfWork.repository';
 import { LoanInternalDto } from '../DTOS/MKT_CreateLoanApplication.dto';
-import { StatusPengajuanEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
+import {
+  StatusPengajuanAkhirEnum,
+  StatusPengajuanEnum,
+} from 'src/Shared/Enums/Internal/LoanApp.enum';
 
 @Injectable()
 export class MKT_TriggerFinalLoanStatusUseCase {
@@ -22,18 +25,21 @@ export class MKT_TriggerFinalLoanStatusUseCase {
   async execute(loan_id: number, payload: any) {
     try {
       return await this.uow.start(async () => {
-        const { status } = payload;
+        const { status_akhir_pengajuan } = payload;
 
         // Loan application (khusus karena pakai findByNasabahId)
         let updatedLoanAppData: Partial<LoanInternalDto> = {};
 
         if (
-          status === StatusPengajuanEnum.CLOSED ||
-          status === StatusPengajuanEnum.DONE
+          status_akhir_pengajuan === StatusPengajuanAkhirEnum.CLOSED ||
+          status_akhir_pengajuan === StatusPengajuanAkhirEnum.DONE
         ) {
           const loanApps = await this.loanAppRepo.findById(loan_id);
           if (loanApps) {
-            await this.loanAppRepo.triggerFinalLoanStatus(loan_id, status);
+            await this.loanAppRepo.triggerFinalLoanStatus(
+              loan_id,
+              status_akhir_pengajuan,
+            );
           }
         }
 

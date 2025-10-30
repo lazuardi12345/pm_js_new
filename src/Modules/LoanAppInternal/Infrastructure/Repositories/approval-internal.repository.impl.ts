@@ -34,6 +34,8 @@ export class ApprovalInternalRepositoryImpl
       { id: orm.user!.id },
       orm.role!,
       orm.status,
+      orm.tenor_persetujuan,
+      orm.nominal_persetujuan,
       orm.is_banding,
       orm.id,
       orm.keterangan,

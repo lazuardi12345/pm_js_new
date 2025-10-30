@@ -9,6 +9,7 @@ import {
 import {
   StatusPinjamanEnum,
   StatusPengajuanEnum,
+  StatusPengajuanAkhirEnum,
 } from 'src/Shared/Enums/Internal/LoanApp.enum';
 
 export class CreateLoanApplicationInternalDto {
@@ -36,6 +37,10 @@ export class CreateLoanApplicationInternalDto {
   @IsEnum(StatusPengajuanEnum)
   @IsOptional()
   status?: StatusPengajuanEnum;
+
+  @IsEnum(StatusPengajuanAkhirEnum)
+  @IsOptional()
+  status_akhir_pengajuan?: StatusPengajuanAkhirEnum;
 
   @IsOptional()
   @IsNumber()

@@ -1,13 +1,16 @@
 // src/modules/LoanAppInternal/domain/entities/approval-internal.entity.ts
-import { USERTYPE } from "src/Shared/Enums/Users/Users.enum";
+import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 import { ApprovalInternalStatusEnum } from 'src/Shared/Enums/Internal/Approval.enum';
+import { StatusPengajuanAkhirEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
 
 export class ApprovalInternal {
   constructor(
     public readonly pengajuan: number, // Relationship to LoanApplicationInternal
-    public readonly user: {id: number}, // Relationship to Users PIC (MKT, SPV, CA, HM)
+    public readonly user: { id: number }, // Relationship to Users PIC (MKT, SPV, CA, HM)
     public readonly role: USERTYPE,
     public status: ApprovalInternalStatusEnum = ApprovalInternalStatusEnum.PENDING, // Default status
+    public readonly tenorPersetujuan?: number,
+    public readonly nominalPersetujuan?: number,
     public readonly isBanding: boolean = false,
     public readonly id?: number,
     public readonly keterangan?: string,

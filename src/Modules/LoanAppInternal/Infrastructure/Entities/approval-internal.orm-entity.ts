@@ -55,6 +55,12 @@ export class ApprovalInternal_ORM_Entity {
   })
   status: ApprovalInternalStatusEnum;
 
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  nominal_persetujuan?: number;
+
+  @Column({ type: 'int', nullable: true })
+  tenor_persetujuan?: number;
+
   @Column({ type: 'tinyint', default: 0 })
   is_banding: boolean;
 

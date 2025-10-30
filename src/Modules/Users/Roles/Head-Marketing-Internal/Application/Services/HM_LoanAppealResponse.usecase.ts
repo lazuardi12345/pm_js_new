@@ -28,6 +28,8 @@ export class HM_LoanAppealResponseUseCase {
       | ApprovalInternalStatusEnum.REJECTED,
     appeal_consideration?: string, //! di database tetep nilainya keterangan, tapi di FE ini pertimbangan
     appeal_conclusion?: string,
+    tenor_persetujuan?: number,
+    nominal_persetujuan?: number,
   ) {
     try {
       const now = new Date();
@@ -36,6 +38,8 @@ export class HM_LoanAppealResponseUseCase {
         { id: headMarketingId },
         USERTYPE.HM,
         appeal_response,
+        tenor_persetujuan,
+        nominal_persetujuan,
         true,
         undefined,
         appeal_consideration,

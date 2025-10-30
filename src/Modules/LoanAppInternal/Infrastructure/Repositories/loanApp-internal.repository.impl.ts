@@ -13,7 +13,10 @@ import {
   TypeApprovalDetail,
   TypeLoanApplicationDetail,
 } from 'src/Modules/Users/Roles/Marketing-Internal/Applications/DTOS/MKT_CreateLoanApplication.dto';
-import { StatusPengajuanEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
+import {
+  StatusPengajuanAkhirEnum,
+  StatusPengajuanEnum,
+} from 'src/Shared/Enums/Internal/LoanApp.enum';
 import {
   RoleSearchEnum,
   TypeSearchEnum,
@@ -47,6 +50,7 @@ export class LoanApplicationInternalRepositoryImpl
       orm.created_at,
       orm.deleted_at,
       orm.status,
+      orm.status_akhir_pengajuan,
       orm.pinjaman_ke,
       orm.riwayat_nominal,
       orm.riwayat_tenor,
@@ -185,12 +189,15 @@ export class LoanApplicationInternalRepositoryImpl
 
   async triggerFinalLoanStatus(
     loan_id: number,
-    status: StatusPengajuanEnum.CLOSED | StatusPengajuanEnum.DONE,
+    status: StatusPengajuanAkhirEnum.CLOSED | StatusPengajuanAkhirEnum.DONE,
   ): Promise<void> {
     const now = new Date();
 
     if (
-      ![StatusPengajuanEnum.CLOSED, StatusPengajuanEnum.DONE].includes(status)
+      ![
+        StatusPengajuanAkhirEnum.CLOSED,
+        StatusPengajuanAkhirEnum.DONE,
+      ].includes(status)
     ) {
       throw new Error('Invalid status for final loan status trigger');
     }
@@ -198,7 +205,7 @@ export class LoanApplicationInternalRepositoryImpl
     await this.ormRepository.update(
       { id: loan_id },
       {
-        status: status,
+        status_akhir_pengajuan: status,
         updated_at: now,
       },
     );
