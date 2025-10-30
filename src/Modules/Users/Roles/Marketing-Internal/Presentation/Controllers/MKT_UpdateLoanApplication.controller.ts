@@ -61,6 +61,7 @@ export class MKT_UpdateLoanApplicationController {
         files,
         clientId,
         marketingId,
+        fixTypeParams,
       );
       return result.payload;
     } catch (error) {

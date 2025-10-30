@@ -24,6 +24,7 @@ async function bootstrap() {
         'http://localhost:4173',
         'http://127.0.0.1:5500',
         'http://app.local:3000',
+        'https://cash-gampang-ui.vercel.app',
       ];
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, origin);

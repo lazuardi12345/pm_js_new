@@ -37,6 +37,8 @@ import {
 } from 'src/Modules/LoanAppInternal/Domain/Repositories/IUnitOfWork.repository';
 import { LoanInternalDto } from '../DTOS/MKT_CreateLoanApplication.dto';
 import sharp from 'sharp';
+import { StatusPengajuanEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
+import { ClientInternal } from 'src/Modules/LoanAppInternal/Domain/Entities/client-internal.entity';
 
 @Injectable()
 export class MKT_UpdateLoanApplicationUseCase {
@@ -81,6 +83,7 @@ export class MKT_UpdateLoanApplicationUseCase {
     files: Record<string, Express.Multer.File[]>,
     clientId: number,
     marketingId?: number,
+    loanId?: number,
   ) {
     const now = this.sanitizeDate(new Date());
 
@@ -96,6 +99,16 @@ export class MKT_UpdateLoanApplicationUseCase {
           relative_internal,
         } = payload;
 
+        const foto_ktp_penjamin = files?.foto_ktp_penjamin[0].fieldname;
+
+        console.log('PAYLOAD KONTOL', {
+          payload,
+          clientId,
+          marketingId,
+          loanId,
+          foto_ktp_penjamin,
+        });
+
         const client = await this.clientRepo.findById(clientId);
         if (!client) throw new BadRequestException('Client tidak ditemukan');
 
@@ -108,8 +121,6 @@ export class MKT_UpdateLoanApplicationUseCase {
             .trim()
             .replace(/\s+/g, '_');
           const prepareForClientId = Number(client.no_ktp);
-          const CleanClientName = client.nama_lengkap;
-          const cleanName = this.sanitizeName(client.nama_lengkap);
           // const folderPath = `${client.no_ktp}/${cleanName}`;
           const validFields = [
             'foto_ktp',
@@ -172,27 +183,34 @@ export class MKT_UpdateLoanApplicationUseCase {
           };
 
           Object.keys(updatedClientData).forEach((key) => {
-            if (updatedClientData[key] === undefined)
+            const val = updatedClientData[key];
+
+            if (val === undefined) {
               delete updatedClientData[key];
+            }
+            if (
+              typeof val === 'object' &&
+              val !== null &&
+              Object.keys(val).length === 0
+            ) {
+              updatedClientData[key] = null;
+            }
+          });
+          Object.keys(filePaths).forEach((key) => {
+            if (!filePaths[key] || typeof filePaths[key] !== 'string') {
+              updatedClientData[key] = null;
+            }
           });
 
           const hasClientChanged = Object.entries(updatedClientData).some(
-            ([key, val]) => {
-              return client[key] !== val;
-            },
+            ([key, val]) => client[key] !== val,
           );
 
           if (hasClientChanged) {
             await this.clientRepo.save({
               ...client,
               ...updatedClientData,
-              isKtpValid: () => {
-                throw new Error('Function not implemented.');
-              },
-              isMarriageStatusValid: () => {
-                throw new Error('Function not implemented.');
-              },
-            });
+            } as ClientInternal);
             isUpdated = true;
           }
         }
@@ -238,6 +256,18 @@ export class MKT_UpdateLoanApplicationUseCase {
           job_internal,
           'Job',
         );
+        const collateralFileKeys = [
+          'foto_ktp_penjamin',
+          'foto_id_card_penjamin',
+        ];
+        collateralFileKeys.forEach((key) => {
+          if (filePaths[key] && typeof filePaths[key] === 'string') {
+            collateral_internal[key] = filePaths[key]; // assign URL valid
+          } else {
+            collateral_internal[key] = null; // aman, bukan {}
+          }
+        });
+
         const updatedCollateralData = await updateIfExist(
           this.collateralRepo,
           collateral_internal,
@@ -282,6 +312,37 @@ export class MKT_UpdateLoanApplicationUseCase {
           ...updatedCollateralData,
           ...updatedRelativeData,
         };
+
+        const getLoan = await this.loanAppRepo.findById(loanId!);
+        const statusLoan = getLoan!.status;
+
+        switch (statusLoan) {
+          case StatusPengajuanEnum.REJECTED_SPV:
+            await this.loanAppRepo.updateLoanAppInternalStatus(
+              loanId!,
+              StatusPengajuanEnum.PENDING,
+            );
+            break;
+
+          // case StatusPengajuanEnum.PENDING:
+          //   await this.loanAppRepo.updateLoanAppInternalStatus(
+          //     loanId!,
+          //     StatusPengajuanEnum.REVIEW,
+          //   );
+          //   break;
+
+          // case StatusPengajuanEnum.REVIEW:
+          //   await this.loanAppRepo.updateLoanAppInternalStatus(
+          //     loanId!,
+          //     StatusPengajuanEnum.APPROVED,
+          //   );
+          //   break;
+
+          default:
+            throw new BadRequestException(
+              'Status tidak valid atau tidak dapat diproses',
+            );
+        }
 
         return {
           payload: {

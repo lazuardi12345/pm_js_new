@@ -12,7 +12,9 @@ export interface IApprovalRecommendationRepository {
     id: number,
     entity: Partial<ApprovalRecommendation>,
   ): Promise<ApprovalRecommendation>;
+  triggerIsNeedCheckBeingTrue(draft_id?: string): Promise<void>;
   findAllRecommendationHistory(): Promise<ApprovalRecommendation[]>;
+  findAllRecommendationRequests(): Promise<ApprovalRecommendation[]>;
   findById(id: number): Promise<ApprovalRecommendation | null>;
   findByDraftId(draft_id: string): Promise<ApprovalRecommendation | null>;
   findByNIK(nik: string): Promise<ApprovalRecommendation | null>;

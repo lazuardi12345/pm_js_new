@@ -188,6 +188,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
           prefix,
           file,
           newFileName,
+          'bi-check/',
         );
         savedFiles[field].push(metadata);
       }
@@ -201,6 +202,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
     prefix: string,
     file: Express.Multer.File,
     customFileName?: string,
+    type_prefix?: string,
   ): Promise<FileMetadata> {
     try {
       // Encrypt file
@@ -234,6 +236,8 @@ export class MinioFileStorageService implements IFileStorageRepository {
 
       const [id, name] = prefixParser(prefix);
 
+      const prefixForUrl = type_prefix ? `${type_prefix}` : '';
+
       this.logger.log(`File uploaded: ${encryptedName}`);
       console.log({
         buffer: file.buffer,
@@ -252,7 +256,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
         mimetype: file.mimetype,
         encryptedName: encryptedName,
         size: file.size,
-        url: `${process.env.BACKEND_URI}/storage/${id}/${name}/${filenameToUse}`,
+        url: `${process.env.BACKEND_URI}/storage/${prefixForUrl}${id}/${name}/${filenameToUse}`,
       };
     } catch (error: any) {
       console.log('Error uploading file', error);
@@ -271,6 +275,62 @@ export class MinioFileStorageService implements IFileStorageRepository {
   ): Promise<{ buffer: Buffer; mimetype: string; originalName: string }> {
     try {
       const bucket = this.getBucketName(isDraft);
+      const prefix = this.getCustomerPrefix(customerId, customerName);
+      const encryptedName = filename.endsWith('.enc')
+        ? `${prefix}${filename}`
+        : `${prefix}${filename}.enc`;
+
+      console.log('kamilah duo trio: ', { bucket, prefix, encryptedName });
+
+      // Get metadata
+      const stat = await this.minioClient.statObject(bucket, encryptedName);
+      const iv = stat.metaData['x-encryption-iv'];
+      const mimetype =
+        stat.metaData['x-original-mimetype'] || 'application/octet-stream';
+      const originalName = stat.metaData['x-original-filename'] || filename;
+
+      if (!iv) {
+        throw new Error('Encryption IV not found in metadata');
+      }
+
+      // Download encrypted file
+      const dataStream = await this.minioClient.getObject(
+        bucket,
+        encryptedName,
+      );
+      const chunks: Buffer[] = [];
+
+      for await (const chunk of dataStream) {
+        chunks.push(chunk);
+      }
+
+      const encryptedBuffer = Buffer.concat(chunks);
+
+      // Decrypt
+      const decryptedBuffer = this.decrypt(encryptedBuffer, iv);
+
+      return {
+        buffer: decryptedBuffer,
+        mimetype,
+        originalName,
+      };
+    } catch (error) {
+      this.logger.error(`Error getting file: ${error.message}`);
+      if (error.code === 'NoSuchKey') {
+        throw new NotFoundException(`File not found: ${filename}`);
+      }
+      throw error;
+    }
+  }
+
+  async getFilesForApprovalRecommendations(
+    customerId: number,
+    customerName: string,
+    filename: string,
+    isDraft: boolean = false,
+  ): Promise<{ buffer: Buffer; mimetype: string; originalName: string }> {
+    try {
+      const bucket = this.approvalRecommendationBucket;
       const prefix = this.getCustomerPrefix(customerId, customerName);
       const encryptedName = filename.endsWith('.enc')
         ? `${prefix}${filename}`
@@ -377,7 +437,12 @@ export class MinioFileStorageService implements IFileStorageRepository {
 
       // Check if file exists
       try {
-        await this.minioClient.statObject(bucket, encryptedName);
+        await this.minioClient.putObject(
+          bucket,
+          encryptedName,
+          file.buffer,
+          file.size,
+        );
       } catch (error) {
         console.log(error);
         throw new NotFoundException(`File not found: ${filename}`);

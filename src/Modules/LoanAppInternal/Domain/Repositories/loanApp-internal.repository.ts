@@ -42,6 +42,7 @@ export interface ILoanApplicationInternalRepository {
   ): Promise<void>;
 
   triggerBanding(loan_id: number, alasan_banding: string);
+  triggerFinalLoanStatus(loan_id: number, status: string);
 
   //! ========== GENERAL ==========
 
@@ -49,7 +50,9 @@ export interface ILoanApplicationInternalRepository {
     role: RoleSearchEnum,
     type: TypeSearchEnum,
     keyword: string,
-  ): Promise<{ data: any[] }>;
+    page?: number,
+    pageSize?: number,
+  ): Promise<{ data: any[]; totalData: number; approvals?: any[] }>;
 
   //! ========== MARKETING ==========
   callSP_MKT_GetAllLoanApplications_Internal(

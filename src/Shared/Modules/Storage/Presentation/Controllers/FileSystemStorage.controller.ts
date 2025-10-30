@@ -80,6 +80,30 @@ export class FileStorageController {
     res.send(buffer);
   }
 
+  @Public()
+  @Get('bi-check/:customerId/:customerName/:filename')
+  async getFileFromApprovalRecommendation(
+    @Param('customerId', ParseIntPipe) customerId: number,
+    @Param('customerName') customerName: string,
+    @Param('filename') filename: string,
+    @Res() res: Response,
+  ) {
+    const { buffer, mimetype, originalName } =
+      await this.fileStorageService.getFilesForApprovalRecommendations(
+        customerId,
+        customerName,
+        filename,
+      );
+
+    res.set({
+      'Content-Type': mimetype,
+      'Content-Disposition': `inline; filename="${originalName}"`,
+      'Content-Length': buffer.length,
+    });
+
+    res.send(buffer);
+  }
+
   @Put(':customerId/:customerName/:filename')
   @UseInterceptors(
     FileFieldsInterceptor([

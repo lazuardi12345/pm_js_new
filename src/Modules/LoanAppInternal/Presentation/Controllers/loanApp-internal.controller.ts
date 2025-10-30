@@ -47,15 +47,31 @@ export class LoanApplicationInternalController {
   }
   @Get('search/history')
   @Roles(USERTYPE.HM, USERTYPE.SPV, USERTYPE.MARKETING, USERTYPE.CA)
-  async searchLoanHistory(@Req() req: any, @Query('keyword') keyword?: string) {
+  async searchLoanHistory(
+    @Req() req: any,
+    @Query('keyword') keyword?: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number,
+  ) {
     const { usertype } = req.user;
     if (!usertype) throw new UnauthorizedException('Invalid User Session');
     const role = this.mapUserTypeToSearchEnum(usertype as USERTYPE);
-    return this.loanApplicationService.searchLoans(
+    const results = await this.loanApplicationService.searchLoans(
       role,
       TypeSearchEnum.HISTORY,
       keyword ?? '',
+      page,
+      pageSize,
     );
+
+    return {
+      payload: {
+        error: false,
+        message: 'Search Loan History fetched successfully',
+        refence: 'SEARCH_LOAN_HISTORY_OK',
+        data: results,
+      },
+    };
   }
 
   @Get('search/request')

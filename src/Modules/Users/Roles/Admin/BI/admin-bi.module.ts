@@ -7,11 +7,13 @@ import { ApprovalRecommendationModule } from 'src/Modules/Admin/BI-Checking/Modu
 
 //? USE CASE
 import { AdBIC_CreateApprovalResponseUseCase } from './Applications/AdBIC_CreateApprovalResponse.usecase';
+import { AdBIC_FindAllRecommendationRequestUseCase } from './Applications/AdBIC_GetAllApprovalRecommendationRequest.usecase';
+import { AdBIC_FindAllRecommendationHistoryUseCase } from './Applications/AdBIC_GetAllApprovalRecommendationHistory.usecase';
 //? CONTROLLER;
 import { AdBIC_CreateApprovalResponseController } from './Presentation/AdBIC_CreateApprovalResponse.controller';
 import { FileSystemStorageModules } from 'src/Shared/Modules/Storage/ModuleStorage.module';
-import { AdBIC_FindAllRecommendationHistoryController } from './Presentation/AdBIC_GetAllApprovalRecommendation.controller';
-import { AdBIC_FindAllRecommendationHistoryUseCase } from './Applications/AdBIC_GetAllApprovalRecommendation.usecase';
+import { AdBIC_FindAllRecommendationHistoryController } from './Presentation/AdBIC_GetAllApprovalRecommendationHistory.controller';
+import { AdBIC_FindAllRecommendationRequestController } from './Presentation/AdBIC_GetAllApprovalRecommendationRequest.controller';
 
 @Module({
   imports: [
@@ -22,10 +24,12 @@ import { AdBIC_FindAllRecommendationHistoryUseCase } from './Applications/AdBIC_
   controllers: [
     AdBIC_CreateApprovalResponseController,
     AdBIC_FindAllRecommendationHistoryController,
+    AdBIC_FindAllRecommendationRequestController,
   ],
   providers: [
     AdBIC_CreateApprovalResponseUseCase,
     AdBIC_FindAllRecommendationHistoryUseCase,
+    AdBIC_FindAllRecommendationRequestUseCase,
   ],
 })
 export class AdminBICheckingUseCaseModule {}

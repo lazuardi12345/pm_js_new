@@ -15,13 +15,14 @@ export class HM_ApprovedOrRejectController {
   async approveOrReject(
     @Req() req: Request,
     @Param('id') loan_id: number,
-    @Body() body: { status: ApprovalInternalStatusEnum; keterangan?: string },
+    @Body('payload')
+    payload: { status: ApprovalInternalStatusEnum; keterangan?: string },
     @CurrentUser('id') headMarketingId: number,
   ) {
     console.log('--- HM_ApprovedOrRejectController ---');
     console.log('Request URL:', req.url);
     console.log('Loan ID param:', loan_id);
-    console.log('Body:', body);
+    console.log('Body:', payload);
     console.log('HeadMarketingId from cookie/decorator:', headMarketingId);
 
     // Validasi HM ID
@@ -36,15 +37,15 @@ export class HM_ApprovedOrRejectController {
         loan_id,
         headMarketingId,
         USERTYPE.HM,
-        body.status,
-        body.keterangan,
+        payload.status,
+        payload.keterangan,
       );
 
       console.log('Approval berhasil disimpan:', savedApproval);
 
       // Return response
       return {
-        message: `Approval berhasil disimpan dengan status ${body.status}`,
+        message: `Approval berhasil disimpan dengan status ${payload.status}`,
         data: {
           id: savedApproval.data.id,
           status: savedApproval.data.status,
