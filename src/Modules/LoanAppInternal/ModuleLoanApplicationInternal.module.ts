@@ -16,12 +16,15 @@ import { FamilyInternalController } from './Presentation/Controllers/family-inte
 import { JobInternalController } from './Presentation/Controllers/job-internal.controller';
 import { LoanApplicationInternalController } from './Presentation/Controllers/loanApp-internal.controller';
 import { RelativeInternalController } from './Presentation/Controllers/relative-internal.controller';
+import { ClientInternalProfileModule } from './Modules/client-internal-profile.module';
+import { ClientInternalProfileController } from './Presentation/Controllers/client-internal-profile.controller';
 
 @Module({
   imports: [
     AddressInternalModule,
     ApprovalInternalModule,
     ClientInternalModule,
+    ClientInternalProfileModule,
     CollateralInternalModule,
     JobInternalModule,
     FamilyInternalModule,
@@ -33,6 +36,7 @@ import { RelativeInternalController } from './Presentation/Controllers/relative-
     AddressInternalController,
     ApprovalInternalController,
     ClientInternalController,
+    ClientInternalProfileController,
     CollateralInternalController,
     FamilyInternalController,
     JobInternalController,
@@ -43,6 +47,7 @@ import { RelativeInternalController } from './Presentation/Controllers/relative-
     AddressInternalModule,
     ApprovalInternalModule,
     ClientInternalModule,
+    ClientInternalProfileModule,
     CollateralInternalModule,
     JobInternalModule,
     FamilyInternalModule,

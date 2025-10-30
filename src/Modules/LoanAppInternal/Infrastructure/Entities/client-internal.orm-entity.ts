@@ -23,7 +23,7 @@ import {
 } from 'typeorm';
 
 @Entity('client_internal')
-@Index('IDX_CLIENT_INTERNAL_SEARCH', ['nama_lengkap', 'no_ktp', 'no_hp'], {
+@Index('IDX_CLIENT_INTERNAL_SEARCH', ['nama_lengkap', 'no_ktp'], {
   fulltext: true,
 })
 export class ClientInternal_ORM_Entity {
@@ -54,30 +54,6 @@ export class ClientInternal_ORM_Entity {
 
   @Column({ type: 'date' })
   tanggal_lahir: Date;
-
-  @Column()
-  no_hp: string;
-
-  @Column({ nullable: true })
-  email?: string;
-
-  @Column({ type: 'enum', enum: MARRIAGE_STATUS })
-  status_nikah: MARRIAGE_STATUS;
-
-  @Column({ nullable: true })
-  foto_ktp?: string;
-
-  @Column({ nullable: true })
-  foto_kk?: string;
-
-  @Column({ nullable: true })
-  foto_id_card?: string;
-
-  @Column({ nullable: true })
-  foto_rekening?: string;
-
-  @Column({ nullable: true })
-  no_rekening?: string;
 
   @Column({ type: 'tinyint', default: 0 })
   enable_edit: boolean;

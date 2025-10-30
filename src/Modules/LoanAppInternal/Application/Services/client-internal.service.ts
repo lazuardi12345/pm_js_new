@@ -17,21 +17,13 @@ export class ClientInternalService {
   async create(dto: CreateClientInternalDto): Promise<ClientInternal> {
     const now = new Date();
     const client_internal = new ClientInternal(
-      {id: dto.marketing_id},
-      dto.nama_lengkap, 
+      { id: dto.marketing_id },
+      dto.nama_lengkap,
       dto.no_ktp,
-      dto.jenis_kelamin, 
-      dto.tempat_lahir, 
-      new Date(dto.tanggal_lahir), 
-      dto.no_hp, // noHp
-      dto.status_nikah,
+      dto.jenis_kelamin,
+      dto.tempat_lahir,
+      new Date(dto.tanggal_lahir),
       undefined, // id
-      dto.email, // email (opsional)
-      dto.foto_ktp, // fotoKtp (opsional)
-      dto.foto_kk, // fotoKk (opsional)
-      dto.foto_id_card, // fotoIdCard (opsional)
-      dto.foto_rekening, // fotoRekening (opsional)
-      dto.no_rekening, // noRekening (opsional)
       dto.enable_edit ?? false, // enableEdit (default: false)
       dto.points, // points (opsional)
       now, // createdAt (opsional, bisa di-set otomatis di repo)
