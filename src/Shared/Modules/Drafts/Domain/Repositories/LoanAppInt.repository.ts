@@ -8,11 +8,13 @@ export interface ILoanApplicationDraftRepository {
   create(data: Partial<LoanApplicationEntity>): Promise<LoanApplicationEntity>;
   findById(id: string): Promise<LoanApplicationEntity | null>;
   findByMarketingId(marketingId: number): Promise<LoanApplicationEntity[]>;
-
   updateDraftById(
     id: string,
     updateData: Partial<LoanApplicationEntity>,
   ): Promise<{ entity: LoanApplicationEntity | null; isUpdated: boolean }>;
-
+  triggerIsNeedCheckBeingTrue(
+    draft_id?: string,
+    nominal_pinjaman?: number,
+  ): Promise<void>;
   softDelete(id: string): Promise<void>;
 }
