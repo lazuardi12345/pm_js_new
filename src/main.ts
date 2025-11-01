@@ -39,6 +39,7 @@ async function bootstrap() {
   });
 
   app.use((req, res, next) => {
+    console.log('aku mah--------------------->');
     console.log('Request Origin:', req.headers.origin);
     console.log('Request Cookie:', req.headers);
     console.log('Response Headers:', res.getHeaders());
