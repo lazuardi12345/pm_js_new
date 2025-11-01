@@ -6,6 +6,7 @@ import { FileMetadata } from 'src/Shared/Modules/Storage/Domain/Repositories/IFi
 
 export class ClientInternalProfile {
   public readonly nasabah: { id: number }; // ubah, biar sama dengan ORM
+  public readonly pengajuan: { id: number } | undefined;
   public readonly id?: number;
   public readonly created_at: Date;
   public readonly deleted_at?: Date | null;
@@ -27,6 +28,7 @@ export class ClientInternalProfile {
 
   constructor(
     nasabah: { id: number },
+    pengajuan: { id: number } | undefined,
     nama_lengkap: string,
     jenis_kelamin: GENDER,
     no_hp: string,
@@ -43,6 +45,8 @@ export class ClientInternalProfile {
     deleted_at: Date | null = null,
   ) {
     this.nasabah = typeof nasabah === 'number' ? { id: nasabah } : nasabah;
+    this.pengajuan =
+      typeof pengajuan === 'number' ? { id: pengajuan } : pengajuan;
     this.nama_lengkap = nama_lengkap;
     this.jenis_kelamin = jenis_kelamin;
     this.no_hp = no_hp;

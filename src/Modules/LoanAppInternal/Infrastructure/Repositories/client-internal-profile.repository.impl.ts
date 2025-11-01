@@ -23,6 +23,7 @@ export class ClientInternalProfileRepositoryImpl
   ): ClientInternalProfile {
     return new ClientInternalProfile(
       orm.nasabah,
+      orm.pengajuan,
       orm.nama_lengkap,
       orm.jenis_kelamin,
       orm.no_hp,
