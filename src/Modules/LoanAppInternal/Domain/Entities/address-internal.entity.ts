@@ -8,7 +8,7 @@ import {
 export class AddressInternal {
   constructor(
     // === Immutable (readonly, gak boleh berubah setelah konstruksi) ===
-    public readonly nasabah: {id: number},
+    public readonly nasabah: { id: number },
     public readonly alamat_ktp: string,
     public readonly rt_rw: string,
     public readonly kelurahan: string,
@@ -27,7 +27,7 @@ export class AddressInternal {
     public updated_at?: Date,
   ) {
     this.ensureAlamatLengkap();
-    this.nasabah = typeof nasabah === "number" ? {id: nasabah} : nasabah;
+    this.nasabah = typeof nasabah === 'number' ? { id: nasabah } : nasabah;
   }
 
   //! Business Rule: Alamat Lengkap wajib kalau domisili ≠ KTP

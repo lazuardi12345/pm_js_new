@@ -95,9 +95,9 @@ export class AdBIC_CreateApprovalResponseUseCase {
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
-      await this.approvalRecommendation.triggerIsNeedCheckBeingTrue(
-        dto!.draft_id,
-      );
+      // await this.approvalRecommendation.triggerIsNeedCheckBeingTrue(
+      //   dto!.draft_id,
+      // );
 
       return {
         dto: {

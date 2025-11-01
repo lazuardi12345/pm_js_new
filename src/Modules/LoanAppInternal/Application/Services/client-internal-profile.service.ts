@@ -17,6 +17,7 @@ export class ClientInternalProfileService {
     const now = new Date();
     const client_internal_profile = new ClientInternalProfile(
       { id: dto.user_id },
+      undefined,
       dto.nama_lengkap,
       dto.jenis_kelamin,
       dto.no_hp, // noHp

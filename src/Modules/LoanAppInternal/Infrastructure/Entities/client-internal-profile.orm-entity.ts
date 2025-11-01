@@ -11,8 +11,10 @@ import {
   DeleteDateColumn,
   ManyToOne,
   JoinColumn,
+  OneToOne,
 } from 'typeorm';
 import { ClientInternal_ORM_Entity } from './client-internal.orm-entity';
+import { LoanApplicationInternal_ORM_Entity } from './loan-application-internal.orm-entity';
 
 @Entity('client_internal_profile')
 export class ClientInternalProfile_ORM_Entity {
@@ -72,4 +74,18 @@ export class ClientInternalProfile_ORM_Entity {
     foreignKeyConstraintName: 'FK_ClientInternalID_at_ClientInternalProfile',
   })
   nasabah: ClientInternal_ORM_Entity;
+  @OneToOne(
+    () => LoanApplicationInternal_ORM_Entity,
+    (pengajuan) => pengajuan.id,
+    {
+      onDelete: 'CASCADE',
+      eager: true,
+      nullable: true,
+    },
+  )
+  @JoinColumn({
+    name: 'pengajuan_id',
+    foreignKeyConstraintName: 'FK_PengajuanID_at_ClientInternalProfile',
+  })
+  pengajuan?: LoanApplicationInternal_ORM_Entity;
 }

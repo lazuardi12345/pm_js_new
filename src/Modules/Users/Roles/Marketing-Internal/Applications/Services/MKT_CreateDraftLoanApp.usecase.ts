@@ -21,13 +21,13 @@ import {
   IFileStorageRepository,
 } from 'src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository';
 import sharp from 'sharp';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class MKT_CreateDraftLoanApplicationUseCase {
   constructor(
     @Inject(CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY)
     private readonly loanAppDraftRepo: ILoanApplicationDraftRepository,
-
     @Inject(FILE_STORAGE_SERVICE)
     private readonly fileStorage: IFileStorageRepository,
   ) {}
@@ -66,22 +66,25 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         // Assign hasil upload ke DTO sesuai field
         for (const [field, paths] of Object.entries(filePaths)) {
           if (paths && paths.length > 0) {
-            // misal foto_ktp → simpan nama file atau path lengkap
             dto.client_internal[field] = paths[0].url;
-            // jika mau simpan path lengkap:
-            // dto.client_internal[field] = `${paths[0].prefix}${paths[0].usedFilename}`;
           }
         }
       }
-
-      console.log('File paths:', filePaths);
-      console.log('Payload (with marketingId):', dto);
 
       // 3️⃣ Simpan draft loan application
       const loanApp = await this.loanAppDraftRepo.create({
         ...dto,
         uploaded_files: filePaths,
       });
+
+      if (!loanApp) {
+        throw new Error('Failed to Create Draft');
+      } else {
+        await this.loanAppDraftRepo.triggerIsNeedCheckBeingTrue(
+          loanApp._id?.toString(),
+          Number(dto.loan_application_internal?.nominal_pinjaman),
+        );
+      }
 
       return {
         dto: {

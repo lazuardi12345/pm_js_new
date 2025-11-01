@@ -21,6 +21,7 @@ async function bootstrap() {
     origin: (origin, callback) => {
       const allowedOrigins = [
         'http://localhost:5173',
+        'http://localhost:3000',
         'http://localhost:4173',
         'http://127.0.0.1:5500',
         'http://app.local:3000',
@@ -38,6 +39,7 @@ async function bootstrap() {
   });
 
   app.use((req, res, next) => {
+    console.log('aku mah--------------------->');
     console.log('Request Origin:', req.headers.origin);
     console.log('Request Cookie:', req.headers);
     console.log('Response Headers:', res.getHeaders());

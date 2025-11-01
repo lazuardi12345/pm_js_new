@@ -137,27 +137,6 @@ export class MKT_CreateLoanApplicationUseCase {
 
         console.log('AMBATUKAAAAAAAAAAAAAAAAAAAAAAAAMMM', customer.id);
 
-        // **1A. Mapping Dulu ke Profile
-        const clientProfileEntity = new ClientInternalProfile(
-          { id: customer.id! },
-          client_internal.nama_lengkap,
-          client_internal.jenis_kelamin,
-          client_internal.no_hp,
-          client_internal.status_nikah as MARRIAGE_STATUS,
-          undefined,
-          client_internal.email,
-          parseFileUrl(
-            documents_files?.foto_ktp ?? client_internal.foto_ktp ?? null,
-          ),
-          parseFileUrl(
-            documents_files?.foto_kk ?? client_internal.foto_kk ?? null,
-          ),
-          parseFileUrl(documents_files?.foto_id_card ?? null),
-          parseFileUrl(documents_files?.foto_rekening ?? null),
-          client_internal.no_rekening as string,
-        );
-        await this.clientProfileRepo.save(clientProfileEntity);
-
         // **2. Simpan AddressInternal**
         const addressEntity = new AddressInternal(
           { id: customer.id! },
@@ -245,6 +224,28 @@ export class MKT_CreateLoanApplicationUseCase {
         );
 
         const loanApp = await this.loanAppRepo.save(loanAppEntity);
+
+        // **1A. Mapping Dulu ke Profile
+        const clientProfileEntity = new ClientInternalProfile(
+          { id: customer.id! },
+          { id: loanApp.id! },
+          client_internal.nama_lengkap,
+          client_internal.jenis_kelamin,
+          client_internal.no_hp,
+          client_internal.status_nikah as MARRIAGE_STATUS,
+          undefined,
+          client_internal.email,
+          parseFileUrl(
+            documents_files?.foto_ktp ?? client_internal.foto_ktp ?? null,
+          ),
+          parseFileUrl(
+            documents_files?.foto_kk ?? client_internal.foto_kk ?? null,
+          ),
+          parseFileUrl(documents_files?.foto_id_card ?? null),
+          parseFileUrl(documents_files?.foto_rekening ?? null),
+          client_internal.no_rekening as string,
+        );
+        await this.clientProfileRepo.save(clientProfileEntity);
 
         // **6. Simpan CollateralInternal**
         const collEntity = new CollateralInternal(

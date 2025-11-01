@@ -1,4 +1,7 @@
+import { Types } from 'mongoose';
+
 export class LoanApplicationEntity {
+  readonly _id?: string | Types.ObjectId;
   id?: string;
   marketing_id?: number;
 
