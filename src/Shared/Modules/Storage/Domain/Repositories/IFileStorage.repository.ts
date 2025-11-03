@@ -8,6 +8,20 @@ export interface FileMetadata {
   url: string;
 }
 
+export interface LoanMetadata {
+  loanId: number;
+  nasabahId: number;
+  nominalPinjaman: number;
+  tenor: number;
+}
+
+export interface PengajuanUploadResult {
+  savedFiles: Record<string, FileMetadata[]>;
+  isUpdate: boolean;
+  pengajuanFolder: string;
+  originalLoanId?: number;
+}
+
 export interface IFileStorageRepository {
   // Create/Upload
   saveFiles(
@@ -61,13 +75,10 @@ export interface IFileStorageRepository {
     isDraft?: boolean,
   ): Promise<FileMetadata>;
 
-  // Update
-  // IFileStorageRepository.ts
   updateFileDirectory(
     customerId: number,
     oldCustomerName: string,
     newCustomerName: string,
-    // filename: string,
   ): Promise<{
     oldPrefix: string;
     newPrefix: string;
@@ -83,10 +94,31 @@ export interface IFileStorageRepository {
     isDraft?: boolean,
   ): Promise<void>;
 
-  // Delete all files for customer
   deleteCustomerFiles(
     customerId: number,
     customerName: string,
     isDraft?: boolean,
   ): Promise<void>;
+
+  saveRepeatOrderFiles(
+    customerId: number, // ID customer dari DB (e.g., 13)
+    customerName: string, // Nama customer (e.g., "Ahmad Suryadi")
+    pengajuanIndex: number, // Index pengajuan awal (e.g., 1, 2, 3) - bisa di-override kalau repeat order ketemu
+    files: Record<string, Express.Multer.File[] | undefined>, // Files yang diupload: { foto_ktp: [file], foto_kk: [file] }
+    repeatFromLoanId?: number, // Optional: loan_id LAMA yang mau di-repeat (untuk cek apakah update atau create new)
+    loanMetadata?: LoanMetadata, // Optional: Data loan BARU (loan_id, nasabah_id, nominal, tenor)
+  ): Promise<PengajuanUploadResult>;
+
+  getNextPengajuanIndex(
+    customerId: number,
+    customerName: string,
+    isDraft?: boolean,
+  ): Promise<number>;
+
+  getFilesByPengajuanIndex(
+    customerId: number,
+    customerName: string,
+    pengajuanIndex: number,
+    isDraft?: boolean,
+  ): Promise<FileMetadata[]>;
 }

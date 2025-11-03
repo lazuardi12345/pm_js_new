@@ -210,8 +210,8 @@ export class MKT_CreateLoanApplicationUseCase {
           undefined,
           (loan_application_internal.status ??
             'pending') as StatusPengajuanEnum,
-          (loan_application_internal.status_akhir_pengajuan ??
-            'done') as StatusPengajuanAkhirEnum,
+          ((loan_application_internal.status_akhir_pengajuan ??
+            null) as StatusPengajuanAkhirEnum) ?? null,
           loan_application_internal.pinjaman_ke ?? 1,
           loan_application_internal.riwayat_nominal ?? 0,
           loan_application_internal.riwayat_tenor ?? 0,

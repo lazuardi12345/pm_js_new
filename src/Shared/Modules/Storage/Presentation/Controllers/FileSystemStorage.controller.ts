@@ -47,6 +47,25 @@ export class FileStorageController {
   }
 
   @Public()
+  @Post('repeat-order/:customerId/:customerName/:pengajuanIndex')
+  @UseInterceptors(FilesInterceptor('files'))
+  async uploadFilesRepeatOrder(
+    @Param('customerId', ParseIntPipe) customerId: number,
+    @Param('customerName') customerName: string,
+    @Param('pengajuanIndex', ParseIntPipe) pengajuanIndex: number,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    const result = await this.fileStorageService.saveRepeatOrderFiles(
+      customerId,
+      customerName,
+      pengajuanIndex,
+      { files },
+    );
+
+    return { message: 'Files uploaded successfully', data: result };
+  }
+
+  @Public()
   @Get(':customerId/:customerName')
   async listFiles(
     @Param('customerId', ParseIntPipe) customerId: number,

@@ -45,6 +45,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
     // Ensure buckets exist
     this.ensureBucket(this.mainBucket);
     this.ensureBucket(this.draftBucket);
+    this.ensureBucket(this.approvalRecommendationBucket);
   }
 
   // ============== ENCRYPT ION HELPERS ==============
@@ -90,6 +91,95 @@ export class MinioFileStorageService implements IFileStorageRepository {
 
   private getCustomerPrefix(customerId: number, customerName: string): string {
     return `${customerId}-${customerName.replace(/\s+/g, '_')}/`;
+  }
+
+  private async findFolderByLoanId(
+    bucket: string,
+    customerPrefix: string,
+    loanId: number,
+  ): Promise<{ pengajuanIndex: number; folderPath: string } | null> {
+    try {
+      const stream = this.minioClient.listObjectsV2(
+        bucket,
+        customerPrefix,
+        true,
+      );
+
+      for await (const obj of stream) {
+        const stat = await this.minioClient.statObject(bucket, obj.name);
+        const metadata = stat.metaData;
+
+        // Cek apakah loan-id cocok
+        if (
+          metadata['x-loan-id'] === loanId.toString() ||
+          metadata['X-Loan-Id'] === loanId.toString()
+        ) {
+          const pengajuanIndexStr =
+            metadata['x-pengajuan-index'] ||
+            metadata['X-Pengajuan-Index'] ||
+            this.extractPengajuanIndexFromPath(obj.name);
+
+          if (pengajuanIndexStr) {
+            const pengajuanIndex = parseInt(pengajuanIndexStr);
+            const folderPath = obj.name.substring(
+              0,
+              obj.name.indexOf('/', customerPrefix.length) + 1,
+            );
+
+            this.logger.log(
+              `Found existing pengajuan: ${folderPath} with loan_id: ${loanId}`,
+            );
+
+            return {
+              pengajuanIndex,
+              folderPath,
+            };
+          }
+        }
+      }
+
+      return null;
+    } catch (error) {
+      this.logger.error(`Error finding folder by loan ID: ${error.message}`);
+      return null;
+    }
+  }
+
+  private extractPengajuanIndexFromPath(path: string): string | null {
+    // Path example: "123-John_Doe/pengajuan-5/file.pdf.enc"
+    const match = path.match(/pengajuan-(\d+)\//);
+    return match ? match[1] : null;
+  }
+
+  async getNextPengajuanIndex(
+    customerId: number,
+    customerName: string,
+    isDraft: boolean = false,
+  ): Promise<number> {
+    try {
+      const bucket = this.getBucketName(isDraft);
+      const customerPrefix = this.getCustomerPrefix(customerId, customerName);
+      const stream = this.minioClient.listObjectsV2(
+        bucket,
+        customerPrefix,
+        false, // recursive: false untuk cuma ambil folder
+      );
+
+      let maxIndex = 0;
+
+      for await (const obj of stream) {
+        const match = obj.name.match(/pengajuan-(\d+)\//);
+        if (match) {
+          const index = parseInt(match[1]);
+          if (index > maxIndex) maxIndex = index;
+        }
+      }
+
+      return maxIndex + 1;
+    } catch (error) {
+      this.logger.error(`Error getting next pengajuan index: ${error.message}`);
+      return 1; // Default kalau belum ada folder
+    }
   }
 
   // ============== CREATE/UPLOAD ==============
@@ -160,6 +250,119 @@ export class MinioFileStorageService implements IFileStorageRepository {
     }
 
     return savedFiles;
+  }
+
+  async saveRepeatOrderFiles(
+    customerId: number,
+    customerName: string,
+    nextPengajuanIndex: number,
+    files: Record<string, Express.Multer.File[] | undefined>,
+    repeatFromLoanId?: number, // ← Changed parameter name untuk clarity
+    loanMetadata?: {
+      loanId: number; // ← Loan ID BARU
+      nasabahId: number;
+      nominalPinjaman: number;
+      tenor: number;
+    },
+  ): Promise<{
+    savedFiles: Record<string, FileMetadata[]>;
+    isUpdate: boolean;
+    pengajuanFolder: string;
+    originalLoanId?: number;
+  }> {
+    try {
+      const bucket = this.mainBucket;
+      const customerPrefix = this.getCustomerPrefix(customerId, customerName);
+
+      let targetPengajuanIndex = nextPengajuanIndex;
+      let isUpdate = false;
+      let originalLoanId: number | undefined;
+
+      if (repeatFromLoanId) {
+        // Cari folder yang punya loan_id yang sama (folder lama)
+        const existingFolder = await this.findFolderByLoanId(
+          bucket,
+          customerPrefix,
+          repeatFromLoanId,
+        );
+
+        if (existingFolder) {
+          // Found! Update existing pengajuan
+          targetPengajuanIndex = existingFolder.pengajuanIndex;
+          isUpdate = true;
+          originalLoanId = repeatFromLoanId;
+          this.logger.log(
+            `Repeat order from loan_id ${repeatFromLoanId}: updating pengajuan-${targetPengajuanIndex}`,
+          );
+        }
+      }
+
+      const pengajuanFolder = `${customerPrefix}pengajuan-${targetPengajuanIndex}/`;
+      const savedFiles: Record<string, FileMetadata[]> = {};
+
+      for (const [field, fileList] of Object.entries(files)) {
+        if (!fileList || fileList.length === 0) continue;
+
+        savedFiles[field] = [];
+
+        for (const file of fileList) {
+          const ext = file.originalname.split('.').pop();
+          const cleanName = customerName.toLowerCase().replace(/\s+/g, '_');
+          const newFileName = `${cleanName}-${field}.${ext}`;
+          const encryptedName = `${pengajuanFolder}${newFileName}.enc`;
+
+          const { encrypted, iv } = this.encrypt(file.buffer);
+
+          const metadata = {
+            'Content-Type': 'application/octet-stream',
+            'X-Original-Mimetype': file.mimetype,
+            'X-Encryption-IV': iv,
+            'X-Original-Filename': file.originalname,
+            'X-Original-Size': file.size.toString(),
+            'X-Pengajuan-Index': targetPengajuanIndex.toString(),
+            'X-Parent-Folder': `pengajuan-${targetPengajuanIndex}`,
+            'X-Customer-Id': customerId.toString(),
+            'X-Customer-Name': customerName,
+            'X-File-Type': field,
+            'X-Uploaded-At': new Date().toISOString(),
+            'X-Is-Update': isUpdate.toString(),
+            ...(loanMetadata && {
+              'X-Loan-Id': loanMetadata.loanId.toString(), // ← Loan ID BARU
+              'X-Nasabah-Id': loanMetadata.nasabahId.toString(),
+            }),
+            ...(repeatFromLoanId && {
+              'X-Repeat-From-Loan-Id': repeatFromLoanId.toString(), // ← Loan ID LAMA
+            }),
+          };
+
+          await this.minioClient.putObject(
+            bucket,
+            encryptedName,
+            encrypted,
+            encrypted.length,
+            metadata,
+          );
+
+          savedFiles[field].push({
+            originalName: file.originalname,
+            encryptedName,
+            mimetype: file.mimetype,
+            size: file.size,
+            url: `${bucket}/${encryptedName}`,
+          });
+        }
+      }
+
+      return {
+        savedFiles,
+        isUpdate,
+        pengajuanFolder,
+        originalLoanId,
+      };
+    } catch (error) {
+      this.logger.error(`Error saving pengajuan files: ${error.message}`);
+      throw error;
+    }
   }
 
   async saveApprovalRecommedationFiles(
@@ -379,42 +582,47 @@ export class MinioFileStorageService implements IFileStorageRepository {
     }
   }
 
-  // ============== LIST ==============
-
-  async listFiles(
+  async getFilesByPengajuanIndex(
     customerId: number,
     customerName: string,
+    pengajuanIndex: number,
     isDraft: boolean = false,
   ): Promise<FileMetadata[]> {
     try {
       const bucket = this.getBucketName(isDraft);
-      const prefix = this.getCustomerPrefix(customerId, customerName);
+      const customerPrefix = this.getCustomerPrefix(customerId, customerName);
+      const pengajuanFolder = `${customerPrefix}pengajuan-${pengajuanIndex}/`;
+
+      const stream = this.minioClient.listObjectsV2(
+        bucket,
+        pengajuanFolder,
+        true,
+      );
+
       const files: FileMetadata[] = [];
 
-      const stream = this.minioClient.listObjects(bucket, prefix, true);
-
       for await (const obj of stream) {
-        if (obj.name.endsWith('.enc')) {
-          try {
-            const stat = await this.minioClient.statObject(bucket, obj.name);
-            files.push({
-              originalName: stat.metaData['x-original-filename'] || obj.name,
-              encryptedName: obj.name,
-              mimetype:
-                stat.metaData['x-original-mimetype'] ||
-                'application/octet-stream',
-              size: parseInt(stat.metaData['x-original-size']) || obj.size,
-              url: `${bucket}/${obj.name}`,
-            });
-          } catch (err) {
-            this.logger.warn(`Could not get metadata for ${obj.name}`);
-          }
-        }
+        const stat = await this.minioClient.statObject(bucket, obj.name);
+        const metadata = stat.metaData;
+
+        files.push({
+          originalName:
+            metadata['x-original-filename'] || metadata['X-Original-Filename'],
+          encryptedName: obj.name,
+          mimetype:
+            metadata['x-original-mimetype'] || metadata['X-Original-Mimetype'],
+          size: parseInt(
+            metadata['x-original-size'] || metadata['X-Original-Size'] || '0',
+          ),
+          url: `${bucket}/${obj.name}`,
+        });
       }
 
       return files;
     } catch (error) {
-      this.logger.error(`Error listing files: ${error.message}`);
+      this.logger.error(
+        `Error getting files by pengajuan index: ${error.message}`,
+      );
       throw error;
     }
   }
@@ -524,6 +732,46 @@ export class MinioFileStorageService implements IFileStorageRepository {
       totalMoved: objects.length,
       message: 'All files moved successfully',
     };
+  }
+
+  // ============== LIST ==============
+
+  async listFiles(
+    customerId: number,
+    customerName: string,
+    isDraft: boolean = false,
+  ): Promise<FileMetadata[]> {
+    try {
+      const bucket = this.getBucketName(isDraft);
+      const prefix = this.getCustomerPrefix(customerId, customerName);
+      const files: FileMetadata[] = [];
+
+      const stream = this.minioClient.listObjects(bucket, prefix, true);
+
+      for await (const obj of stream) {
+        if (obj.name.endsWith('.enc')) {
+          try {
+            const stat = await this.minioClient.statObject(bucket, obj.name);
+            files.push({
+              originalName: stat.metaData['x-original-filename'] || obj.name,
+              encryptedName: obj.name,
+              mimetype:
+                stat.metaData['x-original-mimetype'] ||
+                'application/octet-stream',
+              size: parseInt(stat.metaData['x-original-size']) || obj.size,
+              url: `${bucket}/${obj.name}`,
+            });
+          } catch (err) {
+            this.logger.warn(`Could not get metadata for ${obj.name}`);
+          }
+        }
+      }
+
+      return files;
+    } catch (error) {
+      this.logger.error(`Error listing files: ${error.message}`);
+      throw error;
+    }
   }
 
   // ============== DELETE ==============
