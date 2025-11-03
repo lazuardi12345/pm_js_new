@@ -3,6 +3,10 @@ import {
   ILoanApplicationInternalRepository,
   LOAN_APPLICATION_INTERNAL_REPOSITORY,
 } from 'src/Modules/LoanAppInternal/Domain/Repositories/loanApp-internal.repository';
+import {
+  StatusPengajuanAkhirEnum,
+  StatusPengajuanEnum,
+} from 'src/Shared/Enums/Internal/LoanApp.enum';
 
 @Injectable()
 export class MKT_GetClientsDatabaseUseCase {
@@ -11,65 +15,83 @@ export class MKT_GetClientsDatabaseUseCase {
     private readonly loanAppRepo: ILoanApplicationInternalRepository,
   ) {}
 
-  async execute(
-    marketingId: number,
-    page = 1,
-    pageSize = 10,
-    searchQuery = '',
-  ) {
+  async execute(p_page = 1, p_pageSize = 10) {
     try {
-      // Step 1: Ambil semua data tanpa pagination
-      const { data } =
-        await this.loanAppRepo.callSP_MKT_GetAllLoanApplications_Internal(
-          marketingId,
-          1,
-          500, // Angka besar untuk ambil semua data
+      const { pagination, ClientData, ClientHistoryLoanApplicationsData } =
+        await this.loanAppRepo.callSP_GENERAL_GetClientDatabaseInternal(
+          p_page,
+          p_pageSize,
         );
 
-      const trimmedQuery = searchQuery.trim().toLowerCase();
+      const total = pagination.total ?? 0;
+      const page = pagination.page ?? p_page;
+      const pageSize = pagination.page_size ?? p_pageSize;
 
-      // Step 2: Filter berdasarkan searchQuery
-      const filteredData = trimmedQuery
-        ? data.filter(
-            (item) =>
-              item.nama_lengkap?.toLowerCase().includes(trimmedQuery) ||
-              item.status?.toLowerCase().includes(trimmedQuery) ||
-              item.no_ktp?.toLowerCase().includes(trimmedQuery) ||
-              item.email?.toLowerCase().includes(trimmedQuery),
-          )
-        : data;
+      // Normalisasi data client
+      const normalizedClients = ClientData.map((c) => ({
+        ...c,
+        id: Number(c.id),
+        nasabah_id: Number(c.id),
+      }));
 
-      // Step 3: Apply manual pagination ke hasil filter
-      const startIndex = (page - 1) * pageSize;
-      const paginatedData = filteredData.slice(
-        startIndex,
-        startIndex + pageSize,
+      const normalizedLoans =
+        ClientHistoryLoanApplicationsData?.map((l) => {
+          const akhir = l.status_akhir_pengajuan?.toLowerCase();
+          const status = l.status_pengajuan?.toLowerCase();
+          const isFinalStatus = [
+            StatusPengajuanEnum.APPROVED_HM,
+            StatusPengajuanEnum.REJECTED_HM,
+            StatusPengajuanEnum.APPROVED_BANDING_HM,
+            StatusPengajuanEnum.REJECTED_BANDING_HM,
+          ].includes(status as StatusPengajuanEnum);
+
+          const isClosed = [
+            StatusPengajuanAkhirEnum.DONE,
+            StatusPengajuanAkhirEnum.CLOSED,
+          ].includes(akhir as StatusPengajuanAkhirEnum);
+
+          const adjustedAkhir =
+            !isClosed && !isFinalStatus
+              ? 'in_progress'
+              : l.status_akhir_pengajuan;
+
+          return {
+            ...l,
+            id: Number(l.id),
+            nasabah_id: Number(l.nasabah_id),
+            status_akhir_pengajuan: adjustedAkhir,
+          };
+        }) ?? [];
+
+      const loansByClient = normalizedLoans.reduce(
+        (acc, loan) => {
+          if (!acc[loan.nasabah_id]) acc[loan.nasabah_id] = [];
+          acc[loan.nasabah_id].push(loan);
+          return acc;
+        },
+        {} as Record<number, any[]>,
       );
 
-      const formattedData = paginatedData.map((item) => ({
-        clientId: Number(item.clientId),
-        loanAppId: Number(item.loanAppId),
-        nominal_pinjaman: Number(item.nominal_pinjaman),
-        tenor: Number(item.tenor),
-        nama_lengkap: item.nama_lengkap,
-        status: item.status,
+      const mergedData = normalizedClients.map((client) => ({
+        ...client,
+        loanApplications: loansByClient[client.nasabah_id] || [],
       }));
 
       return {
         payload: {
           error: false,
-          message: 'Get Loan Applications successfully retrieved',
-          reference: 'LOAN_RETRIEVE_OK',
+          message: 'Client Database successfully retrieved',
+          reference: 'CLIENT_DATABASE_OK',
           data: {
-            results: formattedData,
-            page,
-            pageSize,
-            total: filteredData.length.toString(), // total hasil setelah filter
+            results: mergedData,
           },
+          total,
+          page,
+          pageSize,
         },
       };
     } catch (err) {
-      throw new Error(err.message || 'Gagal mengambil data pengajuan');
+      throw new Error(err.message || 'Gagal mengambil data client database');
     }
   }
 }

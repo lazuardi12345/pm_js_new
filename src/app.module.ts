@@ -34,6 +34,9 @@ import { AdminBICheckingUseCaseModule } from './Modules/Users/Roles/Admin/BI/adm
       database: process.env.DB_DEV || 'pm_js_test',
       autoLoadEntities: true,
       synchronize: true,
+      extra: {
+        decimalNumbers: true, // ini kuncinya
+      },
       // logging: true, // ini buat lihat query yg dijalankan
     }),
 

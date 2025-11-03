@@ -21,7 +21,6 @@ import {
   IFileStorageRepository,
 } from 'src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository';
 import sharp from 'sharp';
-import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class MKT_CreateDraftLoanApplicationUseCase {

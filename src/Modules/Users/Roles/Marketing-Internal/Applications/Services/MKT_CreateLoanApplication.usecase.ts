@@ -127,15 +127,13 @@ export class MKT_CreateLoanApplicationUseCase {
           new Date(client_internal.tanggal_lahir),
           // Property ekstra jika ada, misalnya “role” atau id marketing, atau biarkan undefined
           undefined,
-          client_internal.enable_edit,
+          false,
           String(client_internal.points),
           now,
           now,
           undefined,
         );
         const customer = await this.clientRepo.save(client);
-
-        console.log('AMBATUKAAAAAAAAAAAAAAAAAAAAAAAAMMM', customer.id);
 
         // **2. Simpan AddressInternal**
         const addressEntity = new AddressInternal(
@@ -212,8 +210,8 @@ export class MKT_CreateLoanApplicationUseCase {
           undefined,
           (loan_application_internal.status ??
             'pending') as StatusPengajuanEnum,
-          (loan_application_internal.status_akhir_pengajuan ??
-            'done') as StatusPengajuanAkhirEnum,
+          ((loan_application_internal.status_akhir_pengajuan ??
+            null) as StatusPengajuanAkhirEnum) ?? null,
           loan_application_internal.pinjaman_ke ?? 1,
           loan_application_internal.riwayat_nominal ?? 0,
           loan_application_internal.riwayat_tenor ?? 0,

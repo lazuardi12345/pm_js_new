@@ -21,6 +21,9 @@ import {
   RoleSearchEnum,
   TypeSearchEnum,
 } from 'src/Shared/Enums/General/General.enum';
+import { paginationInterface } from 'src/Shared/Interface/Pagination.interface';
+import { General_ClientDataInterface } from 'src/Shared/Interface/General_ClientsDatabase/ClientData.interface';
+import { General_LoanApplicationDataInterface } from 'src/Shared/Interface/General_ClientsDatabase/ClientHistoryLoanApplication.interface';
 @Injectable()
 export class LoanApplicationInternalRepositoryImpl
   implements ILoanApplicationInternalRepository
@@ -253,6 +256,40 @@ export class LoanApplicationInternalRepositoryImpl
       : { data, totalData };
   }
 
+  async callSP_GENERAL_GetClientDatabaseInternal(
+    page: number,
+    page_size: number,
+  ): Promise<{
+    pagination: paginationInterface;
+    ClientData: General_ClientDataInterface[];
+    ClientHistoryLoanApplicationsData: General_LoanApplicationDataInterface[];
+  }> {
+    const ormEntities = this.ormRepository.manager;
+
+    // result sets: [pagination, client data, loan data]
+    const [paginationResult, clientResult, loanResult] =
+      await ormEntities.query(`CALL GENERAL_ClientDatabase(?, ?)`, [
+        page,
+        page_size,
+      ]);
+
+    const pagination: paginationInterface = paginationResult?.[0]
+      ? {
+          total: Number(paginationResult[0].total),
+          page: Number(paginationResult[0].page),
+          page_size: Number(paginationResult[0].page_size),
+        }
+      : { total: 0, page, page_size };
+
+    console.log('memek: ', loanResult);
+
+    return {
+      pagination,
+      ClientData: clientResult || [],
+      ClientHistoryLoanApplicationsData: loanResult || [],
+    };
+  }
+
   async findAll(): Promise<LoanApplicationInternal[]> {
     const ormEntities = await this.ormRepository.find();
     return ormEntities.map(this.toDomain);
@@ -270,11 +307,9 @@ export class LoanApplicationInternalRepositoryImpl
       [marketingId, page, pageSize],
     );
 
-    console.log('SP result:', result);
-
     return {
-      data: result[1] || [], // data hasil query ke-2
-      total: result[0]?.[0]?.total_count || 0, // total dari query pertama
+      data: result[1] || [],
+      total: result[0]?.[0]?.total_count || 0,
     };
   }
 
