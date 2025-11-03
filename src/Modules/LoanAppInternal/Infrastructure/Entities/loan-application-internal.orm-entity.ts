@@ -21,7 +21,9 @@ import { ApprovalRecommendation_ORM_Entity } from 'src/Modules/Admin/BI-Checking
 
 @Entity('loan_application_internal')
 export class LoanApplicationInternal_ORM_Entity {
-  @PrimaryGeneratedColumn({ type: 'bigint' })
+  @PrimaryGeneratedColumn({
+    type: 'bigint',
+  })
   id: number;
 
   @ManyToOne(
@@ -66,7 +68,7 @@ export class LoanApplicationInternal_ORM_Entity {
   @Column({
     type: 'enum',
     enum: StatusPengajuanAkhirEnum,
-    default: StatusPengajuanAkhirEnum.DONE,
+    nullable: true,
   })
   status_akhir_pengajuan: StatusPengajuanAkhirEnum;
 

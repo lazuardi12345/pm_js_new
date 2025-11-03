@@ -8,6 +8,9 @@ import {
   RoleSearchEnum,
   TypeSearchEnum,
 } from 'src/Shared/Enums/General/General.enum';
+import { paginationInterface } from 'src/Shared/Interface/Pagination.interface';
+import { General_ClientDataInterface } from 'src/Shared/Interface/General_ClientsDatabase/ClientData.interface';
+import { General_LoanApplicationDataInterface } from 'src/Shared/Interface/General_ClientsDatabase/ClientHistoryLoanApplication.interface';
 
 export const LOAN_APPLICATION_INTERNAL_REPOSITORY = Symbol(
   'LOAN_APPLICATION_INTERNAL_REPOSITORY',
@@ -25,7 +28,6 @@ export interface SupervisorStats {
 }
 
 export interface ILoanApplicationInternalRepository {
-  // ========== Basic CRUD ==========
   findById(id: number): Promise<LoanApplicationInternal | null>;
   findByNasabahId(nasabahId: number): Promise<LoanApplicationInternal[]>;
   findAll(): Promise<LoanApplicationInternal[]>;
@@ -53,6 +55,15 @@ export interface ILoanApplicationInternalRepository {
     page?: number,
     pageSize?: number,
   ): Promise<{ data: any[]; totalData: number; approvals?: any[] }>;
+
+  callSP_GENERAL_GetClientDatabaseInternal(
+    page: number,
+    page_size: number,
+  ): Promise<{
+    pagination: paginationInterface;
+    ClientData: General_ClientDataInterface[];
+    ClientHistoryLoanApplicationsData?: General_LoanApplicationDataInterface[];
+  }>;
 
   //! ========== MARKETING ==========
   callSP_MKT_GetAllLoanApplications_Internal(

@@ -127,15 +127,13 @@ export class MKT_CreateLoanApplicationUseCase {
           new Date(client_internal.tanggal_lahir),
           // Property ekstra jika ada, misalnya “role” atau id marketing, atau biarkan undefined
           undefined,
-          client_internal.enable_edit,
+          false,
           String(client_internal.points),
           now,
           now,
           undefined,
         );
         const customer = await this.clientRepo.save(client);
-
-        console.log('AMBATUKAAAAAAAAAAAAAAAAAAAAAAAAMMM', customer.id);
 
         // **2. Simpan AddressInternal**
         const addressEntity = new AddressInternal(
