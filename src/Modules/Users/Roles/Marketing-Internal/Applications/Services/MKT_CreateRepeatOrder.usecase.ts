@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  Inject,
+  Logger,
+} from '@nestjs/common';
 import { ClientInternal } from 'src/Modules/LoanAppInternal/Domain/Entities/client-internal.entity';
 import { ClientInternalProfile } from 'src/Modules/LoanAppInternal/Domain/Entities/client-internal-profile.entity';
 import { AddressInternal } from 'src/Modules/LoanAppInternal/Domain/Entities/address-internal.entity';
@@ -84,6 +89,7 @@ import {
 
 @Injectable()
 export class MKT_CreateRepeatOrderUseCase {
+  private readonly logger = new Logger(MKT_CreateRepeatOrderUseCase.name);
   constructor(
     @Inject(CLIENT_INTERNAL_REPOSITORY)
     private readonly clientRepo: IClientInternalRepository,
@@ -220,26 +226,32 @@ export class MKT_CreateRepeatOrderUseCase {
         );
 
         const loanApp = await this.loanAppRepo.save(loanAppEntity);
-
         // ============== UPLOAD FILES KE MINIO ==============
         let minioUploadResult;
         if (files && Object.keys(files).length > 0) {
-          // Get next pengajuan index
+          // ============== GET NEXT REPEAT ORDER INDEX ==============
           const nextPengajuanIndex =
             await this.fileStorage.getNextPengajuanIndex(
-              client_id,
+              Number(client_internal.no_ktp),
               client_internal.nama_lengkap,
               false,
             );
 
+          this.logger.log('Upload files info:', {
+            nextPengajuanIndex,
+            repeatFromLoanId,
+            nik: Number(client_internal.no_ktp),
+            customerName: client_internal.nama_lengkap,
+          });
+
+          // ============== SAVE FILES ==============
           minioUploadResult = await this.fileStorage.saveRepeatOrderFiles(
-            client_id, // customerId
-            client_internal.nama_lengkap, // customerName
-            nextPengajuanIndex, // pengajuanIndex
-            files, // files
-            repeatFromLoanId, // repeatFromLoanId (optional)
+            Number(client_internal.no_ktp),
+            client_internal.nama_lengkap,
+            nextPengajuanIndex,
+            files,
+            repeatFromLoanId, // Pass kalau mau update, undefined kalau create new
             {
-              // loanMetadata (optional)
               loanId: loanApp.id!,
               nasabahId: client_id,
               nominalPinjaman: loan_application_internal.nominal_pinjaman ?? 0,
@@ -247,7 +259,7 @@ export class MKT_CreateRepeatOrderUseCase {
             },
           );
 
-          console.log('Minio upload result:', minioUploadResult);
+          this.logger.log('Minio upload result:', minioUploadResult);
         }
 
         // **1A. Mapping Dulu ke Profile dengan URL dari Minio**
@@ -332,15 +344,17 @@ export class MKT_CreateRepeatOrderUseCase {
         return {
           payload: {
             error: false,
-            message: repeatFromLoanId
-              ? 'Repeat Order berhasil dibuat (updated existing files)'
+            message: minioUploadResult?.isUpdate
+              ? `Repeat Order ke-${minioUploadResult.originalLoanId} berhasil dibuat`
               : 'Pengajuan baru berhasil dibuat',
             reference: 'REPEAT_ORDER_CREATE_OK',
             data: {
               loanAppId: loanApp.id,
               clientId: client_id,
               isUpdate: minioUploadResult?.isUpdate ?? false,
+              isRepeatOrder: !!repeatFromLoanId,
               pengajuanFolder: minioUploadResult?.pengajuanFolder,
+              originalLoanId: minioUploadResult?.originalLoanId,
               filesUploaded: minioUploadResult?.savedFiles
                 ? Object.keys(minioUploadResult.savedFiles).length
                 : 0,

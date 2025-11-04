@@ -22,12 +22,12 @@ import multer from 'multer';
 import { MKT_CreateRepeatOrderUseCase } from '../../Applications/Services/MKT_CreateRepeatOrder.usecase';
 
 @Controller('mkt/int/loan-apps')
-export class MKT_CreateLoanApplicationController {
+export class MKT_CreateRepeatOrderController {
   constructor(
     private readonly createRepeatOrder: MKT_CreateRepeatOrderUseCase,
   ) {}
 
-  @Post('create')
+  @Post('create/repeat-order/:client_id')
   @UseInterceptors(
     FileFieldsInterceptor(
       [
@@ -44,17 +44,21 @@ export class MKT_CreateLoanApplicationController {
       },
     ),
   )
-  async submitLoanApp(
+  async submitRepeatOrder(
     @Param('client_id') client_id: number,
     @UploadedFiles() files: Record<string, Express.Multer.File[]>,
     @Body() body: any, // Terima apa saja dulu
   ) {
     try {
-      const dto = body.payload;
+      const dto =
+        typeof body.payload === 'string'
+          ? JSON.parse(body.payload)
+          : body.payload;
 
       const validatedDto = await new ValidationPipe({
         whitelist: true,
         forbidNonWhitelisted: true,
+        transform: true,
       }).transform(dto, { type: 'body', metatype: CreateLoanApplicationDto });
 
       return await this.createRepeatOrder.execute(

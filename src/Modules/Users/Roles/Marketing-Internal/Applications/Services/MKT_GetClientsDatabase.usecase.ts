@@ -36,24 +36,20 @@ export class MKT_GetClientsDatabaseUseCase {
 
       const normalizedLoans =
         ClientHistoryLoanApplicationsData?.map((l) => {
-          const akhir = l.status_akhir_pengajuan?.toLowerCase();
-          const status = l.status_pengajuan?.toLowerCase();
-          const isFinalStatus = [
-            StatusPengajuanEnum.APPROVED_HM,
-            StatusPengajuanEnum.REJECTED_HM,
-            StatusPengajuanEnum.APPROVED_BANDING_HM,
-            StatusPengajuanEnum.REJECTED_BANDING_HM,
-          ].includes(status as StatusPengajuanEnum);
+          const akhir = l.status_akhir_pengajuan?.toLowerCase() ?? '';
+          const status = l.status_pengajuan?.toLowerCase() ?? '';
 
-          const isClosed = [
-            StatusPengajuanAkhirEnum.DONE,
-            StatusPengajuanAkhirEnum.CLOSED,
-          ].includes(akhir as StatusPengajuanAkhirEnum);
+          const finalHMStatuses = [
+            StatusPengajuanEnum.APPROVED_HM.toLowerCase(),
+            StatusPengajuanEnum.REJECTED_HM.toLowerCase(),
+            StatusPengajuanEnum.APPROVED_BANDING_HM.toLowerCase(),
+            StatusPengajuanEnum.REJECTED_BANDING_HM.toLowerCase(),
+          ];
 
-          const adjustedAkhir =
-            !isClosed && !isFinalStatus
-              ? 'in_progress'
-              : l.status_akhir_pengajuan;
+          const isFinalHM = finalHMStatuses.includes(status);
+          const isClosed = ['done', 'closed'].includes(akhir) && isFinalHM;
+
+          const adjustedAkhir = isClosed ? akhir : 'in_progress';
 
           return {
             ...l,

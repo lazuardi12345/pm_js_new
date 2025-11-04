@@ -80,12 +80,12 @@ export class ClientInternalProfile_ORM_Entity {
     {
       onDelete: 'CASCADE',
       eager: true,
-      nullable: true,
+      nullable: false,
     },
   )
   @JoinColumn({
     name: 'pengajuan_id',
     foreignKeyConstraintName: 'FK_PengajuanID_at_ClientInternalProfile',
   })
-  pengajuan?: LoanApplicationInternal_ORM_Entity;
+  pengajuan: LoanApplicationInternal_ORM_Entity;
 }

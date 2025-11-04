@@ -28,10 +28,7 @@ import { MKT_TriggerAppealUseCase } from './Applications/Services/MKT_TriggerApp
 import { MKT_GetDashboardStatsUseCase } from './Applications/Services/MKT_GetDashboardStats.usecase';
 import { MKT_TriggerFinalLoanStatusUseCase } from './Applications/Services/MKT_TriggerFinalLoan.usecase';
 import { MKT_GetClientsDatabaseUseCase } from './Applications/Services/MKT_GetClientsDatabase.usecase';
-// import { MKT_GetAllLoanApplicationUseCase } from './usecases/MKT_GetAllLoanApplication.usecase';
-// import { MKT_GetLoanApplicationByIdUseCase } from './usecases/MKT_GetLoanApplicationById.usecase';
-// import { MKT_UpdateLoanApplicationByIdUseCase } from './usecases/MKT_UpdateLoanApplication.usecase';
-// import { MKT_CreateDraftLoanAppUseCase } from './usecases/MKT_CreateDraftLoanApp.usecase';
+import { MKT_CreateRepeatOrderUseCase } from './Applications/Services/MKT_CreateRepeatOrder.usecase';
 
 // Controllers
 import { MKT_CreateLoanApplicationController } from './Presentation/Controllers/MKT_CreateLoanApplication.controller';
@@ -43,6 +40,7 @@ import { MKT_GetDashboardStatsController } from './Presentation/Controllers/MKT_
 import { MKT_TriggerAppealController } from './Presentation/Controllers/MKT_TriggerAppeal.controller';
 import { MKT_TriggerFinalLoanStatusController } from './Presentation/Controllers/MKT_TriggerFinalLoan.controller';
 import { MKT_GetClientDatabaseController } from './Presentation/Controllers/MKT_GetClientsDatabase.controller';
+import { MKT_CreateRepeatOrderController } from './Presentation/Controllers/MKT_CreateRepeatOrder.controller';
 
 import { AddressInternalModule } from 'src/Modules/LoanAppInternal/Modules/address-internal.module';
 import { ApprovalInternalModule } from 'src/Modules/LoanAppInternal/Modules/approval-internal.module';
@@ -96,6 +94,7 @@ import { ClientInternalProfile_ORM_Entity } from 'src/Modules/LoanAppInternal/In
     MKT_TriggerAppealController,
     MKT_TriggerFinalLoanStatusController,
     MKT_GetClientDatabaseController,
+    MKT_CreateRepeatOrderController,
   ],
   providers: [
     // usecases
@@ -108,6 +107,7 @@ import { ClientInternalProfile_ORM_Entity } from 'src/Modules/LoanAppInternal/In
     MKT_TriggerAppealUseCase,
     MKT_TriggerFinalLoanStatusUseCase,
     MKT_GetClientsDatabaseUseCase,
+    MKT_CreateRepeatOrderUseCase,
     // infra
     {
       provide: UNIT_OF_WORK,
