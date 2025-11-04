@@ -120,9 +120,9 @@ export class AddressInternalDto {
   @IsString()
   provinsi: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  status_rumah_ktp: string;
+  status_rumah_ktp: string | null;
 
   @IsNotEmpty()
   @IsEnum(StatusRumahEnum)

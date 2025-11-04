@@ -16,7 +16,6 @@ import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorato
 import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 import { CreateLoanApplicationDto } from '../../Applications/DTOS/MKT_CreateLoanApplication.dto';
-import { AuthGuard } from '@nestjs/passport';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import multer from 'multer';
 import { MKT_CreateRepeatOrderUseCase } from '../../Applications/Services/MKT_CreateRepeatOrder.usecase';

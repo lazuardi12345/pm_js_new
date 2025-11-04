@@ -5,6 +5,7 @@ import {
   IFileStorageRepository,
   FileMetadata,
 } from '../../Domain/Repositories/IFileStorage.repository';
+import { SingleUploadFileType } from 'src/Shared/Interface/Storage_SingleUploadType/SingleUploadFile.interface';
 
 type MinioObject = {
   name: string;
@@ -297,12 +298,8 @@ export class MinioFileStorageService implements IFileStorageRepository {
       savedFiles[field] = [];
 
       for (const file of fileList) {
-        // Ambil ekstensi file
         const ext = file.originalname.split('.').pop();
-        // Buat nama file baru: <nama_nasabah>-<tipe_field>.<ext>
         const newFileName = `${customerName}-${field}.${ext}`;
-
-        // Upload pake nama baru
         const metadata = await this.uploadSingleFile(
           bucket,
           prefix,
@@ -342,7 +339,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
       let isUpdate = false;
       let originalLoanId: number | undefined;
 
-      // ============== CEK APAKAH ADA 4 FILE WAJIB DI ROOT ==============
+      //cek minimal file wajib
       const hasValidFiles = await this.hasValidRootFiles(
         bucket,
         customerPrefix,
@@ -354,17 +351,11 @@ export class MinioFileStorageService implements IFileStorageRepository {
         nextPengajuanIndex,
       });
 
-      // ============== TENTUKAN FOLDER STRUCTURE ==============
       let pengajuanFolder: string;
-
       if (!hasValidFiles) {
-        // TIDAK ADA 4 file wajib di root → taruh di ROOT
         pengajuanFolder = customerPrefix;
         this.logger.log('NO valid root files: using ROOT folder');
       } else {
-        // ADA 4 file wajib di root → bikin repeat-order-{n}/
-
-        // ============== CEK APAKAH MAU UPDATE EXISTING FOLDER ==============
         if (repeatFromLoanId) {
           const existingFolder = await this.findFolderByLoanId(
             bucket,
@@ -373,7 +364,6 @@ export class MinioFileStorageService implements IFileStorageRepository {
           );
 
           if (existingFolder) {
-            // Found existing folder → UPDATE
             targetPengajuanIndex = existingFolder.pengajuanIndex;
             isUpdate = true;
             originalLoanId = repeatFromLoanId;
@@ -381,13 +371,11 @@ export class MinioFileStorageService implements IFileStorageRepository {
               `UPDATING existing folder: repeat-order-${targetPengajuanIndex}`,
             );
           } else {
-            // Not found → CREATE NEW dengan nextPengajuanIndex
             this.logger.log(
               `Creating NEW folder: repeat-order-${nextPengajuanIndex}`,
             );
           }
         } else {
-          // No repeatFromLoanId → ALWAYS CREATE NEW
           this.logger.log(
             `Creating NEW folder: repeat-order-${nextPengajuanIndex}`,
           );
@@ -413,7 +401,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
             pengajuanFolder,
             file,
             newFileName,
-            hasValidFiles ? 'repeat-order' : undefined,
+            hasValidFiles ? SingleUploadFileType.REPEAT_ORDER : undefined,
           );
 
           savedFiles[field].push(metadata);
@@ -447,18 +435,13 @@ export class MinioFileStorageService implements IFileStorageRepository {
       savedFiles[field] = [];
 
       for (const file of fileList) {
-        // Ambil ekstensi file
         const ext = file.originalname.split('.').pop();
-        // Buat nama file baru: <nama_nasabah>-<tipe_field>.<ext>
         const newFileName = `${customerName}-${field}.${ext}`;
-
-        // Upload pake nama baru
-        const metadata = await this.uploadSingleFile(
+        const metadata = await this.uploadApprovalRecommendationFile(
           bucket,
           prefix,
           file,
           newFileName,
-          'bi-check/',
         );
         savedFiles[field].push(metadata);
       }
@@ -472,7 +455,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
     prefix: string,
     file: Express.Multer.File,
     customFileName?: string,
-    type_prefix?: string,
+    type_prefix?: SingleUploadFileType,
   ): Promise<FileMetadata> {
     try {
       const { encrypted, iv } = this.encrypt(file.buffer);
@@ -502,16 +485,14 @@ export class MinioFileStorageService implements IFileStorageRepository {
         const parts = trimmed.split('/');
 
         if (parts.length === 1) {
-          // Root: "3171009000006428-Shi Ning Sheh"
           const firstDashIndex = parts[0].indexOf('-');
           const id = parts[0].substring(0, firstDashIndex);
-          const name = parts[0].substring(firstDashIndex + 1); // JANGAN LOWERCASE!
+          const name = parts[0].substring(firstDashIndex + 1);
           return { id, name, subfolder: null };
         } else {
-          // Nested: "3171009000006428-Shi Ning Sheh/repeat-order-1"
           const firstDashIndex = parts[0].indexOf('-');
           const id = parts[0].substring(0, firstDashIndex);
-          const name = parts[0].substring(firstDashIndex + 1); // JANGAN LOWERCASE!
+          const name = parts[0].substring(firstDashIndex + 1);
           const subfolder = parts[1];
           return { id, name, subfolder };
         }
@@ -535,6 +516,71 @@ export class MinioFileStorageService implements IFileStorageRepository {
         encryptedName: encryptedName,
         size: file.size,
         url: url,
+      };
+    } catch (error: any) {
+      console.log('Error uploading file', error);
+      this.logger.error(`Error uploading file: ${error.message}`);
+      throw error;
+    }
+  }
+
+  private async uploadApprovalRecommendationFile(
+    bucket: string,
+    prefix: string,
+    file: Express.Multer.File,
+    customFileName?: string,
+  ): Promise<FileMetadata> {
+    try {
+      // Encrypt file
+      const { encrypted, iv } = this.encrypt(file.buffer);
+
+      // Tentukan nama file yang akan di-upload
+      const filenameToUse = customFileName || file.originalname;
+      const encryptedName = `${prefix}${filenameToUse}.enc`;
+
+      // Upload ke MinIO
+      await this.minioClient.putObject(
+        bucket,
+        encryptedName,
+        encrypted,
+        encrypted.length,
+        {
+          'Content-Type': 'application/octet-stream',
+          'X-Original-Mimetype': file.mimetype,
+          'X-Encryption-IV': iv,
+          'X-Original-Filename': file.originalname,
+          'X-Original-Size': file.size.toString(),
+        },
+      );
+
+      const prefixParser = (prefix: string) => {
+        const trimmed = prefix.endsWith('/') ? prefix.slice(0, -1) : prefix;
+        const [id, ...rest] = trimmed.split('-');
+        const name = rest.join('-');
+        return [id, name];
+      };
+
+      const [id, name] = prefixParser(prefix);
+
+      this.logger.log(`File uploaded: ${encryptedName}`);
+      console.log({
+        buffer: file.buffer,
+        destination: file.destination,
+        fieldname: file.fieldname,
+        filename: file.filename,
+        path: file.path,
+        stream: file.stream,
+        originalName: file.originalname,
+        prefix: prefix,
+        usedFilename: filenameToUse,
+      });
+
+      return {
+        originalName: file.originalname,
+        mimetype: file.mimetype,
+        encryptedName: encryptedName,
+        size: file.size,
+        url: `${process.env.BACKEND_URI}/storage/bi-check/${id}/${name}/${filenameToUse}`,
       };
     } catch (error: any) {
       console.log('Error uploading file', error);

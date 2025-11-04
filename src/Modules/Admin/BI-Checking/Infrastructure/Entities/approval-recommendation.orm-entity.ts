@@ -40,7 +40,7 @@ export class ApprovalRecommendation_ORM_Entity {
   @Column({ type: 'varchar', nullable: true })
   email: string;
 
-  @Column({ type: 'varchar', length: 14, nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   nama_nasabah: string;
 
   @Column({ type: 'char', length: 24, nullable: true })
