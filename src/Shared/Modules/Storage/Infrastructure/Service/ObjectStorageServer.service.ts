@@ -90,7 +90,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
   }
 
   private getCustomerPrefix(customerId: number, customerName: string): string {
-    return `${customerId}-${customerName.replace(/\s+/g, '_')}/`;
+    return `${customerId}-${customerName}/`;
   }
 
   private async findFolderByLoanId(
@@ -99,42 +99,47 @@ export class MinioFileStorageService implements IFileStorageRepository {
     loanId: number,
   ): Promise<{ pengajuanIndex: number; folderPath: string } | null> {
     try {
+      // Scan all files under customer prefix
       const stream = this.minioClient.listObjectsV2(
         bucket,
         customerPrefix,
-        true,
+        true, // recursive
       );
 
       for await (const obj of stream) {
-        const stat = await this.minioClient.statObject(bucket, obj.name);
-        const metadata = stat.metaData;
+        try {
+          // Get metadata
+          const stat = await this.minioClient.statObject(bucket, obj.name);
+          const metadata = stat.metaData;
 
-        // Cek apakah loan-id cocok
-        if (
-          metadata['x-loan-id'] === loanId.toString() ||
-          metadata['X-Loan-Id'] === loanId.toString()
-        ) {
-          const pengajuanIndexStr =
-            metadata['x-pengajuan-index'] ||
-            metadata['X-Pengajuan-Index'] ||
-            this.extractPengajuanIndexFromPath(obj.name);
+          // Check if loan-id matches
+          const fileLoanId = metadata['x-loan-id'] || metadata['X-Loan-Id'];
 
-          if (pengajuanIndexStr) {
-            const pengajuanIndex = parseInt(pengajuanIndexStr);
-            const folderPath = obj.name.substring(
-              0,
-              obj.name.indexOf('/', customerPrefix.length) + 1,
-            );
+          if (fileLoanId === loanId.toString()) {
+            // Extract index from path
+            // Path example: "NIK-NAMA/repeat-order-2/file.enc"
+            const match = obj.name.match(/repeat-order-(\d+)\//);
 
-            this.logger.log(
-              `Found existing pengajuan: ${folderPath} with loan_id: ${loanId}`,
-            );
+            if (match) {
+              const pengajuanIndex = parseInt(match[1]);
+              const folderPath = obj.name.substring(
+                0,
+                obj.name.indexOf('/', customerPrefix.length) + 1,
+              );
 
-            return {
-              pengajuanIndex,
-              folderPath,
-            };
+              this.logger.log(
+                `Found existing repeat-order folder: ${folderPath} with loan_id: ${loanId}`,
+              );
+
+              return {
+                pengajuanIndex,
+                folderPath,
+              };
+            }
           }
+        } catch (error) {
+          // Skip files that can't be read
+          continue;
         }
       }
 
@@ -145,10 +150,59 @@ export class MinioFileStorageService implements IFileStorageRepository {
     }
   }
 
-  private extractPengajuanIndexFromPath(path: string): string | null {
-    // Path example: "123-John_Doe/pengajuan-5/file.pdf.enc"
-    const match = path.match(/pengajuan-(\d+)\//);
-    return match ? match[1] : null;
+  private async hasValidRootFiles(
+    bucket: string,
+    customerPrefix: string,
+  ): Promise<boolean> {
+    try {
+      const requiredFiles = [
+        'foto_ktp',
+        'foto_kk',
+        'foto_rekening',
+        'bukti_absensi',
+      ];
+
+      let foundFilesCount = 0;
+
+      // List files di root folder (non-recursive)
+      const stream = this.minioClient.listObjectsV2(
+        bucket,
+        customerPrefix,
+        false, // Non-recursive: cuma di root folder
+      );
+
+      for await (const obj of stream) {
+        // Skip kalau file ada di subfolder
+        if (obj.name.includes('repeat-order')) {
+          continue;
+        }
+
+        // Cek apakah file termasuk required files
+        const fileName = obj.name
+          .replace(customerPrefix, '')
+          .replace('.enc', '');
+
+        for (const requiredField of requiredFiles) {
+          if (fileName.includes(requiredField)) {
+            foundFilesCount++;
+            this.logger.log(`Found required file in root: ${fileName}`);
+            break;
+          }
+        }
+
+        // Kalau udah ketemu 4, langsung return true
+        if (foundFilesCount >= 4) {
+          this.logger.log(`Valid root files found: ${foundFilesCount}/4`);
+          return true;
+        }
+      }
+
+      this.logger.log(`Insufficient root files: ${foundFilesCount}/4`);
+      return false;
+    } catch (error) {
+      this.logger.error(`Error checking root files: ${error.message}`);
+      return false;
+    }
   }
 
   async getNextPengajuanIndex(
@@ -159,26 +213,36 @@ export class MinioFileStorageService implements IFileStorageRepository {
     try {
       const bucket = this.getBucketName(isDraft);
       const customerPrefix = this.getCustomerPrefix(customerId, customerName);
+
+      // List semua objects di customer folder (recursive untuk dapat subfolder)
       const stream = this.minioClient.listObjectsV2(
         bucket,
         customerPrefix,
-        false, // recursive: false untuk cuma ambil folder
+        true, // ← RECURSIVE biar dapat semua subfolder
       );
 
       let maxIndex = 0;
 
       for await (const obj of stream) {
-        const match = obj.name.match(/pengajuan-(\d+)\//);
+        // Match pattern: repeat-order-1/, repeat-order-2/, etc
+        const match = obj.name.match(/repeat-order-(\d+)\//);
         if (match) {
           const index = parseInt(match[1]);
-          if (index > maxIndex) maxIndex = index;
+          if (index > maxIndex) {
+            maxIndex = index;
+          }
         }
       }
 
-      return maxIndex + 1;
+      const nextIndex = maxIndex + 1;
+      this.logger.log(
+        `Next repeat-order index: ${nextIndex} (found max: ${maxIndex})`,
+      );
+
+      return nextIndex;
     } catch (error) {
       this.logger.error(`Error getting next pengajuan index: ${error.message}`);
-      return 1; // Default kalau belum ada folder
+      return 1; // Default kalau error
     }
   }
 
@@ -257,9 +321,9 @@ export class MinioFileStorageService implements IFileStorageRepository {
     customerName: string,
     nextPengajuanIndex: number,
     files: Record<string, Express.Multer.File[] | undefined>,
-    repeatFromLoanId?: number, // ← Changed parameter name untuk clarity
+    repeatFromLoanId?: number,
     loanMetadata?: {
-      loanId: number; // ← Loan ID BARU
+      loanId: number;
       nasabahId: number;
       nominalPinjaman: number;
       tenor: number;
@@ -278,28 +342,63 @@ export class MinioFileStorageService implements IFileStorageRepository {
       let isUpdate = false;
       let originalLoanId: number | undefined;
 
-      if (repeatFromLoanId) {
-        // Cari folder yang punya loan_id yang sama (folder lama)
-        const existingFolder = await this.findFolderByLoanId(
-          bucket,
-          customerPrefix,
-          repeatFromLoanId,
-        );
+      // ============== CEK APAKAH ADA 4 FILE WAJIB DI ROOT ==============
+      const hasValidFiles = await this.hasValidRootFiles(
+        bucket,
+        customerPrefix,
+      );
 
-        if (existingFolder) {
-          // Found! Update existing pengajuan
-          targetPengajuanIndex = existingFolder.pengajuanIndex;
-          isUpdate = true;
-          originalLoanId = repeatFromLoanId;
+      this.logger.log('Root files validation:', {
+        customerPrefix,
+        hasValidFiles,
+        nextPengajuanIndex,
+      });
+
+      // ============== TENTUKAN FOLDER STRUCTURE ==============
+      let pengajuanFolder: string;
+
+      if (!hasValidFiles) {
+        // TIDAK ADA 4 file wajib di root → taruh di ROOT
+        pengajuanFolder = customerPrefix;
+        this.logger.log('NO valid root files: using ROOT folder');
+      } else {
+        // ADA 4 file wajib di root → bikin repeat-order-{n}/
+
+        // ============== CEK APAKAH MAU UPDATE EXISTING FOLDER ==============
+        if (repeatFromLoanId) {
+          const existingFolder = await this.findFolderByLoanId(
+            bucket,
+            customerPrefix,
+            repeatFromLoanId,
+          );
+
+          if (existingFolder) {
+            // Found existing folder → UPDATE
+            targetPengajuanIndex = existingFolder.pengajuanIndex;
+            isUpdate = true;
+            originalLoanId = repeatFromLoanId;
+            this.logger.log(
+              `UPDATING existing folder: repeat-order-${targetPengajuanIndex}`,
+            );
+          } else {
+            // Not found → CREATE NEW dengan nextPengajuanIndex
+            this.logger.log(
+              `Creating NEW folder: repeat-order-${nextPengajuanIndex}`,
+            );
+          }
+        } else {
+          // No repeatFromLoanId → ALWAYS CREATE NEW
           this.logger.log(
-            `Repeat order from loan_id ${repeatFromLoanId}: updating pengajuan-${targetPengajuanIndex}`,
+            `Creating NEW folder: repeat-order-${nextPengajuanIndex}`,
           );
         }
+
+        pengajuanFolder = `${customerPrefix}repeat-order-${targetPengajuanIndex}/`;
       }
 
-      const pengajuanFolder = `${customerPrefix}pengajuan-${targetPengajuanIndex}/`;
       const savedFiles: Record<string, FileMetadata[]> = {};
 
+      // ============== UPLOAD FILES ==============
       for (const [field, fileList] of Object.entries(files)) {
         if (!fileList || fileList.length === 0) continue;
 
@@ -307,49 +406,17 @@ export class MinioFileStorageService implements IFileStorageRepository {
 
         for (const file of fileList) {
           const ext = file.originalname.split('.').pop();
-          const cleanName = customerName.toLowerCase().replace(/\s+/g, '_');
-          const newFileName = `${cleanName}-${field}.${ext}`;
-          const encryptedName = `${pengajuanFolder}${newFileName}.enc`;
+          const newFileName = `${customerName}-${field}.${ext}`;
 
-          const { encrypted, iv } = this.encrypt(file.buffer);
-
-          const metadata = {
-            'Content-Type': 'application/octet-stream',
-            'X-Original-Mimetype': file.mimetype,
-            'X-Encryption-IV': iv,
-            'X-Original-Filename': file.originalname,
-            'X-Original-Size': file.size.toString(),
-            'X-Pengajuan-Index': targetPengajuanIndex.toString(),
-            'X-Parent-Folder': `pengajuan-${targetPengajuanIndex}`,
-            'X-Customer-Id': customerId.toString(),
-            'X-Customer-Name': customerName,
-            'X-File-Type': field,
-            'X-Uploaded-At': new Date().toISOString(),
-            'X-Is-Update': isUpdate.toString(),
-            ...(loanMetadata && {
-              'X-Loan-Id': loanMetadata.loanId.toString(), // ← Loan ID BARU
-              'X-Nasabah-Id': loanMetadata.nasabahId.toString(),
-            }),
-            ...(repeatFromLoanId && {
-              'X-Repeat-From-Loan-Id': repeatFromLoanId.toString(), // ← Loan ID LAMA
-            }),
-          };
-
-          await this.minioClient.putObject(
+          const metadata = await this.uploadSingleFile(
             bucket,
-            encryptedName,
-            encrypted,
-            encrypted.length,
-            metadata,
+            pengajuanFolder,
+            file,
+            newFileName,
+            hasValidFiles ? 'repeat-order' : undefined,
           );
 
-          savedFiles[field].push({
-            originalName: file.originalname,
-            encryptedName,
-            mimetype: file.mimetype,
-            size: file.size,
-            url: `${bucket}/${encryptedName}`,
-          });
+          savedFiles[field].push(metadata);
         }
       }
 
@@ -408,58 +475,66 @@ export class MinioFileStorageService implements IFileStorageRepository {
     type_prefix?: string,
   ): Promise<FileMetadata> {
     try {
-      // Encrypt file
       const { encrypted, iv } = this.encrypt(file.buffer);
 
-      // Tentukan nama file yang akan di-upload
       const filenameToUse = customFileName || file.originalname;
       const encryptedName = `${prefix}${filenameToUse}.enc`;
 
-      // Upload ke MinIO
+      const metadata: Record<string, string> = {
+        'Content-Type': 'application/octet-stream',
+        'X-Original-Mimetype': file.mimetype,
+        'X-Encryption-IV': iv,
+        'X-Original-Filename': file.originalname,
+        'X-Original-Size': file.size.toString(),
+      };
+
       await this.minioClient.putObject(
         bucket,
         encryptedName,
         encrypted,
         encrypted.length,
-        {
-          'Content-Type': 'application/octet-stream',
-          'X-Original-Mimetype': file.mimetype,
-          'X-Encryption-IV': iv,
-          'X-Original-Filename': file.originalname,
-          'X-Original-Size': file.size.toString(),
-        },
+        metadata,
       );
 
+      // ============== PARSE PREFIX UNTUK URL ==============
       const prefixParser = (prefix: string) => {
         const trimmed = prefix.endsWith('/') ? prefix.slice(0, -1) : prefix;
-        const [id, ...rest] = trimmed.split('-');
-        const name = rest.join('-');
-        return [id, name];
+        const parts = trimmed.split('/');
+
+        if (parts.length === 1) {
+          // Root: "3171009000006428-Shi Ning Sheh"
+          const firstDashIndex = parts[0].indexOf('-');
+          const id = parts[0].substring(0, firstDashIndex);
+          const name = parts[0].substring(firstDashIndex + 1); // JANGAN LOWERCASE!
+          return { id, name, subfolder: null };
+        } else {
+          // Nested: "3171009000006428-Shi Ning Sheh/repeat-order-1"
+          const firstDashIndex = parts[0].indexOf('-');
+          const id = parts[0].substring(0, firstDashIndex);
+          const name = parts[0].substring(firstDashIndex + 1); // JANGAN LOWERCASE!
+          const subfolder = parts[1];
+          return { id, name, subfolder };
+        }
       };
 
-      const [id, name] = prefixParser(prefix);
+      const { id, name, subfolder } = prefixParser(prefix);
 
-      const prefixForUrl = type_prefix ? `${type_prefix}` : '';
+      // ============== BUILD URL ==============
+      let url: string;
+      if (subfolder) {
+        url = `${process.env.BACKEND_URI}/storage/repeat-order/${id}/${name}/${subfolder}/${filenameToUse}`;
+      } else {
+        url = `${process.env.BACKEND_URI}/storage/${id}/${name}/${filenameToUse}`;
+      }
 
       this.logger.log(`File uploaded: ${encryptedName}`);
-      console.log({
-        buffer: file.buffer,
-        destination: file.destination,
-        fieldname: file.fieldname,
-        filename: file.filename,
-        path: file.path,
-        stream: file.stream,
-        originalName: file.originalname,
-        prefix: prefix,
-        usedFilename: filenameToUse,
-      });
 
       return {
         originalName: file.originalname,
         mimetype: file.mimetype,
         encryptedName: encryptedName,
         size: file.size,
-        url: `${process.env.BACKEND_URI}/storage/${prefixForUrl}${id}/${name}/${filenameToUse}`,
+        url: url,
       };
     } catch (error: any) {
       console.log('Error uploading file', error);

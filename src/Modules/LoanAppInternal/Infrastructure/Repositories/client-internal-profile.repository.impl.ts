@@ -5,6 +5,8 @@ import { ClientInternalProfile } from '../../Domain/Entities/client-internal-pro
 import { IClientInternalProfileRepository } from '../../Domain/Repositories/client-internal-profile.repository';
 import { ClientInternalProfile_ORM_Entity } from '../Entities/client-internal-profile.orm-entity';
 import { ClientInternal_ORM_Entity } from '../Entities/client-internal.orm-entity';
+import { LoanApplicationInternal } from '../../Domain/Entities/loan-application-internal.entity';
+import { LoanApplicationInternal_ORM_Entity } from '../Entities/loan-application-internal.orm-entity';
 @Injectable()
 export class ClientInternalProfileRepositoryImpl
   implements IClientInternalProfileRepository
@@ -51,6 +53,9 @@ export class ClientInternalProfileRepositoryImpl
       nasabah: {
         id: domainEntity.nasabah.id,
       } as ClientInternal_ORM_Entity,
+      pengajuan: {
+        id: domainEntity.pengajuan?.id,
+      } as LoanApplicationInternal_ORM_Entity,
       nama_lengkap: domainEntity.nama_lengkap,
       jenis_kelamin: domainEntity.jenis_kelamin,
       no_hp: domainEntity.no_hp,
