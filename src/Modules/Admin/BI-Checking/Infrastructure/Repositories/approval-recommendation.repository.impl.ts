@@ -160,29 +160,6 @@ export class ApprovalRecommendationRepositoryImpl
     await this.ormRepository.softDelete(id);
   }
 
-  // async triggerIsNeedCheckBeingTrue(
-  //   draft_id: string,
-  //   nominal_pinjaman: number,
-  // ): Promise<void> {
-  //   if (!draft_id) {
-  //     throw new Error('draft_id is required');
-  //   } else if (!nominal_pinjaman || typeof nominal_pinjaman !== 'number') {
-  //     throw new Error('nominal_pinjaman is required');
-  //   }
-
-  //   if (nominal_pinjaman >= 7000000) {
-  //     const response = await this.mongoDraftRepository.updateOne(
-  //       { _id: draft_id },
-  //       { isNeedCheck: false },
-  //     );
-  //     if (response.matchedCount === 0) {
-  //       throw new Error('Draft not found');
-  //     } else {
-  //       console.log('Updated isNeedCheck to true for draft_id:', draft_id);
-  //     }
-  //   }
-  // }
-
   async findAllRecommendationHistory(): Promise<any[]> {
     return await this.ormRepository
       .createQueryBuilder('rec')

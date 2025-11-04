@@ -149,7 +149,7 @@ export class MKT_CreateLoanApplicationUseCase {
           undefined, // bila ada properti tambahan
           now,
           undefined,
-          address_internal.status_rumah_ktp as StatusRumahEnum,
+          (address_internal.status_rumah_ktp as StatusRumahEnum) ?? null,
           address_internal.alamat_lengkap ?? '',
           now,
         );
