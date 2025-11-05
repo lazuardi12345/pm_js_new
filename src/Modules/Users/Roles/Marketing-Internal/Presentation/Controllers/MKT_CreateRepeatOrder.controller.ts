@@ -34,6 +34,7 @@ export class MKT_CreateRepeatOrderController {
         { name: 'foto_kk', maxCount: 1 },
         { name: 'bukti_absensi', maxCount: 1 },
         { name: 'foto_id_card_penjamin', maxCount: 1 },
+        { name: 'foto_id_card', maxCount: 1 },
         { name: 'foto_ktp_penjamin', maxCount: 1 },
         { name: 'foto_rekening', maxCount: 1 },
       ],
@@ -46,7 +47,7 @@ export class MKT_CreateRepeatOrderController {
   async submitRepeatOrder(
     @Param('client_id') client_id: number,
     @UploadedFiles() files: Record<string, Express.Multer.File[]>,
-    @Body() body: any, // Terima apa saja dulu
+    @Body() body: any,
   ) {
     try {
       const dto =

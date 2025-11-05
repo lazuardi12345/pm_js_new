@@ -123,6 +123,32 @@ export class FileStorageController {
     res.send(buffer);
   }
 
+  @Public()
+  @Get(':customerId/:customerName/repeat-order-:index/:filename')
+  async getFileFromRepeatOrders(
+    @Param('customerId', ParseIntPipe) customerId: number,
+    @Param('customerName') customerName: string,
+    @Param('index', ParseIntPipe) index: number,
+    @Param('filename') filename: string,
+    @Res() res: Response,
+  ) {
+    const { buffer, mimetype, originalName } =
+      await this.fileStorageService.getFilesForRepeatOrders(
+        customerId,
+        customerName,
+        filename,
+        index,
+      );
+
+    res.set({
+      'Content-Type': mimetype,
+      'Content-Disposition': `inline; filename="${originalName}"`,
+      'Content-Length': buffer.length,
+    });
+
+    res.send(buffer);
+  }
+
   @Put(':customerId/:customerName/:filename')
   @UseInterceptors(
     FileFieldsInterceptor([

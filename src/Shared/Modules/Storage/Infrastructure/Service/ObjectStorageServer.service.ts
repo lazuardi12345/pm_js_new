@@ -94,6 +94,14 @@ export class MinioFileStorageService implements IFileStorageRepository {
     return `${customerId}-${customerName}/`;
   }
 
+  private getCustomerRepeatOrderPrefix(
+    customerId: number,
+    customerName: string,
+    index: number,
+  ): string {
+    return `repeat-order-${index}/${customerId}-${customerName}/`;
+  }
+
   private async findFolderByLoanId(
     bucket: string,
     customerPrefix: string,
@@ -503,7 +511,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
       // ============== BUILD URL ==============
       let url: string;
       if (subfolder) {
-        url = `${process.env.BACKEND_URI}/storage/repeat-order/${id}/${name}/${subfolder}/${filenameToUse}`;
+        url = `${process.env.BACKEND_URI}/storage/${id}/${name}/${subfolder}/${filenameToUse}`;
       } else {
         url = `${process.env.BACKEND_URI}/storage/${id}/${name}/${filenameToUse}`;
       }
@@ -698,6 +706,84 @@ export class MinioFileStorageService implements IFileStorageRepository {
       this.logger.error(`Error getting file: ${error.message}`);
       if (error.code === 'NoSuchKey') {
         throw new NotFoundException(`File not found: ${filename}`);
+      }
+      throw error;
+    }
+  }
+
+  async getFilesForRepeatOrders(
+    customerId: number,
+    customerName: string,
+    filename: string,
+    index?: number, // ← Kalau ada index, ambil dari repeat-order-{index}/
+  ): Promise<{ buffer: Buffer; mimetype: string; originalName: string }> {
+    try {
+      const bucket = this.mainBucket;
+      const customerPrefix = this.getCustomerPrefix(customerId, customerName);
+
+      // ============== BUILD PATH BERDASARKAN INDEX ==============
+      let filePath: string;
+
+      if (index !== undefined && index > 0) {
+        // Repeat Order: NIK-Name/repeat-order-{n}/filename.enc
+        filePath = `${customerPrefix}repeat-order-${index}/${filename}`;
+      } else {
+        // Root: NIK-Name/filename.enc
+        filePath = `${customerPrefix}${filename}`;
+      }
+
+      // Add .enc extension if not present
+      const encryptedName = filePath.endsWith('.enc')
+        ? filePath
+        : `${filePath}.enc`;
+
+      this.logger.log('Getting file:', {
+        bucket,
+        customerPrefix,
+        index,
+        encryptedName,
+      });
+
+      // Get metadata
+      const stat = await this.minioClient.statObject(bucket, encryptedName);
+      const iv = stat.metaData['x-encryption-iv'];
+      const mimetype =
+        stat.metaData['x-original-mimetype'] || 'application/octet-stream';
+      const originalName = stat.metaData['x-original-filename'] || filename;
+
+      if (!iv) {
+        throw new Error('Encryption IV not found in metadata');
+      }
+
+      // Download encrypted file
+      const dataStream = await this.minioClient.getObject(
+        bucket,
+        encryptedName,
+      );
+      const chunks: Buffer[] = [];
+
+      for await (const chunk of dataStream) {
+        chunks.push(chunk);
+      }
+
+      const encryptedBuffer = Buffer.concat(chunks);
+
+      // Decrypt
+      const decryptedBuffer = this.decrypt(encryptedBuffer, iv);
+
+      this.logger.log(`File retrieved successfully: ${encryptedName}`);
+
+      return {
+        buffer: decryptedBuffer,
+        mimetype,
+        originalName,
+      };
+    } catch (error) {
+      this.logger.error(`Error getting file: ${error.message}`);
+      if (error.code === 'NoSuchKey') {
+        throw new NotFoundException(
+          `File not found: ${filename}${index ? ` in repeat-order-${index}` : ''}`,
+        );
       }
       throw error;
     }

@@ -43,7 +43,7 @@ export class MKT_CreateDraftLoanApplicationController {
       ],
       {
         storage: multer.memoryStorage(),
-        limits: { fileSize: 5 * 1024 * 1024 }, // optional, batasin 5MB
+        limits: { fileSize: 5 * 1024 * 1024 },
       },
     ),
   )
@@ -65,9 +65,6 @@ export class MKT_CreateDraftLoanApplicationController {
         payload = { client_internal: {} } as PayloadDTO;
       }
       payload.marketing_id = marketingId;
-
-      console.log('Files uploaded:', files);
-      console.log('Payload parsed (with marketingId):', payload);
 
       if (!files || Object.values(files).length === 0) {
         throw new BadRequestException('No files uploaded');

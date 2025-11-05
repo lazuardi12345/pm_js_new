@@ -86,6 +86,7 @@ import {
   FILE_STORAGE_SERVICE,
   IFileStorageRepository,
 } from 'src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository';
+import sharp from 'sharp';
 
 @Injectable()
 export class MKT_CreateRepeatOrderUseCase {
@@ -134,7 +135,6 @@ export class MKT_CreateRepeatOrderUseCase {
           documents_files,
         } = dto;
 
-        // ============== GET CLIENT INFO ==============
         const client = await this.clientRepo.findById(client_id);
         if (!client) {
           throw new BadRequestException('Client not found');
@@ -229,6 +229,40 @@ export class MKT_CreateRepeatOrderUseCase {
         // ============== UPLOAD FILES KE MINIO ==============
         let minioUploadResult;
         if (files && Object.keys(files).length > 0) {
+          // ============== CONVERT IMAGES TO JPEG USING SHARP ==============
+          for (const [field, fileArray] of Object.entries(files)) {
+            if (!fileArray) continue;
+
+            for (const file of fileArray) {
+              // Convert gambar ke JPEG tanpa resize
+              if (file.mimetype.startsWith('image/')) {
+                try {
+                  const outputBuffer = await sharp(file.buffer)
+                    .jpeg({ quality: 100 })
+                    .toBuffer();
+
+                  // Update file buffer dan filename
+                  file.buffer = outputBuffer;
+                  file.originalname = file.originalname.replace(
+                    /\.\w+$/,
+                    '.jpeg',
+                  );
+                  file.mimetype = 'image/jpeg'; // ← Update mimetype juga
+
+                  this.logger.log(
+                    `Converted ${field} to JPEG: ${file.originalname}`,
+                  );
+                } catch (error) {
+                  this.logger.error(
+                    `Error converting ${field} to JPEG:`,
+                    error,
+                  );
+                  // Skip conversion kalau error, tetep pake file original
+                }
+              }
+            }
+          }
+
           // ============== GET NEXT REPEAT ORDER INDEX ==============
           const nextPengajuanIndex =
             await this.fileStorage.getNextPengajuanIndex(
@@ -250,7 +284,7 @@ export class MKT_CreateRepeatOrderUseCase {
             client_internal.nama_lengkap,
             nextPengajuanIndex,
             files,
-            repeatFromLoanId, // Pass kalau mau update, undefined kalau create new
+            repeatFromLoanId,
             {
               loanId: loanApp.id!,
               nasabahId: client_id,

@@ -60,6 +60,8 @@ export class AdBIC_CreateApprovalResponseUseCase {
         }
       }
 
+      console.log('SHAWEEEEEEEEEEEETTTTTTTTTT', dto);
+
       console.log('File paths:', filePaths);
       console.log('Payload (with marketingId):', dto);
 
@@ -67,6 +69,7 @@ export class AdBIC_CreateApprovalResponseUseCase {
       const entity = new ApprovalRecommendation(
         dto.recommendation,
         dto.filePath, // ✅ sudah aman 不
+        dto.nominal_pinjaman,
         undefined,
         dto?.draft_id,
         dto.nik,
