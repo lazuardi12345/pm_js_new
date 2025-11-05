@@ -57,6 +57,8 @@ export class ApprovalInternalRepositoryImpl
       user: { id: domainEntity.user.id } as Users_ORM_Entity,
       role: domainEntity.role!,
       status: domainEntity.status!,
+      tenor_persetujuan: domainEntity.tenorPersetujuan!,
+      nominal_persetujuan: domainEntity.nominalPersetujuan!,
       is_banding: domainEntity.isBanding,
       keterangan: domainEntity.keterangan,
       kesimpulan: domainEntity.kesimpulan,
@@ -81,6 +83,10 @@ export class ApprovalInternalRepositoryImpl
 
     if (partial.role) ormData.role = partial.role;
     if (partial.status) ormData.status = partial.status;
+    if (partial.nominalPersetujuan)
+      ormData.nominal_persetujuan = partial.nominalPersetujuan;
+    if (partial.tenorPersetujuan)
+      ormData.tenor_persetujuan = partial.tenorPersetujuan;
     if (partial.isBanding !== undefined) ormData.is_banding = partial.isBanding;
     if (partial.keterangan) ormData.keterangan = partial.keterangan;
     if (partial.kesimpulan) ormData.kesimpulan = partial.kesimpulan;

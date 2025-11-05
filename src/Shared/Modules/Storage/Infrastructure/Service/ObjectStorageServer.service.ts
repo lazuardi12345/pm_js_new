@@ -715,16 +715,34 @@ export class MinioFileStorageService implements IFileStorageRepository {
     customerId: number,
     customerName: string,
     filename: string,
-    index?: number,
+    index?: number, // ← Kalau ada index, ambil dari repeat-order-{index}/
   ): Promise<{ buffer: Buffer; mimetype: string; originalName: string }> {
     try {
       const bucket = this.mainBucket;
-      const prefix = this.getCustomerPrefix(customerId, customerName);
-      const encryptedName = filename.endsWith('.enc')
-        ? `${prefix}${filename}`
-        : `${prefix}${filename}.enc`;
+      const customerPrefix = this.getCustomerPrefix(customerId, customerName);
 
-      console.log('kamilah duo trio: ', { bucket, prefix, encryptedName });
+      // ============== BUILD PATH BERDASARKAN INDEX ==============
+      let filePath: string;
+
+      if (index !== undefined && index > 0) {
+        // Repeat Order: NIK-Name/repeat-order-{n}/filename.enc
+        filePath = `${customerPrefix}repeat-order-${index}/${filename}`;
+      } else {
+        // Root: NIK-Name/filename.enc
+        filePath = `${customerPrefix}${filename}`;
+      }
+
+      // Add .enc extension if not present
+      const encryptedName = filePath.endsWith('.enc')
+        ? filePath
+        : `${filePath}.enc`;
+
+      this.logger.log('Getting file:', {
+        bucket,
+        customerPrefix,
+        index,
+        encryptedName,
+      });
 
       // Get metadata
       const stat = await this.minioClient.statObject(bucket, encryptedName);
@@ -753,6 +771,8 @@ export class MinioFileStorageService implements IFileStorageRepository {
       // Decrypt
       const decryptedBuffer = this.decrypt(encryptedBuffer, iv);
 
+      this.logger.log(`File retrieved successfully: ${encryptedName}`);
+
       return {
         buffer: decryptedBuffer,
         mimetype,
@@ -761,7 +781,9 @@ export class MinioFileStorageService implements IFileStorageRepository {
     } catch (error) {
       this.logger.error(`Error getting file: ${error.message}`);
       if (error.code === 'NoSuchKey') {
-        throw new NotFoundException(`File not found: ${filename}`);
+        throw new NotFoundException(
+          `File not found: ${filename}${index ? ` in repeat-order-${index}` : ''}`,
+        );
       }
       throw error;
     }

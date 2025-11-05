@@ -7,7 +7,7 @@ import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorato
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
 
-@Controller('spv/int')
+@Controller('spv/int/loan-apps')
 export class SPV_GetTeamsController {
   constructor(private readonly getTeams: SPV_GetTeamsUseCase) {}
 

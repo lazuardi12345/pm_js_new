@@ -162,6 +162,8 @@ export class LoanApplicationInternalService {
               nama_marketing: row.marketing_nama,
               loan_app_status: row.loan_app_status,
               approval_status: row.approval_status,
+              approval_tenor: row.approval_tenor,
+              approval_amount: row.approval_amount,
               is_it_appeal: row.is_it_appeal,
               approve_response_date: row.approve_response_date,
             }));
@@ -268,6 +270,8 @@ export class LoanApplicationInternalService {
                 approval_request_submitted_at: earliestTimestamp,
                 approval_request_latest_responded_at: latestTimestamp,
                 latest_loan_app_status: loan.loan_app_status,
+                approval_tenor: loan.approval_tenor,
+                approval_amount: loan.approval_amount,
                 marketing_name: loan.marketing_nama,
                 loan_application_status: loanApplicationStatus,
                 loan_appeal_status: loanAppealStatus,

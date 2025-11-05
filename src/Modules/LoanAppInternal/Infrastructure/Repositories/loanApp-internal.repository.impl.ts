@@ -281,8 +281,6 @@ export class LoanApplicationInternalRepositoryImpl
         }
       : { total: 0, page, page_size };
 
-    console.log('memek: ', loanResult);
-
     return {
       pagination,
       ClientData: clientResult || [],

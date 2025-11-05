@@ -86,6 +86,7 @@ import {
   FILE_STORAGE_SERVICE,
   IFileStorageRepository,
 } from 'src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository';
+import sharp from 'sharp';
 
 @Injectable()
 export class MKT_CreateRepeatOrderUseCase {
@@ -137,58 +138,6 @@ export class MKT_CreateRepeatOrderUseCase {
         const client = await this.clientRepo.findById(client_id);
         if (!client) {
           throw new BadRequestException('Client not found');
-        }
-
-        // const updateNewPersistentClientData_WhereExist = await this.clientRepo.
-        // ========== 1A. Update data ClientInternal bila ada perubahan dari profile ==========
-        const updatedClientFields: Partial<ClientInternal> = {};
-
-        if (
-          client_internal.nama_lengkap &&
-          client_internal.nama_lengkap !== client.nama_lengkap
-        ) {
-          updatedClientFields.nama_lengkap = client_internal.nama_lengkap;
-        }
-
-        if (
-          client_internal.no_ktp &&
-          client_internal.no_ktp !== client.no_ktp
-        ) {
-          updatedClientFields.no_ktp = client_internal.no_ktp;
-        }
-
-        if (
-          client_internal.jenis_kelamin &&
-          client_internal.jenis_kelamin !== client.jenis_kelamin
-        ) {
-          updatedClientFields.jenis_kelamin =
-            client_internal.jenis_kelamin as GENDER;
-        }
-
-        if (
-          client_internal.tempat_lahir &&
-          client_internal.tempat_lahir !== client.tempat_lahir
-        ) {
-          updatedClientFields.tempat_lahir = client_internal.tempat_lahir;
-        }
-
-        if (client_internal.tanggal_lahir) {
-          const dtoTanggalLahir = new Date(client_internal.tanggal_lahir);
-          const existingTanggalLahir =
-            client.tanggal_lahir instanceof Date
-              ? client.tanggal_lahir
-              : new Date(client.tanggal_lahir);
-
-          if (dtoTanggalLahir.getTime() !== existingTanggalLahir.getTime()) {
-            updatedClientFields.tanggal_lahir = dtoTanggalLahir;
-          }
-        }
-
-        if (Object.keys(updatedClientFields).length > 0) {
-          await this.clientRepo.update(client_id, updatedClientFields);
-          this.logger.log(
-            `Updated client_internal fields for client_id ${client_id}: ${Object.keys(updatedClientFields).join(', ')}`,
-          );
         }
 
         // **2. Simpan AddressInternal**
@@ -280,6 +229,40 @@ export class MKT_CreateRepeatOrderUseCase {
         // ============== UPLOAD FILES KE MINIO ==============
         let minioUploadResult;
         if (files && Object.keys(files).length > 0) {
+          // ============== CONVERT IMAGES TO JPEG USING SHARP ==============
+          for (const [field, fileArray] of Object.entries(files)) {
+            if (!fileArray) continue;
+
+            for (const file of fileArray) {
+              // Convert gambar ke JPEG tanpa resize
+              if (file.mimetype.startsWith('image/')) {
+                try {
+                  const outputBuffer = await sharp(file.buffer)
+                    .jpeg({ quality: 100 })
+                    .toBuffer();
+
+                  // Update file buffer dan filename
+                  file.buffer = outputBuffer;
+                  file.originalname = file.originalname.replace(
+                    /\.\w+$/,
+                    '.jpeg',
+                  );
+                  file.mimetype = 'image/jpeg'; // ← Update mimetype juga
+
+                  this.logger.log(
+                    `Converted ${field} to JPEG: ${file.originalname}`,
+                  );
+                } catch (error) {
+                  this.logger.error(
+                    `Error converting ${field} to JPEG:`,
+                    error,
+                  );
+                  // Skip conversion kalau error, tetep pake file original
+                }
+              }
+            }
+          }
+
           // ============== GET NEXT REPEAT ORDER INDEX ==============
           const nextPengajuanIndex =
             await this.fileStorage.getNextPengajuanIndex(
@@ -301,7 +284,7 @@ export class MKT_CreateRepeatOrderUseCase {
             client_internal.nama_lengkap,
             nextPengajuanIndex,
             files,
-            repeatFromLoanId, // Pass kalau mau update, undefined kalau create new
+            repeatFromLoanId,
             {
               loanId: loanApp.id!,
               nasabahId: client_id,
