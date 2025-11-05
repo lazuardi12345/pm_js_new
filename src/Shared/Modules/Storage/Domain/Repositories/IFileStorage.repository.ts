@@ -59,6 +59,13 @@ export interface IFileStorageRepository {
     isDraft?: boolean,
   ): Promise<{ buffer: Buffer; mimetype: string; originalName: string }>;
 
+  getFilesForRepeatOrders(
+    customerId: number,
+    customerName: string,
+    filename: string,
+    index: number,
+  ): Promise<{ buffer: Buffer; mimetype: string; originalName: string }>;
+
   // List files
   listFiles(
     customerId: number,

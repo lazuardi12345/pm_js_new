@@ -94,6 +94,14 @@ export class MinioFileStorageService implements IFileStorageRepository {
     return `${customerId}-${customerName}/`;
   }
 
+  private getCustomerRepeatOrderPrefix(
+    customerId: number,
+    customerName: string,
+    index: number,
+  ): string {
+    return `repeat-order-${index}/${customerId}-${customerName}/`;
+  }
+
   private async findFolderByLoanId(
     bucket: string,
     customerPrefix: string,
@@ -503,7 +511,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
       // ============== BUILD URL ==============
       let url: string;
       if (subfolder) {
-        url = `${process.env.BACKEND_URI}/storage/repeat-order/${id}/${name}/${subfolder}/${filenameToUse}`;
+        url = `${process.env.BACKEND_URI}/storage/${id}/${name}/${subfolder}/${filenameToUse}`;
       } else {
         url = `${process.env.BACKEND_URI}/storage/${id}/${name}/${filenameToUse}`;
       }
@@ -655,6 +663,62 @@ export class MinioFileStorageService implements IFileStorageRepository {
   ): Promise<{ buffer: Buffer; mimetype: string; originalName: string }> {
     try {
       const bucket = this.approvalRecommendationBucket;
+      const prefix = this.getCustomerPrefix(customerId, customerName);
+      const encryptedName = filename.endsWith('.enc')
+        ? `${prefix}${filename}`
+        : `${prefix}${filename}.enc`;
+
+      console.log('kamilah duo trio: ', { bucket, prefix, encryptedName });
+
+      // Get metadata
+      const stat = await this.minioClient.statObject(bucket, encryptedName);
+      const iv = stat.metaData['x-encryption-iv'];
+      const mimetype =
+        stat.metaData['x-original-mimetype'] || 'application/octet-stream';
+      const originalName = stat.metaData['x-original-filename'] || filename;
+
+      if (!iv) {
+        throw new Error('Encryption IV not found in metadata');
+      }
+
+      // Download encrypted file
+      const dataStream = await this.minioClient.getObject(
+        bucket,
+        encryptedName,
+      );
+      const chunks: Buffer[] = [];
+
+      for await (const chunk of dataStream) {
+        chunks.push(chunk);
+      }
+
+      const encryptedBuffer = Buffer.concat(chunks);
+
+      // Decrypt
+      const decryptedBuffer = this.decrypt(encryptedBuffer, iv);
+
+      return {
+        buffer: decryptedBuffer,
+        mimetype,
+        originalName,
+      };
+    } catch (error) {
+      this.logger.error(`Error getting file: ${error.message}`);
+      if (error.code === 'NoSuchKey') {
+        throw new NotFoundException(`File not found: ${filename}`);
+      }
+      throw error;
+    }
+  }
+
+  async getFilesForRepeatOrders(
+    customerId: number,
+    customerName: string,
+    filename: string,
+    index?: number,
+  ): Promise<{ buffer: Buffer; mimetype: string; originalName: string }> {
+    try {
+      const bucket = this.mainBucket;
       const prefix = this.getCustomerPrefix(customerId, customerName);
       const encryptedName = filename.endsWith('.enc')
         ? `${prefix}${filename}`
