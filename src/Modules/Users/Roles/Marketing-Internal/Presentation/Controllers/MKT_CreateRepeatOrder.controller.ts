@@ -46,7 +46,7 @@ export class MKT_CreateRepeatOrderController {
   async submitRepeatOrder(
     @Param('client_id') client_id: number,
     @UploadedFiles() files: Record<string, Express.Multer.File[]>,
-    @Body() body: any, // Terima apa saja dulu
+    @Body() body: any,
   ) {
     try {
       const dto =

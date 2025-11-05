@@ -432,8 +432,7 @@ export class CreateLoanApplicationDto {
 
 //#region Exported Types
 export interface TypeLoanApplicationDetail {
-  client_id: number;
-
+  client_id?: number;
   // Client Info
   nama_lengkap: string;
   no_ktp: string;

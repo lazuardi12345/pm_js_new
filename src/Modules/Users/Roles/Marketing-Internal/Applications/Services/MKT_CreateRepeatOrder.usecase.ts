@@ -134,10 +134,61 @@ export class MKT_CreateRepeatOrderUseCase {
           documents_files,
         } = dto;
 
-        // ============== GET CLIENT INFO ==============
         const client = await this.clientRepo.findById(client_id);
         if (!client) {
           throw new BadRequestException('Client not found');
+        }
+
+        // const updateNewPersistentClientData_WhereExist = await this.clientRepo.
+        // ========== 1A. Update data ClientInternal bila ada perubahan dari profile ==========
+        const updatedClientFields: Partial<ClientInternal> = {};
+
+        if (
+          client_internal.nama_lengkap &&
+          client_internal.nama_lengkap !== client.nama_lengkap
+        ) {
+          updatedClientFields.nama_lengkap = client_internal.nama_lengkap;
+        }
+
+        if (
+          client_internal.no_ktp &&
+          client_internal.no_ktp !== client.no_ktp
+        ) {
+          updatedClientFields.no_ktp = client_internal.no_ktp;
+        }
+
+        if (
+          client_internal.jenis_kelamin &&
+          client_internal.jenis_kelamin !== client.jenis_kelamin
+        ) {
+          updatedClientFields.jenis_kelamin =
+            client_internal.jenis_kelamin as GENDER;
+        }
+
+        if (
+          client_internal.tempat_lahir &&
+          client_internal.tempat_lahir !== client.tempat_lahir
+        ) {
+          updatedClientFields.tempat_lahir = client_internal.tempat_lahir;
+        }
+
+        if (client_internal.tanggal_lahir) {
+          const dtoTanggalLahir = new Date(client_internal.tanggal_lahir);
+          const existingTanggalLahir =
+            client.tanggal_lahir instanceof Date
+              ? client.tanggal_lahir
+              : new Date(client.tanggal_lahir);
+
+          if (dtoTanggalLahir.getTime() !== existingTanggalLahir.getTime()) {
+            updatedClientFields.tanggal_lahir = dtoTanggalLahir;
+          }
+        }
+
+        if (Object.keys(updatedClientFields).length > 0) {
+          await this.clientRepo.update(client_id, updatedClientFields);
+          this.logger.log(
+            `Updated client_internal fields for client_id ${client_id}: ${Object.keys(updatedClientFields).join(', ')}`,
+          );
         }
 
         // **2. Simpan AddressInternal**
