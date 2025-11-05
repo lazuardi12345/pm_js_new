@@ -37,6 +37,10 @@ export class CreateApprovalRecommendationDto {
   nama_nasabah?: string;
 
   @IsNumber()
+  @IsNotEmpty()
+  nominal_pinjaman: number;
+
+  @IsNumber()
   @IsOptional()
   loan_application_internal_id?: number;
 

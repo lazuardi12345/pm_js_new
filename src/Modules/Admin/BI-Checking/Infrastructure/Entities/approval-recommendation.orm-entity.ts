@@ -43,6 +43,9 @@ export class ApprovalRecommendation_ORM_Entity {
   @Column({ type: 'varchar', nullable: true })
   nama_nasabah: string;
 
+  @Column({ type: 'bigint', nullable: false })
+  nominal_pinjaman: number;
+
   @Column({ type: 'char', length: 24, nullable: true })
   @Index('IDX_DraftID_at_ApprovalRecommendation', ['draft_id']) // <- index explicit name
   draft_id?: string;

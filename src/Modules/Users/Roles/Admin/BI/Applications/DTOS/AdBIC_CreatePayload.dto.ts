@@ -2,6 +2,7 @@ import { RecommendationEnum } from 'src/Shared/Enums/Admins/BI/approval-recommen
 
 export class AdBIC_CreatePayloadDto {
   recommendation: RecommendationEnum;
+  nominal_pinjaman: number;
   filePath?: string;
   nik: string;
   no_telp: string;

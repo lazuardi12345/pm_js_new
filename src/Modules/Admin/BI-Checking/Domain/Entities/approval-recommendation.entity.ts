@@ -6,6 +6,7 @@ export class ApprovalRecommendation {
   constructor(
     public recommendation: RecommendationEnum,
     public filePath: string | undefined,
+    public nominal_pinjaman: number,
 
     public readonly id?: number,
     public readonly draft_id?: string, // char(24) from Mongo

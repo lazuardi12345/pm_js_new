@@ -21,6 +21,7 @@ export class ApprovalRecommendationService {
     const address = new ApprovalRecommendation(
       dto.recommendation,
       dto.filePath,
+      dto.nominal_pinjaman,
       undefined,
       dto.draft_id,
       dto.nik,

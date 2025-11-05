@@ -34,6 +34,7 @@ export class ApprovalRecommendationRepositoryImpl
     return new ApprovalRecommendation(
       ormEntity.recommendation,
       ormEntity.filePath,
+      ormEntity.nominal_pinjaman,
       ormEntity.id,
       ormEntity.draft_id,
       ormEntity.nik,
@@ -56,6 +57,7 @@ export class ApprovalRecommendationRepositoryImpl
       id: domainEntity?.id,
       recommendation: domainEntity.recommendation,
       filePath: domainEntity.filePath,
+      nominal_pinjaman: domainEntity.nominal_pinjaman,
       draft_id: domainEntity.draft_id,
       nik: domainEntity.nik,
       no_telp: domainEntity.no_telp,
@@ -110,7 +112,14 @@ export class ApprovalRecommendationRepositoryImpl
     entity: ApprovalRecommendation,
   ): Promise<ApprovalRecommendation> {
     const ormEntity = this.toOrm(entity);
+    console.log('daite daite daite kudasaaii~', ormEntity);
     const savedOrm = await this.ormRepository.save(ormEntity);
+
+    const draft_id = savedOrm.draft_id;
+    await this.mongoDraftRepository.updateOne(
+      { _id: draft_id }, //! PERLU _ID DARI MONGO!
+      { $set: { isNeedCheck: false } },
+    );
     return this.toDomain(savedOrm);
   }
   async findById(id: number): Promise<ApprovalRecommendation | null> {
@@ -168,6 +177,7 @@ export class ApprovalRecommendationRepositoryImpl
         'rec.recommendation',
         'rec.nik',
         'rec.nama_nasabah',
+        'rec.nominal_pinjaman',
         'rec.no_telp',
         'rec.email',
         'rec.filePath',
@@ -182,6 +192,7 @@ export class ApprovalRecommendationRepositoryImpl
         { isNeedCheck: true },
         {
           marketing_id: 1,
+          _id: 1,
           'client_internal.nama_lengkap': 1,
           'client_internal.no_ktp': 1,
           'client_internal.no_hp': 1,
