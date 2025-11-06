@@ -374,8 +374,6 @@ export class MKT_CreateDraftLoanApplicationUseCase {
       const loanApps =
         await this.loanAppDraftRepo.findByMarketingId(marketingId);
 
-      console.log('TOL KONTOL', loanApps);
-
       if (!loanApps || loanApps.length === 0) {
         throw new HttpException(
           {
