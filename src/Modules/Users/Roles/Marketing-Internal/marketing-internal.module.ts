@@ -56,6 +56,7 @@ import { HttpModule } from '@nestjs/axios';
 import { DraftLoanApplicationModule } from 'src/Shared/Modules/Drafts/Modules/CreateLoanAppInt.module';
 import { ClientInternalProfileModule } from 'src/Modules/LoanAppInternal/Modules/client-internal-profile.module';
 import { ClientInternalProfile_ORM_Entity } from 'src/Modules/LoanAppInternal/Infrastructure/Entities/client-internal-profile.orm-entity';
+import { ApprovalRecommendationModule } from 'src/Modules/Admin/BI-Checking/Modules/approval-recommendation.module';
 
 @Module({
   imports: [
@@ -82,6 +83,7 @@ import { ClientInternalProfile_ORM_Entity } from 'src/Modules/LoanAppInternal/In
 
     //? untuk API Drafts agar bisa diinject ke roles:
     DraftLoanApplicationModule,
+    ApprovalRecommendationModule,
   ],
   controllers: [
     // controllers

@@ -8,3 +8,8 @@ export enum MARRIAGE_STATUS {
   MENIKAH = 'menikah',
   CERAI = 'janda/duda',
 }
+
+export enum CLIENT_TYPE {
+  VIP = 'vip',
+  REGULER = 'reguler',
+}

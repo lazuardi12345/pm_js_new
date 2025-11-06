@@ -24,6 +24,7 @@ import {
 import { paginationInterface } from 'src/Shared/Interface/Pagination.interface';
 import { General_ClientDataInterface } from 'src/Shared/Interface/General_ClientsDatabase/ClientData.interface';
 import { General_LoanApplicationDataInterface } from 'src/Shared/Interface/General_ClientsDatabase/ClientHistoryLoanApplication.interface';
+import { LoanApplicationSummary } from 'src/Shared/Interface/General_ClientsDatabase/BankDataLoanApplication.interface';
 @Injectable()
 export class LoanApplicationInternalRepositoryImpl
   implements ILoanApplicationInternalRepository
@@ -285,6 +286,35 @@ export class LoanApplicationInternalRepositoryImpl
       pagination,
       ClientData: clientResult || [],
       ClientHistoryLoanApplicationsData: loanResult || [],
+    };
+  }
+
+  async callSP_GENERAL_GetLoanApplicationDatabase(
+    page: number,
+    page_size: number,
+  ): Promise<{
+    pagination: paginationInterface;
+    LoanApplicationData: LoanApplicationSummary[];
+  }> {
+    const ormEntities = this.ormRepository.manager;
+
+    // result sets: [pagination, client data, loan data]
+    const [loanResult, paginationResult] = await ormEntities.query(
+      `CALL GENERAL_GetLoanApplicationDatabase(?, ?)`,
+      [page, page_size],
+    );
+
+    const pagination: paginationInterface = paginationResult?.[0]
+      ? {
+          total: Number(paginationResult[0].total),
+          page: Number(paginationResult[0].page),
+          page_size: Number(paginationResult[0].page_size),
+        }
+      : { total: 0, page, page_size };
+
+    return {
+      pagination,
+      LoanApplicationData: loanResult || [],
     };
   }
 

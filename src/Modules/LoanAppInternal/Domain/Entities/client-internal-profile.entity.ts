@@ -1,4 +1,5 @@
 import {
+  CLIENT_TYPE,
   GENDER,
   MARRIAGE_STATUS,
 } from 'src/Shared/Enums/Internal/Clients.enum';
@@ -13,6 +14,7 @@ export class ClientInternalProfile {
 
   public nama_lengkap: string;
   public jenis_kelamin: GENDER;
+  public tipe_nasabah: CLIENT_TYPE;
   public no_hp: string;
   public status_nikah: MARRIAGE_STATUS;
   public email?: string;
@@ -31,6 +33,7 @@ export class ClientInternalProfile {
     pengajuan: { id: number } | undefined,
     nama_lengkap: string,
     jenis_kelamin: GENDER,
+    tipe_nasabah: CLIENT_TYPE,
     no_hp: string,
     status_nikah: MARRIAGE_STATUS,
     id?: number,
@@ -49,6 +52,7 @@ export class ClientInternalProfile {
       typeof pengajuan === 'number' ? { id: pengajuan } : pengajuan;
     this.nama_lengkap = nama_lengkap;
     this.jenis_kelamin = jenis_kelamin;
+    this.tipe_nasabah = tipe_nasabah;
     this.no_hp = no_hp;
     this.status_nikah = status_nikah;
 

@@ -12,6 +12,7 @@ import {
 } from 'class-validator';
 
 import {
+  CLIENT_TYPE,
   GENDER,
   MARRIAGE_STATUS,
 } from 'src/Shared/Enums/Internal/Clients.enum';
@@ -29,6 +30,9 @@ export class CreateClientInternalProfileDto {
 
   @IsEnum(GENDER)
   jenis_kelamin: GENDER;
+
+  @IsEnum(CLIENT_TYPE)
+  tipe_nasabah: CLIENT_TYPE;
 
   @IsString()
   no_hp: string;

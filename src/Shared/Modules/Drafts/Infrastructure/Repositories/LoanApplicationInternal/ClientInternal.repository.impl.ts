@@ -37,7 +37,20 @@ export class LoanApplicationRepositoryImpl
     marketingId: number,
   ): Promise<LoanApplicationEntity[]> {
     const list = await this.loanAppModel
-      .find({ marketing_id: marketingId, isDeleted: false })
+      .find(
+        { marketing_id: marketingId, isDeleted: false },
+        {
+          _id: 1,
+          'client_internal.nama_lengkap': 1,
+          'client_internal.no_ktp': 1,
+          'client_internal.no_hp': 1,
+          'loan_application_internal.nominal_pinjaman': 1,
+          isDeleted: 1,
+          isNeedCheck: 1,
+          isCompleted: 1,
+          createdAt: 1,
+        },
+      )
       .exec();
 
     return list.map((doc) => new LoanApplicationEntity(doc.toObject()));

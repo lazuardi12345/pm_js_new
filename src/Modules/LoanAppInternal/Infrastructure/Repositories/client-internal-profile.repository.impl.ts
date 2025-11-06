@@ -28,6 +28,7 @@ export class ClientInternalProfileRepositoryImpl
       orm.pengajuan,
       orm.nama_lengkap,
       orm.jenis_kelamin,
+      orm.tipe_nasabah,
       orm.no_hp,
       orm.status_nikah,
       orm.id,
@@ -58,6 +59,7 @@ export class ClientInternalProfileRepositoryImpl
       } as LoanApplicationInternal_ORM_Entity,
       nama_lengkap: domainEntity.nama_lengkap,
       jenis_kelamin: domainEntity.jenis_kelamin,
+      tipe_nasabah: domainEntity.tipe_nasabah,
       no_hp: domainEntity.no_hp,
       status_nikah: domainEntity.status_nikah,
       email: domainEntity.email,
@@ -81,6 +83,7 @@ export class ClientInternalProfileRepositoryImpl
 
     if (partial.nama_lengkap) ormData.nama_lengkap! = partial.nama_lengkap;
     if (partial.jenis_kelamin) ormData.jenis_kelamin = partial.jenis_kelamin;
+    if (partial.tipe_nasabah) ormData.tipe_nasabah = partial.tipe_nasabah;
     if (partial.no_hp) ormData.no_hp = partial.no_hp;
     if (partial.status_nikah) ormData.status_nikah = partial.status_nikah;
     if (partial.email) ormData.email = partial.email;

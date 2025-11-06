@@ -43,6 +43,9 @@ export class ApprovalRecommendation_ORM_Entity {
   @Column({ type: 'varchar', nullable: true })
   nama_nasabah: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  catatan: string;
+
   @Column({ type: 'bigint', nullable: false })
   nominal_pinjaman: number;
 

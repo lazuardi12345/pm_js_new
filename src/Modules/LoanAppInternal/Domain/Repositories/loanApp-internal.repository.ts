@@ -11,6 +11,7 @@ import {
 import { paginationInterface } from 'src/Shared/Interface/Pagination.interface';
 import { General_ClientDataInterface } from 'src/Shared/Interface/General_ClientsDatabase/ClientData.interface';
 import { General_LoanApplicationDataInterface } from 'src/Shared/Interface/General_ClientsDatabase/ClientHistoryLoanApplication.interface';
+import { LoanApplicationSummary } from 'src/Shared/Interface/General_ClientsDatabase/BankDataLoanApplication.interface';
 
 export const LOAN_APPLICATION_INTERNAL_REPOSITORY = Symbol(
   'LOAN_APPLICATION_INTERNAL_REPOSITORY',
@@ -63,6 +64,14 @@ export interface ILoanApplicationInternalRepository {
     pagination: paginationInterface;
     ClientData: General_ClientDataInterface[];
     ClientHistoryLoanApplicationsData?: General_LoanApplicationDataInterface[];
+  }>;
+
+  callSP_GENERAL_GetLoanApplicationDatabase(
+    page: number,
+    page_size: number,
+  ): Promise<{
+    pagination: paginationInterface;
+    LoanApplicationData: LoanApplicationSummary[];
   }>;
 
   //! ========== MARKETING ==========

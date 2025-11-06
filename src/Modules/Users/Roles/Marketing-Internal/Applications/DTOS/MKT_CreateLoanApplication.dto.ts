@@ -11,6 +11,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
+  CLIENT_TYPE,
   GENDER,
   MARRIAGE_STATUS,
 } from 'src/Shared/Enums/Internal/Clients.enum';
@@ -53,6 +54,10 @@ export class ClientInternalDto {
   @IsNotEmpty()
   @IsEnum(GENDER)
   jenis_kelamin: GENDER;
+
+  @IsNotEmpty()
+  @IsEnum(CLIENT_TYPE)
+  tipe_nasabah: CLIENT_TYPE;
 
   @IsNotEmpty()
   @IsString()
@@ -556,12 +561,12 @@ export interface TypeStatusApproval {
   id_user: number;
   name: string;
   data: {
-    id_approval: number;
-    status: string;
-    keterangan: string;
-    kesimpulan: string;
-    created_at: string;
-    updated_at: string;
+    id_approval: number | null;
+    status: string | null;
+    keterangan: string | null;
+    kesimpulan: string | null;
+    created_at: string | null;
+    updated_at: string | null;
   };
 }
 //#endregion
