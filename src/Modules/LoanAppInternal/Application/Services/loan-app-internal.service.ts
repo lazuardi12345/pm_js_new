@@ -15,6 +15,7 @@ import {
   RoleSearchEnum,
   TypeSearchEnum,
 } from 'src/Shared/Enums/General/General.enum';
+import { LoanApplicationSummary } from 'src/Shared/Interface/General_ClientsDatabase/BankDataLoanApplication.interface';
 
 @Injectable()
 export class LoanApplicationInternalService {
@@ -300,6 +301,41 @@ export class LoanApplicationInternalService {
       page: sanitizedPage,
       pageSize: sanitizedPageSize,
       total: result.totalData,
+    };
+  }
+
+  async getLoanApplicationInternalDatabase(
+    page?: number | null,
+    pageSize?: number | null,
+  ): Promise<{
+    payload: {
+      data: {
+        results: LoanApplicationSummary[];
+      };
+      page: number;
+      pageSize: number;
+      total: number;
+    };
+  }> {
+    const sanitizedPage = page && page > 0 ? page : 1;
+    const sanitizedPageSize = pageSize && pageSize > 0 ? pageSize : 10;
+
+    const result = await this.repo.callSP_GENERAL_GetLoanApplicationDatabase(
+      sanitizedPage,
+      sanitizedPageSize,
+    );
+
+    const mappedData = result.LoanApplicationData || [];
+
+    return {
+      payload: {
+        data: {
+          results: mappedData,
+        },
+        page: sanitizedPage,
+        pageSize: sanitizedPageSize,
+        total: result.pagination?.total ?? 0,
+      },
     };
   }
 }

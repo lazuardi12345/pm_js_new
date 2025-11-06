@@ -87,6 +87,22 @@ export class LoanApplicationInternalController {
     );
   }
 
+  @Get('history/loan-applications')
+  @Roles(USERTYPE.HM, USERTYPE.SPV, USERTYPE.MARKETING, USERTYPE.CA)
+  async getLoanApplicationHistory(
+    @Req() req: any,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number,
+  ) {
+    const { usertype } = req.user;
+    if (!usertype) throw new UnauthorizedException('Invalid User Session');
+
+    return this.loanApplicationService.getLoanApplicationInternalDatabase(
+      page,
+      pageSize,
+    );
+  }
+
   @Post()
   async create(@Body() dto: CreateLoanApplicationInternalDto) {
     return this.loanApplicationService.create(dto);
