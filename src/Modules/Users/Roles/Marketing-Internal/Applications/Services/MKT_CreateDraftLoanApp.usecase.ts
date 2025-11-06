@@ -21,6 +21,11 @@ import {
   IFileStorageRepository,
 } from 'src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository';
 import sharp from 'sharp';
+import {
+  APPROVAL_RECOMMENDATION_REPOSITORY,
+  IApprovalRecommendationRepository,
+} from 'src/Modules/Admin/BI-Checking/Domain/Repositories/approval-recommendation.repository';
+import { MKT_GetDraftByMarketingId_ApprovalRecommendation } from 'src/Shared/Interface/MKT_GetDraft/MKT_GetDraftByMarketingId.interface';
 
 @Injectable()
 export class MKT_CreateDraftLoanApplicationUseCase {
@@ -29,6 +34,8 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     private readonly loanAppDraftRepo: ILoanApplicationDraftRepository,
     @Inject(FILE_STORAGE_SERVICE)
     private readonly fileStorage: IFileStorageRepository,
+    @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
+    private readonly approvalRecommendationRepo: IApprovalRecommendationRepository,
   ) {}
 
   async executeCreateDraft(
@@ -367,7 +374,9 @@ export class MKT_CreateDraftLoanApplicationUseCase {
       const loanApps =
         await this.loanAppDraftRepo.findByMarketingId(marketingId);
 
-      if (loanApps.length === 0) {
+      console.log('TOL KONTOL', loanApps);
+
+      if (!loanApps || loanApps.length === 0) {
         throw new HttpException(
           {
             payload: {
@@ -379,16 +388,90 @@ export class MKT_CreateDraftLoanApplicationUseCase {
           HttpStatus.NOT_FOUND,
         );
       }
+
+      const processedLoans: Array<
+        (typeof loanApps)[number] & {
+          approval_recommendation:
+            | MKT_GetDraftByMarketingId_ApprovalRecommendation
+            | {
+                error: string;
+                message: string;
+                reference: string;
+              };
+        }
+      > = [];
+
+      for (const loanApp of loanApps) {
+        const nominalPinjaman =
+          loanApp?.loan_application_internal?.nominal_pinjaman ?? 0;
+
+        let approvalRecommendation:
+          | MKT_GetDraftByMarketingId_ApprovalRecommendation
+          | {
+              error: string;
+              message: string;
+              reference: string;
+            };
+
+        if (nominalPinjaman >= 7000000) {
+          try {
+            const draftId = loanApp._id?.toString();
+            if (!draftId) {
+              approvalRecommendation = {
+                error: 'DRAFT_ID_MISSING',
+                message: 'Draft ID not found for loan application',
+                reference: 'DRAFT_ID_MISSING',
+              };
+            } else {
+              const recommendationData =
+                await this.approvalRecommendationRepo.findByDraftId(draftId);
+
+              if (recommendationData) {
+                approvalRecommendation = {
+                  draft_id: recommendationData.draft_id!,
+                  nama_nasabah: recommendationData.nama_nasabah!,
+                  recommendation: recommendationData.recommendation!,
+                  filePath: recommendationData.filePath!,
+                  catatan: recommendationData.catatan ?? null,
+                };
+              } else {
+                approvalRecommendation = {
+                  error: 'WAITING_ADMIN_BI_RECOMMENDATION',
+                  message: 'Waiting Admin BI Responsibility',
+                  reference: 'WAITING_ADMIN_BI_RECOMMENDATION',
+                };
+              }
+            }
+          } catch (innerError) {
+            console.error('Error while fetching recommendation:', innerError);
+            approvalRecommendation = {
+              error: 'RECOMMENDATION_FETCH_FAILED',
+              message: 'Gagal mengambil data rekomendasi BI Checking.',
+              reference: 'RECOMMENDATION_FETCH_FAILED',
+            };
+          }
+        } else {
+          approvalRecommendation = {
+            dont_have_check: true,
+          } as MKT_GetDraftByMarketingId_ApprovalRecommendation;
+        }
+
+        processedLoans.push({
+          ...loanApp,
+          approval_recommendation: approvalRecommendation,
+        });
+      }
+
       return {
         payload: {
           error: false,
           message: 'Draft loan applications retrieved',
           reference: 'LOAN_RETRIEVE_OK',
-          data: [...loanApps],
+          data: processedLoans,
         },
       };
     } catch (error) {
-      console.log(error);
+      console.error(error);
 
       if (error instanceof HttpException) {
         throw error;

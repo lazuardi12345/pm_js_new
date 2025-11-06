@@ -14,6 +14,7 @@ export class ApprovalRecommendation {
     public readonly no_telp?: string, // char(14) for TELP
     public readonly email?: string,
     public readonly nama_nasabah?: string,
+    public readonly catatan?: string,
     public readonly loan_application_internal_id?: number,
     public readonly loan_application_external_id?: number,
     public readonly created_at?: Date,

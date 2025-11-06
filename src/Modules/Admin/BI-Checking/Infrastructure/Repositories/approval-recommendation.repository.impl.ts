@@ -41,8 +41,9 @@ export class ApprovalRecommendationRepositoryImpl
       ormEntity.no_telp,
       ormEntity.email,
       ormEntity.nama_nasabah,
-      ormEntity.loanApplicationInternal.id,
-      ormEntity.loanApplicationExternal.id,
+      ormEntity.catatan,
+      ormEntity.loanApplicationInternal?.id ?? null,
+      ormEntity.loanApplicationExternal?.id ?? null,
       ormEntity.created_at,
       ormEntity.deleted_at,
       ormEntity.updated_at,
@@ -63,6 +64,7 @@ export class ApprovalRecommendationRepositoryImpl
       no_telp: domainEntity.no_telp,
       email: domainEntity.email,
       nama_nasabah: domainEntity.nama_nasabah,
+      catatan: domainEntity.catatan,
       loanApplicationInternal: {
         id: domainEntity.id,
       } as LoanApplicationInternal_ORM_Entity,
@@ -92,6 +94,7 @@ export class ApprovalRecommendationRepositoryImpl
     if (partial.no_telp) ormData.no_telp = partial.no_telp;
     if (partial.email) ormData.email = partial.email;
     if (partial.nama_nasabah) ormData.nama_nasabah = partial.nama_nasabah;
+    if (partial.catatan) ormData.catatan = partial.catatan;
     if (partial.loan_application_internal_id)
       ormData.loanApplicationInternal = {
         id: partial.loan_application_internal_id,
@@ -130,10 +133,32 @@ export class ApprovalRecommendationRepositoryImpl
   async findByDraftId(
     draft_id: string,
   ): Promise<ApprovalRecommendation | null> {
-    const ormEntities = await this.ormRepository.findOne({
-      where: { draft_id: draft_id },
+    const ormEntity = await this.ormRepository.findOne({
+      where: { draft_id },
+      relations: ['loanApplicationInternal', 'loanApplicationExternal'],
     });
-    return ormEntities ? this.toDomain(ormEntities) : null;
+
+    if (!ormEntity) {
+      console.warn(
+        `[ApprovalRecommendationRepo] No record found for draft_id=${draft_id}`,
+      );
+      return null;
+    }
+
+    if (
+      !ormEntity.loanApplicationInternal ||
+      !ormEntity.loanApplicationExternal
+    ) {
+      console.warn(
+        `[ApprovalRecommendationRepo] Missing relation(s) for draft_id=${draft_id}`,
+        {
+          hasInternal: !!ormEntity.loanApplicationInternal,
+          hasExternal: !!ormEntity.loanApplicationExternal,
+        },
+      );
+    }
+
+    return this.toDomain(ormEntity);
   }
 
   async findByNIK(nik: string): Promise<ApprovalRecommendation | null> {

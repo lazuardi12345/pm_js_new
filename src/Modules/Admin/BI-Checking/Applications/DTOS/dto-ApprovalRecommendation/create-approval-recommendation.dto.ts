@@ -40,6 +40,10 @@ export class CreateApprovalRecommendationDto {
   @IsNotEmpty()
   nominal_pinjaman: number;
 
+  @IsString()
+  @IsOptional()
+  catatan: string;
+
   @IsNumber()
   @IsOptional()
   loan_application_internal_id?: number;

@@ -51,65 +51,60 @@ export class AdBIC_CreateApprovalResponseUseCase {
           files,
         );
 
-        // 3️⃣ Ambil URL file pertama untuk filePath utama
         const firstField = Object.keys(filePaths)[0];
         const firstFile = filePaths[firstField]?.[0];
 
         if (firstFile) {
-          dto.filePath = firstFile.url; // ✅ cukup ini
+          dto.filePath = firstFile.url;
         }
-      }
 
-      console.log('SHAWEEEEEEEEEEEETTTTTTTTTT', dto);
-
-      console.log('File paths:', filePaths);
-      console.log('Payload (with marketingId):', dto);
-
-      // 4️⃣ Buat entity
-      const entity = new ApprovalRecommendation(
-        dto.recommendation,
-        dto.filePath, // ✅ sudah aman 不
-        dto.nominal_pinjaman,
-        undefined,
-        dto?.draft_id,
-        dto.nik,
-        dto.no_telp,
-        dto?.email,
-        dto.nama_nasabah,
-        Number(dto.loan_application_internal_id),
-        Number(dto.loan_application_external_id),
-        new Date(),
-        null,
-        new Date(),
-      );
-
-      // 5️⃣ Save
-      const loanApp = await this.approvalRecommendation.create(entity);
-
-      if (!loanApp) {
-        throw new HttpException(
-          {
-            payload: {
-              error: 'CREATION FAILED',
-              message: 'Failed to create approval recommendation',
-              reference: 'APPROVAL_RECOMMENDATION_CREATE_FAILED',
-            },
-          },
-          HttpStatus.INTERNAL_SERVER_ERROR,
+        // 4️⃣ Buat entity
+        const entity = new ApprovalRecommendation(
+          dto.recommendation,
+          dto.filePath,
+          dto.nominal_pinjaman,
+          undefined,
+          dto?.draft_id,
+          dto.nik,
+          dto.no_telp,
+          dto?.email,
+          dto.nama_nasabah,
+          dto?.catatan,
+          Number(dto.loan_application_internal_id),
+          Number(dto.loan_application_external_id),
+          new Date(),
+          null,
+          new Date(),
         );
-      }
-      // await this.approvalRecommendation.triggerIsNeedCheckBeingTrue(
-      //   dto!.draft_id,
-      // );
 
-      return {
-        dto: {
-          error: false,
-          message: 'Draft loan application created',
-          reference: 'APPROVAL_RECOMMENDATION_CREATE_OK',
-          data: loanApp,
-        },
-      };
+        // 5️⃣ Save
+        const loanApp = await this.approvalRecommendation.create(entity);
+
+        if (!loanApp) {
+          throw new HttpException(
+            {
+              payload: {
+                error: 'CREATION FAILED',
+                message: 'Failed to create approval recommendation',
+                reference: 'APPROVAL_RECOMMENDATION_CREATE_FAILED',
+              },
+            },
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+        }
+        // await this.approvalRecommendation.triggerIsNeedCheckBeingTrue(
+        //   dto!.draft_id,
+        // );
+
+        return {
+          dto: {
+            error: false,
+            message: 'Draft loan application created',
+            reference: 'APPROVAL_RECOMMENDATION_CREATE_OK',
+            data: loanApp,
+          },
+        };
+      }
     } catch (err) {
       console.log(err);
 

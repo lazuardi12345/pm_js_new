@@ -8,6 +8,7 @@ export class AdBIC_CreatePayloadDto {
   no_telp: string;
   email?: string;
   nama_nasabah: string;
+  catatan: string;
   draft_id?: string;
   loan_application_internal_id?: number;
   loan_application_external_id?: number;
