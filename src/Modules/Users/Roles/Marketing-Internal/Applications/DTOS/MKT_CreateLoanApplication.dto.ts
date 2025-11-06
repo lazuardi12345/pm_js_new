@@ -556,12 +556,12 @@ export interface TypeStatusApproval {
   id_user: number;
   name: string;
   data: {
-    id_approval: number;
-    status: string;
-    keterangan: string;
-    kesimpulan: string;
-    created_at: string;
-    updated_at: string;
+    id_approval: number | null;
+    status: string | null;
+    keterangan: string | null;
+    kesimpulan: string | null;
+    created_at: string | null;
+    updated_at: string | null;
   };
 }
 //#endregion

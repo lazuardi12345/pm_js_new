@@ -19,15 +19,11 @@ export class MKT_GetLoanApplicationByIdUseCase {
   ) {}
 
   async execute(id: number) {
-    // pastikan repository return shape: [TypeLoanApplicationDetail[], TypeApprovalDetail[]]
     const result =
       await this.loanAppRepo.callSP_MKT_GetDetail_LoanApplicationsInternal_ById(
         id,
       );
 
-    console.log('aku gay', result[1]);
-
-    // tulis explicit typing supaya TS gak bingung
     const [loanDataRows, approvals]: [
       TypeLoanApplicationDetail[] | undefined,
       TypeApprovalDetail[] | undefined,
@@ -44,21 +40,16 @@ export class MKT_GetLoanApplicationByIdUseCase {
     // mapping role ke key yang konsisten
     const roleMap: Record<string | number, string> = {
       SPV: 'spv',
-      CA: 'ca',
       HM: 'hm',
       Supervisor: 'spv',
-      'Credit Analyst': 'ca',
       'Head Marketing': 'hm',
       1: 'spv',
-      2: 'ca',
       3: 'hm',
     };
 
-    // === IMPORTANT: approvals is TypeApprovalDetail[] ===
     (approvals ?? []).forEach((approval: TypeApprovalDetail) => {
       const roleKey = roleMap[approval.role] ?? approval.role;
 
-      console.log('aku sangat gay', approval);
       const data: TypeStatusApproval = {
         id_user: approval.user_id,
         name: approval.user_nama,
@@ -72,9 +63,6 @@ export class MKT_GetLoanApplicationByIdUseCase {
         },
       };
 
-      console.log('ragil kena tusbol', data);
-
-      // handle both number and string just in case
       const isBanding = approval.is_banding === 1;
 
       if (isBanding) {
