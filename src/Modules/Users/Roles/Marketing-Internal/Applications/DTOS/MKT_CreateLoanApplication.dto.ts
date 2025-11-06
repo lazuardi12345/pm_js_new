@@ -11,6 +11,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
+  CLIENT_TYPE,
   GENDER,
   MARRIAGE_STATUS,
 } from 'src/Shared/Enums/Internal/Clients.enum';
@@ -53,6 +54,10 @@ export class ClientInternalDto {
   @IsNotEmpty()
   @IsEnum(GENDER)
   jenis_kelamin: GENDER;
+
+  @IsNotEmpty()
+  @IsEnum(CLIENT_TYPE)
+  tipe_nasabah: CLIENT_TYPE;
 
   @IsNotEmpty()
   @IsString()

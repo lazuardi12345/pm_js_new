@@ -1,4 +1,5 @@
 import {
+  CLIENT_TYPE,
   GENDER,
   MARRIAGE_STATUS,
 } from 'src/Shared/Enums/Internal/Clients.enum';
@@ -20,6 +21,9 @@ import { LoanApplicationInternal_ORM_Entity } from './loan-application-internal.
 export class ClientInternalProfile_ORM_Entity {
   @PrimaryGeneratedColumn('increment')
   id: number;
+
+  @Column({ type: 'enum', enum: CLIENT_TYPE, default: CLIENT_TYPE.REGULER })
+  tipe_nasabah: CLIENT_TYPE;
 
   @Column()
   nama_lengkap: string;

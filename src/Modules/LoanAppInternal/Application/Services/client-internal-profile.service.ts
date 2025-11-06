@@ -20,6 +20,7 @@ export class ClientInternalProfileService {
       undefined,
       dto.nama_lengkap,
       dto.jenis_kelamin,
+      dto.tipe_nasabah,
       dto.no_hp, // noHp
       dto.status_nikah,
       undefined, // id

@@ -53,6 +53,7 @@ import {
 
 import { CreateLoanApplicationDto } from '../DTOS/MKT_CreateLoanApplication.dto';
 import {
+  CLIENT_TYPE,
   GENDER,
   MARRIAGE_STATUS,
 } from 'src/Shared/Enums/Internal/Clients.enum';
@@ -302,6 +303,7 @@ export class MKT_CreateRepeatOrderUseCase {
           { id: loanApp.id! },
           client_internal.nama_lengkap,
           client_internal.jenis_kelamin,
+          client_internal.tipe_nasabah as CLIENT_TYPE,
           client_internal.no_hp,
           client_internal.status_nikah as MARRIAGE_STATUS,
           undefined,
