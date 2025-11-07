@@ -45,6 +45,7 @@ export class LoanApplicationRepositoryImpl
           'client_internal.no_ktp': 1,
           'client_internal.no_hp': 1,
           'loan_application_internal.nominal_pinjaman': 1,
+          'loan_application_internal.tenor': 1,
           isDeleted: 1,
           isNeedCheck: 1,
           isCompleted: 1,

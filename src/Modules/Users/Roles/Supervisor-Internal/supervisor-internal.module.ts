@@ -26,6 +26,11 @@ import { SPV_GetAllApprovalRequest_ByTeam_Controller } from './Presentation/Cont
 import { SPV_GetLoanApplicationByIdController } from './Presentation/Controllers/SPV_GetLoanApplicationById.controller';
 import { SPV_GetTeamsController } from './Presentation/Controllers/SPV_GetTeams.controller';
 import { SPV_GetDashboardStatsController } from './Presentation/Controllers/SPV_GetDashboardStats.controller';
+import { DraftLoanApplicationModule } from 'src/Shared/Modules/Drafts/Modules/CreateLoanAppInt.module';
+import { SPV_GetDraftByMarketingIdUseCase } from './Applications/Services/SPV_GetDraftsbyMarketingId.usecase';
+import { SPV_GetDraftByMarketingIdController } from './Presentation/Controllers/SPV_GetDraftsbyMarketingId.controller';
+import { SPV_GetDetailDraftByIdUseCase } from './Applications/Services/SPV_GetDetailDraftById.usecase';
+import { SPV_GetDetailDraftByIdController } from './Presentation/Controllers/SPV_GetDetailDraftById.controller';
 
 @Module({
   imports: [
@@ -37,6 +42,7 @@ import { SPV_GetDashboardStatsController } from './Presentation/Controllers/SPV_
       Users_ORM_Entity,
       LoanApplicationInternal_ORM_Entity,
     ]),
+    DraftLoanApplicationModule,
   ],
   controllers: [
     SPV_ApprovedOrRejectController,
@@ -45,6 +51,8 @@ import { SPV_GetDashboardStatsController } from './Presentation/Controllers/SPV_
     SPV_GetAllApprovalRequest_ByTeam_Controller,
     SPV_GetLoanApplicationByIdController,
     SPV_GetTeamsController,
+    SPV_GetDraftByMarketingIdController,
+    SPV_GetDetailDraftByIdController,
   ],
   providers: [
     SPV_ApproveOrRejectUseCase,
@@ -53,6 +61,8 @@ import { SPV_GetDashboardStatsController } from './Presentation/Controllers/SPV_
     SPV_GetAllApprovalRequestByTeam_UseCase,
     SPV_GetLoanApplicationByIdUseCase,
     SPV_GetTeamsUseCase,
+    SPV_GetDraftByMarketingIdUseCase,
+    SPV_GetDetailDraftByIdUseCase,
   ],
 })
 export class SupervisorInternalUseCaseModule {}
