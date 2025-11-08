@@ -20,14 +20,15 @@ export class CollateralBpkbExternalService {
     private readonly repo: ICollateralByBPKBRepository,
   ) {}
 
+  /**
+   * Membuat data Collateral BPKB baru
+   */
   async create(dto: CreatePengajuanBPKBDto): Promise<CollateralByBPKB> {
     const now = new Date();
 
     if (!dto.pengajuan_id) {
-      throw new BadRequestException('Pengajuan ID harus diisi.');
+      throw new BadRequestException('pengajuan_id wajib diisi.');
     }
-
-    // Validasi business rule minimal nomor BPKB dan STNK harus ada
     if (!dto.no_bpkb || !dto.no_stnk) {
       throw new BadRequestException('Nomor BPKB dan nomor STNK wajib diisi.');
     }
@@ -42,12 +43,23 @@ export class CollateralBpkbExternalService {
       dto.warna_kendaraan,
       dto.stransmisi,
       dto.no_rangka,
+      dto.foto_no_rangka,
       dto.no_mesin,
+      dto.foto_no_mesin,
       dto.no_bpkb,
-      dto.foto_stnk,
-      dto.foto_bpkb,
-      dto.foto_motor,
-      undefined, // id biasanya auto-generated di db
+      dto.dokumen_bpkb,
+      dto.foto_stnk_depan,
+      dto.foto_stnk_belakang,
+      dto.foto_kendaraan_depan,
+      dto.foto_kendaraan_belakang,
+      dto.foto_kendaraan_samping_kanan,
+      dto.foto_kendaraan_samping_kiri,
+      dto.foto_sambara,
+      dto.foto_kwitansi_jual_beli,
+      dto.foto_ktp_tangan_pertama,
+      dto.foto_faktur_kendaraan,
+      dto.foto_snikb,
+      undefined,
       now,
       now,
       null,
@@ -56,49 +68,39 @@ export class CollateralBpkbExternalService {
     try {
       return await this.repo.save(collateral);
     } catch (error) {
-      console.error('Create Collateral BPKB Error:', error);
-      throw new InternalServerErrorException('Gagal membuat collateral BPKB');
+      console.error('[Collateral BPKB] Error saat create:', error);
+      throw new InternalServerErrorException('Gagal membuat data collateral BPKB.');
     }
   }
 
+  /**
+   * Mengupdate data Collateral BPKB
+   */
   async update(id: number, dto: UpdatePengajuanBPKBDto): Promise<CollateralByBPKB> {
     const existing = await this.repo.findById(id);
     if (!existing) {
-      throw new NotFoundException(`Collateral BPKB dengan ID ${id} tidak ditemukan`);
+      throw new NotFoundException(`Collateral BPKB dengan ID ${id} tidak ditemukan.`);
     }
 
-    // Build updateData dengan partial properties
-    const updateData: Partial<{
-      atas_nama_bpkb?: string;
-      no_stnk?: string;
-      alamat_pemilik_bpkb?: string;
-      type_kendaraan?: string;
-      tahun_perakitan?: string;
-      warna_kendaraan?: string;
-      stransmisi?: string;
-      no_rangka?: string;
-      no_mesin?: string;
-      no_bpkb?: string;
-      foto_stnk?: string;
-      foto_bpkb?: string;
-      foto_motor?: string;
-    }> = {};
+    // siapkan field yang boleh diupdate
+    const updateData: Partial<CollateralByBPKB> = {};
 
-    if (dto.atas_nama_bpkb !== undefined) updateData.atas_nama_bpkb = dto.atas_nama_bpkb;
-    if (dto.no_stnk !== undefined) updateData.no_stnk = dto.no_stnk;
-    if (dto.alamat_pemilik_bpkb !== undefined) updateData.alamat_pemilik_bpkb = dto.alamat_pemilik_bpkb;
-    if (dto.type_kendaraan !== undefined) updateData.type_kendaraan = dto.type_kendaraan;
-    if (dto.tahun_perakitan !== undefined) updateData.tahun_perakitan = dto.tahun_perakitan;
-    if (dto.warna_kendaraan !== undefined) updateData.warna_kendaraan = dto.warna_kendaraan;
-    if (dto.stransmisi !== undefined) updateData.stransmisi = dto.stransmisi;
-    if (dto.no_rangka !== undefined) updateData.no_rangka = dto.no_rangka;
-    if (dto.no_mesin !== undefined) updateData.no_mesin = dto.no_mesin;
-    if (dto.no_bpkb !== undefined) updateData.no_bpkb = dto.no_bpkb;
-    if (dto.foto_stnk !== undefined) updateData.foto_stnk = dto.foto_stnk;
-    if (dto.foto_bpkb !== undefined) updateData.foto_bpkb = dto.foto_bpkb;
-    if (dto.foto_motor !== undefined) updateData.foto_motor = dto.foto_motor;
+    const fields = [
+      'atas_nama_bpkb', 'no_stnk', 'alamat_pemilik_bpkb', 'type_kendaraan',
+      'tahun_perakitan', 'warna_kendaraan', 'stransmisi', 'no_rangka',
+      'foto_no_rangka', 'no_mesin', 'foto_no_mesin', 'no_bpkb', 'dokumen_bpkb',
+      'foto_stnk_depan', 'foto_stnk_belakang', 'foto_kendaraan_depan',
+      'foto_kendaraan_belakang', 'foto_kendaraan_samping_kanan',
+      'foto_kendaraan_samping_kiri', 'foto_sambara', 'foto_kwitansi_jual_beli',
+      'foto_ktp_tangan_pertama', 'foto_faktur_kendaraan', 'foto_snikb'
+    ] as const;
 
-    // Kalau update nomor BPKB atau STNK pastikan valid (tidak kosong)
+    for (const field of fields) {
+      if (dto[field] !== undefined) {
+        (updateData as any)[field] = dto[field];
+      }
+    }
+
     if ('no_bpkb' in updateData && !updateData.no_bpkb) {
       throw new BadRequestException('Nomor BPKB tidak boleh kosong.');
     }
@@ -109,39 +111,48 @@ export class CollateralBpkbExternalService {
     try {
       return await this.repo.update(id, updateData);
     } catch (error) {
-      console.error('Update Collateral BPKB Error:', error);
-      throw new InternalServerErrorException('Gagal mengupdate collateral BPKB');
+      console.error('[Collateral BPKB] Error saat update:', error);
+      throw new InternalServerErrorException('Gagal mengupdate data collateral BPKB.');
     }
   }
 
+  /**
+   * Mendapatkan data berdasarkan ID
+   */
   async findById(id: number): Promise<CollateralByBPKB> {
-    const collateral = await this.repo.findById(id);
-    if (!collateral) {
-      throw new NotFoundException(`Collateral BPKB dengan ID ${id} tidak ditemukan`);
+    const data = await this.repo.findById(id);
+    if (!data) {
+      throw new NotFoundException(`Collateral BPKB dengan ID ${id} tidak ditemukan.`);
     }
-    return collateral;
+    return data;
   }
 
+  /**
+   * Mendapatkan semua data
+   */
   async findAll(): Promise<CollateralByBPKB[]> {
     try {
       return await this.repo.findAll();
     } catch (error) {
-      console.error('Find All Collateral BPKB Error:', error);
-      throw new InternalServerErrorException('Gagal mengambil data collateral BPKB');
+      console.error('[Collateral BPKB] Error saat findAll:', error);
+      throw new InternalServerErrorException('Gagal mengambil data collateral BPKB.');
     }
   }
 
+  /**
+   * Menghapus data berdasarkan ID
+   */
   async delete(id: number): Promise<void> {
-    const collateral = await this.repo.findById(id);
-    if (!collateral) {
-      throw new NotFoundException(`Collateral BPKB dengan ID ${id} tidak ditemukan`);
+    const existing = await this.repo.findById(id);
+    if (!existing) {
+      throw new NotFoundException(`Collateral BPKB dengan ID ${id} tidak ditemukan.`);
     }
 
     try {
       await this.repo.delete(id);
     } catch (error) {
-      console.error('Delete Collateral BPKB Error:', error);
-      throw new InternalServerErrorException('Gagal menghapus collateral BPKB');
+      console.error('[Collateral BPKB] Error saat delete:', error);
+      throw new InternalServerErrorException('Gagal menghapus collateral BPKB.');
     }
   }
 }

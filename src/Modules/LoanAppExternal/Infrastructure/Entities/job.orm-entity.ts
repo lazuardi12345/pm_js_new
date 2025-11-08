@@ -40,20 +40,26 @@ export class JobExternal_ORM_Entity {
   @Column({ type: 'enum', enum: StatusKaryawanEnum })
   status_karyawan: StatusKaryawanEnum;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  lama_kontrak?: string;
-
   @Column({ type: 'decimal', precision: 15, scale: 2 })
   pendapatan_perbulan: number;
 
-  @Column({ type: 'varchar', length: 255 })
-  slip_gaji: string;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  slip_gaji_peminjam?: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  norek: string;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  slip_gaji_penjamin?: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  id_card: string;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  norek?: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  id_card_peminjam?: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  id_card_penjamin?: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  lama_kontrak?: string;
 
   @Column({ type: 'tinyint', width: 1, nullable: true })
   validasi_pekerjaan?: boolean;

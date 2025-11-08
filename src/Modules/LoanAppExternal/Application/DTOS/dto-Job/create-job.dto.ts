@@ -40,19 +40,29 @@ export class CreateJobExternalDto {
   lama_kontrak?: string;
 
   @IsNumber()
+  @IsOptional()
   pendapatan_perbulan: number;
 
   @IsString()
-  @IsNotEmpty()
-  slip_gaji: string;
+  @IsOptional()
+  slip_gaji_peminjam: string;
 
   @IsString()
-  @IsNotEmpty()
-  norek: string;
+  @IsOptional()
+  slip_gaji_penjamin: string;
+
 
   @IsString()
-  @IsNotEmpty()
-  id_card: string;
+  @IsOptional()
+  id_card_peminjam: string;
+
+  @IsString()
+  @IsOptional()
+  id_card_penjamin: string;
+
+  @IsString()
+  @IsOptional()
+  rekening_koran: string;
 
   @IsOptional()
   @IsBoolean()

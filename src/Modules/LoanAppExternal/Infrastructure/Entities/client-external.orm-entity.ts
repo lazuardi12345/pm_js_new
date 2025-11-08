@@ -10,10 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import {
-  GENDER,
-  MARRIAGE_STATUS,
-} from 'src/Shared/Enums/External/Client-External.enum';
+import { GENDER, MARRIAGE_STATUS } from 'src/Shared/Enums/External/Client-External.enum';
 import { Users_ORM_Entity } from 'src/Modules/Users/Infrastructure/Entities/users.orm-entity';
 import { AddressExternal_ORM_Entity } from './address-external.orm-entity';
 import { EmergencyContactExternal_ORM_Entity } from './emergency-contact.orm-entity';
@@ -35,7 +32,7 @@ export class ClientExternal_ORM_Entity {
   @JoinColumn({
     name: 'marketing_id',
     foreignKeyConstraintName: 'FK_MarketingID_at_ClientExternal',
-  }) // auto create FK column
+  })
   marketing: Users_ORM_Entity;
 
   @Column()
@@ -46,6 +43,12 @@ export class ClientExternal_ORM_Entity {
 
   @Column()
   no_kk: string;
+
+  @Column()
+  no_rek: string;
+
+  @Column()
+  foto_rekening: string;
 
   @Column({ type: 'enum', enum: GENDER })
   jenis_kelamin: GENDER;
@@ -66,10 +69,16 @@ export class ClientExternal_ORM_Entity {
   status_nikah: MARRIAGE_STATUS;
 
   @Column({ nullable: true })
-  foto_ktp?: string;
+  foto_ktp_peminjam?: string;
 
   @Column({ nullable: true })
-  foto_kk?: string;
+  foto_ktp_penjamin?: string;
+
+  @Column({ nullable: true })
+  foto_kk_peminjam?: string;
+
+  @Column({ nullable: true })
+  foto_kk_penjamin?: string;
 
   @Column({ nullable: true })
   dokumen_pendukung?: string;
@@ -89,7 +98,6 @@ export class ClientExternal_ORM_Entity {
   @DeleteDateColumn({ type: 'timestamp', nullable: true })
   deleted_at?: Date | null;
 
-  // * CLIENTS (nasabah_luar) RELATIONSHIPS TO ANOTHER ENTITIES
   @OneToMany(() => AddressExternal_ORM_Entity, (address) => address.nasabah, {
     cascade: true,
   })
@@ -100,23 +108,28 @@ export class ClientExternal_ORM_Entity {
     (emergencyContactExternal) => emergencyContactExternal.nasabah,
   )
   kontakDaruratNasabahLuars: EmergencyContactExternal_ORM_Entity[];
+
   @OneToMany(() => JobExternal_ORM_Entity, (jobExternal) => jobExternal.nasabah)
   pekerjaanNasabahLuars: JobExternal_ORM_Entity[];
+
   @OneToMany(
     () => LoanApplicationExternal_ORM_Entity,
     (loanApplicationsExternal) => loanApplicationsExternal.nasabah,
   )
   loanApplications: LoanApplicationExternal_ORM_Entity[];
+
   @OneToMany(
     () => LoanGuarantorExternal_ORM_Entity,
     (loanGuarantorExternal) => loanGuarantorExternal.nasabah,
   )
   loanGuarantors: LoanGuarantorExternal_ORM_Entity[];
+
   @OneToMany(
     () => OtherExistLoansExternal_ORM_Entity,
     (otherExistLoansExternal) => otherExistLoansExternal.nasabah,
   )
   otherExistLoans: OtherExistLoansExternal_ORM_Entity[];
+
   @OneToOne(
     () => FinancialDependentsExternal_ORM_Entity,
     (financialDependentsExternal) => financialDependentsExternal.nasabah,

@@ -16,47 +16,46 @@ export class AddressExternalRepositoryImpl
     private readonly ormRepository: Repository<AddressExternal_ORM_Entity>,
   ) {}
 
-  //? ============================== MAPPER ==========================================
+  // ============================== MAPPER ==========================================
 
-  //? ORM to Domain
+  // ORM to Domain
   private toDomain(orm: AddressExternal_ORM_Entity): AddressExternal {
-  return new AddressExternal(
-    orm.nasabah,
-    orm.alamat_ktp,
-    orm.rt_rw,
-    orm.kelurahan,
-    orm.kecamatan,
-    orm.kota,
-    orm.provinsi,
-    orm.status_rumah,
-    orm.domisili,
-    orm.rumah_domisili,
-    orm.id,
-    orm.created_at,
-    orm.deleted_at,
+    return new AddressExternal(
+      orm.nasabah,
+      orm.alamat_ktp,
+      orm.rt_rw,
+      orm.kelurahan,
+      orm.kecamatan,
+      orm.kota,
+      orm.provinsi,
+      orm.status_rumah,
+      orm.domisili,
+      orm.rumah_domisili,
+      orm.id,
+      orm.created_at,
+      orm.deleted_at,
 
-    // Mutable
-    orm.alamat_domisili,
-    orm.biaya_perbulan,
-    orm.biaya_pertahun,
-    orm.biaya_perbulan_domisili,
-    orm.biaya_pertahun_domisili,
-    orm.lama_tinggal,
-    orm.atas_nama_listrik,
-    orm.hubungan,
-    orm.foto_meteran_listrik,
-    orm.share_loc_link,
-    orm.validasi_alamat,
-    orm.catatan,
-    orm.updated_at,
-  );
-}
+      // Mutable
+      orm.alamat_domisili,
+      orm.biaya_perbulan,
+      orm.biaya_pertahun,
+      orm.biaya_perbulan_domisili,
+      orm.biaya_pertahun_domisili,
+      orm.lama_tinggal,
+      orm.atas_nama_listrik,
+      orm.hubungan,
+      orm.foto_meteran_listrik,
+      orm.share_loc_domisili,
+      orm.share_loc_usaha,
+      orm.share_loc_tempat_kerja,
+      orm.validasi_alamat,
+      orm.catatan,
+      orm.updated_at,
+    );
+  }
 
 
-  //? Domain to ORM (Create / Save)
-  private toOrm(
-    domain: AddressExternal,
-  ): Partial<AddressExternal_ORM_Entity> {
+  private toOrm(domain: AddressExternal): Partial<AddressExternal_ORM_Entity> {
     return {
       id: domain.id,
       nasabah: { id: domain.nasabah.id } as ClientExternal_ORM_Entity,
@@ -79,7 +78,9 @@ export class AddressExternalRepositoryImpl
       atas_nama_listrik: domain.atas_nama_listrik,
       hubungan: domain.hubungan,
       foto_meteran_listrik: domain.foto_meteran_listrik,
-      share_loc_link: domain.share_loc_link,
+      share_loc_domisili: domain.share_loc_domisili,
+      share_loc_usaha: domain.share_loc_usaha,
+      share_loc_tempat_kerja: domain.share_loc_tempat_kerja,
       validasi_alamat: domain.validasi_alamat,
       catatan: domain.catatan,
       created_at: domain.created_at,
@@ -88,7 +89,7 @@ export class AddressExternalRepositoryImpl
     };
   }
 
-  //? Partial update mapping
+
   private toOrmPartial(
     partial: Partial<AddressExternal>,
   ): Partial<AddressExternal_ORM_Entity> {
@@ -119,9 +120,10 @@ export class AddressExternalRepositoryImpl
     if (partial.hubungan) orm.hubungan = partial.hubungan;
     if (partial.foto_meteran_listrik)
       orm.foto_meteran_listrik = partial.foto_meteran_listrik;
-    if (partial.share_loc_link) orm.share_loc_link = partial.share_loc_link;
-    if (partial.validasi_alamat)
-      orm.validasi_alamat = partial.validasi_alamat;
+    if (partial.share_loc_domisili) orm.share_loc_domisili = partial.share_loc_domisili;
+    if (partial.share_loc_usaha) orm.share_loc_usaha = partial.share_loc_usaha;
+    if (partial.share_loc_tempat_kerja) orm.share_loc_tempat_kerja = partial.share_loc_tempat_kerja;
+    if (partial.validasi_alamat) orm.validasi_alamat = partial.validasi_alamat;
     if (partial.catatan) orm.catatan = partial.catatan;
     if (partial.created_at) orm.created_at = partial.created_at;
     if (partial.updated_at) orm.updated_at = partial.updated_at;
@@ -130,7 +132,7 @@ export class AddressExternalRepositoryImpl
     return orm;
   }
 
-  //? ============================== METHODS =========================================
+  // ============================== METHODS =========================================
 
   async findById(id: number): Promise<AddressExternal | null> {
     const ormEntity = await this.ormRepository.findOne({

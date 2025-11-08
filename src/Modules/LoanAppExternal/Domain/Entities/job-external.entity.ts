@@ -2,7 +2,8 @@ import { StatusKaryawanEnum } from 'src/Shared/Enums/External/Job.enum';
 
 export class JobExternal {
   constructor(
-    public readonly nasabah: {id: number},
+    public readonly nasabah: { id: number },
+    
     public readonly perusahaan: string,
     public readonly alamat_perusahaan: string,
     public readonly kontak_perusahaan: string,
@@ -10,9 +11,11 @@ export class JobExternal {
     public readonly lama_kerja: string,
     public readonly status_karyawan: StatusKaryawanEnum,
     public readonly pendapatan_perbulan: number,
-    public readonly slip_gaji: string,
-    public readonly norek: string,
-    public readonly id_card: string,
+    public readonly slip_gaji_peminjam?: string,
+    public readonly slip_gaji_penjamin?: string,
+    public readonly norek?: string,
+    public readonly id_card_peminjam?: string,
+    public readonly id_card_penjamin?: string,
     public readonly lama_kontrak?: string,
     public readonly validasi_pekerjaan?: boolean,
     public readonly catatan?: string,

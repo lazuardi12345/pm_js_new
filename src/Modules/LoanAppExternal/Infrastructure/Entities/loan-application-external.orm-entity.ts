@@ -2,7 +2,7 @@ import { ApprovalExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrast
 import { ClientExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/client-external.orm-entity';
 import { CollateralByBPJS_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/collateral-bpjs.orm-entity';
 import { CollateralByBPKB_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/collateral-bpkb.orm-entity';
-import { CollateralByKedinasan_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/collateral-kedinasan.orm-entity';
+import { CollateralByKedinasan_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/collateral-kedinasan-mou.orm-entity';
 import { CollateralBySHM_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/collateral-shm.orm-entity';
 import { SurveyReports_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/survey-reports.orm-entity';
 // import { Notification } from 'src/Shared/Modules/Notifications/entities/notification.entity';

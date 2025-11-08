@@ -18,9 +18,16 @@ export class CollateralByBPKB_ORM_Entity {
   @OneToOne(() => LoanApplicationExternal_ORM_Entity, (pengajuan) => pengajuan.id, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'pengajuan_id', foreignKeyConstraintName: 'FK_LoanApplicationExternalID_at_CollateralByBPKB' })
+  @JoinColumn({
+    name: 'pengajuan_id',
+    foreignKeyConstraintName:
+      'FK_LoanApplicationExternalID_at_CollateralByBPKB',
+  })
   pengajuan: LoanApplicationExternal_ORM_Entity;
 
+  // =====================
+  // Informasi dasar BPKB / STNK
+  // =====================
   @Column({ nullable: true })
   atas_nama_bpkb?: string;
 
@@ -46,20 +53,59 @@ export class CollateralByBPKB_ORM_Entity {
   no_rangka?: string;
 
   @Column({ nullable: true })
+  foto_no_rangka?: string;
+
+  @Column({ nullable: true })
   no_mesin?: string;
+
+  @Column({ nullable: true })
+  foto_no_mesin?: string;
 
   @Column({ nullable: true })
   no_bpkb?: string;
 
   @Column({ nullable: true })
-  foto_stnk?: string;
+  dokumen_bpkb?: string; // file PDF
+
+  // =====================
+  // Foto dokumen & kendaraan
+  // =====================
+  @Column({ nullable: true })
+  foto_stnk_depan?: string;
 
   @Column({ nullable: true })
-  foto_bpkb?: string;
+  foto_stnk_belakang?: string;
 
   @Column({ nullable: true })
-  foto_motor?: string;
+  foto_kendaraan_depan?: string;
 
+  @Column({ nullable: true })
+  foto_kendaraan_belakang?: string;
+
+  @Column({ nullable: true })
+  foto_kendaraan_samping_kanan?: string;
+
+  @Column({ nullable: true })
+  foto_kendaraan_samping_kiri?: string;
+
+  @Column({ nullable: true })
+  foto_sambara?: string;
+
+  @Column({ nullable: true })
+  foto_kwitansi_jual_beli?: string;
+
+  @Column({ nullable: true })
+  foto_ktp_tangan_pertama?: string;
+
+  @Column({ nullable: true })
+  foto_faktur_kendaraan?: string;
+
+  @Column({ nullable: true })
+  foto_snikb?: string;
+
+  // =====================
+  // Metadata
+  // =====================
   @CreateDateColumn()
   created_at?: Date;
 

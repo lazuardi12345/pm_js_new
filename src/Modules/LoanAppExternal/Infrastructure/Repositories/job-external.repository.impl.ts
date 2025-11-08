@@ -25,9 +25,11 @@ export class JobExternalRepositoryImpl implements IJobExternalRepository {
       orm.lama_kerja,
       orm.status_karyawan,
       Number(orm.pendapatan_perbulan),
-      orm.slip_gaji,
+      orm.slip_gaji_peminjam,
+      orm.slip_gaji_penjamin,
       orm.norek,
-      orm.id_card,
+      orm.id_card_peminjam,
+      orm.id_card_penjamin,
       orm.lama_kontrak,
       orm.validasi_pekerjaan,
       orm.catatan,
@@ -49,9 +51,11 @@ export class JobExternalRepositoryImpl implements IJobExternalRepository {
       lama_kerja: domain.lama_kerja,
       status_karyawan: domain.status_karyawan,
       pendapatan_perbulan: domain.pendapatan_perbulan,
-      slip_gaji: domain.slip_gaji,
+      slip_gaji_peminjam: domain.slip_gaji_peminjam,
+      slip_gaji_penjamin: domain.slip_gaji_penjamin,
       norek: domain.norek,
-      id_card: domain.id_card,
+      id_card_peminjam: domain.id_card_peminjam,
+      id_card_penjamin: domain.id_card_penjamin,
       lama_kontrak: domain.lama_kontrak,
       validasi_pekerjaan: domain.validasi_pekerjaan,
       catatan: domain.catatan,
@@ -79,9 +83,13 @@ export class JobExternalRepositoryImpl implements IJobExternalRepository {
       ormData.status_karyawan = partial.status_karyawan;
     if (partial.pendapatan_perbulan !== undefined)
       ormData.pendapatan_perbulan = partial.pendapatan_perbulan;
-    if (partial.slip_gaji) ormData.slip_gaji = partial.slip_gaji;
+    if (partial.slip_gaji_peminjam)
+      ormData.slip_gaji_peminjam = partial.slip_gaji_peminjam;
+    if (partial.slip_gaji_penjamin)
+      ormData.slip_gaji_penjamin = partial.slip_gaji_penjamin;
     if (partial.norek) ormData.norek = partial.norek;
-    if (partial.id_card) ormData.id_card = partial.id_card;
+    if (partial.id_card_peminjam) ormData.id_card_peminjam = partial.id_card_peminjam;
+    if (partial.id_card_penjamin) ormData.id_card_penjamin = partial.id_card_penjamin;
     if (partial.lama_kontrak) ormData.lama_kontrak = partial.lama_kontrak;
     if (partial.validasi_pekerjaan !== undefined)
       ormData.validasi_pekerjaan = partial.validasi_pekerjaan;
@@ -113,10 +121,7 @@ export class JobExternalRepositoryImpl implements IJobExternalRepository {
     return this.toDomain(saved as JobExternal_ORM_Entity);
   }
 
-  async update(
-    id: number,
-    data: Partial<JobExternal>,
-  ): Promise<JobExternal> {
+  async update(id: number, data: Partial<JobExternal>): Promise<JobExternal> {
     await this.ormRepository.update(id, this.toOrmPartial(data));
     const updated = await this.ormRepository.findOne({ where: { id } });
     if (!updated) throw new Error('JobExternal not found');

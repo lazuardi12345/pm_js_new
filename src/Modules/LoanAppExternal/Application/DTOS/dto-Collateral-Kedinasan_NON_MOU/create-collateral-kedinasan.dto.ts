@@ -23,4 +23,17 @@ export class CreatePengajuanKedinasanDto {
   @IsOptional()
   @IsString()
   surat_keterangan_gaji?: string;
+
+  @IsOptional()
+  @IsString()
+  foto_sk?: string;
+
+
+  @IsOptional()
+  @IsString()
+  foto_keterangan_tpp?: string;
+
+  @IsOptional()
+  @IsString()
+  foto_biaya_operasional?: string;
 }
