@@ -2,7 +2,7 @@ import { IsNumber, IsOptional, IsString, IsDateString } from 'class-validator';
 
 export class CreatePengajuanBPJSDto {
   @IsNumber()
-  pengajuan_id: number;  
+  pengajuan_id: number;
 
   @IsOptional()
   @IsNumber()
@@ -26,5 +26,5 @@ export class CreatePengajuanBPJSDto {
 
   @IsOptional()
   @IsString()
-  foto_jaminan_tambahan?: string;
+  jaminan_tambahan?: string;
 }

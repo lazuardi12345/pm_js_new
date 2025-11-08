@@ -81,9 +81,18 @@ export class CreateAddressExternalDto {
   @IsString()
   foto_meteran_listrik?: string;
 
+  @IsNotEmpty()
+  @IsString()
+  share_loc_domisili?: string; 
+
   @IsOptional()
   @IsString()
-  share_loc_link?: string;
+  share_loc_usaha?: string;
+  
+  @IsOptional()
+  @IsString()
+  share_loc_tempat_kerja?: string; 
+  
 
   @IsOptional()
   @IsBoolean()

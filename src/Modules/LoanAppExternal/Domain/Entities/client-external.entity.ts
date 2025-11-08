@@ -14,6 +14,8 @@ export class ClientExternal {
   public nama_lengkap: string;
   public nik: string;
   public no_kk: string;
+  public no_rek: string;
+  public foto_rekening: string;
   public jenis_kelamin: GENDER;
   public tempat_lahir: string;
   public tanggal_lahir: Date;
@@ -22,8 +24,10 @@ export class ClientExternal {
 
   // Informasi tambahan
   public email?: string;
-  public foto_ktp?: string;
-  public foto_kk?: string;
+  public foto_ktp_peminjam?: string;
+  public foto_ktp_penjamin?: string;
+  public foto_kk_peminjam?: string;
+  public foto_kk_penjamin?: string;
   public dokumen_pendukung?: string;
   public validasi_nasabah?: boolean;
   public catatan?: string;
@@ -33,6 +37,8 @@ export class ClientExternal {
     nama_lengkap: string,
     nik: string,
     no_kk: string,
+    no_rek: string,
+    foto_rekening: string,
     jenis_kelamin: GENDER,
     tempat_lahir: string,
     tanggal_lahir: Date,
@@ -40,8 +46,10 @@ export class ClientExternal {
     status_nikah: MARRIAGE_STATUS,
     id?: number,
     email?: string,
-    foto_ktp?: string,
-    foto_kk?: string,
+    foto_ktp_peminjam?: string,
+    foto_ktp_penjamin?: string,
+    foto_kk_peminjam?: string,
+    foto_kk_penjamin?: string,
     dokumen_pendukung?: string,
     validasi_nasabah?: boolean,
     catatan?: string,
@@ -53,6 +61,8 @@ export class ClientExternal {
     this.nama_lengkap = nama_lengkap;
     this.nik = nik;
     this.no_kk = no_kk;
+    this.no_rek = no_rek;
+    this.foto_rekening = foto_rekening;
     this.jenis_kelamin = jenis_kelamin;
     this.tempat_lahir = tempat_lahir;
     this.tanggal_lahir = tanggal_lahir;
@@ -61,8 +71,10 @@ export class ClientExternal {
 
     this.id = id;
     this.email = email;
-    this.foto_ktp = foto_ktp;
-    this.foto_kk = foto_kk;
+    this.foto_ktp_peminjam = foto_ktp_peminjam;
+    this.foto_ktp_penjamin = foto_ktp_penjamin;
+    this.foto_kk_peminjam = foto_kk_peminjam;
+    this.foto_kk_penjamin = foto_kk_penjamin;
     this.dokumen_pendukung = dokumen_pendukung;
     this.validasi_nasabah = validasi_nasabah;
     this.catatan = catatan;
@@ -70,14 +82,11 @@ export class ClientExternal {
     this.created_at = created_at;
     this.updated_at = updated_at;
     this.deleted_at = deleted_at;
-
-    // Jangan validasi otomatis di constructor
   }
 
   // ==========================
   //        VALIDATION
   // ==========================
-
   public validate_for_create_or_update(): void {
     this.validate_nik();
     this.validate_no_hp();
@@ -91,14 +100,15 @@ export class ClientExternal {
 
   private validate_no_hp(): void {
     if (!this.no_hp || !/^08\d{8,12}$/.test(this.no_hp)) {
-      throw new Error('Nomor HP tidak valid. Harus diawali 08 dan terdiri dari 10-14 digit.');
+      throw new Error(
+        'Nomor HP tidak valid. Harus diawali 08 dan terdiri dari 10-14 digit.',
+      );
     }
   }
 
   // ==========================
   //        UTILITIES
   // ==========================
-
   public is_valid_email(): boolean {
     return !!this.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email);
   }

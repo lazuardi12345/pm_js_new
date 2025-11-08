@@ -37,6 +37,15 @@ export class CollateralSHMService {
       dto.foto_shm,
       dto.foto_kk_pemilik_shm,
       dto.foto_pbb,
+      dto.foto_objek_jaminan,
+      dto.foto_buku_nikah_suami,
+      dto.foto_buku_nikah_istri,
+      dto.foto_npwp,
+      dto.foto_imb,
+      dto.foto_surat_ahli_waris,
+      dto.foto_surat_akte_kematian,
+      dto.foto_surat_pernyataan_kepemilikan_tanah,
+      dto.foto_surat_pernyataan_tidak_dalam_sengketa,
       undefined, // id otomatis
       now,
       now,
@@ -51,37 +60,46 @@ export class CollateralSHMService {
     }
   }
 
-async update(id: number, dto: UpdatePengajuanSHMDto): Promise<CollateralBySHM> {
-  const existing = await this.repo.findById(id);
-  if (!existing) {
-    throw new NotFoundException(`Collateral SHM dengan ID ${id} tidak ditemukan`);
+  async update(id: number, dto: UpdatePengajuanSHMDto): Promise<CollateralBySHM> {
+    const existing = await this.repo.findById(id);
+    if (!existing) {
+      throw new NotFoundException(`Collateral SHM dengan ID ${id} tidak ditemukan`);
+    }
+
+    const updatedData = new CollateralBySHM(
+      existing.pengajuan,
+      dto.atas_nama_shm ?? existing.atas_nama_shm,
+      dto.hubungan_shm ?? existing.hubungan_shm,
+      dto.alamat_shm ?? existing.alamat_shm,
+      dto.luas_shm ?? existing.luas_shm,
+      dto.njop_shm ?? existing.njop_shm,
+      dto.foto_shm ?? existing.foto_shm,
+      dto.foto_kk_pemilik_shm ?? existing.foto_kk_pemilik_shm,
+      dto.foto_pbb ?? existing.foto_pbb,
+      dto.foto_objek_jaminan ?? existing.foto_objek_jaminan,
+      dto.foto_buku_nikah_suami ?? existing.foto_buku_nikah_suami,
+      dto.foto_buku_nikah_istri ?? existing.foto_buku_nikah_istri,
+      dto.foto_npwp ?? existing.foto_npwp,
+      dto.foto_imb ?? existing.foto_imb,
+      dto.foto_surat_ahli_waris ?? existing.foto_surat_ahli_waris,
+      dto.foto_surat_akte_kematian ?? existing.foto_surat_akte_kematian,
+      dto.foto_surat_pernyataan_kepemilikan_tanah ??
+        existing.foto_surat_pernyataan_kepemilikan_tanah,
+      dto.foto_surat_pernyataan_tidak_dalam_sengketa ??
+        existing.foto_surat_pernyataan_tidak_dalam_sengketa,
+      existing.id,
+      existing.created_at,
+      new Date(), // updated_at
+      existing.deleted_at,
+    );
+
+    try {
+      return await this.repo.update(id, updatedData);
+    } catch (error) {
+      console.error('Update Collateral SHM Error:', error);
+      throw new InternalServerErrorException('Gagal mengupdate collateral SHM');
+    }
   }
-
-  // Gabungkan data lama dengan data update (immutable)
-  const updatedData = new CollateralBySHM(
-    existing.pengajuan,
-    dto.atas_nama_shm ?? existing.atas_nama_shm,
-    dto.hubungan_shm ?? existing.hubungan_shm,
-    dto.alamat_shm ?? existing.alamat_shm,
-    dto.luas_shm ?? existing.luas_shm,
-    dto.njop_shm ?? existing.njop_shm,
-    dto.foto_shm ?? existing.foto_shm,
-    dto.foto_kk_pemilik_shm ?? existing.foto_kk_pemilik_shm,
-    dto.foto_pbb ?? existing.foto_pbb,
-    existing.id,
-    existing.created_at,
-    new Date(), // updated_at di-set ke sekarang
-    existing.deleted_at,
-  );
-
-  try {
-    return await this.repo.update(id, updatedData);
-  } catch (error) {
-    console.error('Update Collateral SHM Error:', error);
-    throw new InternalServerErrorException('Gagal mengupdate collateral SHM');
-  }
-}
-
 
   async findById(id: number): Promise<CollateralBySHM> {
     const collateral = await this.repo.findById(id);

@@ -18,7 +18,10 @@ export class CollateralBySHM_ORM_Entity {
   @OneToOne(() => LoanApplicationExternal_ORM_Entity, (pengajuan) => pengajuan.id, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'pengajuan_id', foreignKeyConstraintName: 'FK_LoanApplicationExternalID_at_CollateralBySHM' })
+  @JoinColumn({
+    name: 'pengajuan_id',
+    foreignKeyConstraintName: 'FK_LoanApplicationExternalID_at_CollateralBySHM',
+  })
   pengajuan: LoanApplicationExternal_ORM_Entity;
 
   @Column({ nullable: true })
@@ -44,6 +47,33 @@ export class CollateralBySHM_ORM_Entity {
 
   @Column({ nullable: true })
   foto_pbb?: string;
+
+  @Column({ type: 'text', nullable: true })
+  foto_objek_jaminan?: string; // bisa simpan array JSON string
+
+  @Column({ nullable: true })
+  foto_buku_nikah_suami?: string;
+
+  @Column({ nullable: true })
+  foto_buku_nikah_istri?: string;
+
+  @Column({ nullable: true })
+  foto_npwp?: string;
+
+  @Column({ nullable: true })
+  foto_imb?: string;
+
+  @Column({ nullable: true })
+  foto_surat_ahli_waris?: string;
+
+  @Column({ nullable: true })
+  foto_surat_akte_kematian?: string;
+
+  @Column({ nullable: true })
+  foto_surat_pernyataan_kepemilikan_tanah?: string;
+
+  @Column({ nullable: true })
+  foto_surat_pernyataan_tidak_dalam_sengketa?: string;
 
   @CreateDateColumn()
   created_at?: Date;

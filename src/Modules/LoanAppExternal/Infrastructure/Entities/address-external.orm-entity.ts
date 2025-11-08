@@ -1,7 +1,7 @@
 import {
   Entity,
-  Column,
   PrimaryGeneratedColumn,
+  Column,
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
@@ -13,83 +13,89 @@ import { StatusRumahEnum, DomisiliEnum, RumahDomisiliEnum } from 'src/Shared/Enu
 
 @Entity('address_external')
 export class AddressExternal_ORM_Entity {
-  @PrimaryGeneratedColumn({ type: 'bigint' })
+  @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => ClientExternal_ORM_Entity, (ClientExternal) => ClientExternal.id, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'nasabah_id', foreignKeyConstraintName: 'FK_ClientExternalID_at_AddressExternal' })
+  // Relasi ke nasabah
+  @ManyToOne(() => ClientExternal_ORM_Entity)
+  @JoinColumn({ name: 'nasabah_id' })
   nasabah: ClientExternal_ORM_Entity;
 
-  @Column({ type: 'varchar', length: 255 })
+  // Informasi alamat
+  @Column()
   alamat_ktp: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column()
   rt_rw: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column()
   kelurahan: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column()
   kecamatan: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column()
   kota: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column()
   provinsi: string;
 
   @Column({ type: 'enum', enum: StatusRumahEnum })
   status_rumah: StatusRumahEnum;
 
-  @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
-  biaya_perbulan?: number;
-
-  @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
-  biaya_pertahun?: number;
-
   @Column({ type: 'enum', enum: DomisiliEnum })
   domisili: DomisiliEnum;
-
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  alamat_domisili?: string;
 
   @Column({ type: 'enum', enum: RumahDomisiliEnum })
   rumah_domisili: RumahDomisiliEnum;
 
-  @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
+  @Column({ nullable: true })
+  alamat_domisili?: string;
+
+  @Column({ type: 'float', nullable: true })
+  biaya_perbulan?: number;
+
+  @Column({ type: 'float', nullable: true })
+  biaya_pertahun?: number;
+
+  @Column({ type: 'float', nullable: true })
   biaya_perbulan_domisili?: number;
 
-  @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
+  @Column({ type: 'float', nullable: true })
   biaya_pertahun_domisili?: number;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ nullable: true })
   lama_tinggal?: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column()
   atas_nama_listrik: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column()
   hubungan: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ nullable: true })
   foto_meteran_listrik?: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  share_loc_link?: string;
+  @Column({ nullable: true })
+  share_loc_domisili?: string;
 
-  @Column({ type: 'tinyint', width: 1, nullable: true })
+  @Column({ nullable: true })
+  share_loc_usaha?: string;
+
+  @Column({ nullable: true })
+  share_loc_tempat_kerja?: string;
+
+  @Column({ nullable: true })
   validasi_alamat?: boolean;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ nullable: true })
   catatan?: string;
 
-  @CreateDateColumn({ type: 'timestamp', nullable: true })
-  created_at?: Date;
+  @CreateDateColumn({ type: 'timestamp' })
+  created_at: Date;
 
-  @UpdateDateColumn({ type: 'timestamp', nullable: true })
-  updated_at?: Date;
+  @UpdateDateColumn({ type: 'timestamp' })
+  updated_at: Date;
 
   @DeleteDateColumn({ type: 'timestamp', nullable: true })
   deleted_at?: Date | null;

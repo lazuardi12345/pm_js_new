@@ -13,103 +13,132 @@ export class CollateralBySHMRepositoryImpl implements ICollateralBySHMRepository
     private readonly ormRepository: Repository<CollateralBySHM_ORM_Entity>,
   ) {}
 
-  private toDomain(ormEntity: CollateralBySHM_ORM_Entity): CollateralBySHM {
+  // ========================== MAPPER: ORM → DOMAIN ==========================
+  private toDomain(orm: CollateralBySHM_ORM_Entity): CollateralBySHM {
     return new CollateralBySHM(
-      { id: ormEntity.pengajuan?.id }, // pastikan objek pengajuan
-      ormEntity.atas_nama_shm ?? undefined,
-      ormEntity.hubungan_shm ?? undefined,
-      ormEntity.alamat_shm ?? undefined,
-      ormEntity.luas_shm ?? undefined,
-      ormEntity.njop_shm ?? undefined,
-      ormEntity.foto_shm ?? undefined,
-      ormEntity.foto_kk_pemilik_shm ?? undefined,
-      ormEntity.foto_pbb ?? undefined,
-      ormEntity.id ?? undefined,
-      ormEntity.created_at ?? undefined,
-      ormEntity.updated_at ?? undefined,
-      ormEntity.deleted_at ?? null,
+      { id: orm.pengajuan?.id },
+      orm.atas_nama_shm,
+      orm.hubungan_shm,
+      orm.alamat_shm,
+      orm.luas_shm,
+      orm.njop_shm,
+      orm.foto_shm,
+      orm.foto_kk_pemilik_shm,
+      orm.foto_pbb,
+      orm.foto_objek_jaminan,
+      orm.foto_buku_nikah_suami,
+      orm.foto_buku_nikah_istri,
+      orm.foto_npwp,
+      orm.foto_imb,
+      orm.foto_surat_ahli_waris,
+      orm.foto_surat_akte_kematian,
+      orm.foto_surat_pernyataan_kepemilikan_tanah,
+      orm.foto_surat_pernyataan_tidak_dalam_sengketa,
+      orm.id,
+      orm.created_at,
+      orm.updated_at,
+      orm.deleted_at,
     );
   }
 
-  private toOrm(domainEntity: CollateralBySHM): Partial<CollateralBySHM_ORM_Entity> {
-    return {
-      id: domainEntity.id,
-      pengajuan: domainEntity.pengajuan ? { id: domainEntity.pengajuan.id } as LoanApplicationExternal_ORM_Entity : undefined,
-      atas_nama_shm: domainEntity.atas_nama_shm,
-      hubungan_shm: domainEntity.hubungan_shm,
-      alamat_shm: domainEntity.alamat_shm,
-      luas_shm: domainEntity.luas_shm,
-      njop_shm: domainEntity.njop_shm,
-      foto_shm: domainEntity.foto_shm,
-      foto_kk_pemilik_shm: domainEntity. foto_kk_pemilik_shm,
-      foto_pbb: domainEntity.foto_pbb,
-      created_at: domainEntity.created_at,
-      updated_at: domainEntity.updated_at,
-      deleted_at: domainEntity.deleted_at,
-    };
+  // ========================== MAPPER: DOMAIN → ORM ==========================
+  private toORM(domain: CollateralBySHM): CollateralBySHM_ORM_Entity {
+    const orm = new CollateralBySHM_ORM_Entity();
+    orm.pengajuan = { id: domain.pengajuan?.id } as LoanApplicationExternal_ORM_Entity;
+    orm.atas_nama_shm = domain.atas_nama_shm;
+    orm.hubungan_shm = domain.hubungan_shm;
+    orm.alamat_shm = domain.alamat_shm;
+    orm.luas_shm = domain.luas_shm;
+    orm.njop_shm = domain.njop_shm;
+    orm.foto_shm = domain.foto_shm;
+    orm.foto_kk_pemilik_shm = domain.foto_kk_pemilik_shm;
+    orm.foto_pbb = domain.foto_pbb;
+    orm.foto_objek_jaminan = domain.foto_objek_jaminan;
+    orm.foto_buku_nikah_suami = domain.foto_buku_nikah_suami;
+    orm.foto_buku_nikah_istri = domain.foto_buku_nikah_istri;
+    orm.foto_npwp = domain.foto_npwp;
+    orm.foto_imb = domain.foto_imb;
+    orm.foto_surat_ahli_waris = domain.foto_surat_ahli_waris;
+    orm.foto_surat_akte_kematian = domain.foto_surat_akte_kematian;
+    orm.foto_surat_pernyataan_kepemilikan_tanah = domain.foto_surat_pernyataan_kepemilikan_tanah;
+    orm.foto_surat_pernyataan_tidak_dalam_sengketa = domain.foto_surat_pernyataan_tidak_dalam_sengketa;
+    orm.created_at = domain.created_at;
+    orm.updated_at = domain.updated_at;
+    orm.deleted_at = domain.deleted_at;
+    return orm;
   }
 
   private toOrmPartial(partial: Partial<CollateralBySHM>): Partial<CollateralBySHM_ORM_Entity> {
-    const ormData: Partial<CollateralBySHM_ORM_Entity> = {};
+    const orm: Partial<CollateralBySHM_ORM_Entity> = {};
 
-    if (partial.pengajuan?.id !== undefined) {
-      ormData.pengajuan = { id: partial.pengajuan.id } as LoanApplicationExternal_ORM_Entity;
-    }
-    if (partial.atas_nama_shm !== undefined) ormData.atas_nama_shm = partial.atas_nama_shm;
-    if (partial.hubungan_shm !== undefined) ormData.hubungan_shm = partial.hubungan_shm;
-    if (partial.alamat_shm !== undefined) ormData.alamat_shm = partial.alamat_shm;
-    if (partial.luas_shm !== undefined) ormData.luas_shm = partial.luas_shm;
-    if (partial.njop_shm !== undefined) ormData.njop_shm = partial.njop_shm;
-    if (partial.foto_shm !== undefined) ormData.foto_shm = partial.foto_shm;
-    if (partial.foto_kk_pemilik_shm !== undefined) ormData.foto_kk_pemilik_shm = partial.foto_kk_pemilik_shm;
-    if (partial.foto_pbb !== undefined) ormData.foto_pbb = partial.foto_pbb;
-    if (partial.created_at !== undefined) ormData.created_at = partial.created_at;
-    if (partial.updated_at !== undefined) ormData.updated_at = partial.updated_at;
-    if (partial.deleted_at !== undefined) ormData.deleted_at = partial.deleted_at;
+    if (partial.pengajuan?.id)
+      orm.pengajuan = { id: partial.pengajuan.id } as LoanApplicationExternal_ORM_Entity;
+    if (partial.atas_nama_shm) orm.atas_nama_shm = partial.atas_nama_shm;
+    if (partial.hubungan_shm) orm.hubungan_shm = partial.hubungan_shm;
+    if (partial.alamat_shm) orm.alamat_shm = partial.alamat_shm;
+    if (partial.luas_shm) orm.luas_shm = partial.luas_shm;
+    if (partial.njop_shm) orm.njop_shm = partial.njop_shm;
 
-    return ormData;
+    // Foto-foto
+    if (partial.foto_shm) orm.foto_shm = partial.foto_shm;
+    if (partial.foto_kk_pemilik_shm) orm.foto_kk_pemilik_shm = partial.foto_kk_pemilik_shm;
+    if (partial.foto_pbb) orm.foto_pbb = partial.foto_pbb;
+    if (partial.foto_objek_jaminan) orm.foto_objek_jaminan = partial.foto_objek_jaminan;
+    if (partial.foto_buku_nikah_suami) orm.foto_buku_nikah_suami = partial.foto_buku_nikah_suami;
+    if (partial.foto_buku_nikah_istri) orm.foto_buku_nikah_istri = partial.foto_buku_nikah_istri;
+    if (partial.foto_npwp) orm.foto_npwp = partial.foto_npwp;
+    if (partial.foto_imb) orm.foto_imb = partial.foto_imb;
+    if (partial.foto_surat_ahli_waris) orm.foto_surat_ahli_waris = partial.foto_surat_ahli_waris;
+    if (partial.foto_surat_akte_kematian) orm.foto_surat_akte_kematian = partial.foto_surat_akte_kematian;
+    if (partial.foto_surat_pernyataan_kepemilikan_tanah)
+      orm.foto_surat_pernyataan_kepemilikan_tanah = partial.foto_surat_pernyataan_kepemilikan_tanah;
+    if (partial.foto_surat_pernyataan_tidak_dalam_sengketa)
+      orm.foto_surat_pernyataan_tidak_dalam_sengketa = partial.foto_surat_pernyataan_tidak_dalam_sengketa;
+
+    if (partial.created_at) orm.created_at = partial.created_at;
+    if (partial.updated_at) orm.updated_at = partial.updated_at;
+    if (partial.deleted_at) orm.deleted_at = partial.deleted_at;
+
+    return orm;
   }
 
+  // ========================== CRUD METHODS ==========================
+
   async findById(id: number): Promise<CollateralBySHM | null> {
-    const ormEntity = await this.ormRepository.findOne({
+    const orm = await this.ormRepository.findOne({
       where: { id },
       relations: ['pengajuan'],
     });
-    return ormEntity ? this.toDomain(ormEntity) : null;
+    return orm ? this.toDomain(orm) : null;
   }
 
   async findByPengajuanLuarId(pengajuanId: number): Promise<CollateralBySHM[]> {
-    const ormEntities = await this.ormRepository.find({
+    const ormList = await this.ormRepository.find({
       where: { pengajuan: { id: pengajuanId } },
       relations: ['pengajuan'],
     });
-    return ormEntities.map((e) => this.toDomain(e));
+    return ormList.map((e) => this.toDomain(e));
   }
 
   async findAll(): Promise<CollateralBySHM[]> {
-    const ormEntities = await this.ormRepository.find({
-      relations: ['pengajuan'],
-    });
-    return ormEntities.map((e) => this.toDomain(e));
+    const ormList = await this.ormRepository.find({ relations: ['pengajuan'] });
+    return ormList.map((e) => this.toDomain(e));
   }
 
-  async save(collateral: CollateralBySHM): Promise<CollateralBySHM> {
-    const ormEntity = this.toOrm(collateral);
-    const savedOrm = await this.ormRepository.save(ormEntity);
-    return this.toDomain(savedOrm as CollateralBySHM_ORM_Entity);
+  async save(data: CollateralBySHM): Promise<CollateralBySHM> {
+    const ormEntity = this.toORM(data);
+    const saved = await this.ormRepository.save(ormEntity);
+    return this.toDomain(saved as CollateralBySHM_ORM_Entity);
   }
 
   async update(id: number, data: Partial<CollateralBySHM>): Promise<CollateralBySHM> {
     await this.ormRepository.update(id, this.toOrmPartial(data));
-    const updated = await this.ormRepository.findOne({
-      where: { id },
-      relations: ['pengajuan'],
-    });
+    const updated = await this.ormRepository.findOne({ where: { id }, relations: ['pengajuan'] });
     if (!updated) throw new NotFoundException(`CollateralBySHM with ID ${id} not found`);
     return this.toDomain(updated);
   }
 
-   async delete(id: number): Promise<void> {
+  async delete(id: number): Promise<void> {
     await this.ormRepository.softDelete(id);
   }
 }

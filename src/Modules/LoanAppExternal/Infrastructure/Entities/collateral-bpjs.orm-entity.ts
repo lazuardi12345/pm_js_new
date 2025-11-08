@@ -15,36 +15,40 @@ export class CollateralByBPJS_ORM_Entity {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
 
-  @OneToOne(() => LoanApplicationExternal_ORM_Entity, (pengajuan) => pengajuan.id, {
+  @OneToOne(() => LoanApplicationExternal_ORM_Entity, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'pengajuan_id', foreignKeyConstraintName: 'FK_LoanApplicationExternalID_at_CollateralByBPJS' })
+  @JoinColumn({
+    name: 'pengajuan_id',
+    foreignKeyConstraintName: 'FK_LoanApplicationExternalID_at_CollateralByBPJS',
+  })
   pengajuan: LoanApplicationExternal_ORM_Entity;
 
-  @Column({ type: 'decimal', precision: 15, scale: 2, nullable: true })
-  saldo_bpjs?: number;
+  @Column({ type: 'decimal', precision: 15, scale: 2, nullable: false })
+  saldo_bpjs: number;
 
-  @Column({ type: 'date', nullable: true })
-  tanggal_bayar_terakhir?: Date;
+  @Column({ type: 'date', nullable: false })
+  tanggal_bayar_terakhir: Date;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   username?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   password?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 500, nullable: true })
   foto_bpjs?: string;
 
-  @Column({ nullable: true })
-  foto_jaminan_tambahan?: string;
+  // Sesuai entity: jaminan_tambahan (bukan foto_jaminan_tambahan)
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  jaminan_tambahan?: string;
 
-  @CreateDateColumn()
-  created_at?: Date;
+  @CreateDateColumn({ type: 'timestamp' })
+  created_at: Date;
 
-  @UpdateDateColumn()
-  updated_at?: Date;
+  @UpdateDateColumn({ type: 'timestamp' })
+  updated_at: Date;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({ type: 'timestamp', nullable: true })
   deleted_at?: Date | null;
 }

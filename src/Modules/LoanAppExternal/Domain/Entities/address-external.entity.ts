@@ -1,5 +1,4 @@
 // domain/entities/address-external.entity.ts
-
 import {
   StatusRumahEnum,
   DomisiliEnum,
@@ -8,7 +7,7 @@ import {
 
 export class AddressExternal {
   constructor(
-    // === Immutable ===
+    // === Immutable / Required ===
     public readonly nasabah: { id: number },
     public readonly alamat_ktp: string,
     public readonly rt_rw: string,
@@ -33,7 +32,9 @@ export class AddressExternal {
     public atas_nama_listrik?: string,
     public hubungan?: string,
     public foto_meteran_listrik?: string,
-    public share_loc_link?: string,
+    public share_loc_domisili?: string,
+    public share_loc_usaha?: string,
+    public share_loc_tempat_kerja?: string,
     public validasi_alamat?: boolean,
     public catatan?: string,
     public updated_at?: Date,

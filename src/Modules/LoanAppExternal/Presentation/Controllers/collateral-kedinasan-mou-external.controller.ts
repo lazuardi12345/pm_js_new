@@ -8,16 +8,9 @@ import {
   Param,
   UseGuards,
 } from '@nestjs/common';
-
-
-
-
-
-
-
-import { CollateralKedinasanExternalService } from '../../Application/Services/collateral-kedinasan-external.service';
-import { CreatePengajuanKedinasanDto } from '../../Application/DTOS/dto-Collateral-Kedinasan/create-collateral-kedinasan.dto';
-import { UpdatePengajuanKedinasanDto } from '../../Application/DTOS/dto-Collateral-Kedinasan/update-collateral-kedinasan.dto';
+import { CollateralKedinasanMOUExternalService } from '../../Application/Services/collateral-kedinasan-mou-external.service';
+import { CreatePengajuanKedinasanMOUDto } from '../../Application/DTOS/dto-Collateral-Kedinasan_MOU/create-collateral-kedinasan.dto';
+import { UpdatePengajuanKedinasanMOUDto } from '../../Application/DTOS/dto-Collateral-Kedinasan_MOU/update-collateral-kedinasan.dto';
 import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
 import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/jwtAuth.guard';
 import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
@@ -25,11 +18,11 @@ import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorat
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('collateral-kedinasan-external')
 export class CollateralKedinasanExternalController {
-  constructor(private readonly CollateralKedinasanExternal: CollateralKedinasanExternalService) {}
+  constructor(private readonly CollateralKedinasanExternal: CollateralKedinasanMOUExternalService ) {}
 
   @Public()
   @Post()
-  async create(@Body() dto: CreatePengajuanKedinasanDto) {
+  async create(@Body() dto: CreatePengajuanKedinasanMOUDto) {
     return this.CollateralKedinasanExternal.create(dto);
   }
 
@@ -44,7 +37,7 @@ export class CollateralKedinasanExternalController {
   }
 
   @Put(':id')
-  async update(@Param('id') id: number, @Body() dto: UpdatePengajuanKedinasanDto) {
+  async update(@Param('id') id: number, @Body() dto: UpdatePengajuanKedinasanMOUDto) {
     return this.CollateralKedinasanExternal.update(+id, dto);
   }
 

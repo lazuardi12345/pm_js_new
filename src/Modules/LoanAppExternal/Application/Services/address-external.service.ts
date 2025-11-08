@@ -12,44 +12,43 @@ export class AddressExternalService {
   constructor(
     @Inject(ADDRESS_EXTERNAL_REPOSITORY)
     private readonly repo: IAddressExternalRepository,
-  ) {}
+  ) { }
 
-async create(dto: CreateAddressExternalDto): Promise<AddressExternal> {
-  const now = new Date();
+  async create(dto: CreateAddressExternalDto): Promise<AddressExternal> {
+    const now = new Date();
 
-  const address = new AddressExternal(
-    { id: dto.nasabah_id },
-    dto.alamat_ktp,
-    dto.rt_rw,
-    dto.kelurahan,
-    dto.kecamatan,
-    dto.kota,
-    dto.provinsi,
-    dto.status_rumah,
-    dto.domisili,
-    dto.rumah_domisili,
-    undefined,
-    now,
-    null,
-
-    // === Mutable fields ===
-    dto.alamat_domisili,                  // ← asumsi ini adalah alamat_lengkap
-    dto.biaya_perbulan,
-    dto.biaya_pertahun,
-    dto.biaya_perbulan_domisili,
-    dto.biaya_pertahun_domisili,
-    dto.lama_tinggal,
-    dto.atas_nama_listrik,
-    dto.hubungan,
-    dto.foto_meteran_listrik,
-    dto.share_loc_link,
-    dto.validasi_alamat,
-    dto.catatan,
-    now,
-  );
-
-  return this.repo.save(address);
-}
+       const address = new AddressExternal(
+      { id: dto.nasabah_id },
+      dto.alamat_ktp,
+      dto.rt_rw,
+      dto.kelurahan,
+      dto.kecamatan,
+      dto.kota,
+      dto.provinsi,
+      dto.status_rumah,
+      dto.domisili,
+      dto.rumah_domisili,
+      undefined,             // id
+      now,                   // created_at
+      null,                  // deleted_at
+      dto.alamat_domisili,
+      dto.biaya_perbulan,
+      dto.biaya_pertahun,
+      dto.biaya_perbulan_domisili,
+      dto.biaya_pertahun_domisili,
+      dto.lama_tinggal,
+      dto.atas_nama_listrik,
+      dto.hubungan,
+      dto.foto_meteran_listrik,
+      dto.share_loc_domisili,
+      dto.share_loc_usaha,
+      dto.share_loc_tempat_kerja,
+      dto.validasi_alamat,
+      dto.catatan,
+      now,                   // updated_at
+    );
+    return this.repo.save(address);
+  }
 
 
 

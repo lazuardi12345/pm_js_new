@@ -18,12 +18,19 @@ export class CollateralByKedinasan_ORM_Entity {
   @OneToOne(() => LoanApplicationExternal_ORM_Entity, (pengajuan) => pengajuan.id, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'pengajuan_id', foreignKeyConstraintName: 'FK_LoanApplicationExternalID_at_CollateralByKedinasan' })
+  @JoinColumn({
+    name: 'pengajuan_id',
+    foreignKeyConstraintName:
+      'FK_LoanApplicationExternalID_at_CollateralByKedinasan',
+  })
   pengajuan: LoanApplicationExternal_ORM_Entity;
 
   @Column({ nullable: true })
   instansi?: string;
 
+  // ==========================
+  // DOKUMEN UTAMA
+  // ==========================
   @Column({ nullable: true })
   surat_permohonan_kredit?: string;
 
@@ -36,6 +43,36 @@ export class CollateralByKedinasan_ORM_Entity {
   @Column({ nullable: true })
   surat_keterangan_gaji?: string;
 
+  // ==========================
+  // FOTO PENDUKUNG
+  // ==========================
+  @Column({ nullable: true })
+  foto_form_pengajuan?: string;
+
+  @Column({ nullable: true })
+  foto_surat_kuasa_pemotongan?: string;
+
+  @Column({ nullable: true })
+  foto_surat_pernyataan_peminjam?: string;
+
+  @Column({ nullable: true })
+  foto_sk_golongan_terbaru?: string;
+
+  @Column({ nullable: true })
+  foto_keterangan_tpp?: string;
+
+  @Column({ nullable: true })
+  foto_biaya_operasional?: string;
+
+  @Column({ nullable: true })
+  foto_surat_kontrak?: string;
+
+  @Column({ nullable: true })
+  foto_rekomendasi_bendahara?: string;
+
+  // ==========================
+  // TIMESTAMP
+  // ==========================
   @CreateDateColumn()
   created_at?: Date;
 
