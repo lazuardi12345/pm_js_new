@@ -13,7 +13,7 @@ export class SPV_GetDetailDraftByIdController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(USERTYPE.SPV)
-  @Get('teams/:draft_id')
+  @Get('teams/drafts/:draft_id')
   async getByTeams(@Param('draft_id') draft_id: string) {
     try {
       const payload = await this.getDetailDraftById.renderDraftById(draft_id);
