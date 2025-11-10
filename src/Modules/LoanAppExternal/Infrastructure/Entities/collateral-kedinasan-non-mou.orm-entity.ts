@@ -10,8 +10,8 @@ import {
 } from 'typeorm';
 import { LoanApplicationExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/loan-application-external.orm-entity';
 
-@Entity('collateral_by_kedinasan')
-export class CollateralByKedinasan_ORM_Entity {
+@Entity('collateral_by_kedinasan_non_mou')
+export class CollateralByKedinasan_Non_MOU_ORM_Entity {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
 
@@ -25,7 +25,7 @@ export class CollateralByKedinasan_ORM_Entity {
   @JoinColumn({
     name: 'pengajuan_id',
     foreignKeyConstraintName:
-      'FK_LoanApplicationExternalID_at_CollateralByKedinasan_MOU',
+      'FK_LoanApplicationExternalID_at_CollateralByKedinasan_NON_MOU',
   })
   pengajuanLuar: LoanApplicationExternal_ORM_Entity;
 
@@ -50,17 +50,6 @@ export class CollateralByKedinasan_ORM_Entity {
   // ==========================
   // FOTO PENDUKUNG
   // ==========================
-  @Column({ nullable: true })
-  foto_form_pengajuan?: string;
-
-  @Column({ nullable: true })
-  foto_surat_kuasa_pemotongan?: string;
-
-  @Column({ nullable: true })
-  foto_surat_pernyataan_peminjam?: string;
-
-  @Column({ nullable: true })
-  foto_sk_golongan_terbaru?: string;
 
   @Column({ nullable: true })
   foto_keterangan_tpp?: string;
@@ -70,9 +59,6 @@ export class CollateralByKedinasan_ORM_Entity {
 
   @Column({ nullable: true })
   foto_surat_kontrak?: string;
-
-  @Column({ nullable: true })
-  foto_rekomendasi_bendahara?: string;
 
   // ==========================
   // TIMESTAMP

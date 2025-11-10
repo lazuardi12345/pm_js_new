@@ -17,7 +17,7 @@ export class CollateralByBPJSRepositoryImpl
 
   private toDomain(ormEntity: CollateralByBPJS_ORM_Entity): CollateralByBPJS {
     return new CollateralByBPJS(
-      { id: ormEntity.pengajuan.id },
+      { id: ormEntity.pengajuanLuar.id },
       ormEntity.saldo_bpjs,
       ormEntity.tanggal_bayar_terakhir,
       ormEntity.username,
@@ -36,7 +36,7 @@ export class CollateralByBPJSRepositoryImpl
   ): Partial<CollateralByBPJS_ORM_Entity> {
     return {
       id: domainEntity.id,
-      pengajuan: {
+      pengajuanLuar: {
         id: domainEntity.pengajuan.id,
       } as LoanApplicationExternal_ORM_Entity,
       saldo_bpjs: domainEntity.saldo_bpjs,
@@ -57,10 +57,11 @@ export class CollateralByBPJSRepositoryImpl
     const ormData: Partial<CollateralByBPJS_ORM_Entity> = {};
 
     if (partial.pengajuan)
-      ormData.pengajuan = {
+      ormData.pengajuanLuar = {
         id: partial.pengajuan.id,
       } as LoanApplicationExternal_ORM_Entity;
-    if (partial.saldo_bpjs !== undefined) ormData.saldo_bpjs = partial.saldo_bpjs;
+    if (partial.saldo_bpjs !== undefined)
+      ormData.saldo_bpjs = partial.saldo_bpjs;
     if (partial.tanggal_bayar_terakhir)
       ormData.tanggal_bayar_terakhir = partial.tanggal_bayar_terakhir;
     if (partial.username) ormData.username = partial.username;
@@ -78,7 +79,7 @@ export class CollateralByBPJSRepositoryImpl
   async findById(id: number): Promise<CollateralByBPJS | null> {
     const ormEntity = await this.ormRepository.findOne({
       where: { id },
-      relations: ['pengajuan'],
+      relations: ['pengajuanLuar'],
     });
     return ormEntity ? this.toDomain(ormEntity) : null;
   }
@@ -87,8 +88,8 @@ export class CollateralByBPJSRepositoryImpl
     pengajuanId: number,
   ): Promise<CollateralByBPJS[]> {
     const ormEntities = await this.ormRepository.find({
-      where: { pengajuan: { id: pengajuanId } },
-      relations: ['pengajuan'],
+      where: { pengajuanLuar: { id: pengajuanId } },
+      relations: ['pengajuanLuar'],
     });
 
     return ormEntities.map((entity) => this.toDomain(entity));
@@ -96,7 +97,7 @@ export class CollateralByBPJSRepositoryImpl
 
   async findAll(): Promise<CollateralByBPJS[]> {
     const ormEntities = await this.ormRepository.find({
-      relations: ['pengajuan'],
+      relations: ['pengajuanLuar'],
     });
     return ormEntities.map((e) => this.toDomain(e));
   }
@@ -114,7 +115,7 @@ export class CollateralByBPJSRepositoryImpl
     await this.ormRepository.update(id, this.toOrmPartial(data));
     const updated = await this.ormRepository.findOne({
       where: { id },
-      relations: ['pengajuan'],
+      relations: ['pengajuanLuar'],
     });
     if (!updated) throw new Error('CollateralByBPJS not found');
     return this.toDomain(updated);

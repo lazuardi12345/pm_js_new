@@ -17,13 +17,13 @@ import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorat
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('collateral-umkm-external')
-export class CollateralUmkmExternalController {
+export class CollateralByUmkmExternalController {
   constructor(private readonly collateralUMKMService: CollateralUMKMService) {}
-    
+
   // ========== CREATE ==========
   @Public()
   @Post()
-  async create(@Body() dto: CreatePengajuanUmkmDto ) {
+  async create(@Body() dto: CreatePengajuanUmkmDto) {
     return this.collateralUMKMService.create(dto);
   }
 
@@ -33,11 +33,11 @@ export class CollateralUmkmExternalController {
     return this.collateralUMKMService.findById(+id);
   }
 
-//   // ========== GET BY PENGAJUAN ID ==========
-//   @Get('pengajuan/:pengajuanId')
-//   async findByPengajuanId(@Param('pengajuanId') pengajuanId: number) {
-//     return this.collateralUMKMService.findByPengajuanId(+pengajuanId);
-//   }
+  //   // ========== GET BY PENGAJUAN ID ==========
+  //   @Get('pengajuan/:pengajuanId')
+  //   async findByPengajuanId(@Param('pengajuanId') pengajuanId: number) {
+  //     return this.collateralUMKMService.findByPengajuanId(+pengajuanId);
+  //   }
 
   // ========== GET ALL ==========
   @Get()

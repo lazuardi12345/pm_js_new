@@ -1,38 +1,33 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CollateralByKedinasan_MOU } from '../../Domain/Entities/collateral-kedinasan-mou-external.entity';
-import { CollateralByKedinasan_ORM_Entity } from '../Entities/collateral-kedinasan-mou.orm-entity';
+import { CollateralByKedinasan_Non_MOU } from '../../Domain/Entities/collateral-kedinasan-non-mou-external.entity';
+import { CollateralByKedinasan_Non_MOU_ORM_Entity } from '../Entities/collateral-kedinasan-non-mou.orm-entity';
 import { LoanApplicationExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/loan-application-external.orm-entity';
-import { ICollateralByKedinasanMOURepository } from '../../Domain/Repositories/collateral-kedinasan-mou-external.repository';
+import { ICollateralByKedinasan_Non_MOU_Repository } from '../../Domain/Repositories/collateral-kedinasan-non-mou-external.repository';
 
 @Injectable()
-export class CollateralByKedinasanMouRepositoryImpl
-  implements ICollateralByKedinasanMOURepository
+export class CollateralByKedinasan_Non_MOU_RepositoryImpl
+  implements ICollateralByKedinasan_Non_MOU_Repository
 {
   constructor(
-    @InjectRepository(CollateralByKedinasan_ORM_Entity)
-    private readonly ormRepository: Repository<CollateralByKedinasan_ORM_Entity>,
+    @InjectRepository(CollateralByKedinasan_Non_MOU_ORM_Entity)
+    private readonly ormRepository: Repository<CollateralByKedinasan_Non_MOU_ORM_Entity>,
   ) {}
 
   private toDomain(
-    orm: CollateralByKedinasan_ORM_Entity,
-  ): CollateralByKedinasan_MOU {
-    return new CollateralByKedinasan_MOU(
+    orm: CollateralByKedinasan_Non_MOU_ORM_Entity,
+  ): CollateralByKedinasan_Non_MOU {
+    return new CollateralByKedinasan_Non_MOU(
       { id: orm.pengajuanLuar?.id },
       orm.instansi ?? undefined,
       orm.surat_permohonan_kredit ?? undefined,
       orm.surat_pernyataan_penjamin ?? undefined,
       orm.surat_persetujuan_pimpinan ?? undefined,
       orm.surat_keterangan_gaji ?? undefined,
-      orm.foto_form_pengajuan ?? undefined,
-      orm.foto_surat_kuasa_pemotongan ?? undefined,
-      orm.foto_surat_pernyataan_peminjam ?? undefined,
-      orm.foto_sk_golongan_terbaru ?? undefined,
       orm.foto_keterangan_tpp ?? undefined,
       orm.foto_biaya_operasional ?? undefined,
       orm.foto_surat_kontrak ?? undefined,
-      orm.foto_rekomendasi_bendahara ?? undefined,
       orm.id ?? undefined,
       orm.created_at ?? undefined,
       orm.updated_at ?? undefined,
@@ -41,8 +36,8 @@ export class CollateralByKedinasanMouRepositoryImpl
   }
 
   private toOrm(
-    domain: CollateralByKedinasan_MOU,
-  ): Partial<CollateralByKedinasan_ORM_Entity> {
+    domain: CollateralByKedinasan_Non_MOU,
+  ): Partial<CollateralByKedinasan_Non_MOU_ORM_Entity> {
     return {
       id: domain.id,
       pengajuanLuar: domain.pengajuan
@@ -53,14 +48,9 @@ export class CollateralByKedinasanMouRepositoryImpl
       surat_pernyataan_penjamin: domain.surat_pernyataan_penjamin,
       surat_persetujuan_pimpinan: domain.surat_persetujuan_pimpinan,
       surat_keterangan_gaji: domain.surat_keterangan_gaji,
-      foto_form_pengajuan: domain.foto_form_pengajuan,
-      foto_surat_kuasa_pemotongan: domain.foto_surat_kuasa_pemotongan,
-      foto_surat_pernyataan_peminjam: domain.foto_surat_pernyataan_peminjam,
-      foto_sk_golongan_terbaru: domain.foto_sk_golongan_terbaru,
       foto_keterangan_tpp: domain.foto_keterangan_tpp,
       foto_biaya_operasional: domain.foto_biaya_operasional,
       foto_surat_kontrak: domain.foto_surat_kontrak,
-      foto_rekomendasi_bendahara: domain.foto_rekomendasi_bendahara,
       created_at: domain.created_at,
       updated_at: domain.updated_at,
       deleted_at: domain.deleted_at,
@@ -68,9 +58,9 @@ export class CollateralByKedinasanMouRepositoryImpl
   }
 
   private toOrmPartial(
-    partial: Partial<CollateralByKedinasan_MOU>,
-  ): Partial<CollateralByKedinasan_ORM_Entity> {
-    const ormData: Partial<CollateralByKedinasan_ORM_Entity> = {};
+    partial: Partial<CollateralByKedinasan_Non_MOU>,
+  ): Partial<CollateralByKedinasan_Non_MOU_ORM_Entity> {
+    const ormData: Partial<CollateralByKedinasan_Non_MOU_ORM_Entity> = {};
 
     if (partial.pengajuan?.id !== undefined) {
       ormData.pengajuanLuar = {
@@ -86,24 +76,12 @@ export class CollateralByKedinasanMouRepositoryImpl
       ormData.surat_persetujuan_pimpinan = partial.surat_persetujuan_pimpinan;
     if (partial.surat_keterangan_gaji !== undefined)
       ormData.surat_keterangan_gaji = partial.surat_keterangan_gaji;
-
-    if (partial.foto_form_pengajuan !== undefined)
-      ormData.foto_form_pengajuan = partial.foto_form_pengajuan;
-    if (partial.foto_surat_kuasa_pemotongan !== undefined)
-      ormData.foto_surat_kuasa_pemotongan = partial.foto_surat_kuasa_pemotongan;
-    if (partial.foto_surat_pernyataan_peminjam !== undefined)
-      ormData.foto_surat_pernyataan_peminjam =
-        partial.foto_surat_pernyataan_peminjam;
-    if (partial.foto_sk_golongan_terbaru !== undefined)
-      ormData.foto_sk_golongan_terbaru = partial.foto_sk_golongan_terbaru;
     if (partial.foto_keterangan_tpp !== undefined)
       ormData.foto_keterangan_tpp = partial.foto_keterangan_tpp;
     if (partial.foto_biaya_operasional !== undefined)
       ormData.foto_biaya_operasional = partial.foto_biaya_operasional;
     if (partial.foto_surat_kontrak !== undefined)
       ormData.foto_surat_kontrak = partial.foto_surat_kontrak;
-    if (partial.foto_rekomendasi_bendahara !== undefined)
-      ormData.foto_rekomendasi_bendahara = partial.foto_rekomendasi_bendahara;
 
     if (partial.created_at !== undefined)
       ormData.created_at = partial.created_at;
@@ -115,17 +93,17 @@ export class CollateralByKedinasanMouRepositoryImpl
     return ormData;
   }
 
-  async findById(id: number): Promise<CollateralByKedinasan_MOU | null> {
+  async findById(id: number): Promise<CollateralByKedinasan_Non_MOU | null> {
     const orm = await this.ormRepository.findOne({
       where: { id },
-      relations: ['pengajuan'],
+      relations: ['pengajuanLuar'],
     });
     return orm ? this.toDomain(orm) : null;
   }
 
   async findByPengajuanLuarId(
     pengajuanId: number,
-  ): Promise<CollateralByKedinasan_MOU[]> {
+  ): Promise<CollateralByKedinasan_Non_MOU[]> {
     const ormEntities = await this.ormRepository.find({
       where: { pengajuanLuar: { id: pengajuanId } },
       relations: ['pengajuanLuar'],
@@ -133,7 +111,7 @@ export class CollateralByKedinasanMouRepositoryImpl
     return ormEntities.map((e) => this.toDomain(e));
   }
 
-  async findAll(): Promise<CollateralByKedinasan_MOU[]> {
+  async findAll(): Promise<CollateralByKedinasan_Non_MOU[]> {
     const ormEntities = await this.ormRepository.find({
       relations: ['pengajuanLuar'],
     });
@@ -141,17 +119,17 @@ export class CollateralByKedinasanMouRepositoryImpl
   }
 
   async save(
-    collateral: CollateralByKedinasan_MOU,
-  ): Promise<CollateralByKedinasan_MOU> {
+    collateral: CollateralByKedinasan_Non_MOU,
+  ): Promise<CollateralByKedinasan_Non_MOU> {
     const ormEntity = this.toOrm(collateral);
     const saved = await this.ormRepository.save(ormEntity);
-    return this.toDomain(saved as CollateralByKedinasan_ORM_Entity);
+    return this.toDomain(saved as CollateralByKedinasan_Non_MOU_ORM_Entity);
   }
 
   async update(
     id: number,
-    data: Partial<CollateralByKedinasan_MOU>,
-  ): Promise<CollateralByKedinasan_MOU> {
+    data: Partial<CollateralByKedinasan_Non_MOU>,
+  ): Promise<CollateralByKedinasan_Non_MOU> {
     await this.ormRepository.update(id, this.toOrmPartial(data));
     const updated = await this.ormRepository.findOne({
       where: { id },

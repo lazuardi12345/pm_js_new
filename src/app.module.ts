@@ -22,8 +22,13 @@ import { HeadMarketingInternalUsecaseModule } from './Modules/Users/Roles/Head-M
 
 import { FileSystemStorageModules } from './Shared/Modules/Storage/ModuleStorage.module';
 import { AdminBICheckingUseCaseModule } from './Modules/Users/Roles/Admin/BI/admin-bi.module';
+import { ConfigModule } from '@nestjs/config';
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
     //? --- MySQL Connection ---
     TypeOrmModule.forRoot({
       type: 'mysql',
@@ -32,8 +37,9 @@ import { AdminBICheckingUseCaseModule } from './Modules/Users/Roles/Admin/BI/adm
       username: process.env.MYSQL_USN,
       password: process.env.MYSQL_PWD,
       database: process.env.DB_DEV || 'pm_js_test',
-      autoLoadEntities: true,
+      autoLoadEntities: true, // ⬅️ cara paling mudah
       synchronize: true,
+      timezone: '+07:00',
       extra: {
         decimalNumbers: true, // ini kuncinya
       },

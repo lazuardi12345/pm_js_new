@@ -6,7 +6,9 @@ import { ClientExternalModule } from './Modules/client-external.module';
 import { CollateralByBPJS_External_Module } from './Modules/collateral-bpjs-external.module';
 import { CollateralByBPKB_External_Module } from './Modules/collateral-bpkb-external.module';
 import { CollateralBySHM_External_Module } from './Modules/collateral-shm-external.module';
+import { CollateralByUMKM_External_Module } from './Modules/collateral-umkm.module';
 import { CollateralByKedinasan_External_Module } from './Modules/collateral-kedinasan-mou-external.module';
+import { CollateralByKedinasan_Non_MOU_External_Module } from './Modules/collateral-kedinasan-non-mou-external.module';
 import { EmergencyContact_External_Module } from './Modules/emergency-contact-external.module';
 import { FinancialDependents_External_Module } from './Modules/financial-dependents-external.module';
 import { Jobs_External_Module } from './Modules/job-external.module';
@@ -30,7 +32,8 @@ import { EmergencyContactExternalController } from './Presentation/Controllers/e
 import { FinancialDependentsExternalController } from './Presentation/Controllers/financial-dependents-external.controller';
 import { LoanGuarantorExternalController } from './Presentation/Controllers/loan-guarantor-external.controller';
 import { OtherExixtLoansExternalController } from './Presentation/Controllers/other-exixt-loan-external.controller';
-
+import { CollateralByUmkmExternalController } from './Presentation/Controllers/colleteral-umkm.controller';
+import { CollateralKedinasan_Non_MOU_ExternalController } from './Presentation/Controllers/collateral-kedinasan-non-mou-external.controller';
 
 @Module({
   imports: [
@@ -41,6 +44,8 @@ import { OtherExixtLoansExternalController } from './Presentation/Controllers/ot
     CollateralByBPKB_External_Module,
     CollateralBySHM_External_Module,
     CollateralByKedinasan_External_Module,
+    CollateralByKedinasan_Non_MOU_External_Module,
+    CollateralByUMKM_External_Module,
     EmergencyContact_External_Module,
     FinancialDependents_External_Module,
     Jobs_External_Module,
@@ -49,7 +54,6 @@ import { OtherExixtLoansExternalController } from './Presentation/Controllers/ot
     OtherExistLoans_External_Module,
     SurveyPhotos_External_Module,
     SurveyReports_External_Module,
-
   ],
   controllers: [
     AddressExternalController,
@@ -60,11 +64,13 @@ import { OtherExixtLoansExternalController } from './Presentation/Controllers/ot
     ColleteralBpjsExternalController,
     CollateralBpkbExternalController,
     CollateralKedinasanExternalController,
+    CollateralKedinasan_Non_MOU_ExternalController,
     CollateralShmExternalController,
+    CollateralByUmkmExternalController,
     EmergencyContactExternalController,
-    FinancialDependentsExternalController ,
+    FinancialDependentsExternalController,
     LoanGuarantorExternalController,
-     OtherExixtLoansExternalController,
+    OtherExixtLoansExternalController,
   ],
   exports: [
     AddressExternalModule,
@@ -73,7 +79,9 @@ import { OtherExixtLoansExternalController } from './Presentation/Controllers/ot
     CollateralByBPJS_External_Module,
     CollateralByBPKB_External_Module,
     CollateralBySHM_External_Module,
+    CollateralByUMKM_External_Module,
     CollateralByKedinasan_External_Module,
+    CollateralByKedinasan_Non_MOU_External_Module,
     EmergencyContact_External_Module,
     FinancialDependents_External_Module,
     Jobs_External_Module,

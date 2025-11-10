@@ -15,15 +15,19 @@ export class CollateralByBPKB_ORM_Entity {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
 
-  @OneToOne(() => LoanApplicationExternal_ORM_Entity, (pengajuan) => pengajuan.id, {
-    onDelete: 'CASCADE',
-  })
+  @OneToOne(
+    () => LoanApplicationExternal_ORM_Entity,
+    (pengajuan) => pengajuan.id,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
   @JoinColumn({
     name: 'pengajuan_id',
     foreignKeyConstraintName:
       'FK_LoanApplicationExternalID_at_CollateralByBPKB',
   })
-  pengajuan: LoanApplicationExternal_ORM_Entity;
+  pengajuanLuar: LoanApplicationExternal_ORM_Entity;
 
   // =====================
   // Informasi dasar BPKB / STNK

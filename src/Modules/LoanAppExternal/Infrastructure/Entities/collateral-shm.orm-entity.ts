@@ -15,14 +15,18 @@ export class CollateralBySHM_ORM_Entity {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
 
-  @OneToOne(() => LoanApplicationExternal_ORM_Entity, (pengajuan) => pengajuan.id, {
-    onDelete: 'CASCADE',
-  })
+  @OneToOne(
+    () => LoanApplicationExternal_ORM_Entity,
+    (pengajuan) => pengajuan.id,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
   @JoinColumn({
     name: 'pengajuan_id',
     foreignKeyConstraintName: 'FK_LoanApplicationExternalID_at_CollateralBySHM',
   })
-  pengajuan: LoanApplicationExternal_ORM_Entity;
+  pengajuanLuar: LoanApplicationExternal_ORM_Entity;
 
   @Column({ nullable: true })
   atas_nama_shm?: string;

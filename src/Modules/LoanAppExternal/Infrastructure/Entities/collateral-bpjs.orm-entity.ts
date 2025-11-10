@@ -20,9 +20,10 @@ export class CollateralByBPJS_ORM_Entity {
   })
   @JoinColumn({
     name: 'pengajuan_id',
-    foreignKeyConstraintName: 'FK_LoanApplicationExternalID_at_CollateralByBPJS',
+    foreignKeyConstraintName:
+      'FK_LoanApplicationExternalID_at_CollateralByBPJS',
   })
-  pengajuan: LoanApplicationExternal_ORM_Entity;
+  pengajuanLuar: LoanApplicationExternal_ORM_Entity;
 
   @Column({ type: 'decimal', precision: 15, scale: 2, nullable: false })
   saldo_bpjs: number;
