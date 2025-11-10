@@ -1,6 +1,6 @@
 import { IsOptional, IsString, IsNumber } from 'class-validator';
 
-export class CreatePengajuanKedinasanDto {
+export class CreatePengajuanKedinasan_Non_MOU_Dto {
   @IsNumber()
   pengajuan_id: number;
 
@@ -26,8 +26,7 @@ export class CreatePengajuanKedinasanDto {
 
   @IsOptional()
   @IsString()
-  foto_sk?: string;
-
+  foto_surat_kontrak?: string;
 
   @IsOptional()
   @IsString()

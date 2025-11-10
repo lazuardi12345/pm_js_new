@@ -1,4 +1,4 @@
-export class CollateralByKedinasan_MOU {
+export class CollateralByKedinasan_Non_MOU {
   constructor(
     public readonly pengajuan: { id: number },
     public readonly instansi?: string,
@@ -7,16 +7,9 @@ export class CollateralByKedinasan_MOU {
     public readonly surat_pernyataan_penjamin?: string,
     public readonly surat_persetujuan_pimpinan?: string,
     public readonly surat_keterangan_gaji?: string,
-
-    public readonly foto_form_pengajuan?: string,
-    public readonly foto_surat_kuasa_pemotongan?: string,
-    public readonly foto_surat_pernyataan_peminjam?: string,
-    public readonly foto_sk_golongan_terbaru?: string,
+    public readonly foto_surat_kontrak?: string,
     public readonly foto_keterangan_tpp?: string,
     public readonly foto_biaya_operasional?: string,
-    public readonly foto_surat_kontrak?: string,
-    public readonly foto_rekomendasi_bendahara?: string,
-
     public readonly id?: number,
     public readonly created_at?: Date,
     public readonly updated_at?: Date,
@@ -55,14 +48,9 @@ export class CollateralByKedinasan_MOU {
   //! Cek apakah foto-foto pelengkap sudah lengkap semua
   public hasCompletePhotos(): boolean {
     return (
-      !!this.foto_form_pengajuan &&
-      !!this.foto_surat_kuasa_pemotongan &&
-      !!this.foto_surat_pernyataan_peminjam &&
-      !!this.foto_sk_golongan_terbaru &&
       !!this.foto_keterangan_tpp &&
       !!this.foto_biaya_operasional &&
-      !!this.foto_surat_kontrak &&
-      !!this.foto_rekomendasi_bendahara
+      !!this.foto_surat_kontrak
     );
   }
 
@@ -81,19 +69,9 @@ export class CollateralByKedinasan_MOU {
     if (!this.surat_persetujuan_pimpinan)
       missing.push('Surat Persetujuan Pimpinan');
     if (!this.surat_keterangan_gaji) missing.push('Surat Keterangan Gaji');
-
-    if (!this.foto_form_pengajuan) missing.push('Foto Form Pengajuan');
-    if (!this.foto_surat_kuasa_pemotongan)
-      missing.push('Foto Surat Kuasa Pemotongan');
-    if (!this.foto_surat_pernyataan_peminjam)
-      missing.push('Foto Surat Pernyataan Peminjam');
-    if (!this.foto_sk_golongan_terbaru)
-      missing.push('Foto SK Golongan Terbaru');
     if (!this.foto_keterangan_tpp) missing.push('Foto Keterangan TPP');
     if (!this.foto_biaya_operasional) missing.push('Foto Biaya Operasional');
     if (!this.foto_surat_kontrak) missing.push('Foto Surat Kontrak');
-    if (!this.foto_rekomendasi_bendahara)
-      missing.push('Foto Rekomendasi Bendahara');
 
     return missing;
   }

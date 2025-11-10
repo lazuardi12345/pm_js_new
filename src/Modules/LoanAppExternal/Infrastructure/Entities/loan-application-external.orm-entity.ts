@@ -25,6 +25,8 @@ import {
   StatusPinjamanEnum,
   StatusPengajuanEnum,
 } from 'src/Shared/Enums/External/Loan-Application.enum';
+import { CollateralByKedinasan_Non_MOU_ORM_Entity } from './collateral-kedinasan-non-mou.orm-entity';
+import { CollateralByUMKM_ORM_Entity } from './collateral-umkm.orm.entity';
 
 @Entity('loan_application_external')
 export class LoanApplicationExternal_ORM_Entity {
@@ -126,17 +128,24 @@ export class LoanApplicationExternal_ORM_Entity {
     (approvalExternal) => approvalExternal.pengajuan_luar,
   )
   approvalExternals: ApprovalExternal_ORM_Entity[];
-  @OneToOne(() => CollateralByBPKB_ORM_Entity, (bpkb) => bpkb.pengajuan)
+  @OneToOne(() => CollateralByBPKB_ORM_Entity, (bpkb) => bpkb.pengajuanLuar)
   bpkb: CollateralByBPKB_ORM_Entity;
-  @OneToOne(() => CollateralByBPJS_ORM_Entity, (bpjs) => bpjs.pengajuan)
+  @OneToOne(() => CollateralByBPJS_ORM_Entity, (bpjs) => bpjs.pengajuanLuar)
   bpjs: CollateralByBPJS_ORM_Entity;
   @OneToOne(
     () => CollateralByKedinasan_ORM_Entity,
-    (kedinasan) => kedinasan.pengajuan,
+    (kedinasan) => kedinasan.pengajuanLuar,
   )
-  kedinasan: CollateralByKedinasan_ORM_Entity;
-  @OneToOne(() => CollateralBySHM_ORM_Entity, (shm) => shm.pengajuan)
+  kedinasan: CollateralByKedinasan_Non_MOU_ORM_Entity;
+  @OneToOne(
+    () => CollateralByKedinasan_Non_MOU_ORM_Entity,
+    (Kedinasan_NON_MOU) => Kedinasan_NON_MOU.pengajuanLuar,
+  )
+  Kedinasan_NON_MOU: CollateralByKedinasan_Non_MOU_ORM_Entity;
+  @OneToOne(() => CollateralBySHM_ORM_Entity, (shm) => shm.pengajuanLuar)
   shm: CollateralBySHM_ORM_Entity;
+  @OneToOne(() => CollateralByUMKM_ORM_Entity, (umkm) => umkm.pengajuanLuar)
+  umkm: CollateralByUMKM_ORM_Entity;
   @OneToOne(() => SurveyReports_ORM_Entity, (hasil) => hasil.pengajuan_luar)
   hasil_survey: SurveyReports_ORM_Entity;
 }

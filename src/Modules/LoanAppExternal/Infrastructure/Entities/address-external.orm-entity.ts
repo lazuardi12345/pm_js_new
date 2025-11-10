@@ -9,7 +9,11 @@ import {
   DeleteDateColumn,
 } from 'typeorm';
 import { ClientExternal_ORM_Entity } from './client-external.orm-entity';
-import { StatusRumahEnum, DomisiliEnum, RumahDomisiliEnum } from 'src/Shared/Enums/External/Address.enum';
+import {
+  StatusRumahEnum,
+  DomisiliEnum,
+  RumahDomisiliEnum,
+} from 'src/Shared/Enums/External/Address.enum';
 
 @Entity('address_external')
 export class AddressExternal_ORM_Entity {
@@ -18,7 +22,10 @@ export class AddressExternal_ORM_Entity {
 
   // Relasi ke nasabah
   @ManyToOne(() => ClientExternal_ORM_Entity)
-  @JoinColumn({ name: 'nasabah_id' })
+  @JoinColumn({
+    name: 'nasabah_id',
+    foreignKeyConstraintName: 'FK_ClientExternal_at_AddressExtenal',
+  })
   nasabah: ClientExternal_ORM_Entity;
 
   // Informasi alamat

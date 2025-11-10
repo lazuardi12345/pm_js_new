@@ -9,20 +9,22 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CollateralKedinasanMOUExternalService } from '../../Application/Services/collateral-kedinasan-mou-external.service';
-import { CreatePengajuanKedinasanMOUDto } from '../../Application/DTOS/dto-Collateral-Kedinasan_MOU/create-collateral-kedinasan.dto';
-import { UpdatePengajuanKedinasanMOUDto } from '../../Application/DTOS/dto-Collateral-Kedinasan_MOU/update-collateral-kedinasan.dto';
+import { CreatePengajuanKedinasan_MOU_Dto } from '../../Application/DTOS/dto-Collateral-Kedinasan_MOU/create-collateral-kedinasan.dto';
+import { UpdatePengajuanKedinasan_MOU_Dto } from '../../Application/DTOS/dto-Collateral-Kedinasan_MOU/update-collateral-kedinasan.dto';
 import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
 import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/jwtAuth.guard';
 import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Controller('collateral-kedinasan-external')
+@Controller('collateral-kedinasan-external-m')
 export class CollateralKedinasanExternalController {
-  constructor(private readonly CollateralKedinasanExternal: CollateralKedinasanMOUExternalService ) {}
+  constructor(
+    private readonly CollateralKedinasanExternal: CollateralKedinasanMOUExternalService,
+  ) {}
 
   @Public()
   @Post()
-  async create(@Body() dto: CreatePengajuanKedinasanMOUDto) {
+  async create(@Body() dto: CreatePengajuanKedinasan_MOU_Dto) {
     return this.CollateralKedinasanExternal.create(dto);
   }
 
@@ -37,7 +39,10 @@ export class CollateralKedinasanExternalController {
   }
 
   @Put(':id')
-  async update(@Param('id') id: number, @Body() dto: UpdatePengajuanKedinasanMOUDto) {
+  async update(
+    @Param('id') id: number,
+    @Body() dto: UpdatePengajuanKedinasan_MOU_Dto,
+  ) {
     return this.CollateralKedinasanExternal.update(+id, dto);
   }
 
