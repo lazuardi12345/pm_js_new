@@ -448,6 +448,7 @@ export interface TypeLoanApplicationDetail {
   email: string;
   status_nikah: string;
   no_rekening?: string;
+  tipe_nasabah?: string;
 
   // Address
   alamat_ktp: string;

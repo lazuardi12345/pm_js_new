@@ -88,7 +88,8 @@ export class AuthController {
     USERTYPE.CA,
     USERTYPE.HM,
     USERTYPE.SUPERADMIN,
-  ) 
+    USERTYPE.ADMIN_BI,
+  )
   @Get('me')
   async getProfile(@Req() req) {
     return {

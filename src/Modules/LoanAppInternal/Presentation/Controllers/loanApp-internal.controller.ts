@@ -21,6 +21,7 @@ import {
   RoleSearchEnum,
   TypeSearchEnum,
 } from 'src/Shared/Enums/General/General.enum';
+import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
 
 @Controller('loan-application-internal')
 export class LoanApplicationInternalController {
@@ -87,7 +88,8 @@ export class LoanApplicationInternalController {
     );
   }
 
-  @Get('history/loan-applications')
+  // @Public()
+  @Get('all/loan-apps')
   @Roles(USERTYPE.HM, USERTYPE.SPV, USERTYPE.MARKETING, USERTYPE.CA)
   async getLoanApplicationHistory(
     @Req() req: any,
@@ -97,10 +99,20 @@ export class LoanApplicationInternalController {
     const { usertype } = req.user;
     if (!usertype) throw new UnauthorizedException('Invalid User Session');
 
-    return this.loanApplicationService.getLoanApplicationInternalDatabase(
-      page,
-      pageSize,
-    );
+    const res =
+      await this.loanApplicationService.getLoanApplicationInternalDatabase(
+        page,
+        pageSize,
+      );
+
+    return {
+      payload: {
+        error: false,
+        message: 'All Loan Application retrieved successfully',
+        reference: 'ALL_LOAN_APPLICATIONS_RETRIEVE_OK',
+        data: res,
+      },
+    };
   }
 
   @Post()

@@ -13,7 +13,9 @@ import { CreateAddressExternalDto } from '../../Application/DTOS/dto-Address/cre
 import { UpdateAddressExternalDto } from '../../Application/DTOS/dto-Address/update-address.dto';
 import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
 import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/jwtAuth.guard';
+import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
 
+@Public()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('address-external')
 export class AddressExternalController {

@@ -15,12 +15,12 @@ import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Gua
 import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/jwtAuth.guard';
 import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
 
+@Public()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('collateral-shm-external')
 export class CollateralShmExternalController {
   constructor(private readonly CollateralSHMService: CollateralSHMService) {}
 
-  @Public()
   @Post()
   async create(@Body() dto: CreatePengajuanSHMDto) {
     return this.CollateralSHMService.create(dto);

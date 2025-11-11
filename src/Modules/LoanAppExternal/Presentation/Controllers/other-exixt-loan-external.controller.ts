@@ -1,14 +1,27 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { OtherExistLaonExternalService } from '../../Application/Services/other-exist-loans-external.service';
 import { CreateOtherExistLoansExternalDto } from '../../Application/DTOS/dto-Other-Exist-Loans/create-other-exist-loans.dto';
 import { UpdateOtherExistLoansExternalDto } from '../../Application/DTOS/dto-Other-Exist-Loans/update-other-exist-loans.dto';
 import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
 import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/jwtAuth.guard';
+import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
 
+@Public()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('other-exist-external')
 export class OtherExixtLoansExternalController {
-  constructor(private readonly OtherExistLoansExternalService: OtherExistLaonExternalService) {}
+  constructor(
+    private readonly OtherExistLoansExternalService: OtherExistLaonExternalService,
+  ) {}
 
   @Post()
   async create(@Body() dto: CreateOtherExistLoansExternalDto) {
@@ -26,7 +39,10 @@ export class OtherExixtLoansExternalController {
   }
 
   @Put(':id')
-  async update(@Param('id') id: number, @Body() dto: UpdateOtherExistLoansExternalDto) {
+  async update(
+    @Param('id') id: number,
+    @Body() dto: UpdateOtherExistLoansExternalDto,
+  ) {
     return this.OtherExistLoansExternalService.update(+id, dto);
   }
 

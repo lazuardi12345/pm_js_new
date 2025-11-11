@@ -1,5 +1,6 @@
 export interface LoanApplicationSummary {
   nama_nasabah: string;
+  id_pengajuan: number;
   tipe_nasabah: string;
   nominal_pinjaman: number;
   tenor: number;

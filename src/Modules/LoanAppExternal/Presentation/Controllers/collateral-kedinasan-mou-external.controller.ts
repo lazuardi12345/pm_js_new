@@ -15,6 +15,7 @@ import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Gua
 import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/jwtAuth.guard';
 import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
 
+@Public()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('collateral-kedinasan-external-m')
 export class CollateralKedinasanExternalController {
@@ -22,7 +23,6 @@ export class CollateralKedinasanExternalController {
     private readonly CollateralKedinasanExternal: CollateralKedinasanMOUExternalService,
   ) {}
 
-  @Public()
   @Post()
   async create(@Body() dto: CreatePengajuanKedinasan_MOU_Dto) {
     return this.CollateralKedinasanExternal.create(dto);

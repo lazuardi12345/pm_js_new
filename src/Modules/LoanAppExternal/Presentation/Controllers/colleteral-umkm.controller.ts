@@ -15,13 +15,13 @@ import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Gua
 import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/jwtAuth.guard';
 import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
 
+@Public()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('collateral-umkm-external')
 export class CollateralByUmkmExternalController {
   constructor(private readonly collateralUMKMService: CollateralUMKMService) {}
 
   // ========== CREATE ==========
-  @Public()
   @Post()
   async create(@Body() dto: CreatePengajuanUmkmDto) {
     return this.collateralUMKMService.create(dto);

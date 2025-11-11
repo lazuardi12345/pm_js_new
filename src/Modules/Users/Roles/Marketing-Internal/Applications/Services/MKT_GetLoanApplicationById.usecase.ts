@@ -91,6 +91,7 @@ export class MKT_GetLoanApplicationByIdUseCase {
             status_nikah: loanData.status_nikah,
             email: loanData.email,
             no_rekening: loanData.no_rekening,
+            tipe_nasabah: loanData.tipe_nasabah,
           },
           address_internal: {
             alamat_ktp: loanData.alamat_ktp,
