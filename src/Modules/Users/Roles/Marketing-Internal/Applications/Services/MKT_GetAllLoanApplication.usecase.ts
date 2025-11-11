@@ -52,7 +52,7 @@ export class MKT_GetAllLoanApplicationUseCase {
         loan_sequence: item.pinjaman_ke || '-',
         tenor: item.tenor || '-',
         loan_submitted_at: item.loan_submitted_at || '-',
-        latest_loan_app_status: item.latest_loan_app_status || '-',
+        latest_loan_status: item.latest_loan_status || '-',
         marketing_name: item.marketing_name || '-',
 
         loan_application_status: {
