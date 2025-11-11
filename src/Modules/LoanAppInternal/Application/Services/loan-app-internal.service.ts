@@ -308,14 +308,10 @@ export class LoanApplicationInternalService {
     page?: number | null,
     pageSize?: number | null,
   ): Promise<{
-    payload: {
-      data: {
-        results: LoanApplicationSummary[];
-      };
-      page: number;
-      pageSize: number;
-      total: number;
-    };
+    results: LoanApplicationSummary[];
+    page: number;
+    pageSize: number;
+    total: number;
   }> {
     const sanitizedPage = page && page > 0 ? page : 1;
     const sanitizedPageSize = pageSize && pageSize > 0 ? pageSize : 10;
@@ -325,17 +321,16 @@ export class LoanApplicationInternalService {
       sanitizedPageSize,
     );
 
-    const mappedData = result.LoanApplicationData || [];
+    const mappedData = (result.LoanApplicationData || []).map((item) => ({
+      ...item,
+      id_pengajuan: Number(item.id_pengajuan),
+    }));
 
     return {
-      payload: {
-        data: {
-          results: mappedData,
-        },
-        page: sanitizedPage,
-        pageSize: sanitizedPageSize,
-        total: result.pagination?.total ?? 0,
-      },
+      results: mappedData,
+      page: sanitizedPage,
+      pageSize: sanitizedPageSize,
+      total: result.pagination?.total ?? 0,
     };
   }
 }
