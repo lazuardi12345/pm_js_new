@@ -42,14 +42,11 @@ export class SPV_GetLoanApplicationByIdUseCase {
     // mapping role ke key yang konsisten
     const roleMap: Record<string | number, string> = {
       SPV: 'spv',
-      CA: 'ca',
       HM: 'hm',
       Supervisor: 'spv',
-      'Credit Analyst': 'ca',
       'Head Marketing': 'hm',
       1: 'spv',
-      2: 'ca',
-      3: 'hm',
+      2: 'hm',
     };
 
     // === IMPORTANT: approvals is TypeApprovalDetail[] ===
@@ -95,6 +92,7 @@ export class SPV_GetLoanApplicationByIdUseCase {
             status_nikah: loanData.status_nikah,
             email: loanData.email,
             no_rekening: loanData.no_rekening,
+            tipe_nasabah: loanData.tipe_nasabah,
           },
           address_internal: {
             alamat_ktp: loanData.alamat_ktp,

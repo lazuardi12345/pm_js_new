@@ -1,10 +1,21 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { ApprovalExternalService } from '../../Application/Services/approval-external.service';
 import { CreateApprovalExternalDto } from '../../Application/DTOS/dto-Approval/create-approval.dto';
 import { UpdateApprovalExternalDto } from '../../Application/DTOS/dto-Approval/update-approval.dto';
 import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
 import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/jwtAuth.guard';
+import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
 
+@Public()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('approval-external')
 export class ApprovalExternalController {
@@ -12,7 +23,6 @@ export class ApprovalExternalController {
 
   @Post()
   async create(@Body() dto: CreateApprovalExternalDto) {
-  
     return this.approvalService.create(dto);
   }
 
@@ -27,7 +37,10 @@ export class ApprovalExternalController {
   }
 
   @Put(':id')
-  async update(@Param('id') id: number, @Body() dto: UpdateApprovalExternalDto) {
+  async update(
+    @Param('id') id: number,
+    @Body() dto: UpdateApprovalExternalDto,
+  ) {
     return this.approvalService.update(+id, dto);
   }
 

@@ -50,6 +50,7 @@ export class HM_GetAllApprovalRequestUseCase {
           pengajuan_id: item.pengajuan_id || null,
           id_nasabah: item.nasabah_id || null,
           nama_nasabah: item.nama_nasabah || '-',
+          tipe_nasabah: item.tipe_nasabah || '-',
           pinjaman_ke: item.pinjaman_ke ?? 0,
           nominal_pinjaman: new Intl.NumberFormat('id-ID', {
             style: 'currency',

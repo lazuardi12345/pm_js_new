@@ -15,12 +15,14 @@ import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Gua
 import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/jwtAuth.guard';
 import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
 
+@Public()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('collateral-bpkp-external')
 export class CollateralBpkbExternalController {
-  constructor(private readonly CollateralBpkbExternal: CollateralBpkbExternalService) {}
+  constructor(
+    private readonly CollateralBpkbExternal: CollateralBpkbExternalService,
+  ) {}
 
-  @Public()
   @Post()
   async create(@Body() dto: CreatePengajuanBPKBDto) {
     return this.CollateralBpkbExternal.create(dto);

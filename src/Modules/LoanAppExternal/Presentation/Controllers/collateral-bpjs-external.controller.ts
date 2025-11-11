@@ -16,10 +16,13 @@ import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Gua
 import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/jwtAuth.guard';
 import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
 
+@Public()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('bpjs-external')
 export class ColleteralBpjsExternalController {
-  constructor(private readonly ColleteralBpjsExternal: CollateralByBpjsExternalService) {}
+  constructor(
+    private readonly ColleteralBpjsExternal: CollateralByBpjsExternalService,
+  ) {}
 
   @Public()
   @Post()

@@ -214,7 +214,7 @@ export class ApprovalRecommendationRepositoryImpl
   async findAllRecommendationRequests(): Promise<any[]> {
     return this.mongoDraftRepository
       .find(
-        { isNeedCheck: true },
+        { isNeedCheck: true, isDeleted: false },
         {
           marketing_id: 1,
           _id: 1,

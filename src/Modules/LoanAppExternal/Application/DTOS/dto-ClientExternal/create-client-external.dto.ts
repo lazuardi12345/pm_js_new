@@ -5,13 +5,15 @@ import {
   IsEmail,
   IsOptional,
   IsNumber,
-  IsDateString,
   IsBoolean,
   IsDate,
 } from 'class-validator';
 // highlight-start
 // Impor enum dari file entity, bukan mendefinisikannya di sini
-import { GENDER, MARRIAGE_STATUS } from 'src/Shared/Enums/External/Client-External.enum';
+import {
+  GENDER,
+  MARRIAGE_STATUS,
+} from 'src/Shared/Enums/External/Client-External.enum';
 
 // Definisi enum lokal DIHAPUS dari sini
 
@@ -29,13 +31,11 @@ export class CreateClientExternalDto {
   @IsString()
   no_kk: string;
 
-
   @IsString()
   no_rek: string;
 
   @IsString()
   foto_rekening: string;
-
 
   @IsEnum(GENDER)
   jenis_kelamin: GENDER;

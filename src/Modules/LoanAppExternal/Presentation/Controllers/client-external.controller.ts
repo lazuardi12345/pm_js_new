@@ -16,12 +16,12 @@ import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Gua
 import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/jwtAuth.guard';
 import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
 
+@Public()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('client-external')
 export class ClientExternalController {
   constructor(private readonly clientExternal: ClientExternalService) {}
 
-  @Public()
   @Post()
   async create(@Body() dto: CreateClientExternalDto) {
     return this.clientExternal.create(dto);

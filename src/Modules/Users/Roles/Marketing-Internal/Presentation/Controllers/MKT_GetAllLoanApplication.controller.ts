@@ -39,7 +39,19 @@ export class MKT_GetAllLoanApplicationController {
         searchQuery,
       );
 
-      return result; // ✅ Return langsung payload dari usecase
+      return {
+        payload: {
+          error: false,
+          message: 'MKT all loan application retrieved successfully',
+          reference: 'MKT_LOAN_APPLICATIONS_RETRIEVE_OK',
+          data: {
+            results: result.data,
+            page,
+            pageSize,
+            total: result.total,
+          },
+        },
+      };
     } catch (err) {
       throw new HttpException(
         {
