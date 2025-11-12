@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 
-export class LoanApplicationEntity {
+export class RepeatOrderEntity {
   readonly _id?: string | Types.ObjectId;
   id?: string;
   marketing_id?: number;
@@ -19,7 +19,7 @@ export class LoanApplicationEntity {
   isNeedCheck?: boolean;
   payload: any;
 
-  constructor(partial: Partial<LoanApplicationEntity>) {
+  constructor(partial: Partial<RepeatOrderEntity>) {
     Object.assign(this, partial);
   }
 }

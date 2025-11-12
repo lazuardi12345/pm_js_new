@@ -6,20 +6,31 @@ import {
   LoanApplication,
   LoanApplicationSchema,
 } from './Infrastructure/Schemas/LoanAppInternal/CreateLoanApplicaton_Marketing.schema';
+import { DraftRepeatOrderModule } from './Modules/DraftRepeatOrder.module';
+import {
+  RepeatOrder,
+  RepeatOrderSchema,
+} from './Infrastructure/Schemas/LoanAppInternal/RepeatOrder_Marketing.schema';
 
 @Module({
   imports: [
     DraftLoanApplicationModule,
+    DraftRepeatOrderModule,
     MongooseModule.forFeature(
-      [{ name: LoanApplication.name, schema: LoanApplicationSchema }],
+      [
+        { name: LoanApplication.name, schema: LoanApplicationSchema },
+        { name: RepeatOrder.name, schema: RepeatOrderSchema },
+      ],
       'mongoConnection',
     ),
     // kalau nanti ada module lain tinggal ditambahin dsini
   ],
   exports: [
     DraftLoanApplicationModule,
+    DraftRepeatOrderModule,
     MongooseModule.forFeature([
       { name: LoanApplication.name, schema: LoanApplicationSchema },
+      { name: RepeatOrder.name, schema: RepeatOrderSchema },
     ]),
   ],
 })
