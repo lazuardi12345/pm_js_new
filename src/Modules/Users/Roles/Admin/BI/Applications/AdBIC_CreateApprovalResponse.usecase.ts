@@ -29,7 +29,6 @@ export class AdBIC_CreateApprovalResponseUseCase {
     try {
       let filePaths: Record<string, FileMetadata[]> = {};
 
-      // 1️⃣ Proses file jika ada
       if (files && Object.keys(files).length > 0) {
         for (const fileArray of Object.values(files)) {
           for (const file of fileArray) {

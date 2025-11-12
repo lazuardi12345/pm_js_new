@@ -36,7 +36,6 @@ export class MKT_GetAllLoanApplicationController {
         marketingId,
         page,
         pageSize,
-        searchQuery,
       );
 
       return {

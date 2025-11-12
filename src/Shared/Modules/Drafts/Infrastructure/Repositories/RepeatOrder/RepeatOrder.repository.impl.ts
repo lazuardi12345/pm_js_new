@@ -1,29 +1,27 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import {
-  LoanApplication,
-  LoanApplicationDocument,
-} from '../../Schemas/LoanAppInternal/CreateLoanApplicaton_Marketing.schema';
-import { ILoanApplicationDraftRepository } from '../../../Domain/Repositories/LoanAppInt.repository';
-import { LoanApplicationEntity } from '../../../Domain/Entities/LoanAppInt.entity';
 import { merge, isEqual } from 'lodash';
+import { IDraftRepeatOrderRepository } from '../../../Domain/Repositories/DraftRepeatOrder.repository';
+import {
+  RepeatOrder,
+  RepeatOrderDocument,
+} from '../../Schemas/LoanAppInternal/RepeatOrder_Marketing.schema';
+import { RepeatOrderEntity } from '../../../Domain/Entities/DraftRepeatOrder.entity';
 
 @Injectable()
-export class LoanApplicationRepositoryImpl
-  implements ILoanApplicationDraftRepository
+export class DraftRepeatOrderRepositoryImpl
+  implements IDraftRepeatOrderRepository
 {
   constructor(
-    @InjectModel(LoanApplication.name, 'mongoConnection')
-    private readonly loanAppModel: Model<LoanApplicationDocument>,
+    @InjectModel(RepeatOrder.name, 'mongoConnection')
+    private readonly loanAppModel: Model<RepeatOrderDocument>,
   ) {}
 
-  async create(
-    data: Partial<LoanApplicationEntity>,
-  ): Promise<LoanApplicationEntity> {
+  async create(data: Partial<RepeatOrderEntity>): Promise<RepeatOrderEntity> {
     const created = new this.loanAppModel(data);
     const saved = await created.save();
-    return new LoanApplicationEntity(saved.toObject());
+    return new RepeatOrderEntity(saved.toObject());
   }
 
   async findStatus(
@@ -41,16 +39,14 @@ export class LoanApplicationRepositoryImpl
     };
   }
 
-  async findById(id: string): Promise<LoanApplicationEntity | null> {
+  async findById(id: string): Promise<RepeatOrderEntity | null> {
     const found = await this.loanAppModel
       .findOne({ _id: id, isDeleted: false })
       .exec();
-    return found ? new LoanApplicationEntity(found.toObject()) : null;
+    return found ? new RepeatOrderEntity(found.toObject()) : null;
   }
 
-  async findByMarketingId(
-    marketingId: number,
-  ): Promise<LoanApplicationEntity[]> {
+  async findByMarketingId(marketingId: number): Promise<RepeatOrderEntity[]> {
     const list = await this.loanAppModel
       .find(
         { marketing_id: marketingId, isDeleted: false },
@@ -69,18 +65,18 @@ export class LoanApplicationRepositoryImpl
       )
       .exec();
 
-    return list.map((doc) => new LoanApplicationEntity(doc.toObject()));
+    return list.map((doc) => new RepeatOrderEntity(doc.toObject()));
   }
 
-  async findAll(): Promise<LoanApplicationEntity[]> {
+  async findAll(): Promise<RepeatOrderEntity[]> {
     const all = await this.loanAppModel.find({ isDeleted: false }).exec();
-    return all.map((doc) => new LoanApplicationEntity(doc.toObject()));
+    return all.map((doc) => new RepeatOrderEntity(doc.toObject()));
   }
 
   async updateDraftById(
     id: string,
-    updateData: Partial<LoanApplicationEntity>,
-  ): Promise<{ entity: LoanApplicationEntity | null; isUpdated: boolean }> {
+    updateData: Partial<RepeatOrderEntity>,
+  ): Promise<{ entity: RepeatOrderEntity | null; isUpdated: boolean }> {
     const existing = await this.loanAppModel
       .findOne({ _id: id, isDeleted: false })
       .lean()
@@ -92,7 +88,7 @@ export class LoanApplicationRepositoryImpl
 
     if (!hasChanged) {
       console.log('⚪ Tidak ada perubahan data — skip update');
-      return { entity: new LoanApplicationEntity(existing), isUpdated: false };
+      return { entity: new RepeatOrderEntity(existing), isUpdated: false };
     }
 
     const updated = await this.loanAppModel
@@ -100,7 +96,7 @@ export class LoanApplicationRepositoryImpl
       .exec();
 
     return {
-      entity: updated ? new LoanApplicationEntity(updated.toObject()) : null,
+      entity: updated ? new RepeatOrderEntity(updated.toObject()) : null,
       isUpdated: true,
     };
   }

@@ -1,4 +1,4 @@
-import { Transform, Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 import {
   IsEmail,
   IsNotEmpty,
@@ -11,7 +11,7 @@ import {
   IsBoolean,
   isNumber,
 } from 'class-validator';
-import { RecordWithTtl } from 'dns';
+
 import {
   DomisiliEnum,
   StatusRumahEnum,
@@ -98,57 +98,17 @@ class LoanApplicationInternalDto {
   @IsOptional()
   @IsEnum(StatusPinjamanEnum)
   status_pinjaman?: StatusPinjamanEnum;
-
-  @IsOptional()
-  @Transform(({ value }) => Number(value))
-  @IsNumber()
-  pinjaman_ke?: number;
-
-  @IsOptional()
-  @Transform(({ value }) => Number(value))
-  @IsNumber()
-  nominal_pinjaman?: number;
-
-  @IsOptional()
-  @Transform(({ value }) => Number(value))
-  @IsNumber()
-  tenor?: number;
-
-  @IsOptional()
-  @IsString()
-  keperluan?: string;
-
-  @IsOptional()
-  @IsEnum(StatusPengajuanEnum)
-  status?: StatusPengajuanEnum;
-
-  @IsOptional()
-  @Transform(({ value }) => Number(value))
-  @IsNumber()
-  riwayat_nominal?: number;
-
-  @IsOptional()
-  @Transform(({ value }) => Number(value))
-  @IsNumber()
-  riwayat_tenor?: number;
-
-  @IsOptional()
-  @Transform(({ value }) => Number(value))
-  @IsNumber()
-  sisa_pinjaman?: number;
-
-  @IsOptional()
-  @IsString()
-  notes?: string;
-
-  @IsOptional()
-  @Transform(({ value }) => value === '1' || value === 1 || value === true)
-  @IsBoolean()
-  is_banding?: boolean;
-
-  @IsOptional()
-  @IsString()
-  alasan_banding?: string;
+  @IsOptional() @IsNumber() pinjaman_ke?: number;
+  @IsOptional() @IsNumber() nominal_pinjaman?: number;
+  @IsOptional() @IsNumber() tenor?: number;
+  @IsOptional() @IsString() keperluan?: string;
+  @IsOptional() @IsEnum(StatusPengajuanEnum) status?: StatusPengajuanEnum;
+  @IsOptional() @IsNumber() riwayat_nominal?: number;
+  @IsOptional() @IsNumber() riwayat_tenor?: number;
+  @IsOptional() @IsNumber() sisa_pinjaman?: number;
+  @IsOptional() @IsString() notes?: string;
+  @IsOptional() @IsBoolean() is_banding?: boolean;
+  @IsOptional() @IsString() alasan_banding?: string;
 }
 
 // ================= Collateral =================
@@ -224,10 +184,11 @@ export class PayloadDTO {
   @ValidateNested()
   @Type(() => RelativeInternalDto)
   relative_internal?: RelativeInternalDto;
+
   marketing_id: number;
 }
 
-export class CreateDraftLoanApplicationDto {
+export class CreateDraftRepeatOrderApplicationDto {
   @ValidateNested()
   @Type(() => PayloadDTO)
   payload: PayloadDTO;

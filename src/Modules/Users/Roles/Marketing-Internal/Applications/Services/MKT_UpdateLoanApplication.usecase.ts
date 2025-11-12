@@ -103,9 +103,10 @@ export class MKT_UpdateLoanApplicationUseCase {
           relative_internal,
         } = payload;
 
-        const foto_ktp_penjamin = files?.foto_ktp_penjamin[0].fieldname;
+        const foto_ktp_penjamin =
+          files?.foto_ktp_penjamin?.[0]?.fieldname ?? null;
 
-        console.log('PAYLOAD KONTOL', {
+        console.log('PAYLOAD', {
           payload,
           clientId,
           marketingId,
@@ -318,7 +319,9 @@ export class MKT_UpdateLoanApplicationUseCase {
         };
 
         const getLoan = await this.loanAppRepo.findById(loanId!);
+        console.log('KUONTOLLLLLLL', getLoan?.status);
         const statusLoan = getLoan!.status;
+        console.log('KUONTOLLLLLLL', statusLoan);
 
         switch (statusLoan) {
           case StatusPengajuanEnum.REJECTED_SPV:
@@ -327,20 +330,6 @@ export class MKT_UpdateLoanApplicationUseCase {
               StatusPengajuanEnum.PENDING,
             );
             break;
-
-          // case StatusPengajuanEnum.PENDING:
-          //   await this.loanAppRepo.updateLoanAppInternalStatus(
-          //     loanId!,
-          //     StatusPengajuanEnum.REVIEW,
-          //   );
-          //   break;
-
-          // case StatusPengajuanEnum.REVIEW:
-          //   await this.loanAppRepo.updateLoanAppInternalStatus(
-          //     loanId!,
-          //     StatusPengajuanEnum.APPROVED,
-          //   );
-          //   break;
 
           default:
             throw new BadRequestException(

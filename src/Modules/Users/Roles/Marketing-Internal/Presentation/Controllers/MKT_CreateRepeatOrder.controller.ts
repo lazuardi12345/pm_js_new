@@ -4,23 +4,28 @@ import {
   Body,
   BadRequestException,
   InternalServerErrorException,
-  UseGuards,
-  ValidationPipe,
   UseInterceptors,
   Param,
   UploadedFiles,
+  ParseIntPipe,
+  UseGuards,
+  Get,
 } from '@nestjs/common';
 
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import multer from 'multer';
+import { MKT_CreateRepeatOrderUseCase } from '../../Applications/Services/MKT_CreateRepeatOrder.usecase';
+import { PayloadDTO } from 'src/Shared/Modules/Drafts/Applications/DTOS/RepeatOrderInt_MarketingInput/CreateRO_DraftRepeatOrder.dto';
+import { plainToClass, plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
 import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/roles.decorator';
 import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
-import { CreateLoanApplicationDto } from '../../Applications/DTOS/MKT_CreateLoanApplication.dto';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import multer from 'multer';
-import { MKT_CreateRepeatOrderUseCase } from '../../Applications/Services/MKT_CreateRepeatOrder.usecase';
+import { error } from 'console';
 
 @Controller('mkt/int/loan-apps')
+@UseGuards(RolesGuard)
 export class MKT_CreateRepeatOrderController {
   constructor(
     private readonly createRepeatOrder: MKT_CreateRepeatOrderUseCase,
@@ -32,11 +37,11 @@ export class MKT_CreateRepeatOrderController {
       [
         { name: 'foto_ktp', maxCount: 1 },
         { name: 'foto_kk', maxCount: 1 },
-        { name: 'bukti_absensi', maxCount: 1 },
-        { name: 'foto_id_card_penjamin', maxCount: 1 },
         { name: 'foto_id_card', maxCount: 1 },
-        { name: 'foto_ktp_penjamin', maxCount: 1 },
+        { name: 'bukti_absensi', maxCount: 1 },
         { name: 'foto_rekening', maxCount: 1 },
+        { name: 'foto_ktp_penjamin', maxCount: 1 },
+        { name: 'foto_id_card_penjamin', maxCount: 1 },
       ],
       {
         storage: multer.memoryStorage(),
@@ -45,34 +50,91 @@ export class MKT_CreateRepeatOrderController {
     ),
   )
   async submitRepeatOrder(
-    @Param('client_id') client_id: number,
+    @Param('client_id', ParseIntPipe) client_id: number,
+    @CurrentUser('id') marketingId: number,
     @UploadedFiles() files: Record<string, Express.Multer.File[]>,
     @Body() body: any,
   ) {
     try {
-      const dto =
-        typeof body.payload === 'string'
-          ? JSON.parse(body.payload)
-          : body.payload;
+      // ============== PARSE PAYLOAD ==============
+      // Body dari FE: FormData dengan field "payload" (JSON string)
+      let parsedPayload: any;
+      let repeatFromLoanId: number | undefined;
 
-      const validatedDto = await new ValidationPipe({
+      // Parse payload field (always string dari FormData)
+      if (body.payload) {
+        try {
+          parsedPayload =
+            typeof body.payload === 'string'
+              ? JSON.parse(body.payload)
+              : body.payload;
+        } catch (parseError) {
+          throw new BadRequestException('Invalid JSON format in payload field');
+        }
+      } else {
+        throw new BadRequestException('Payload field is required');
+      }
+
+      // Extract repeatFromLoanId kalau ada (opsional untuk repeat order)
+      if (body.repeatFromLoanId) {
+        repeatFromLoanId = Number(body.repeatFromLoanId);
+        if (isNaN(repeatFromLoanId)) {
+          throw new BadRequestException('Invalid repeatFromLoanId format');
+        }
+      }
+
+      // ============== VALIDATE DTO ==============
+      parsedPayload.marketing_id = marketingId;
+
+      const dtoInstance = plainToInstance(PayloadDTO, parsedPayload, {
+        enableImplicitConversion: true,
+      });
+
+      const errors = await validate(dtoInstance, {
         whitelist: true,
-        forbidNonWhitelisted: true,
-        transform: true,
-      }).transform(dto, { type: 'body', metatype: CreateLoanApplicationDto });
+        forbidNonWhitelisted: false,
+      });
 
-      return await this.createRepeatOrder.execute(
-        validatedDto,
+      if (errors.length > 0) {
+        const errorMessages = errors.map((error) =>
+          Object.values(error.constraints || {}).join(', '),
+        );
+        throw new BadRequestException({
+          message: 'Validation failed',
+          errors: errorMessages,
+        });
+      }
+
+      console.log('Validated DTO:', {
         client_id,
+        repeatFromLoanId,
+        hasFiles: !!files && Object.keys(files).length > 0,
+      });
+
+      // ============== EXECUTE USE CASE ==============
+      return await this.createRepeatOrder.executeCreateDraft(
+        dtoInstance,
+        client_id,
+        marketingId,
         files,
+        repeatFromLoanId, // ← Parameter ke-4
       );
     } catch (error) {
       console.error('Error occurred:', error);
-      if (error instanceof BadRequestException) throw error;
 
-      throw new InternalServerErrorException(
-        'An error occurred while processing your request',
-      );
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException({
+        message: 'An error occurred while processing your request',
+        error: error.message,
+      });
     }
+  }
+
+  @Get('history/repeat-order')
+  async getDraftByMarketingId(@CurrentUser('id') marketingId: number) {
+    return this.createRepeatOrder.renderDraftByMarketingId(marketingId);
   }
 }
