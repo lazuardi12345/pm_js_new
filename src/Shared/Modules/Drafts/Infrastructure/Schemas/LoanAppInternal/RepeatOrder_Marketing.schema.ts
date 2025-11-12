@@ -162,6 +162,7 @@ export class RepeatOrder {
   @Prop({ default: false }) isDeleted: boolean; // flag soft delete
   @Prop({ default: false }) isCompleted?: boolean;
   @Prop({ default: false }) isNeedCheck?: boolean;
+  @Prop({ default: true }) isRepeatOrder?: boolean;
 }
 
 export type RepeatOrderDocument = HydratedDocument<RepeatOrder>;

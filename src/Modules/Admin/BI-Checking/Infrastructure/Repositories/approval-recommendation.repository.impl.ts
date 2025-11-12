@@ -13,6 +13,10 @@ import {
   LoanApplicationDocument,
 } from 'src/Shared/Modules/Drafts/Infrastructure/Schemas/LoanAppInternal/CreateLoanApplicaton_Marketing.schema';
 import { Model } from 'mongoose';
+import {
+  RepeatOrder,
+  RepeatOrderDocument,
+} from 'src/Shared/Modules/Drafts/Infrastructure/Schemas/LoanAppInternal/RepeatOrder_Marketing.schema';
 
 @Injectable()
 export class ApprovalRecommendationRepositoryImpl
@@ -23,6 +27,8 @@ export class ApprovalRecommendationRepositoryImpl
     private readonly ormRepository: Repository<ApprovalRecommendation_ORM_Entity>,
     @InjectModel(LoanApplication.name, 'mongoConnection')
     private readonly mongoDraftRepository: Model<LoanApplicationDocument>,
+    @InjectModel(RepeatOrder.name, 'mongoConnection')
+    private readonly repeatOrderRepository: Model<RepeatOrderDocument>,
   ) {}
 
   //? MAPPER >==========================================================================
@@ -212,7 +218,8 @@ export class ApprovalRecommendationRepositoryImpl
       .getMany();
   }
   async findAllRecommendationRequests(): Promise<any[]> {
-    return this.mongoDraftRepository
+    // ambil data dari LoanApplication (draft)
+    const draftData = await this.mongoDraftRepository
       .find(
         { isNeedCheck: true, isDeleted: false },
         {
@@ -224,9 +231,56 @@ export class ApprovalRecommendationRepositoryImpl
           'client_internal.email': 1,
           'client_internal.foto_ktp': 1,
           'loan_application_internal.nominal_pinjaman': 1,
-          // kamu bisa tambah field lain kalau perlu
         },
       )
-      .exec();
+      .lean();
+
+    // ambil data dari RepeatOrder
+    const repeatOrderData = await this.repeatOrderRepository
+      .find(
+        { isNeedCheck: true, isDeleted: false },
+        {
+          marketing_id: 1,
+          _id: 1,
+          'client_internal.nama_lengkap': 1,
+          'client_internal.no_ktp': 1,
+          'client_internal.no_hp': 1,
+          'client_internal.email': 1,
+          'uploaded_files.foto_ktp': 1,
+          'loan_application_internal.nominal_pinjaman': 1,
+          isRepeatOrder: 1,
+        },
+      )
+      .lean();
+
+    // ubah struktur repeat order biar match draftData (foto_ktp 1 url aja)
+    const mappedRepeatOrderData = repeatOrderData.map((item) => {
+      const fotoKtpArr = (item.uploaded_files as any)?.foto_ktp;
+      const fotoKtp =
+        Array.isArray(fotoKtpArr) && fotoKtpArr.length > 0
+          ? (fotoKtpArr[0] as any).url
+          : null;
+
+      return {
+        _id: item._id,
+        marketing_id: item.marketing_id,
+        client_internal: {
+          nama_lengkap: item.client_internal?.nama_lengkap || null,
+          no_ktp: item.client_internal?.no_ktp || null,
+          no_hp: item.client_internal?.no_hp || null,
+          email: item.client_internal?.email || null,
+          foto_ktp: fotoKtp, // di sini taro url-nya biar konsisten
+        },
+        loan_application_internal: {
+          nominal_pinjaman:
+            item.loan_application_internal?.nominal_pinjaman || null,
+        },
+      };
+    });
+
+    // gabung hasil dari dua koleksi
+    const result = [...draftData, ...mappedRepeatOrderData];
+
+    return result;
   }
 }

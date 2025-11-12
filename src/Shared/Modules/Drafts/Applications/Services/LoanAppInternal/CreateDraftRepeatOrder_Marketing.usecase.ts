@@ -5,7 +5,7 @@ import {
   Inject,
   BadRequestException,
 } from '@nestjs/common';
-import { CreateDraftRepeatOrderDto } from '../../DTOS/RepeatOrderInt_MarketingInput/CreateRO_LoanAppInt.dto';
+import { CreateDraftRepeatOrderApplicationDto } from '../../DTOS/RepeatOrderInt_MarketingInput/CreateRO_DraftRepeatOrder.dto';
 import { LoanApplicationEntity } from '../../../Domain/Entities/LoanAppInt.entity';
 import { isEqual, merge } from 'lodash';
 import {
@@ -22,7 +22,7 @@ export class CreateDraftRepeatOrderUseCase {
 
   async executeCreateDraft(
     marketingId: number,
-    dto: CreateDraftRepeatOrderDto,
+    dto: CreateDraftRepeatOrderApplicationDto,
   ) {
     try {
       console.log(dto);

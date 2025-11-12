@@ -184,10 +184,11 @@ export class PayloadDTO {
   @ValidateNested()
   @Type(() => RelativeInternalDto)
   relative_internal?: RelativeInternalDto;
+
   marketing_id: number;
 }
 
-export class CreateDraftRepeatOrderDto {
+export class CreateDraftRepeatOrderApplicationDto {
   @ValidateNested()
   @Type(() => PayloadDTO)
   payload: PayloadDTO;

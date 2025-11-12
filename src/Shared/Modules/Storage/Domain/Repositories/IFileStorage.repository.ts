@@ -9,7 +9,7 @@ export interface FileMetadata {
 }
 
 export interface LoanMetadata {
-  loanId: number;
+  loanId: number | null;
   nasabahId: number;
   nominalPinjaman: number;
   tenor: number;

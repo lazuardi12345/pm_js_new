@@ -57,6 +57,7 @@ import { DraftLoanApplicationModule } from 'src/Shared/Modules/Drafts/Modules/Cr
 import { ClientInternalProfileModule } from 'src/Modules/LoanAppInternal/Modules/client-internal-profile.module';
 import { ClientInternalProfile_ORM_Entity } from 'src/Modules/LoanAppInternal/Infrastructure/Entities/client-internal-profile.orm-entity';
 import { ApprovalRecommendationModule } from 'src/Modules/Admin/BI-Checking/Modules/approval-recommendation.module';
+import { DraftRepeatOrderModule } from 'src/Shared/Modules/Drafts/Modules/DraftRepeatOrder.module';
 
 @Module({
   imports: [
@@ -83,6 +84,7 @@ import { ApprovalRecommendationModule } from 'src/Modules/Admin/BI-Checking/Modu
 
     //? untuk API Drafts agar bisa diinject ke roles:
     DraftLoanApplicationModule,
+    DraftRepeatOrderModule,
     ApprovalRecommendationModule,
   ],
   controllers: [
