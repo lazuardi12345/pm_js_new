@@ -121,16 +121,57 @@ export class ApprovalRecommendationRepositoryImpl
     entity: ApprovalRecommendation,
   ): Promise<ApprovalRecommendation> {
     const ormEntity = this.toOrm(entity);
-    console.log('daite daite daite kudasaaii~', ormEntity);
-    const savedOrm = await this.ormRepository.save(ormEntity);
 
-    const draft_id = savedOrm.draft_id;
-    await this.mongoDraftRepository.updateOne(
-      { _id: draft_id }, //! PERLU _ID DARI MONGO!
-      { $set: { isNeedCheck: false } },
-    );
-    return this.toDomain(savedOrm);
+    const saveOrmPromise = this.ormRepository.save(ormEntity);
+
+    const makeUpdatePromise = (repo, savedOrm) => {
+      const draft_id = savedOrm.draft_id;
+      if (!draft_id) return Promise.resolve(null);
+
+      return repo.updateOne(
+        { _id: draft_id },
+        { $set: { isNeedCheck: false } },
+      );
+    };
+
+    return saveOrmPromise
+      .then((savedOrm) => {
+        // jalanin dua repo paralel
+        const mongoUpdatePromise = makeUpdatePromise(
+          this.mongoDraftRepository,
+          savedOrm,
+        );
+        const repeatUpdatePromise = makeUpdatePromise(
+          this.repeatOrderRepository,
+          savedOrm,
+        );
+
+        return Promise.allSettled([
+          mongoUpdatePromise,
+          repeatUpdatePromise,
+        ]).then((results) => {
+          const [mongoResult, repeatResult] = results;
+
+          if (mongoResult.status === 'rejected') {
+            console.warn('Mongo update gagal:', mongoResult.reason?.message);
+          }
+
+          if (repeatResult.status === 'rejected') {
+            console.warn(
+              'RepeatOrder update gagal:',
+              repeatResult.reason?.message,
+            );
+          }
+
+          return this.toDomain(savedOrm);
+        });
+      })
+      .catch((error) => {
+        console.error('Error in ApprovalRecommendation.create():', error);
+        throw error;
+      });
   }
+
   async findById(id: number): Promise<ApprovalRecommendation | null> {
     const ormEntity = await this.ormRepository.findOne({ where: { id } });
     return ormEntity ? this.toDomain(ormEntity) : null;

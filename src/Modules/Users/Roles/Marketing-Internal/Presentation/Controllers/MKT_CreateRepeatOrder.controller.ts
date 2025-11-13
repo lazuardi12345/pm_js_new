@@ -10,6 +10,7 @@ import {
   ParseIntPipe,
   UseGuards,
   Get,
+  Patch,
 } from '@nestjs/common';
 
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
@@ -22,7 +23,6 @@ import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/De
 import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/roles.decorator';
 import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
-import { error } from 'console';
 
 @Controller('mkt/int/loan-apps')
 @UseGuards(RolesGuard)
@@ -131,6 +131,40 @@ export class MKT_CreateRepeatOrderController {
         error: error.message,
       });
     }
+  }
+
+  @Patch('update/repeat-order/:id')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'foto_ktp', maxCount: 1 },
+      { name: 'foto_kk', maxCount: 1 },
+      { name: 'foto_rekening', maxCount: 1 },
+      { name: 'foto_id_card', maxCount: 1 },
+      { name: 'foto_jaminan', maxCount: 3 },
+      { name: 'bukti_absensi', maxCount: 1 },
+      { name: 'foto_ktp_penjamin', maxCount: 1 },
+      { name: 'foto_id_card_penjamin', maxCount: 1 },
+    ]),
+  )
+  async updateDraftById(
+    @Param('id') Id: string,
+    @Body() updateData: any = {},
+    @UploadedFiles() files: Record<string, Express.Multer.File[]>,
+  ) {
+    const payloadParent =
+      typeof updateData.payload === 'string'
+        ? JSON.parse(updateData.payload)
+        : (updateData.payload ?? {});
+
+    return this.createRepeatOrder.updateDraftById(
+      Id,
+      { payload: payloadParent }, // tetap ada key parent 'payload'
+      files,
+    );
+  }
+  @Get('repeat-order/:id')
+  async getDraftById(@Param('id') Id: string) {
+    return this.createRepeatOrder.renderDraftById(Id);
   }
 
   @Get('history/repeat-order')
