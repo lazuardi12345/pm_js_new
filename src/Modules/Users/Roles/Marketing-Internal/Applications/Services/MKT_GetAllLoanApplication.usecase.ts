@@ -44,6 +44,7 @@ export class MKT_GetAllLoanApplicationUseCase {
               draftData.draft_id,
             );
 
+            // Kasus: ada data rekomendasi (sudah di-check)
             if (approvalData) {
               approval_recommendation = {
                 draft_id: approvalData.draft_id,
@@ -54,23 +55,29 @@ export class MKT_GetAllLoanApplicationUseCase {
                 last_updated: approvalData.updated_at,
                 isNeedCheck: draftData.isNeedCheck,
               };
-            } else {
-              approval_recommendation = {
-                draft_id: draftData.draft_id,
-                isNeedCheck: draftData.isNeedCheck,
-                recommendation: null,
-              };
+
+              // kalau nominal < 7jt, tambahkan flag "dont_have_check"
+              if (approvalData.nominal_pinjaman < 7000000) {
+                approval_recommendation.dont_have_check = true;
+              }
+            }
+            //  Kasus: belum pernah di-check
+            else {
+              // cek dulu nominal di loanApp-nya (karena BI Check tidak diperlukan)
+              if (Number(item.loan_amount) < 7000000) {
+                approval_recommendation = {
+                  draft_id: draftData.draft_id,
+                  isNeedCheck: draftData.isNeedCheck,
+                  dont_have_check: true, // tidak perlu BI check
+                };
+              } else {
+                approval_recommendation = null; // belum di-check dan perlu BI check
+              }
             }
           }
 
           // convert nominal pinjaman
           const loanAmount = Number(item.loan_amount || 0);
-
-          // jika < 7 juta, hapus approval_recommendation
-          const shouldHideRecommendation = loanAmount < 7000000;
-          if (shouldHideRecommendation) {
-            approval_recommendation = null;
-          }
 
           return {
             loan_id: Number(item.loan_id),
