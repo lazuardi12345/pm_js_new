@@ -1,8 +1,8 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { CreateDraftRepeatOrderApplicationDto } from './CreateRO_DraftRepeatOrder.dto';
+import { CreateDraftRepeatOrderDto } from './CreateRO_DraftRepeatOrder.dto';
 
 export class UpdateDraftRepearOrderDto extends PartialType(
-  CreateDraftRepeatOrderApplicationDto,
+  CreateDraftRepeatOrderDto,
 ) {
   // Tambahkan ini agar bisa terima langsung tanpa "payload"
   client_internal?: any;

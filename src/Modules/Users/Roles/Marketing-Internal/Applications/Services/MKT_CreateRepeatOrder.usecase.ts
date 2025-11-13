@@ -5,6 +5,7 @@ import {
   Logger,
   HttpStatus,
   HttpException,
+  NotFoundException,
 } from '@nestjs/common';
 import { ClientInternal } from 'src/Modules/LoanAppInternal/Domain/Entities/client-internal.entity';
 import { ClientInternalProfile } from 'src/Modules/LoanAppInternal/Domain/Entities/client-internal-profile.entity';
@@ -87,6 +88,7 @@ import {
 } from 'src/Shared/Enums/Internal/Collateral.enum';
 import {
   FILE_STORAGE_SERVICE,
+  FileMetadata,
   IFileStorageRepository,
 } from 'src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository';
 import sharp from 'sharp';
@@ -94,12 +96,16 @@ import {
   CREATE_DRAFT_REPEAT_ORDER_REPOSITORY,
   IDraftRepeatOrderRepository,
 } from 'src/Shared/Modules/Drafts/Domain/Repositories/DraftRepeatOrder.repository';
-import { PayloadDTO } from 'src/Shared/Modules/Drafts/Applications/DTOS/RepeatOrderInt_MarketingInput/CreateRO_DraftRepeatOrder.dto';
+import {
+  CreateDraftRepeatOrderDto,
+  PayloadDTO,
+} from 'src/Shared/Modules/Drafts/Applications/DTOS/RepeatOrderInt_MarketingInput/CreateRO_DraftRepeatOrder.dto';
 import { MKT_GetDraftByMarketingId_ApprovalRecommendation } from 'src/Shared/Interface/MKT_GetDraft/MKT_GetDraftByMarketingId.interface';
 import {
   APPROVAL_RECOMMENDATION_REPOSITORY,
   IApprovalRecommendationRepository,
 } from 'src/Modules/Admin/BI-Checking/Domain/Repositories/approval-recommendation.repository';
+import { RepeatOrderEntity } from 'src/Shared/Modules/Drafts/Domain/Entities/DraftRepeatOrder.entity';
 
 @Injectable()
 export class MKT_CreateRepeatOrderUseCase {
@@ -762,6 +768,230 @@ export class MKT_CreateRepeatOrderUseCase {
       };
     } catch (error) {
       console.error(error);
+
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        {
+          payload: {
+            error: true,
+            message: 'Unexpected error',
+            reference: 'LOAN_UNKNOWN_ERROR',
+          },
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async updateDraftById(
+    Id: string,
+    updateData: Partial<CreateDraftRepeatOrderDto>,
+    files?: Record<string, Express.Multer.File[]>,
+  ) {
+    const { payload } = updateData;
+
+    if (!payload) {
+      throw new BadRequestException('Payload is required');
+    }
+
+    try {
+      let filePaths: Record<string, FileMetadata[]> = {};
+
+      if (files && Object.keys(files).length > 0) {
+        // Convert gambar ke JPEG tanpa resize
+        for (const [field, fileArray] of Object.entries(files)) {
+          for (const file of fileArray) {
+            if (file.mimetype.startsWith('image/')) {
+              const outputBuffer = await sharp(file.buffer)
+                .jpeg({ quality: 100 })
+                .toBuffer();
+
+              file.buffer = outputBuffer;
+              file.originalname = file.originalname.replace(/\.\w+$/, '.jpeg');
+            }
+          }
+        }
+
+        filePaths = await this.fileStorage.saveDraftsFiles(
+          Number(payload?.client_internal?.no_ktp) ?? Id,
+          payload?.client_internal?.nama_lengkap ?? `draft-${Id}`,
+          files,
+        );
+
+        for (const [field, paths] of Object.entries(filePaths)) {
+          if (paths && paths.length > 0) {
+            // Tentukan di object mana field ini berada
+            const parentKeys = [
+              'client_internal',
+              'job_internal',
+              'collateral_internal',
+              'relative_internal',
+            ];
+            let assigned = false;
+
+            for (const key of parentKeys) {
+              if (payload[key] && field in payload[key]) {
+                payload[key][field] = paths[0].url; // assign URL string
+                assigned = true;
+                break;
+              }
+            }
+
+            if (!assigned) {
+              // fallback: assign di root payload
+              payload[field] = paths[0].url;
+            }
+          }
+        }
+      }
+
+      console.log('File paths:', filePaths);
+      console.log('Payload (update):', payload);
+
+      const existingDraft = await this.repeatOrderRepo.findById(Id);
+
+      if (!existingDraft) {
+        throw new NotFoundException(`Draft with id ${Id} not found`);
+      }
+
+      // HAPUS file lama dengan field name yang sama (base name tanpa ekstensi)
+      const existingFiles = { ...(existingDraft.uploaded_files || {}) };
+
+      // Helper function untuk dapat base name (tanpa ekstensi)
+      const getBaseName = (fieldName: string): string => {
+        // Hapus ekstensi: foto_kk.jpeg.enc → foto_kk
+        return fieldName.split('.')[0];
+      };
+
+      // Hapus file lama yang field name-nya sama dengan file baru
+      for (const newFieldName of Object.keys(filePaths)) {
+        const newBaseName = getBaseName(newFieldName);
+
+        // Cari dan hapus semua file lama dengan base name yang sama
+        for (const existingFieldName of Object.keys(existingFiles)) {
+          const existingBaseName = getBaseName(existingFieldName);
+
+          if (existingBaseName === newBaseName) {
+            console.log(
+              `* Removing old file: ${existingFieldName} (replaced by ${newFieldName})`,
+            );
+            delete existingFiles[existingFieldName];
+          }
+        }
+      }
+
+      const mergedFiles = {
+        ...existingFiles, // ← File lama yang sudah di-cleanup
+        ...filePaths, // ← File baru
+      };
+
+      console.log('Old files (after cleanup):', existingFiles);
+      console.log('New files:', filePaths);
+      console.log('Merged files:', mergedFiles);
+
+      const entityUpdate: Partial<RepeatOrderEntity> = {
+        ...payload,
+        uploaded_files: mergedFiles,
+      };
+
+      const loanApp = await this.repeatOrderRepo.updateDraftById(
+        Id,
+        entityUpdate,
+      );
+
+      const verifyAfterUpdate = await this.repeatOrderRepo.findById(Id);
+
+      return {
+        payload: {
+          error: false,
+          message: 'Draft loan application updated',
+          reference: 'LOAN_UPDATE_OK',
+          data: verifyAfterUpdate,
+        },
+      };
+    } catch (err) {
+      console.error('Update error:', err);
+
+      // Re-throw HttpException (termasuk NotFoundException)
+      if (err instanceof HttpException) {
+        throw err;
+      }
+
+      // Mongoose validation error
+      if (err.name === 'ValidationError') {
+        throw new HttpException(
+          {
+            payload: {
+              error: 'BAD REQUEST',
+              message: Object.values(err.errors)
+                .map((e: any) => e.message)
+                .join(', '),
+              reference: 'LOAN_VALIDATION_ERROR',
+            },
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Duplicate key error
+      if (err.code === 11000) {
+        throw new HttpException(
+          {
+            payload: {
+              error: 'DUPLICATE KEY',
+              message: `Duplicate field: ${Object.keys(err.keyValue).join(', ')}`,
+              reference: 'LOAN_DUPLICATE_KEY',
+            },
+          },
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      // Fallback error
+      throw new HttpException(
+        {
+          payload: {
+            error: true,
+            message: 'Unexpected error',
+            reference: 'LOAN_UNKNOWN_ERROR',
+          },
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async renderDraftById(Id: string) {
+    try {
+      const loanApp = await this.repeatOrderRepo.findById(Id);
+      if (!loanApp) {
+        throw new HttpException(
+          {
+            payload: {
+              error: 'NOT FOUND',
+              message: 'No draft loan applications found for this ID',
+              reference: 'LOAN_NOT_FOUND',
+            },
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      return {
+        error: false,
+        message: 'Draft loan applications retrieved',
+        reference: 'LOAN_RETRIEVE_OK',
+        data: {
+          client_and_loan_detail: {
+            ...loanApp,
+          },
+        },
+      };
+    } catch (error) {
+      console.log(error);
 
       if (error instanceof HttpException) {
         throw error;

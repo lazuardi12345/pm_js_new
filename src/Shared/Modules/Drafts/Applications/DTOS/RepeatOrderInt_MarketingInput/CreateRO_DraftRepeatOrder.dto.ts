@@ -188,7 +188,7 @@ export class PayloadDTO {
   marketing_id: number;
 }
 
-export class CreateDraftRepeatOrderApplicationDto {
+export class CreateDraftRepeatOrderDto {
   @ValidateNested()
   @Type(() => PayloadDTO)
   payload: PayloadDTO;
