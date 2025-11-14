@@ -439,6 +439,8 @@ export class MKT_CreateRepeatOrderUseCase {
       // ============== ASSIGN marketing_id ke DTO ==============
       dto.marketing_id = marketingId;
 
+      console.log('>>>>>>>>>>>>>>>>>>>..', dto);
+
       // ============== LOG REQUEST INFO ==============
       console.log('=== Create Draft Repeat Order ===');
       console.log('Marketing ID:', marketingId);

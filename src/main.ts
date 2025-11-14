@@ -14,6 +14,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log', 'debug'], // atur level log
   });
+  app.setGlobalPrefix('api-v1/loan-app');
   app.useGlobalGuards(new JwtAuthGuard(app.get(Reflector)));
   app.use(cookieParser());
 
@@ -22,10 +23,11 @@ async function bootstrap() {
       const allowedOrigins = [
         'http://localhost:5173',
         'http://localhost:3000',
-        'http://localhost:4000',
+        'http://localhost:5000',
         'http://127.0.0.1:5500',
+        'http://192.182.6.100:3000',
         'http://app.local:3000',
-        'http://app.local:4000',
+        'http://app.local:5000',
         'https://cash-gampang-ui.vercel.app',
       ];
       if (!origin || allowedOrigins.includes(origin)) {
@@ -64,14 +66,12 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('docs', app, document);
 
   await app.listen(process.env.PORT ?? 3001, '0.0.0.0');
   console.log(
     `Server Successfully Started at http://localhost:${process.env.PORT}`,
   );
-
-  const logger = new Logger('Bootstrap');
 }
 
 bootstrap().catch((err) => {
