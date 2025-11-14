@@ -29,6 +29,7 @@ import { MKT_GetDashboardStatsUseCase } from './Applications/Services/MKT_GetDas
 import { MKT_TriggerFinalLoanStatusUseCase } from './Applications/Services/MKT_TriggerFinalLoan.usecase';
 import { MKT_GetClientsDatabaseUseCase } from './Applications/Services/MKT_GetClientsDatabase.usecase';
 import { MKT_CreateRepeatOrderUseCase } from './Applications/Services/MKT_CreateRepeatOrder.usecase';
+import { MKT_GetAllRepeatOrderHistoryUseCase } from './Applications/Services/MKT_GetAllRepeatOrderHistory.usecase';
 
 // Controllers
 import { MKT_CreateLoanApplicationController } from './Presentation/Controllers/MKT_CreateLoanApplication.controller';
@@ -41,6 +42,7 @@ import { MKT_TriggerAppealController } from './Presentation/Controllers/MKT_Trig
 import { MKT_TriggerFinalLoanStatusController } from './Presentation/Controllers/MKT_TriggerFinalLoan.controller';
 import { MKT_GetClientDatabaseController } from './Presentation/Controllers/MKT_GetClientsDatabase.controller';
 import { MKT_CreateRepeatOrderController } from './Presentation/Controllers/MKT_CreateRepeatOrder.controller';
+import { MKT_GetAllRepeatOrderHistoryController } from './Presentation/Controllers/MKT_GetAllRepeatOrderHistory.controller';
 
 import { AddressInternalModule } from 'src/Modules/LoanAppInternal/Modules/address-internal.module';
 import { ApprovalInternalModule } from 'src/Modules/LoanAppInternal/Modules/approval-internal.module';
@@ -99,6 +101,7 @@ import { DraftRepeatOrderModule } from 'src/Shared/Modules/Drafts/Modules/DraftR
     MKT_TriggerFinalLoanStatusController,
     MKT_GetClientDatabaseController,
     MKT_CreateRepeatOrderController,
+    MKT_GetAllRepeatOrderHistoryController,
   ],
   providers: [
     // usecases
@@ -112,6 +115,7 @@ import { DraftRepeatOrderModule } from 'src/Shared/Modules/Drafts/Modules/DraftR
     MKT_TriggerFinalLoanStatusUseCase,
     MKT_GetClientsDatabaseUseCase,
     MKT_CreateRepeatOrderUseCase,
+    MKT_GetAllRepeatOrderHistoryUseCase,
     // infra
     {
       provide: UNIT_OF_WORK,

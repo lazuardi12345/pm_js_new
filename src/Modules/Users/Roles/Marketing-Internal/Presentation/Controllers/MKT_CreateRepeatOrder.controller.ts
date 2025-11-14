@@ -167,7 +167,7 @@ export class MKT_CreateRepeatOrderController {
     return this.createRepeatOrder.renderDraftById(Id);
   }
 
-  @Get('history/repeat-order')
+  @Get('draft/repeat-order')
   async getDraftByMarketingId(@CurrentUser('id') marketingId: number) {
     return this.createRepeatOrder.renderDraftByMarketingId(marketingId);
   }

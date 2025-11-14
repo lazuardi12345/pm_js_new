@@ -215,6 +215,11 @@ export class LoanApplicationInternalRepositoryImpl
     );
   }
 
+  async findAll(): Promise<LoanApplicationInternal[]> {
+    const ormEntities = await this.ormRepository.find();
+    return ormEntities.map(this.toDomain);
+  }
+
   async callSP_GENERAL_GetAllPreviewDataLoanBySearch_Internal(
     role: RoleSearchEnum,
     type: TypeSearchEnum,
@@ -318,11 +323,6 @@ export class LoanApplicationInternalRepositoryImpl
     };
   }
 
-  async findAll(): Promise<LoanApplicationInternal[]> {
-    const ormEntities = await this.ormRepository.find();
-    return ormEntities.map(this.toDomain);
-  }
-
   async callSP_MKT_GetAllLoanApplications_Internal(
     marketingId: number,
     page: number,
@@ -351,6 +351,42 @@ export class LoanApplicationInternalRepositoryImpl
       );
 
     return results;
+  }
+
+  async callSP_MKT_GetAllRepeatOrderHistory_Internal(
+    marketingId: number,
+    page: number,
+    page_size: number,
+  ): Promise<{
+    pagination: paginationInterface;
+    ClientData: General_ClientDataInterface[];
+    ClientHistoryLoanApplicationsData: General_LoanApplicationDataInterface[];
+  }> {
+    const ormEntities = this.ormRepository.manager;
+
+    console.log(marketingId, page, page_size);
+    // result sets: [pagination, client data, loan data]
+    const [paginationResult, clientResult, loanResult] =
+      await ormEntities.query(
+        `CALL MKT_GetAllRepeatOrderHistory_Internal(?, ?, ?)`,
+        [marketingId, page, page_size],
+      );
+
+    console.log(paginationResult, clientResult, loanResult);
+
+    const pagination: paginationInterface = paginationResult?.[0]
+      ? {
+          total: Number(paginationResult[0].total),
+          page: Number(paginationResult[0].page),
+          page_size: Number(paginationResult[0].page_size),
+        }
+      : { total: 0, page, page_size };
+
+    return {
+      pagination,
+      ClientData: clientResult || [],
+      ClientHistoryLoanApplicationsData: loanResult || [],
+    };
   }
 
   async callSP_MKT_GetDashboard_Internal(

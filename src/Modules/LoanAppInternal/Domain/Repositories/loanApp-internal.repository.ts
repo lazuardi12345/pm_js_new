@@ -80,6 +80,17 @@ export interface ILoanApplicationInternalRepository {
     page: number,
     pageSize: number,
   ): Promise<{ data: any[]; total: number }>;
+
+  callSP_MKT_GetAllRepeatOrderHistory_Internal(
+    marketingId: number,
+    page: number,
+    page_size: number,
+  ): Promise<{
+    pagination: paginationInterface;
+    ClientData: General_ClientDataInterface[];
+    ClientHistoryLoanApplicationsData?: General_LoanApplicationDataInterface[];
+  }>;
+
   callSP_MKT_GetDetail_LoanApplicationsInternal_ById(
     loanAppId: number,
   ): Promise<[TypeLoanApplicationDetail[], TypeApprovalDetail[]]>;
