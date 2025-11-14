@@ -73,7 +73,7 @@ class FamilyInternalDto {
   @IsOptional() @IsString() nama?: string;
   @IsOptional() @IsString() bekerja?: string;
   @IsOptional() @IsString() no_hp?: string;
-  @IsOptional() @IsString() nama_peruashaan?: string;
+  @IsOptional() @IsString() nama_perusahaan?: string;
   @IsOptional() @IsString() jabatan?: string;
   @IsOptional() @IsNumber() penghasilan?: number;
   @IsOptional() @IsString() alamat_kerja?: string;
