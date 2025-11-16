@@ -229,7 +229,6 @@ export class ApprovalRecommendationRepositoryImpl
       id,
       this.toOrmPartial(approvalRecommendationData),
     );
-    console.log('id>>>>>>>>>>>>>>', id);
     const updated = await this.ormRepository.findOne({
       where: { id },
     });
@@ -253,6 +252,7 @@ export class ApprovalRecommendationRepositoryImpl
         'rec.no_telp',
         'rec.email',
         'rec.filePath',
+        'rec.catatan',
         'rec.created_at',
       ])
       // .where('rec.loanApplicationInternal IS NOT NULL')

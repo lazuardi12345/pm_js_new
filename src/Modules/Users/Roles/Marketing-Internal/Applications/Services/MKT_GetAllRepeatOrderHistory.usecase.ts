@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
 import {
   ILoanApplicationInternalRepository,
   LOAN_APPLICATION_INTERNAL_REPOSITORY,
@@ -115,7 +115,51 @@ export class MKT_GetAllRepeatOrderHistoryUseCase {
         },
       };
     } catch (err) {
-      throw new Error(err.message || 'Failed to retrieve repeat order data');
+      console.error('=== ERROR execute (GetAllRepeatOrderHistory) ===');
+      console.error(err);
+
+      // Forward HttpException as-is
+      if (err instanceof HttpException) throw err;
+
+      // DB connectivity
+      if (err?.name === 'MongoNetworkError' || err?.code === 'ECONNREFUSED') {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Database connection error',
+              reference: 'DB_CONNECTION_ERROR',
+            },
+          },
+          HttpStatus.SERVICE_UNAVAILABLE,
+        );
+      }
+
+      // CastError / invalid types
+      if (err?.name === 'CastError') {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Invalid data format',
+              reference: 'INVALID_DATA_FORMAT',
+            },
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Final fallback (don't leak internals)
+      throw new HttpException(
+        {
+          payload: {
+            error: true,
+            message: err?.message || 'Failed to retrieve repeat order data',
+            reference: 'REPEAT_ORDER_FETCH_ERROR',
+          },
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

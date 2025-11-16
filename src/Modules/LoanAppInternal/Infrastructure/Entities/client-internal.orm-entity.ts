@@ -20,9 +20,11 @@ import {
   JoinColumn,
   OneToMany,
   Index,
+  Unique,
 } from 'typeorm';
 
 @Entity('client_internal')
+@Unique('UQ_NO_KTP', ['no_ktp'])
 @Index('IDX_CLIENT_INTERNAL_SEARCH', ['nama_lengkap', 'no_ktp'], {
   fulltext: true,
 })

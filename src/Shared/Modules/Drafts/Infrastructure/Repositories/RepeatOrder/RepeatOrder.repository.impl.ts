@@ -15,11 +15,11 @@ export class DraftRepeatOrderRepositoryImpl
 {
   constructor(
     @InjectModel(RepeatOrder.name, 'mongoConnection')
-    private readonly loanAppModel: Model<RepeatOrderDocument>,
+    private readonly repeatOrderModel: Model<RepeatOrderDocument>,
   ) {}
 
   async create(data: Partial<RepeatOrderEntity>): Promise<RepeatOrderEntity> {
-    const created = new this.loanAppModel(data);
+    const created = new this.repeatOrderModel(data);
     const saved = await created.save();
     return new RepeatOrderEntity(saved.toObject());
   }
@@ -27,7 +27,7 @@ export class DraftRepeatOrderRepositoryImpl
   async findStatus(
     nik: string,
   ): Promise<{ draft_id: string; isNeedCheck: boolean } | null> {
-    const found = await this.loanAppModel
+    const found = await this.repeatOrderModel
       .findOne({ 'client_internal.no_ktp': nik }, { isNeedCheck: 1, _id: 1 })
       .lean();
 
@@ -40,14 +40,14 @@ export class DraftRepeatOrderRepositoryImpl
   }
 
   async findById(id: string): Promise<RepeatOrderEntity | null> {
-    const found = await this.loanAppModel
+    const found = await this.repeatOrderModel
       .findOne({ _id: id, isDeleted: false })
       .exec();
     return found ? new RepeatOrderEntity(found.toObject()) : null;
   }
 
   async findByMarketingId(marketingId: number): Promise<RepeatOrderEntity[]> {
-    const list = await this.loanAppModel
+    const list = await this.repeatOrderModel
       .find(
         { marketing_id: marketingId, isDeleted: false },
         {
@@ -69,7 +69,7 @@ export class DraftRepeatOrderRepositoryImpl
   }
 
   async findAll(): Promise<RepeatOrderEntity[]> {
-    const all = await this.loanAppModel.find({ isDeleted: false }).exec();
+    const all = await this.repeatOrderModel.find({ isDeleted: false }).exec();
     return all.map((doc) => new RepeatOrderEntity(doc.toObject()));
   }
 
@@ -77,7 +77,7 @@ export class DraftRepeatOrderRepositoryImpl
     id: string,
     updateData: Partial<RepeatOrderEntity>,
   ): Promise<{ entity: RepeatOrderEntity | null; isUpdated: boolean }> {
-    const existing = await this.loanAppModel
+    const existing = await this.repeatOrderModel
       .findOne({ _id: id, isDeleted: false })
       .lean()
       .exec();
@@ -91,7 +91,7 @@ export class DraftRepeatOrderRepositoryImpl
       return { entity: new RepeatOrderEntity(existing), isUpdated: false };
     }
 
-    const updated = await this.loanAppModel
+    const updated = await this.repeatOrderModel
       .findByIdAndUpdate(id, mergedData, { new: true })
       .exec();
 
@@ -115,7 +115,7 @@ export class DraftRepeatOrderRepositoryImpl
     console.log('Jembus Wedut >>>>>>>>>>>>>>>>>>>>>>', nominal_fixtype);
 
     if (nominal_fixtype >= 7000000) {
-      const response = await this.loanAppModel.updateOne(
+      const response = await this.repeatOrderModel.updateOne(
         { _id: draft_id },
         { isNeedCheck: true },
       );
@@ -127,7 +127,11 @@ export class DraftRepeatOrderRepositoryImpl
     }
   }
 
-  async softDelete(id: string): Promise<void> {
-    await this.loanAppModel.findByIdAndUpdate(id, { isDeleted: true }).exec();
+  async softDelete(id: string): Promise<boolean> {
+    const result = await this.repeatOrderModel.updateOne(
+      { _id: id },
+      { isDeleted: true },
+    );
+    return result.modifiedCount > 0;
   }
 }

@@ -11,13 +11,14 @@ import {
   UseGuards,
   Get,
   Patch,
+  Delete,
 } from '@nestjs/common';
 
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import multer from 'multer';
 import { MKT_CreateRepeatOrderUseCase } from '../../Applications/Services/MKT_CreateRepeatOrder.usecase';
 import { PayloadDTO } from 'src/Shared/Modules/Drafts/Applications/DTOS/RepeatOrderInt_MarketingInput/CreateRO_DraftRepeatOrder.dto';
-import { plainToClass, plainToInstance } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
 import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/roles.decorator';
@@ -112,7 +113,7 @@ export class MKT_CreateRepeatOrderController {
       });
 
       // ============== EXECUTE USE CASE ==============
-      return await this.createRepeatOrder.executeCreateDraft(
+      return await this.createRepeatOrder.executeCreateRepeatOrder(
         dtoInstance,
         client_id,
         marketingId,
@@ -146,7 +147,7 @@ export class MKT_CreateRepeatOrderController {
       { name: 'foto_id_card_penjamin', maxCount: 1 },
     ]),
   )
-  async updateDraftById(
+  async updateRepeatOrderById(
     @Param('id') Id: string,
     @Body() updateData: any = {},
     @UploadedFiles() files: Record<string, Express.Multer.File[]>,
@@ -156,19 +157,24 @@ export class MKT_CreateRepeatOrderController {
         ? JSON.parse(updateData.payload)
         : (updateData.payload ?? {});
 
-    return this.createRepeatOrder.updateDraftById(
+    return this.createRepeatOrder.updateRepeatOrderById(
       Id,
       { payload: payloadParent }, // tetap ada key parent 'payload'
       files,
     );
   }
   @Get('repeat-order/:id')
-  async getDraftById(@Param('id') Id: string) {
-    return this.createRepeatOrder.renderDraftById(Id);
+  async getRepeatOrderById(@Param('id') Id: string) {
+    return this.createRepeatOrder.renderRepeatOrderById(Id);
   }
 
   @Get('draft/repeat-order')
-  async getDraftByMarketingId(@CurrentUser('id') marketingId: number) {
-    return this.createRepeatOrder.renderDraftByMarketingId(marketingId);
+  async getRepeatOrderByMarketingId(@CurrentUser('id') marketingId: number) {
+    return this.createRepeatOrder.renderRepeatOrderByMarketingId(marketingId);
+  }
+
+  @Delete('repeat-order/delete/:id')
+  async softDelete(@Param('id') Id: string) {
+    return this.createRepeatOrder.deleteRepeatOrderByMarketingId(Id);
   }
 }

@@ -99,6 +99,14 @@ export class ClientInternalRepositoryImpl implements IClientInternalRepository {
     return ormEntities.map(this.toDomain);
   }
 
+  async findByKtp(noKtp: string): Promise<ClientInternal | null> {
+    const ormEntity = await this.ormRepository.findOne({
+      where: { no_ktp: noKtp },
+    });
+
+    return ormEntity ? this.toDomain(ormEntity) : null;
+  }
+
   async save(client_internal: ClientInternal): Promise<ClientInternal> {
     const savedOrm = await this.ormRepository.save(client_internal);
     return savedOrm; // langsung, karena domain == orm

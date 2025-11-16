@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  Inject,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   ILoanApplicationInternalRepository,
   LOAN_APPLICATION_INTERNAL_REPOSITORY,
@@ -8,16 +13,14 @@ import {
   UNIT_OF_WORK,
 } from 'src/Modules/LoanAppInternal/Domain/Repositories/IUnitOfWork.repository';
 import { LoanInternalDto } from '../DTOS/MKT_CreateLoanApplication.dto';
-import {
-  StatusPengajuanAkhirEnum,
-  StatusPengajuanEnum,
-} from 'src/Shared/Enums/Internal/LoanApp.enum';
+import { StatusPengajuanAkhirEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
 
 @Injectable()
 export class MKT_TriggerFinalLoanStatusUseCase {
   constructor(
     @Inject(LOAN_APPLICATION_INTERNAL_REPOSITORY)
     private readonly loanAppRepo: ILoanApplicationInternalRepository,
+
     @Inject(UNIT_OF_WORK)
     private readonly uow: IUnitOfWork,
   ) {}
@@ -25,22 +28,41 @@ export class MKT_TriggerFinalLoanStatusUseCase {
   async execute(loan_id: number, payload: any) {
     try {
       return await this.uow.start(async () => {
+        // Basic guard (tanpa ubah flow)
+        if (!loan_id || typeof loan_id !== 'number') {
+          throw new BadRequestException('loan_id tidak valid');
+        }
+
+        if (!payload || typeof payload !== 'object') {
+          throw new BadRequestException('Payload tidak valid');
+        }
+
         const { status_akhir_pengajuan } = payload;
+
+        if (!status_akhir_pengajuan) {
+          throw new BadRequestException('status_akhir_pengajuan wajib diisi');
+        }
 
         // Loan application (khusus karena pakai findByNasabahId)
         let updatedLoanAppData: Partial<LoanInternalDto> = {};
 
+        // Validasi enum tetap sama
         if (
           status_akhir_pengajuan === StatusPengajuanAkhirEnum.CLOSED ||
           status_akhir_pengajuan === StatusPengajuanAkhirEnum.DONE
         ) {
           const loanApps = await this.loanAppRepo.findById(loan_id);
-          if (loanApps) {
-            await this.loanAppRepo.triggerFinalLoanStatus(
-              loan_id,
-              status_akhir_pengajuan,
+
+          if (!loanApps) {
+            throw new NotFoundException(
+              `Loan Application id ${loan_id} tidak ditemukan`,
             );
           }
+
+          await this.loanAppRepo.triggerFinalLoanStatus(
+            loan_id,
+            status_akhir_pengajuan,
+          );
         }
 
         const updatedFields = {
@@ -58,6 +80,7 @@ export class MKT_TriggerFinalLoanStatusUseCase {
     } catch (err: any) {
       console.log('errornya ayonima banget', err);
       console.error('Error in MKT_UpdateLoanApplicationUseCase:', err);
+
       throw new BadRequestException(err.message || 'Gagal update pengajuan');
     }
   }

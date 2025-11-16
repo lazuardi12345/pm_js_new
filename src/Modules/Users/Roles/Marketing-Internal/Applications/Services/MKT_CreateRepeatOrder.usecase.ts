@@ -147,6 +147,17 @@ export class MKT_CreateRepeatOrderUseCase {
 
     try {
       return await this.uow.start(async () => {
+        // --- 0. BASIC INPUT VALIDATION (prevent many mistakes early) ---
+        if (!dto || typeof dto !== 'object') {
+          throw new BadRequestException({
+            payload: {
+              error: true,
+              message: 'Payload tidak valid',
+              reference: 'INVALID_PAYLOAD',
+            },
+          });
+        }
+
         const {
           client_internal,
           address_internal,
@@ -158,275 +169,534 @@ export class MKT_CreateRepeatOrderUseCase {
           documents_files,
         } = dto;
 
-        const client = await this.clientRepo.findById(client_id);
-        if (!client) {
-          throw new BadRequestException('Client not found');
+        // Validate client-related required fields (adjust sesuai kebutuhan)
+        if (
+          !client_internal ||
+          !client_internal.no_ktp ||
+          !client_internal.nama_lengkap
+        ) {
+          throw new BadRequestException({
+            payload: {
+              error: true,
+              message:
+                'Data client_internal tidak lengkap (no_ktp / nama_lengkap wajib).',
+              reference: 'VALIDATION_CLIENT_INTERNAL',
+            },
+          });
         }
 
-        // **2. Simpan AddressInternal**
-        const addressEntity = new AddressInternal(
-          { id: client_id! },
-          address_internal.alamat_ktp,
-          address_internal.rt_rw,
-          address_internal.kelurahan,
-          address_internal.kecamatan,
-          address_internal.kota,
-          address_internal.provinsi,
-          address_internal.status_rumah as StatusRumahEnum,
-          address_internal.domisili as DomisiliEnum,
-          undefined,
-          now,
-          undefined,
-          address_internal.status_rumah_ktp as StatusRumahEnum,
-          address_internal.alamat_lengkap ?? '',
-          now,
-        );
-        await this.addressRepo.save(addressEntity);
+        if (
+          !loan_application_internal ||
+          typeof loan_application_internal.nominal_pinjaman === 'undefined'
+        ) {
+          throw new BadRequestException({
+            payload: {
+              error: true,
+              message: 'Data loan_application_internal tidak lengkap.',
+              reference: 'VALIDATION_LOAN_INTERNAL',
+            },
+          });
+        }
 
-        // **3. Simpan FamilyInternal**
-        const familyEntity = new FamilyInternal(
-          { id: client_id! },
-          family_internal.hubungan as HubunganEnum,
-          family_internal.nama,
-          family_internal.bekerja as BekerjaEnum,
-          undefined,
-          undefined,
-          undefined,
-          family_internal.nama_perusahaan!,
-          family_internal.jabatan!,
-          parseNumber(family_internal.penghasilan),
-          family_internal.alamat_kerja!,
-          family_internal.no_hp,
-          undefined,
-        );
-        await this.familyRepo.save(familyEntity);
+        // optional: ensure NIK is numeric-ish for functions that rely on it
+        const nikNumber = Number(client_internal.no_ktp);
+        if (Number.isNaN(nikNumber)) {
+          throw new BadRequestException({
+            payload: {
+              error: true,
+              message: 'Nomor KTP tidak valid (harus angka).',
+              reference: 'INVALID_NIK',
+            },
+          });
+        }
 
-        // **4. Simpan JobInternal**
-        const jobEntity = new JobInternal(
-          { id: client_id! },
-          job_internal.perusahaan as PerusahaanEnum,
-          job_internal.divisi,
-          job_internal.golongan as GolonganEnum,
-          job_internal.nama_atasan!,
-          job_internal.nama_hrd!,
-          job_internal.absensi!,
-          undefined,
-          undefined,
-          undefined,
-          job_internal.yayasan!,
-          job_internal.lama_kerja_bulan,
-          job_internal.lama_kerja_tahun,
-          undefined,
-          undefined,
-        );
-        await this.jobRepo.save(jobEntity);
+        // --- 1. Pastikan client ada ---
+        const client = await this.clientRepo.findById(client_id);
+        if (!client) {
+          throw new HttpException(
+            {
+              payload: {
+                error: true,
+                message: 'Client tidak ditemukan',
+                reference: 'CLIENT_NOT_FOUND',
+              },
+            },
+            HttpStatus.NOT_FOUND,
+          );
+        }
 
-        // **5. Simpan LoanApplicationInternal**
-        const isBandingBoolean =
-          loan_application_internal.is_banding === 1 ? true : false;
+        // --- 2. Simpan AddressInternal ---
+        try {
+          const addressEntity = new AddressInternal(
+            { id: client_id! },
+            address_internal.alamat_ktp,
+            address_internal.rt_rw,
+            address_internal.kelurahan,
+            address_internal.kecamatan,
+            address_internal.kota,
+            address_internal.provinsi,
+            address_internal.status_rumah as StatusRumahEnum,
+            address_internal.domisili as DomisiliEnum,
+            undefined,
+            now,
+            undefined,
+            address_internal.status_rumah_ktp as StatusRumahEnum,
+            address_internal.alamat_lengkap ?? '',
+            now,
+          );
+          await this.addressRepo.save(addressEntity);
+        } catch (e) {
+          console.error('Error saving address:', e);
+          // If DB connectivity problem => 503
+          if (e?.code === 'ECONNREFUSED' || e?.name === 'MongoNetworkError') {
+            throw new HttpException(
+              {
+                payload: {
+                  error: true,
+                  message: 'Database connection error saat menyimpan alamat',
+                  reference: 'DB_CONNECTION_ERROR',
+                },
+              },
+              HttpStatus.SERVICE_UNAVAILABLE,
+            );
+          }
+          throw new HttpException(
+            {
+              payload: {
+                error: true,
+                message: 'Gagal menyimpan alamat nasabah',
+                reference: 'ADDRESS_SAVE_ERROR',
+              },
+            },
+            HttpStatus.BAD_REQUEST,
+          );
+        }
 
-        const loanAppEntity = new LoanApplicationInternal(
-          { id: client_id! },
-          (loan_application_internal.status_pinjaman as StatusPinjamanEnum.LAMA) ??
-            StatusPinjamanEnum.LAMA,
-          loan_application_internal.nominal_pinjaman ?? 0,
-          loan_application_internal.tenor ?? 0,
-          loan_application_internal.keperluan ?? '',
-          undefined,
-          undefined,
-          undefined,
-          (loan_application_internal.status ??
-            'pending') as StatusPengajuanEnum,
-          (loan_application_internal.status_akhir_pengajuan ??
-            'done') as StatusPengajuanAkhirEnum,
-          loan_application_internal.pinjaman_ke ?? 1,
-          loan_application_internal.riwayat_nominal ?? 0,
-          loan_application_internal.riwayat_tenor ?? 0,
-          loan_application_internal.sisa_pinjaman ?? 0,
-          loan_application_internal.notes ?? '',
-          isBandingBoolean,
-          loan_application_internal.alasan_banding ?? '',
-        );
+        // --- 3. Simpan FamilyInternal ---
+        try {
+          const familyEntity = new FamilyInternal(
+            { id: client_id! },
+            family_internal.hubungan as HubunganEnum,
+            family_internal.nama,
+            family_internal.bekerja as BekerjaEnum,
+            undefined,
+            undefined,
+            undefined,
+            family_internal.nama_perusahaan!,
+            family_internal.jabatan!,
+            parseNumber(family_internal.penghasilan),
+            family_internal.alamat_kerja!,
+            family_internal.no_hp,
+            undefined,
+          );
+          await this.familyRepo.save(familyEntity);
+        } catch (e) {
+          console.error('Error saving family:', e);
+          throw new HttpException(
+            {
+              payload: {
+                error: true,
+                message: 'Gagal menyimpan data keluarga',
+                reference: 'FAMILY_SAVE_ERROR',
+              },
+            },
+            HttpStatus.BAD_REQUEST,
+          );
+        }
 
-        const loanApp = await this.loanAppRepo.save(loanAppEntity);
-        // ============== UPLOAD FILES KE MINIO ==============
-        let minioUploadResult;
+        // --- 4. Simpan JobInternal (bukti_absensi nanti di-update jika upload sukses) ---
+        let jobEntity: JobInternal;
+        try {
+          jobEntity = new JobInternal(
+            { id: client_id! },
+            job_internal.perusahaan as PerusahaanEnum,
+            job_internal.divisi,
+            job_internal.golongan as GolonganEnum,
+            job_internal.nama_atasan!,
+            job_internal.nama_hrd!,
+            job_internal.absensi!,
+            undefined,
+            undefined,
+            undefined,
+            job_internal.yayasan!,
+            job_internal.lama_kerja_bulan,
+            job_internal.lama_kerja_tahun,
+            undefined,
+            undefined,
+          );
+          await this.jobRepo.save(jobEntity);
+        } catch (e) {
+          console.error('Error saving job:', e);
+          throw new HttpException(
+            {
+              payload: {
+                error: true,
+                message: 'Gagal menyimpan data pekerjaan',
+                reference: 'JOB_SAVE_ERROR',
+              },
+            },
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+
+        // --- 5. Simpan LoanApplicationInternal ---
+        let loanApp: LoanApplicationInternal;
+        try {
+          const isBandingBoolean =
+            loan_application_internal.is_banding === 1 ? true : false;
+
+          const loanAppEntity = new LoanApplicationInternal(
+            { id: client_id! },
+            (loan_application_internal.status_pinjaman as StatusPinjamanEnum.LAMA) ??
+              StatusPinjamanEnum.LAMA,
+            loan_application_internal.nominal_pinjaman ?? 0,
+            loan_application_internal.tenor ?? 0,
+            loan_application_internal.keperluan ?? '',
+            undefined,
+            undefined,
+            undefined,
+            (loan_application_internal.status ??
+              'pending') as StatusPengajuanEnum,
+            (loan_application_internal.status_akhir_pengajuan ??
+              'done') as StatusPengajuanAkhirEnum,
+            loan_application_internal.pinjaman_ke ?? 1,
+            loan_application_internal.riwayat_nominal ?? 0,
+            loan_application_internal.riwayat_tenor ?? 0,
+            loan_application_internal.sisa_pinjaman ?? 0,
+            loan_application_internal.notes ?? '',
+            isBandingBoolean,
+            loan_application_internal.alasan_banding ?? '',
+          );
+
+          loanApp = await this.loanAppRepo.save(loanAppEntity);
+        } catch (e) {
+          console.error('Error saving loan application:', e);
+          // duplicate / constraint errors
+          if (e?.code === 'ER_DUP_ENTRY' || e?.code === 11000) {
+            throw new HttpException(
+              {
+                payload: {
+                  error: true,
+                  message: 'Terdeteksi duplikasi pengajuan',
+                  reference: 'DUPLICATE_LOAN',
+                },
+              },
+              HttpStatus.BAD_REQUEST,
+            );
+          }
+          throw new HttpException(
+            {
+              payload: {
+                error: true,
+                message: 'Gagal menyimpan pengajuan',
+                reference: 'LOAN_SAVE_ERROR',
+              },
+            },
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+        }
+
+        // ====================== FILES: CONVERT & UPLOAD ======================
+        let minioUploadResult: any = null;
+        const fileConversionErrors: Array<{
+          field: string;
+          name: string;
+          error: any;
+        }> = [];
+
         if (files && Object.keys(files).length > 0) {
-          // ============== CONVERT IMAGES TO JPEG USING SHARP ==============
+          // Convert images to jpeg (best-effort). Kegagalan conversion tidak abort transaksi,
+          // tapi kita catat dan fallback ke original buffer.
           for (const [field, fileArray] of Object.entries(files)) {
-            if (!fileArray) continue;
-
+            if (!Array.isArray(fileArray)) continue;
             for (const file of fileArray) {
-              // Convert gambar ke JPEG tanpa resize
-              if (file.mimetype.startsWith('image/')) {
-                try {
+              try {
+                if (file.mimetype && file.mimetype.startsWith('image/')) {
                   const outputBuffer = await sharp(file.buffer)
                     .jpeg({ quality: 100 })
                     .toBuffer();
 
-                  // Update file buffer dan filename
                   file.buffer = outputBuffer;
                   file.originalname = file.originalname.replace(
                     /\.\w+$/,
                     '.jpeg',
                   );
-                  file.mimetype = 'image/jpeg'; // ← Update mimetype juga
-
+                  file.mimetype = 'image/jpeg';
                   this.logger.log(
-                    `Converted ${field} to JPEG: ${file.originalname}`,
+                    `Converted ${file.originalname} (${field}) to JPEG`,
                   );
-                } catch (error) {
-                  this.logger.error(
-                    `Error converting ${field} to JPEG:`,
-                    error,
-                  );
-                  // Skip conversion kalau error, tetep pake file original
                 }
+              } catch (convErr) {
+                // jangan throw — log & simpan info (so we can retry manual)
+                console.error(
+                  'Image conversion failed for',
+                  file.originalname,
+                  convErr,
+                );
+                fileConversionErrors.push({
+                  field,
+                  name: file.originalname,
+                  error: convErr,
+                });
+                // leave original buffer as-is
               }
             }
           }
 
-          // ============== GET NEXT REPEAT ORDER INDEX ==============
-          const nextPengajuanIndex =
-            await this.fileStorage.getNextPengajuanIndex(
-              Number(client_internal.no_ktp),
+          // getNextPengajuanIndex might fail — tangani
+          let nextPengajuanIndex: number | null = null;
+          try {
+            nextPengajuanIndex = await this.fileStorage.getNextPengajuanIndex(
+              nikNumber,
               client_internal.nama_lengkap,
               false,
             );
+          } catch (e) {
+            console.error('getNextPengajuanIndex failed:', e);
+            // Jika fungsi index penting untuk nama folder, kita bisa fallback ke timestamp
+            nextPengajuanIndex = Date.now();
+            this.logger.warn(
+              'Fallback nextPengajuanIndex to timestamp:',
+              nextPengajuanIndex,
+            );
+          }
 
-          this.logger.log('Upload files info:', {
-            nextPengajuanIndex,
-            repeatFromLoanId,
-            nik: Number(client_internal.no_ktp),
-            customerName: client_internal.nama_lengkap,
-          });
+          // Upload ke Minio (atau service storage). Harus tangani hasilnya.
+          try {
+            minioUploadResult = await this.fileStorage.saveRepeatOrderFiles(
+              nikNumber,
+              client_internal.nama_lengkap,
+              nextPengajuanIndex,
+              files,
+              repeatFromLoanId,
+              {
+                loanId: loanApp.id!,
+                nasabahId: client_id,
+                nominalPinjaman:
+                  loan_application_internal.nominal_pinjaman ?? 0,
+                tenor: loan_application_internal.tenor ?? 0,
+              },
+            );
 
-          // ============== SAVE FILES ==============
-          minioUploadResult = await this.fileStorage.saveRepeatOrderFiles(
-            Number(client_internal.no_ktp),
-            client_internal.nama_lengkap,
-            nextPengajuanIndex,
-            files,
-            repeatFromLoanId,
-            {
-              loanId: loanApp.id!,
-              nasabahId: client_id,
-              nominalPinjaman: loan_application_internal.nominal_pinjaman ?? 0,
-              tenor: loan_application_internal.tenor ?? 0,
-            },
-          );
-
-          this.logger.log('Minio upload result:', minioUploadResult);
+            // Basic sanity checks on result
+            if (!minioUploadResult || typeof minioUploadResult !== 'object') {
+              throw new Error('Invalid upload result from fileStorage');
+            }
+            if (minioUploadResult.error) {
+              throw new Error(minioUploadResult.errorMessage || 'Upload error');
+            }
+          } catch (uploadErr) {
+            console.error('File upload failed:', uploadErr);
+            // Jika storage down, kita pertimbangkan sebagai SERVICE_UNAVAILABLE supaya operator aware
+            throw new HttpException(
+              {
+                payload: {
+                  error: true,
+                  message: 'Gagal mengunggah file ke storage',
+                  reference: 'FILE_UPLOAD_ERROR',
+                  details:
+                    fileConversionErrors.length > 0
+                      ? { conversionErrors: fileConversionErrors.length }
+                      : undefined,
+                },
+              },
+              HttpStatus.SERVICE_UNAVAILABLE,
+            );
+          }
         }
 
-        // **1A. Mapping Dulu ke Profile dengan URL dari Minio**
-        const clientProfileEntity = new ClientInternalProfile(
-          { id: client_id! },
-          { id: loanApp.id! },
-          client_internal.nama_lengkap,
-          client_internal.jenis_kelamin,
-          client_internal.tipe_nasabah as CLIENT_TYPE,
-          client_internal.no_hp,
-          client_internal.status_nikah as MARRIAGE_STATUS,
-          undefined,
-          client_internal.email,
-          minioUploadResult?.savedFiles?.foto_ktp?.[0]?.url ??
-            parseFileUrl(
-              documents_files?.foto_ktp ?? client_internal.foto_ktp ?? null,
-            ),
-          minioUploadResult?.savedFiles?.foto_kk?.[0]?.url ??
-            parseFileUrl(
-              documents_files?.foto_kk ?? client_internal.foto_kk ?? null,
-            ),
-          minioUploadResult?.savedFiles?.foto_id_card?.[0]?.url ??
-            parseFileUrl(documents_files?.foto_id_card ?? null),
-          minioUploadResult?.savedFiles?.foto_rekening?.[0]?.url ??
-            parseFileUrl(documents_files?.foto_rekening ?? null),
-          client_internal.no_rekening as string,
-        );
-        await this.clientProfileRepo.save(clientProfileEntity);
-
-        // Update job entity dengan bukti absensi URL dari Minio
-        if (minioUploadResult?.savedFiles?.bukti_absensi) {
-          jobEntity.bukti_absensi =
-            minioUploadResult.savedFiles.bukti_absensi[0].url;
-          await this.jobRepo.save(jobEntity);
-        }
-
-        // **6. Simpan CollateralInternal**
-        const collEntity = new CollateralInternal(
-          { id: client_id! },
-          collateral_internal.jaminan_hrd,
-          collateral_internal.jaminan_cg,
-          collateral_internal.penjamin as PenjaminEnum,
-          undefined,
-          undefined,
-          undefined,
-          collateral_internal.nama_penjamin,
-          collateral_internal.lama_kerja_penjamin!,
-          collateral_internal.bagian!,
-          collateral_internal.absensi_penjamin!,
-          collateral_internal.riwayat_pinjam_penjamin as RiwayatPinjamPenjaminEnum,
-          collateral_internal.riwayat_nominal_penjamin!,
-          collateral_internal.riwayat_tenor_penjamin!,
-          collateral_internal.sisa_pinjaman_penjamin!,
-          collateral_internal.jaminan_cg_penjamin!,
-          collateral_internal.status_hubungan_penjamin!,
-          minioUploadResult?.savedFiles?.foto_ktp_penjamin?.[0]?.url ??
-            parseFileUrl(documents_files?.foto_ktp_penjamin ?? null),
-          minioUploadResult?.savedFiles?.foto_id_card_penjamin?.[0]?.url ??
-            parseFileUrl(documents_files?.foto_id_card_penjamin ?? null),
-          undefined,
-        );
-        await this.collateralRepo.save(collEntity);
-
-        // **7. Simpan RelativesInternal**
-        if (relative_internal) {
-          const relEntity = new RelativesInternal(
+        // ====================== MAP TO PROFILE AND UPDATE JOB ======================
+        try {
+          const clientProfileEntity = new ClientInternalProfile(
             { id: client_id! },
-            relative_internal.kerabat_kerja as KerabatKerjaEnum,
+            { id: loanApp.id! },
+            client_internal.nama_lengkap,
+            client_internal.jenis_kelamin,
+            client_internal.tipe_nasabah as CLIENT_TYPE,
+            client_internal.no_hp,
+            client_internal.status_nikah as MARRIAGE_STATUS,
             undefined,
-            relative_internal.nama,
-            relative_internal.alamat,
-            relative_internal.no_hp,
-            relative_internal.status_hubungan!,
-            relative_internal.nama_perusahaan!,
-            undefined,
-            undefined,
-            undefined,
+            client_internal.email,
+            minioUploadResult?.savedFiles?.foto_ktp?.[0]?.url ??
+              parseFileUrl(
+                documents_files?.foto_ktp ?? client_internal.foto_ktp ?? null,
+              ),
+            minioUploadResult?.savedFiles?.foto_kk?.[0]?.url ??
+              parseFileUrl(
+                documents_files?.foto_kk ?? client_internal.foto_kk ?? null,
+              ),
+            minioUploadResult?.savedFiles?.foto_id_card?.[0]?.url ??
+              parseFileUrl(documents_files?.foto_id_card ?? null),
+            minioUploadResult?.savedFiles?.foto_rekening?.[0]?.url ??
+              parseFileUrl(documents_files?.foto_rekening ?? null),
+            client_internal.no_rekening as string,
           );
-          await this.relativeRepo.save(relEntity);
+          await this.clientProfileRepo.save(clientProfileEntity);
+        } catch (e) {
+          console.error('Error saving client profile:', e);
+          throw new HttpException(
+            {
+              payload: {
+                error: true,
+                message: 'Gagal menyimpan profil nasabah',
+                reference: 'PROFILE_SAVE_ERROR',
+              },
+            },
+            HttpStatus.BAD_REQUEST,
+          );
         }
 
-        // Return sukses
+        // Update job entity with bukti_absensi kalau ada
+        try {
+          if (minioUploadResult?.savedFiles?.bukti_absensi && jobEntity) {
+            jobEntity.bukti_absensi =
+              minioUploadResult.savedFiles.bukti_absensi[0].url;
+            await this.jobRepo.save(jobEntity);
+          }
+        } catch (e) {
+          console.error('Error updating job bukti_absensi:', e);
+          // jangan abort seluruh proses kalau update bukti gagal — log saja
+        }
+
+        // ====================== COLLATERAL ======================
+        try {
+          const collEntity = new CollateralInternal(
+            { id: client_id! },
+            collateral_internal.jaminan_hrd,
+            collateral_internal.jaminan_cg,
+            collateral_internal.penjamin as PenjaminEnum,
+            undefined,
+            undefined,
+            undefined,
+            collateral_internal.nama_penjamin,
+            collateral_internal.lama_kerja_penjamin!,
+            collateral_internal.bagian!,
+            collateral_internal.absensi_penjamin!,
+            collateral_internal.riwayat_pinjam_penjamin as RiwayatPinjamPenjaminEnum,
+            collateral_internal.riwayat_nominal_penjamin!,
+            collateral_internal.riwayat_tenor_penjamin!,
+            collateral_internal.sisa_pinjaman_penjamin!,
+            collateral_internal.jaminan_cg_penjamin!,
+            collateral_internal.status_hubungan_penjamin!,
+            minioUploadResult?.savedFiles?.foto_ktp_penjamin?.[0]?.url ??
+              parseFileUrl(documents_files?.foto_ktp_penjamin ?? null),
+            minioUploadResult?.savedFiles?.foto_id_card_penjamin?.[0]?.url ??
+              parseFileUrl(documents_files?.foto_id_card_penjamin ?? null),
+            undefined,
+          );
+          await this.collateralRepo.save(collEntity);
+        } catch (e) {
+          console.error('Error saving collateral:', e);
+          throw new HttpException(
+            {
+              payload: {
+                error: true,
+                message: 'Gagal menyimpan data jaminan',
+                reference: 'COLLATERAL_SAVE_ERROR',
+              },
+            },
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+
+        // ====================== RELATIVES (optional) ======================
+        try {
+          if (relative_internal) {
+            const relEntity = new RelativesInternal(
+              { id: client_id! },
+              relative_internal.kerabat_kerja as KerabatKerjaEnum,
+              undefined,
+              relative_internal.nama,
+              relative_internal.alamat,
+              relative_internal.no_hp,
+              relative_internal.status_hubungan!,
+              relative_internal.nama_perusahaan!,
+              undefined,
+              undefined,
+              undefined,
+            );
+            await this.relativeRepo.save(relEntity);
+          }
+        } catch (e) {
+          console.error('Error saving relatives:', e);
+          // optional — tidak fatal
+        }
+
+        // --- Done: build response ---
         return {
           payload: {
             error: false,
             message: minioUploadResult?.isUpdate
               ? `Repeat Order ke-${minioUploadResult.originalLoanId} berhasil dibuat`
-              : 'Pengajuan baru berhasil dibuat',
+              : 'Pengajuan repeat berhasil dibuat',
             reference: 'REPEAT_ORDER_CREATE_OK',
             data: {
               loanAppId: loanApp.id,
               clientId: client_id,
               isUpdate: minioUploadResult?.isUpdate ?? false,
               isRepeatOrder: !!repeatFromLoanId,
-              pengajuanFolder: minioUploadResult?.pengajuanFolder,
-              originalLoanId: minioUploadResult?.originalLoanId,
+              pengajuanFolder: minioUploadResult?.pengajuanFolder ?? null,
+              originalLoanId: minioUploadResult?.originalLoanId ?? null,
               filesUploaded: minioUploadResult?.savedFiles
                 ? Object.keys(minioUploadResult.savedFiles).length
                 : 0,
+              fileConversionErrorsCount: fileConversionErrors.length,
             },
           },
         };
       });
     } catch (err) {
       console.error('Error in CreateRepeatOrderUseCase:', err);
-      throw new BadRequestException(err.message || 'Gagal membuat pengajuan');
+
+      // Kalau error sudah HttpException (our own) → lempar apa adanya
+      if (err instanceof HttpException) throw err;
+
+      // DB connection down
+      if (err?.code === 'ECONNREFUSED' || err?.name === 'MongoNetworkError') {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Database connection error',
+              reference: 'DB_CONNECTION_ERROR',
+            },
+          },
+          HttpStatus.SERVICE_UNAVAILABLE,
+        );
+      }
+
+      // Storage / Minio error fallback
+      if (
+        err?.message?.includes?.('storage') ||
+        err?.message?.toLowerCase?.().includes('upload')
+      ) {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Service storage sedang bermasalah',
+              reference: 'STORAGE_SERVICE_ERROR',
+            },
+          },
+          HttpStatus.SERVICE_UNAVAILABLE,
+        );
+      }
+
+      // Fallback general (400)
+      throw new HttpException(
+        {
+          payload: {
+            error: true,
+            message: err?.message || 'Gagal membuat repeat order',
+            reference: 'REPEAT_ORDER_CREATE_ERROR',
+          },
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
-  async executeCreateDraft(
+  async executeCreateRepeatOrder(
     dto: PayloadDTO,
     client_id: number,
     marketingId: number, // ← Tambah parameter marketing_id
@@ -438,8 +708,6 @@ export class MKT_CreateRepeatOrderUseCase {
 
       // ============== ASSIGN marketing_id ke DTO ==============
       dto.marketing_id = marketingId;
-
-      console.log('>>>>>>>>>>>>>>>>>>>..', dto);
 
       // ============== LOG REQUEST INFO ==============
       console.log('=== Create Draft Repeat Order ===');
@@ -627,15 +895,17 @@ export class MKT_CreateRepeatOrderUseCase {
       console.error('=== Error Creating Draft ===');
       console.error(err);
 
-      // Mongoose validation error
-      if (err.name === 'ValidationError') {
+      // =================== HANDLE MONGOOSE VALIDATION ERROR ===================
+      if (err?.name === 'ValidationError') {
+        const message = Object.values(err.errors)
+          .map((e: any) => e.message)
+          .join(', ');
+
         throw new HttpException(
           {
             payload: {
-              error: 'BAD REQUEST',
-              message: Object.values(err.errors)
-                .map((e: any) => e.message)
-                .join(', '),
+              error: true,
+              message,
               reference: 'LOAN_VALIDATION_ERROR',
             },
           },
@@ -643,24 +913,55 @@ export class MKT_CreateRepeatOrderUseCase {
         );
       }
 
-      // Duplicate key error
-      if (err.code === 11000) {
+      // =================== HANDLE DUPLICATE KEY ERROR ===================
+      if (err?.code === 11000) {
         throw new HttpException(
           {
-            error: 'DUPLICATE KEY',
-            message: `Duplicate field: ${Object.keys(err.keyValue).join(', ')}`,
-            reference: 'LOAN_DUPLICATE_KEY',
+            payload: {
+              error: true,
+              message: `Duplicate field: ${Object.keys(err.keyValue).join(', ')}`,
+              reference: 'LOAN_DUPLICATE_KEY',
+              duplicatedFields: err.keyValue,
+            },
           },
           HttpStatus.CONFLICT,
         );
       }
 
-      // fallback error
+      // =================== HANDLE MINIO / FILE SYSTEM ERRORS ===================
+      if (err?.isMinioError) {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: err.message || 'File storage error',
+              reference: 'MINIO_FILE_ERROR',
+            },
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      // =================== HANDLE SHARP IMAGE PROCESSING ERRORS ===================
+      if (err?.message?.includes('Sharp')) {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Image processing failed',
+              reference: 'IMAGE_PROCESSING_ERROR',
+            },
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      // =================== GENERIC ERROR (FALLBACK) ===================
       throw new HttpException(
         {
           payload: {
-            error: 'UNEXPECTED ERROR',
-            message: err.message || 'Unexpected error',
+            error: true,
+            message: err.message || 'Unexpected server error',
             reference: 'LOAN_UNKNOWN_ERROR',
           },
         },
@@ -669,8 +970,27 @@ export class MKT_CreateRepeatOrderUseCase {
     }
   }
 
-  async renderDraftByMarketingId(marketingId: number) {
+  async renderRepeatOrderByMarketingId(marketingId: number) {
     try {
+      // ================= VALIDASI PARAMETER =================
+      if (
+        marketingId === null ||
+        marketingId === undefined ||
+        Number.isNaN(Number(marketingId))
+      ) {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Invalid marketing ID',
+              reference: 'INVALID_MARKETING_ID',
+            },
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // ================= QUERY DRAFT BERDASARKAN MARKETING =================
       const loanApps =
         await this.repeatOrderRepo.findByMarketingId(marketingId);
 
@@ -678,7 +998,7 @@ export class MKT_CreateRepeatOrderUseCase {
         throw new HttpException(
           {
             payload: {
-              error: 'NOT FOUND',
+              error: true,
               message: 'No draft loan applications found for this marketing ID',
               reference: 'LOAN_NOT_FOUND',
             },
@@ -687,79 +1007,103 @@ export class MKT_CreateRepeatOrderUseCase {
         );
       }
 
-      const processedLoans: Array<
-        (typeof loanApps)[number] & {
-          approval_recommendation:
-            | MKT_GetDraftByMarketingId_ApprovalRecommendation
-            | {
-                error: string;
-                message: string;
-                reference: string;
-              };
-        }
-      > = [];
-
-      for (const loanApp of loanApps) {
-        const nominalPinjaman =
-          loanApp?.loan_application_internal?.nominal_pinjaman ?? 0;
-
-        let approvalRecommendation:
+      // ================= BUILD RESPONSE =================
+      type DraftWithRecommendation = (typeof loanApps)[number] & {
+        approval_recommendation:
           | MKT_GetDraftByMarketingId_ApprovalRecommendation
           | {
-              error: string;
+              error: boolean | string;
               message: string;
               reference: string;
+            }
+          | {
+              dont_have_check: true;
             };
+      };
 
-        if (nominalPinjaman >= 7000000) {
-          try {
+      const processedLoans: DraftWithRecommendation[] = [];
+
+      for (const loanApp of loanApps) {
+        try {
+          if (!loanApp) {
+            console.warn('LoanApp item is NULL, skipping.');
+            continue;
+          }
+
+          const nominalPinjaman =
+            loanApp?.loan_application_internal?.nominal_pinjaman ?? 0;
+
+          let approvalRecommendation: any;
+
+          // ================= BI CHECKING NEEDED =================
+          if (nominalPinjaman >= 7000000) {
             const draftId = loanApp._id?.toString();
+
             if (!draftId) {
               approvalRecommendation = {
-                error: 'DRAFT_ID_MISSING',
-                message: 'Draft ID not found for loan application',
+                error: true,
+                message: 'Draft ID missing',
                 reference: 'DRAFT_ID_MISSING',
               };
             } else {
-              const recommendationData =
-                await this.approvalRecommendationRepo.findByDraftId(draftId);
+              try {
+                const recommendation =
+                  await this.approvalRecommendationRepo.findByDraftId(draftId);
 
-              if (recommendationData) {
+                if (recommendation) {
+                  approvalRecommendation = {
+                    draft_id: recommendation.draft_id!,
+                    nama_nasabah: recommendation.nama_nasabah!,
+                    recommendation: recommendation.recommendation!,
+                    filePath: recommendation.filePath!,
+                    catatan: recommendation.catatan ?? null,
+                  };
+                } else {
+                  approvalRecommendation = {
+                    error: true,
+                    message: 'Waiting Admin BI Responsibility',
+                    reference: 'WAITING_ADMIN_BI_RECOMMENDATION',
+                  };
+                }
+              } catch (recError) {
+                console.error(
+                  'Error while fetching BI recommendation:',
+                  recError,
+                );
+
                 approvalRecommendation = {
-                  draft_id: recommendationData.draft_id!,
-                  nama_nasabah: recommendationData.nama_nasabah!,
-                  recommendation: recommendationData.recommendation!,
-                  filePath: recommendationData.filePath!,
-                  catatan: recommendationData.catatan ?? null,
-                };
-              } else {
-                approvalRecommendation = {
-                  error: 'WAITING_ADMIN_BI_RECOMMENDATION',
-                  message: 'Waiting Admin BI Responsibility',
-                  reference: 'WAITING_ADMIN_BI_RECOMMENDATION',
+                  error: true,
+                  message: 'Failed fetching BI recommendation',
+                  reference: 'RECOMMENDATION_FETCH_FAILED',
                 };
               }
             }
-          } catch (innerError) {
-            console.error('Error while fetching recommendation:', innerError);
+          } else {
+            // ================= BI CHECKING NOT REQUIRED =================
             approvalRecommendation = {
-              error: 'RECOMMENDATION_FETCH_FAILED',
-              message: 'Gagal mengambil data rekomendasi BI Checking.',
-              reference: 'RECOMMENDATION_FETCH_FAILED',
+              dont_have_check: true,
             };
           }
-        } else {
-          approvalRecommendation = {
-            dont_have_check: true,
-          } as MKT_GetDraftByMarketingId_ApprovalRecommendation;
-        }
 
-        processedLoans.push({
-          ...loanApp,
-          approval_recommendation: approvalRecommendation,
-        });
+          processedLoans.push({
+            ...loanApp,
+            approval_recommendation: approvalRecommendation,
+          });
+        } catch (innerError) {
+          console.error('Error processing individual loanApp:', innerError);
+
+          processedLoans.push({
+            ...loanApp,
+            approval_recommendation: {
+              error: true,
+              message: 'Failed processing draft item',
+              reference: 'DRAFT_PROCESSING_FAILED',
+            },
+          });
+        }
       }
 
+      // ================= RETURN SUCCESS RESPONSE =================
       return {
         payload: {
           error: false,
@@ -769,17 +1113,48 @@ export class MKT_CreateRepeatOrderUseCase {
         },
       };
     } catch (error) {
+      console.error('=== ERROR renderDraftByMarketingId ===');
       console.error(error);
 
+      // Explicit HttpException
       if (error instanceof HttpException) {
         throw error;
       }
 
+      // Mongo connection failure
+      if (error?.name === 'MongoNetworkError') {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Database connection failure',
+              reference: 'DB_CONNECTION_ERROR',
+            },
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      // Mongoose CastError (ObjectId invalid)
+      if (error?.name === 'CastError') {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Invalid data format',
+              reference: 'INVALID_DATA_FORMAT',
+            },
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // General unexpected error
       throw new HttpException(
         {
           payload: {
             error: true,
-            message: 'Unexpected error',
+            message: error.message || 'Unexpected error',
             reference: 'LOAN_UNKNOWN_ERROR',
           },
         },
@@ -788,7 +1163,7 @@ export class MKT_CreateRepeatOrderUseCase {
     }
   }
 
-  async updateDraftById(
+  async updateRepeatOrderById(
     Id: string,
     updateData: Partial<CreateDraftRepeatOrderDto>,
     files?: Record<string, Express.Multer.File[]>,
@@ -966,15 +1341,162 @@ export class MKT_CreateRepeatOrderUseCase {
     }
   }
 
-  async renderDraftById(Id: string) {
+  async renderRepeatOrderById(Id: string) {
     try {
-      const loanApp = await this.repeatOrderRepo.findById(Id);
+      // ========== 1. VALIDASI INPUT ==========
+      if (Id === null || Id === undefined || String(Id).trim() === '') {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Draft ID is required',
+              reference: 'INVALID_DRAFT_ID',
+            },
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // ========== 2. AMBIL DARI REPO ==========
+      let loanApp;
+      try {
+        loanApp = await this.repeatOrderRepo.findById(Id);
+      } catch (repoErr) {
+        console.error('Error calling repeatOrderRepo.findById:', repoErr);
+
+        // Database connectivity / network
+        if (
+          repoErr?.name === 'MongoNetworkError' ||
+          repoErr?.code === 'ECONNREFUSED'
+        ) {
+          throw new HttpException(
+            {
+              payload: {
+                error: true,
+                message: 'Database connection error while retrieving draft',
+                reference: 'DB_CONNECTION_ERROR',
+              },
+            },
+            HttpStatus.SERVICE_UNAVAILABLE,
+          );
+        }
+
+        // Mongoose CastError (invalid ObjectId)
+        if (repoErr?.name === 'CastError') {
+          throw new HttpException(
+            {
+              payload: {
+                error: true,
+                message: 'Invalid draft ID format',
+                reference: 'INVALID_ID_FORMAT',
+              },
+            },
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+
+        // Jika repositori melempar error lain, bungkus jadi 500 (tidak spill stack)
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Failed to retrieve draft from repository',
+              reference: 'REPO_READ_ERROR',
+            },
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      // ========== 3. CEK RESULT ==========
       if (!loanApp) {
         throw new HttpException(
           {
             payload: {
-              error: 'NOT FOUND',
-              message: 'No draft loan applications found for this ID',
+              error: true,
+              message: 'No draft loan application found for this ID',
+              reference: 'LOAN_NOT_FOUND',
+            },
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      const sanitizedLoanApp = { ...loanApp };
+
+      // ========== 5. RETURN SUCCESS (konsisten payload) ==========
+      return {
+        payload: {
+          error: false,
+          message: 'Draft loan application retrieved',
+          reference: 'LOAN_RETRIEVE_OK',
+          data: {
+            client_and_loan_detail: sanitizedLoanApp,
+          },
+        },
+      };
+    } catch (error) {
+      console.error('=== ERROR renderDraftById ===');
+      console.error(error);
+
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      if (
+        error?.name === 'MongoNetworkError' ||
+        error?.code === 'ECONNREFUSED'
+      ) {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Database connection failure',
+              reference: 'DB_CONNECTION_ERROR',
+            },
+          },
+          HttpStatus.SERVICE_UNAVAILABLE,
+        );
+      }
+
+      // Invalid cast / ObjectId format (if not caught earlier)
+      if (error?.name === 'CastError') {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Invalid data format',
+              reference: 'INVALID_DATA_FORMAT',
+            },
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Generic fallback (don't leak internals)
+      throw new HttpException(
+        {
+          payload: {
+            error: true,
+            message: 'Unexpected error while retrieving draft',
+            reference: 'LOAN_UNKNOWN_ERROR',
+          },
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async deleteRepeatOrderByMarketingId(id: string) {
+    try {
+      const deleteResult = await this.repeatOrderRepo.softDelete(id);
+
+      // Kalau repository ngasih indikasi "not found"
+      if (!deleteResult) {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Draft loan application not found for this ID',
               reference: 'LOAN_NOT_FOUND',
             },
           },
@@ -983,31 +1505,61 @@ export class MKT_CreateRepeatOrderUseCase {
       }
 
       return {
-        error: false,
-        message: 'Draft loan applications retrieved',
-        reference: 'LOAN_RETRIEVE_OK',
-        data: {
-          client_and_loan_detail: {
-            ...loanApp,
-          },
+        payload: {
+          error: false,
+          message: 'Draft loan application deleted',
+          reference: 'LOAN_DELETE_OK',
+          data: [],
         },
       };
     } catch (error) {
-      console.log(error);
+      console.error('DeleteDraft Error >>>', error);
 
+      // HttpException tetap diteruskan
       if (error instanceof HttpException) {
         throw error;
       }
 
+      // DB connection error
+      if (error.code === 'ECONNREFUSED' || error.name === 'MongoNetworkError') {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Database connection error',
+              reference: 'DB_CONNECTION_ERROR',
+            },
+          },
+          HttpStatus.SERVICE_UNAVAILABLE,
+        );
+      }
+
+      // Kalau ID invalid (misalnya Mongo ObjectId invalid)
+      if (error.name === 'CastError') {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Invalid draft ID format',
+              reference: 'INVALID_ID_FORMAT',
+            },
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // fallback (bukan 500 langsung)
       throw new HttpException(
         {
           payload: {
             error: true,
-            message: 'Unexpected error',
-            reference: 'LOAN_UNKNOWN_ERROR',
+            message:
+              error?.message ||
+              'Unexpected error while deleting draft loan application',
+            reference: 'LOAN_DELETE_ERROR',
           },
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.BAD_REQUEST,
       );
     }
   }

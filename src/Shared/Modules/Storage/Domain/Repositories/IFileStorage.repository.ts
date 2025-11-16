@@ -56,7 +56,6 @@ export interface IFileStorageRepository {
     customerId: number,
     customerName: string,
     filename: string,
-    isDraft?: boolean,
   ): Promise<{ buffer: Buffer; mimetype: string; originalName: string }>;
 
   getFilesForRepeatOrders(

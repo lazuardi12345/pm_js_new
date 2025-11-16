@@ -19,5 +19,5 @@ export interface ILoanApplicationDraftRepository {
     draft_id?: string,
     nominal_pinjaman?: number,
   ): Promise<void>;
-  softDelete(id: string): Promise<void>;
+  softDelete(id: string): Promise<boolean>;
 }

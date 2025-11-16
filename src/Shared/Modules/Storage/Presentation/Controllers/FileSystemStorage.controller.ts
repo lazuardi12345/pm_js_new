@@ -66,40 +66,6 @@ export class FileStorageController {
   }
 
   @Public()
-  @Get(':customerId/:customerName')
-  async listFiles(
-    @Param('customerId', ParseIntPipe) customerId: number,
-    @Param('customerName') customerName: string,
-  ) {
-    const files = await this.fileStorageService.listFiles(
-      customerId,
-      customerName,
-      false,
-    );
-    return { files };
-  }
-
-  @Public()
-  @Get(':customerId/:customerName/:filename')
-  async getFile(
-    @Param('customerId', ParseIntPipe) customerId: number,
-    @Param('customerName') customerName: string,
-    @Param('filename') filename: string,
-    @Res() res: Response,
-  ) {
-    const { buffer, mimetype, originalName } =
-      await this.fileStorageService.getFile(customerId, customerName, filename);
-
-    res.set({
-      'Content-Type': mimetype,
-      'Content-Disposition': `inline; filename="${originalName}"`,
-      'Content-Length': buffer.length,
-    });
-
-    res.send(buffer);
-  }
-
-  @Public()
   @Get('bi-check/:customerId/:customerName/:filename')
   async getFileFromApprovalRecommendation(
     @Param('customerId', ParseIntPipe) customerId: number,
@@ -107,6 +73,7 @@ export class FileStorageController {
     @Param('filename') filename: string,
     @Res() res: Response,
   ) {
+    console.log('pepek: ', customerId, customerName, filename);
     const { buffer, mimetype, originalName } =
       await this.fileStorageService.getFilesForApprovalRecommendations(
         customerId,
@@ -149,6 +116,58 @@ export class FileStorageController {
     res.send(buffer);
   }
 
+  @Public()
+  @Get(':customerId/:customerName')
+  async listFiles(
+    @Param('customerId', ParseIntPipe) customerId: number,
+    @Param('customerName') customerName: string,
+  ) {
+    const files = await this.fileStorageService.listFiles(
+      customerId,
+      customerName,
+      false,
+    );
+    return { files };
+  }
+
+  @Public()
+  @Get(':customerId/:customerName/:filename')
+  async getFile(
+    @Param('customerId', ParseIntPipe) customerId: number,
+    @Param('customerName') customerName: string,
+    @Param('filename') filename: string,
+    @Res() res: Response,
+  ) {
+    console.log('🎯 ROUTE HIT:', { customerId, customerName, filename }); // ← TAMBAH INI
+
+    const { buffer, mimetype, originalName } =
+      await this.fileStorageService.getFile(customerId, customerName, filename);
+
+    res.set({
+      'Content-Type': mimetype,
+      'Content-Disposition': `inline; filename="${originalName}"`,
+      'Content-Length': buffer.length,
+    });
+
+    res.send(buffer);
+  }
+
+  @Public()
+  @Put('change-directory/:customerId/:oldCustomerName/:newCustomerName')
+  async updateFileDirectory(
+    @Param('customerId', ParseIntPipe) customerId: number,
+    @Param('oldCustomerName') oldCustomerName: string,
+    @Param('newCustomerName') newCustomerName: string,
+    // @Param('filename') filename: string,
+  ) {
+    const result = await this.fileStorageService.updateFileDirectory(
+      customerId,
+      oldCustomerName,
+      newCustomerName,
+    );
+    return { message: 'Folder renamed successfully', data: result };
+  }
+
   @Put(':customerId/:customerName/:filename')
   @UseInterceptors(
     FileFieldsInterceptor([
@@ -175,22 +194,6 @@ export class FileStorageController {
       false,
     );
     return { message: 'File updated successfully', data: result };
-  }
-
-  @Public()
-  @Put('change-directory/:customerId/:oldCustomerName/:newCustomerName')
-  async updateFileDirectory(
-    @Param('customerId', ParseIntPipe) customerId: number,
-    @Param('oldCustomerName') oldCustomerName: string,
-    @Param('newCustomerName') newCustomerName: string,
-    // @Param('filename') filename: string,
-  ) {
-    const result = await this.fileStorageService.updateFileDirectory(
-      customerId,
-      oldCustomerName,
-      newCustomerName,
-    );
-    return { message: 'Folder renamed successfully', data: result };
   }
 
   @Public()
