@@ -1,4 +1,10 @@
-import { Injectable, BadRequestException, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  Inject,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { ClientInternal } from 'src/Modules/LoanAppInternal/Domain/Entities/client-internal.entity';
 import { ClientInternalProfile } from 'src/Modules/LoanAppInternal/Domain/Entities/client-internal-profile.entity';
 import { AddressInternal } from 'src/Modules/LoanAppInternal/Domain/Entities/address-internal.entity';
@@ -130,179 +136,246 @@ export class MKT_CreateLoanApplicationUseCase {
           documents_files,
         } = dto;
 
-        // **1. Simpan ClientInternal**
-        const client = new ClientInternal(
-          { id: marketing_id },
-          client_internal.nama_lengkap,
-          client_internal.no_ktp,
-          client_internal.jenis_kelamin as GENDER,
-          client_internal.tempat_lahir,
-          new Date(client_internal.tanggal_lahir),
-          // Property ekstra jika ada, misalnya “role” atau id marketing, atau biarkan undefined
-          undefined,
-          false,
-          String(client_internal.points),
-          now,
-          now,
-          undefined,
-        );
-        const customer = await this.clientRepo.save(client);
+        // ==========================
+        // 1. VALIDASI BASIC
+        // ==========================
+        if (!client_internal?.nama_lengkap) {
+          throw new BadRequestException({
+            payload: {
+              error: true,
+              message: 'Nama lengkap wajib diisi',
+              reference: 'VALIDATION_ERROR',
+            },
+          });
+        }
 
-        // **2. Simpan AddressInternal**
-        const addressEntity = new AddressInternal(
-          { id: customer.id! },
-          address_internal.alamat_ktp,
-          address_internal.rt_rw,
-          address_internal.kelurahan,
-          address_internal.kecamatan,
-          address_internal.kota,
-          address_internal.provinsi,
-          address_internal.status_rumah as StatusRumahEnum,
-          address_internal.domisili as DomisiliEnum,
-          undefined, // bila ada properti tambahan
-          now,
-          undefined,
-          (address_internal.status_rumah_ktp as StatusRumahEnum) ?? null,
-          address_internal.alamat_lengkap ?? '',
-          now,
-        );
-        await this.addressRepo.save(addressEntity);
+        if (!client_internal?.no_ktp) {
+          throw new BadRequestException({
+            payload: {
+              error: true,
+              message: 'Nomor KTP wajib diisi',
+              reference: 'VALIDATION_ERROR',
+            },
+          });
+        }
 
-        // **3. Simpan FamilyInternal**
-        const familyEntity = new FamilyInternal(
-          { id: customer.id! },
-          family_internal.hubungan as HubunganEnum,
-          family_internal.nama,
-          family_internal.bekerja as BekerjaEnum,
-          undefined,
-          undefined,
-          undefined,
-          family_internal.nama_perusahaan!,
-          family_internal.jabatan!,
-          parseNumber(family_internal.penghasilan),
-          family_internal.alamat_kerja!,
-          family_internal.no_hp,
-          undefined,
-        );
-        await this.familyRepo.save(familyEntity);
+        // ==========================
+        // 2. Simpan ClientInternal
+        // ==========================
+        let customer;
+        try {
+          const client = new ClientInternal(
+            { id: marketing_id },
+            client_internal.nama_lengkap,
+            client_internal.no_ktp,
+            client_internal.jenis_kelamin as GENDER,
+            client_internal.tempat_lahir,
+            new Date(client_internal.tanggal_lahir),
+            undefined,
+            false,
+            String(client_internal.points),
+            now,
+            now,
+            undefined,
+          );
 
-        // **4. Simpan JobInternal**
-        const jobEntity = new JobInternal(
-          { id: customer.id! },
-          job_internal.perusahaan as PerusahaanEnum,
-          job_internal.divisi,
-          job_internal.golongan as GolonganEnum,
-          job_internal.nama_atasan!,
-          job_internal.nama_hrd!,
-          job_internal.absensi!,
-          undefined,
-          undefined,
-          undefined,
-          job_internal.yayasan!,
-          job_internal.lama_kerja_bulan,
-          job_internal.lama_kerja_tahun,
-          parseFileUrl(
-            documents_files?.bukti_absensi_file ?? job_internal.bukti_absensi!,
+          customer = await this.clientRepo.save(client);
+        } catch (e) {
+          console.error('Error saving client:', e);
+
+          // Duplicate KTP error (MySQL / Mongo)
+          if (e?.code === 'ER_DUP_ENTRY' || e?.code === 11000) {
+            throw new BadRequestException({
+              payload: {
+                error: true,
+                message: 'Nomor KTP sudah terdaftar',
+                reference: 'KTP_DUPLICATE',
+              },
+            });
+          }
+
+          throw new HttpException(
+            {
+              payload: {
+                error: true,
+                message: 'Gagal menyimpan data nasabah',
+                reference: 'CLIENT_SAVE_ERROR',
+              },
+            },
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+        }
+
+        // ==========================
+        // Save other entities (same pattern)
+        // ==========================
+        await this.addressRepo.save(
+          new AddressInternal(
+            { id: customer.id! },
+            address_internal.alamat_ktp,
+            address_internal.rt_rw,
+            address_internal.kelurahan,
+            address_internal.kecamatan,
+            address_internal.kota,
+            address_internal.provinsi,
+            address_internal.status_rumah as StatusRumahEnum,
+            address_internal.domisili as DomisiliEnum,
+            undefined,
+            now,
+            undefined,
+            (address_internal.status_rumah_ktp as StatusRumahEnum) ?? null,
+            address_internal.alamat_lengkap ?? '',
+            now,
           ),
-          undefined,
         );
-        await this.jobRepo.save(jobEntity);
 
-        // **5. Simpan LoanApplicationInternal**
+        await this.familyRepo.save(
+          new FamilyInternal(
+            { id: customer.id! },
+            family_internal.hubungan as HubunganEnum,
+            family_internal.nama,
+            family_internal.bekerja as BekerjaEnum,
+            undefined,
+            undefined,
+            undefined,
+            family_internal.nama_perusahaan!,
+            family_internal.jabatan!,
+            parseNumber(family_internal.penghasilan),
+            family_internal.alamat_kerja!,
+            family_internal.no_hp,
+            undefined,
+          ),
+        );
+
+        await this.jobRepo.save(
+          new JobInternal(
+            { id: customer.id! },
+            job_internal.perusahaan as PerusahaanEnum,
+            job_internal.divisi,
+            job_internal.golongan as GolonganEnum,
+            job_internal.nama_atasan!,
+            job_internal.nama_hrd!,
+            job_internal.absensi!,
+            undefined,
+            undefined,
+            undefined,
+            job_internal.yayasan!,
+            job_internal.lama_kerja_bulan,
+            job_internal.lama_kerja_tahun,
+            parseFileUrl(
+              documents_files?.bukti_absensi_file ??
+                job_internal.bukti_absensi ??
+                null,
+            ),
+            undefined,
+          ),
+        );
+
+        // ==========================
+        // Loan Application
+        // ==========================
         const isBandingBoolean =
           loan_application_internal.is_banding === 1 ? true : false;
 
-        const loanAppEntity = new LoanApplicationInternal(
-          { id: customer.id! },
-          loan_application_internal.status_pinjaman as StatusPinjamanEnum,
-          loan_application_internal.nominal_pinjaman ?? 0,
-          loan_application_internal.tenor ?? 0,
-          loan_application_internal.keperluan ?? '',
-          undefined,
-          undefined,
-          undefined,
-          (loan_application_internal.status ??
-            'pending') as StatusPengajuanEnum,
-          ((loan_application_internal.status_akhir_pengajuan ??
-            null) as StatusPengajuanAkhirEnum) ?? null,
-          loan_application_internal.pinjaman_ke ?? 1,
-          loan_application_internal.riwayat_nominal ?? 0,
-          loan_application_internal.riwayat_tenor ?? 0,
-          loan_application_internal.sisa_pinjaman ?? 0,
-          loan_application_internal.notes ?? '',
-          isBandingBoolean,
-          loan_application_internal.alasan_banding ?? '',
-        );
-
-        const loanApp = await this.loanAppRepo.save(loanAppEntity);
-
-        // **1A. Mapping Dulu ke Profile
-        const clientProfileEntity = new ClientInternalProfile(
-          { id: customer.id! },
-          { id: loanApp.id! },
-          client_internal.nama_lengkap,
-          client_internal.jenis_kelamin,
-          client_internal.tipe_nasabah as CLIENT_TYPE,
-          client_internal.no_hp,
-          client_internal.status_nikah as MARRIAGE_STATUS,
-          undefined,
-          client_internal.email,
-          parseFileUrl(
-            documents_files?.foto_ktp ?? client_internal.foto_ktp ?? null,
-          ),
-          parseFileUrl(
-            documents_files?.foto_kk ?? client_internal.foto_kk ?? null,
-          ),
-          parseFileUrl(documents_files?.foto_id_card ?? null),
-          parseFileUrl(documents_files?.foto_rekening ?? null),
-          client_internal.no_rekening as string,
-        );
-        await this.clientProfileRepo.save(clientProfileEntity);
-
-        // **6. Simpan CollateralInternal**
-        const collEntity = new CollateralInternal(
-          { id: customer.id! },
-          collateral_internal.jaminan_hrd,
-          collateral_internal.jaminan_cg,
-          collateral_internal.penjamin as PenjaminEnum,
-          undefined,
-          undefined,
-          undefined,
-          collateral_internal.nama_penjamin,
-          collateral_internal.lama_kerja_penjamin!,
-          collateral_internal.bagian!,
-          collateral_internal.absensi_penjamin!,
-          collateral_internal.riwayat_pinjam_penjamin as RiwayatPinjamPenjaminEnum,
-          collateral_internal.riwayat_nominal_penjamin!,
-          collateral_internal.riwayat_tenor_penjamin!,
-          collateral_internal.sisa_pinjaman_penjamin!,
-          collateral_internal.jaminan_cg_penjamin!,
-          collateral_internal.status_hubungan_penjamin!,
-          parseFileUrl(documents_files?.foto_ktp_penjamin ?? null),
-          parseFileUrl(documents_files?.foto_id_card_penjamin ?? null),
-          undefined,
-        );
-        await this.collateralRepo.save(collEntity);
-
-        // **7. Simpan RelativesInternal**
-        if (relative_internal) {
-          const relEntity = new RelativesInternal(
+        const loanApp = await this.loanAppRepo.save(
+          new LoanApplicationInternal(
             { id: customer.id! },
-            relative_internal.kerabat_kerja as KerabatKerjaEnum,
-            undefined,
-            relative_internal.nama,
-            relative_internal.alamat,
-            relative_internal.no_hp,
-            relative_internal.status_hubungan!,
-            relative_internal.nama_perusahaan!,
+            loan_application_internal.status_pinjaman as StatusPinjamanEnum,
+            loan_application_internal.nominal_pinjaman ?? 0,
+            loan_application_internal.tenor ?? 0,
+            loan_application_internal.keperluan ?? '',
             undefined,
             undefined,
             undefined,
+            (loan_application_internal.status ??
+              'pending') as StatusPengajuanEnum,
+            (loan_application_internal.status_akhir_pengajuan ??
+              null) as StatusPengajuanAkhirEnum,
+            loan_application_internal.pinjaman_ke ?? 1,
+            loan_application_internal.riwayat_nominal ?? 0,
+            loan_application_internal.riwayat_tenor ?? 0,
+            loan_application_internal.sisa_pinjaman ?? 0,
+            loan_application_internal.notes ?? '',
+            isBandingBoolean,
+            loan_application_internal.alasan_banding ?? '',
+          ),
+        );
+
+        // ==========================
+        // Profile
+        // ==========================
+        await this.clientProfileRepo.save(
+          new ClientInternalProfile(
+            { id: customer.id! },
+            { id: loanApp.id! },
+            client_internal.nama_lengkap,
+            client_internal.jenis_kelamin,
+            client_internal.tipe_nasabah as CLIENT_TYPE,
+            client_internal.no_hp,
+            client_internal.status_nikah as MARRIAGE_STATUS,
+            undefined,
+            client_internal.email,
+            parseFileUrl(
+              documents_files?.foto_ktp ?? client_internal.foto_ktp ?? null,
+            ),
+            parseFileUrl(
+              documents_files?.foto_kk ?? client_internal.foto_kk ?? null,
+            ),
+            parseFileUrl(documents_files?.foto_id_card ?? null),
+            parseFileUrl(documents_files?.foto_rekening ?? null),
+            client_internal.no_rekening,
+          ),
+        );
+
+        // ==========================
+        // Collateral
+        // ==========================
+        await this.collateralRepo.save(
+          new CollateralInternal(
+            { id: customer.id! },
+            collateral_internal.jaminan_hrd,
+            collateral_internal.jaminan_cg,
+            collateral_internal.penjamin as PenjaminEnum,
+            undefined,
+            undefined,
+            undefined,
+            collateral_internal.nama_penjamin,
+            collateral_internal.lama_kerja_penjamin!,
+            collateral_internal.bagian!,
+            collateral_internal.absensi_penjamin!,
+            collateral_internal.riwayat_pinjam_penjamin as RiwayatPinjamPenjaminEnum,
+            collateral_internal.riwayat_nominal_penjamin!,
+            collateral_internal.riwayat_tenor_penjamin!,
+            collateral_internal.sisa_pinjaman_penjamin!,
+            collateral_internal.jaminan_cg_penjamin!,
+            collateral_internal.status_hubungan_penjamin!,
+            parseFileUrl(documents_files?.foto_ktp_penjamin ?? null),
+            parseFileUrl(documents_files?.foto_id_card_penjamin ?? null),
+            undefined,
+          ),
+        );
+
+        // ==========================
+        // Kerabat (optional)
+        // ==========================
+        if (relative_internal) {
+          await this.relativeRepo.save(
+            new RelativesInternal(
+              { id: customer.id! },
+              relative_internal.kerabat_kerja as KerabatKerjaEnum,
+              undefined,
+              relative_internal.nama,
+              relative_internal.alamat,
+              relative_internal.no_hp,
+              relative_internal.status_hubungan!,
+              relative_internal.nama_perusahaan!,
+              undefined,
+              undefined,
+              undefined,
+            ),
           );
-          await this.relativeRepo.save(relEntity);
         }
 
-        // Return sukses
         return {
           payload: {
             error: false,
@@ -316,7 +389,35 @@ export class MKT_CreateLoanApplicationUseCase {
       });
     } catch (err) {
       console.error('Error in CreateLoanApplicationUseCase:', err);
-      throw new BadRequestException(err.message || 'Gagal membuat pengajuan');
+
+      // Kalau sudah HttpException → lempar aja
+      if (err instanceof HttpException) throw err;
+
+      // DB connection down
+      if (err.code === 'ECONNREFUSED' || err.name === 'MongoNetworkError') {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Database connection error',
+              reference: 'DB_CONNECTION_ERROR',
+            },
+          },
+          HttpStatus.SERVICE_UNAVAILABLE,
+        );
+      }
+
+      // Fallback
+      throw new HttpException(
+        {
+          payload: {
+            error: true,
+            message: err?.message || 'Gagal membuat pengajuan',
+            reference: 'LOAN_CREATE_ERROR',
+          },
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 }

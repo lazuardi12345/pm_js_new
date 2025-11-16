@@ -103,47 +103,25 @@ export class MKT_UpdateLoanApplicationUseCase {
           relative_internal,
         } = payload;
 
-        const foto_ktp_penjamin =
-          files?.foto_ktp_penjamin?.[0]?.fieldname ?? null;
-
-        console.log('PAYLOAD', {
-          payload,
-          clientId,
-          marketingId,
-          loanId,
-          foto_ktp_penjamin,
-        });
-
         const client = await this.clientRepo.findById(clientId);
-        if (!client) throw new BadRequestException('Client tidak ditemukan');
+        if (!client) {
+          return {
+            payload: {
+              error: true,
+              message: 'Client tidak ditemukan',
+              reference: 'CLIENT_NOT_FOUND',
+              data: null,
+            },
+          };
+        }
 
         const filePaths: Record<string, string> = {};
         let isUpdated = false;
 
-        if (files && Object.keys(files).length > 0) {
-          //! buat bucket name di Minio
-          const prepareForClientName = client.nama_lengkap
-            .trim()
-            .replace(/\s+/g, '_');
-          const prepareForClientId = Number(client.no_ktp);
-          // const folderPath = `${client.no_ktp}/${cleanName}`;
-          const validFields = [
-            'foto_ktp',
-            'foto_kk',
-            'foto_id_card',
-            'bukti_absensi_file',
-            'foto_ktp_penjamin',
-            'foto_id_card_penjamin',
-            'foto_rekening',
-          ];
-
-          for (const [fieldName, fileArray] of Object.entries(files)) {
-            const file = fileArray?.[0];
-            if (!file || !validFields.includes(fieldName)) continue;
-
-            let processedBuffer = file.buffer;
-            let newExtension = this.getFileExtension(file.originalname); // default
-            const imageFields = [
+        // ==================== FILE HANDLING =====================
+        try {
+          if (files && Object.keys(files).length > 0) {
+            const allowedFields = [
               'foto_ktp',
               'foto_kk',
               'foto_id_card',
@@ -153,99 +131,102 @@ export class MKT_UpdateLoanApplicationUseCase {
               'foto_rekening',
             ];
 
-            // jika file termasuk gambar, konversi ke .webp pakai sharp
-            if (imageFields.includes(fieldName)) {
-              processedBuffer = await sharp(file.buffer)
-                .jpeg({ quality: 90 })
-                .toBuffer();
-              newExtension = '.jpeg';
+            const prepareForClientName = client.nama_lengkap
+              .trim()
+              .replace(/\s+/g, '_');
+
+            const prepareForClientId = Number(client.no_ktp);
+
+            for (const [fieldName, fileArray] of Object.entries(files)) {
+              const file = fileArray?.[0];
+              if (!file || !allowedFields.includes(fieldName)) continue;
+
+              let newBuffer = file.buffer;
+              let newExt = this.getFileExtension(file.originalname);
+
+              if (allowedFields.includes(fieldName)) {
+                newBuffer = await sharp(file.buffer)
+                  .jpeg({ quality: 90 })
+                  .toBuffer();
+                newExt = '.jpeg';
+              }
+
+              const finalFileName = `${client.nama_lengkap}-${fieldName}${newExt}.enc`;
+
+              await this.fileStorage.updateFile(
+                prepareForClientId,
+                prepareForClientName,
+                finalFileName,
+                { ...file, buffer: newBuffer },
+                false,
+              );
+
+              filePaths[fieldName] =
+                `${this.baseFileUrl}/${prepareForClientId}/${prepareForClientName}/${encodeURIComponent(finalFileName)}`;
+
+              isUpdated = true;
             }
-
-            const CleanClientName = client.nama_lengkap;
-            const formattedFileName = `${CleanClientName}-${fieldName}${newExtension}.enc`;
-
-            // upload pakai fileStorage
-            await this.fileStorage.updateFile(
-              prepareForClientId,
-              prepareForClientName,
-              formattedFileName,
-              { ...file, buffer: processedBuffer }, // override buffer
-              false,
-            );
-
-            const newFilePath = `${this.baseFileUrl}/${prepareForClientId}/${prepareForClientName}/${encodeURIComponent(formattedFileName)}`;
-            filePaths[fieldName] = newFilePath;
-            isUpdated = true;
           }
+        } catch (e) {
+          throw new BadRequestException('Gagal memproses file upload');
         }
 
-        let updatedClientData = {};
-        if (client_internal || Object.keys(filePaths).length > 0) {
-          updatedClientData = {
-            ...client_internal,
-            ...filePaths,
-            updated_at: now,
-          };
-
-          Object.keys(updatedClientData).forEach((key) => {
-            const val = updatedClientData[key];
-
-            if (val === undefined) {
-              delete updatedClientData[key];
-            }
-            if (
-              typeof val === 'object' &&
-              val !== null &&
-              Object.keys(val).length === 0
-            ) {
-              updatedClientData[key] = null;
-            }
-          });
-          Object.keys(filePaths).forEach((key) => {
-            if (!filePaths[key] || typeof filePaths[key] !== 'string') {
-              updatedClientData[key] = null;
-            }
-          });
-
-          const hasClientChanged = Object.entries(updatedClientData).some(
-            ([key, val]) => client[key] !== val,
-          );
-
-          if (hasClientChanged) {
-            await this.clientRepo.save({
-              ...client,
-              ...updatedClientData,
-            } as ClientInternal);
-            isUpdated = true;
-          }
-        }
-
-        const updateIfExist = async (repo, data, clientField) => {
+        // ============= FUNCTION UPDATE DATA MURNI ===============
+        const updateIfExist = async (repo, data, name) => {
           if (!data || Object.keys(data).length === 0) return {};
 
           const existing = await repo.findById(clientId);
-          const timestampedData = { ...data, updated_at: now };
+          const preparedData = { ...data, updated_at: now };
 
           if (!existing) {
             await repo.save({
-              ...data,
+              ...preparedData,
               nasabah: { id: clientId },
               createdAt: now,
               updatedAt: now,
             });
             isUpdated = true;
-            return data;
-          } else {
-            if (!existing.id)
-              throw new BadRequestException(
-                `${clientField} ID tidak ditemukan, update gagal`,
-              );
-            await repo.update(existing.id, timestampedData);
-            isUpdated = true;
-            return data;
+            return preparedData;
           }
+
+          await repo.update(existing.id, preparedData);
+          isUpdated = true;
+          return preparedData;
         };
 
+        // ============= CLEANUP CLIENT DATA =============
+        let updatedClientData = {};
+        if (client_internal || Object.keys(filePaths).length > 0) {
+          const sanitized = {
+            ...client_internal,
+            ...filePaths,
+            updated_at: now,
+          };
+
+          Object.keys(sanitized).forEach((key) => {
+            if (sanitized[key] === undefined) delete sanitized[key];
+            if (typeof sanitized[key] === 'object' && sanitized[key] !== null) {
+              if (Object.keys(sanitized[key]).length === 0)
+                sanitized[key] = null;
+            }
+          });
+
+          const changed = Object.entries(sanitized).some(
+            ([key, val]) => client[key] !== val,
+          );
+
+          if (changed) {
+            await this.clientRepo.save({
+              ...client,
+              ...sanitized,
+            });
+            isUpdated = true;
+          }
+
+          updatedClientData = sanitized;
+        }
+
+        // ============= PART UPDATE ENTITY LAIN =============
         const updatedAddressData = await updateIfExist(
           this.addressRepo,
           address_internal,
@@ -261,82 +242,88 @@ export class MKT_UpdateLoanApplicationUseCase {
           job_internal,
           'Job',
         );
-        const collateralFileKeys = [
-          'foto_ktp_penjamin',
-          'foto_id_card_penjamin',
-        ];
-        collateralFileKeys.forEach((key) => {
-          if (filePaths[key] && typeof filePaths[key] === 'string') {
-            collateral_internal[key] = filePaths[key]; // assign URL valid
-          } else {
-            collateral_internal[key] = null; // aman, bukan {}
-          }
-        });
+
+        // kolateral pakai file path jika ada
+        if (collateral_internal) {
+          ['foto_ktp_penjamin', 'foto_id_card_penjamin'].forEach((k) => {
+            collateral_internal[k] = filePaths[k] ?? null;
+          });
+        }
 
         const updatedCollateralData = await updateIfExist(
           this.collateralRepo,
           collateral_internal,
           'Collateral',
         );
+
         const updatedRelativeData = await updateIfExist(
           this.relativeRepo,
           relative_internal,
           'Relative',
         );
 
-        // Loan application (khusus karena pakai findByNasabahId)
-        let updatedLoanAppData: Partial<LoanInternalDto> = {};
-
+        // ============= LOAN APPLICATION =================
+        let updatedLoanAppData = {};
         if (
           loan_application_internal &&
           Object.keys(loan_application_internal).length > 0
         ) {
-          const loanApps = await this.loanAppRepo.findByNasabahId(client.id!);
-          const loanApp = loanApps?.[0];
+          const foundApps = await this.loanAppRepo.findByNasabahId(client.id!);
+          const loanApp = foundApps?.[0];
+
           if (loanApp) {
             await this.loanAppRepo.update(loanApp.id!, {
               ...loan_application_internal,
               is_banding: loan_application_internal.is_banding ? 1 : 0,
               updated_at: now,
             });
+
             updatedLoanAppData = loan_application_internal;
             isUpdated = true;
           }
         }
 
         if (!isUpdated) {
-          throw new BadRequestException('Tidak ada data yang diupdate');
+          return {
+            payload: {
+              error: true,
+              message: 'Tidak ada data yang diupdate',
+              reference: 'NO_UPDATE_MADE',
+              data: null,
+            },
+          };
         }
 
-        const updatedFields = {
-          ...updatedClientData,
-          ...updatedAddressData,
-          ...updatedFamilyData,
-          ...updatedJobData,
-          ...updatedLoanAppData,
-          ...updatedCollateralData,
-          ...updatedRelativeData,
-        };
-
-        const getLoan = await this.loanAppRepo.findById(loanId!);
-        console.log('KUONTOLLLLLLL', getLoan?.status);
-        const statusLoan = getLoan!.status;
-        console.log('KUONTOLLLLLLL', statusLoan);
-
-        switch (statusLoan) {
-          case StatusPengajuanEnum.REJECTED_SPV:
-            await this.loanAppRepo.updateLoanAppInternalStatus(
-              loanId!,
-              StatusPengajuanEnum.PENDING,
-            );
-            break;
-
-          default:
-            throw new BadRequestException(
-              'Status tidak valid atau tidak dapat diproses',
-            );
+        // ============= UPDATE STATUS LOAN =================
+        const loan = await this.loanAppRepo.findById(loanId!);
+        if (!loan) {
+          return {
+            payload: {
+              error: true,
+              message: 'Loan tidak ditemukan',
+              reference: 'LOAN_NOT_FOUND',
+              data: null,
+            },
+          };
         }
 
+        if (loan.status === StatusPengajuanEnum.REJECTED_SPV) {
+          await this.loanAppRepo.updateLoanAppInternalStatus(
+            loanId!,
+            StatusPengajuanEnum.PENDING,
+          );
+        } else {
+          return {
+            payload: {
+              error: true,
+              message: 'Status tidak valid atau tidak dapat diproses',
+              reference: 'INVALID_STATUS',
+              data: null,
+            },
+          };
+        }
+
+        // ==================== RESPONSE FINAL =====================
         return {
           payload: {
             error: false,
@@ -344,15 +331,23 @@ export class MKT_UpdateLoanApplicationUseCase {
             reference: 'LOAN_UPDATE_OK',
             data: {
               filePaths,
-              updatedFields,
+              updatedFields: {
+                ...updatedClientData,
+                ...updatedAddressData,
+                ...updatedFamilyData,
+                ...updatedJobData,
+                ...updatedLoanAppData,
+                ...updatedCollateralData,
+                ...updatedRelativeData,
+              },
             },
           },
         };
       });
     } catch (err: any) {
-      console.log('errornya ayonima banget', err);
-      console.error('Error in MKT_UpdateLoanApplicationUseCase:', err);
-      throw new BadRequestException(err.message || 'Gagal update pengajuan');
+      throw new BadRequestException(
+        err.message ?? 'Gagal update pengajuan (internal error)',
+      );
     }
   }
 }

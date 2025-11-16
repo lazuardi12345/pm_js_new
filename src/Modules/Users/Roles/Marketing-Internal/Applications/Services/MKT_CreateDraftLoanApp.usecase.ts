@@ -326,11 +326,12 @@ export class MKT_CreateDraftLoanApplicationUseCase {
   async renderDraftById(Id: string) {
     try {
       const loanApp = await this.loanAppDraftRepo.findById(Id);
+
       if (!loanApp) {
         throw new HttpException(
           {
             payload: {
-              error: 'NOT FOUND',
+              error: true,
               message: 'No draft loan applications found for this ID',
               reference: 'LOAN_NOT_FOUND',
             },
@@ -350,21 +351,52 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         },
       };
     } catch (error) {
-      console.log(error);
+      console.error('renderDraftById Error:', error);
 
+      // Tetap lempar kalau emang HttpException bawaan
       if (error instanceof HttpException) {
         throw error;
       }
 
+      // Deteksi error DB (Prisma, TypeORM, Mongoose dsb)
+      if (error.code === 'ECONNREFUSED' || error.name === 'MongoNetworkError') {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Database connection error',
+              reference: 'DB_CONNECTION_ERROR',
+            },
+          },
+          HttpStatus.SERVICE_UNAVAILABLE,
+        );
+      }
+
+      if (error.code === 'ER_NO_SUCH_TABLE') {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Database misconfiguration',
+              reference: 'DB_SCHEMA_ERROR',
+            },
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      // Fallback error yang tetap friendly
       throw new HttpException(
         {
           payload: {
             error: true,
-            message: 'Unexpected error',
+            message:
+              error.message ||
+              'Unexpected error while retrieving draft loan application',
             reference: 'LOAN_UNKNOWN_ERROR',
           },
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.BAD_REQUEST,
       );
     }
   }
@@ -469,49 +501,130 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         },
       };
     } catch (error) {
-      console.error(error);
+      console.error('ERROR renderDraftByMarketingId:', error);
 
+      // Tetap lempar kalau sudah HttpException bawaan
       if (error instanceof HttpException) {
         throw error;
       }
 
+      // DB errors (Mongo / MySQL / Prisma)
+      if (error.code === 'ECONNREFUSED' || error.name === 'MongoNetworkError') {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Database connection error',
+              reference: 'DB_CONNECTION_ERROR',
+            },
+          },
+          HttpStatus.SERVICE_UNAVAILABLE,
+        );
+      }
+
+      if (error.code === 'ER_NO_SUCH_TABLE') {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Database schema error',
+              reference: 'DB_SCHEMA_ERROR',
+            },
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      // Fallback — bukan 500 langsung
       throw new HttpException(
         {
           payload: {
             error: true,
-            message: 'Unexpected error',
+            message:
+              error?.message ||
+              'Error occurred while retrieving draft loan applications',
             reference: 'LOAN_UNKNOWN_ERROR',
           },
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.BAD_REQUEST,
       );
     }
   }
 
   async deleteDraftByMarketingId(id: string) {
     try {
-      await this.loanAppDraftRepo.softDelete(id);
+      const deleteResult = await this.loanAppDraftRepo.softDelete(id);
+
+      // Kalau repository ngasih indikasi "not found"
+      if (!deleteResult) {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Draft loan application not found for this ID',
+              reference: 'LOAN_NOT_FOUND',
+            },
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
 
       return {
         payload: {
           error: false,
-          message: 'Draft loan applications deleted',
+          message: 'Draft loan application deleted',
           reference: 'LOAN_DELETE_OK',
           data: [],
         },
       };
     } catch (error) {
       console.error('DeleteDraft Error >>>', error);
+
+      // HttpException tetap diteruskan
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      // DB connection error
+      if (error.code === 'ECONNREFUSED' || error.name === 'MongoNetworkError') {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Database connection error',
+              reference: 'DB_CONNECTION_ERROR',
+            },
+          },
+          HttpStatus.SERVICE_UNAVAILABLE,
+        );
+      }
+
+      // Kalau ID invalid (misalnya Mongo ObjectId invalid)
+      if (error.name === 'CastError') {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Invalid draft ID format',
+              reference: 'INVALID_ID_FORMAT',
+            },
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // fallback (bukan 500 langsung)
       throw new HttpException(
         {
           payload: {
             error: true,
             message:
-              error.message || 'Draft tidak ditemukan atau unexpected error',
+              error?.message ||
+              'Unexpected error while deleting draft loan application',
             reference: 'LOAN_DELETE_ERROR',
           },
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.BAD_REQUEST,
       );
     }
   }

@@ -131,7 +131,8 @@ export class LoanApplicationRepositoryImpl
     }
   }
 
-  async softDelete(id: string): Promise<void> {
-    await this.loanAppModel.findByIdAndUpdate(id, { isDeleted: true }).exec();
+  async softDelete(id: string): Promise<boolean> {
+    const result = await Model.updateOne({ _id: id }, { deleted: true });
+    return result.modifiedCount > 0;
   }
 }

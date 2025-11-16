@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  Inject,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   ILoanApplicationInternalRepository,
   LOAN_APPLICATION_INTERNAL_REPOSITORY,
@@ -7,7 +12,6 @@ import {
   IUnitOfWork,
   UNIT_OF_WORK,
 } from 'src/Modules/LoanAppInternal/Domain/Repositories/IUnitOfWork.repository';
-import { LoanInternalDto } from '../DTOS/MKT_CreateLoanApplication.dto';
 
 @Injectable()
 export class MKT_TriggerAppealUseCase {
@@ -20,23 +24,35 @@ export class MKT_TriggerAppealUseCase {
 
   async execute(loan_id: number, payload: any) {
     try {
+      // Validasi parameter dasar
+      if (!loan_id || typeof loan_id !== 'number') {
+        throw new BadRequestException('Loan ID tidak valid');
+      }
+
+      if (!payload || typeof payload !== 'object') {
+        throw new BadRequestException('Payload tidak valid');
+      }
+
+      const { alasan_banding } = payload;
+
+      // Cek alasan banding ada
+      if (!alasan_banding || typeof alasan_banding !== 'string') {
+        throw new BadRequestException('Alasan banding wajib diisi');
+      }
+
       return await this.uow.start(async () => {
-        const { alasan_banding } = payload;
-
-        // Loan application (khusus karena pakai findByNasabahId)
-        let updatedLoanAppData: Partial<LoanInternalDto> = {};
-
-        if (alasan_banding) {
-          const loanApps = await this.loanAppRepo.findById(loan_id);
-          if (loanApps) {
-            await this.loanAppRepo.triggerBanding(loan_id, alasan_banding);
-          }
+        // Cek pengajuan ada
+        const loanAppExists = await this.loanAppRepo.findById(loan_id);
+        if (!loanAppExists) {
+          throw new NotFoundException(
+            `Loan Application dengan id ${loan_id} tidak ditemukan`,
+          );
         }
 
-        const updatedFields = {
-          ...updatedLoanAppData,
-        };
+        // Trigger banding — execute SP atau update DB
+        await this.loanAppRepo.triggerBanding(loan_id, alasan_banding);
 
+        // Return response sesuai format lu
         return {
           payload: {
             error: false,
@@ -46,9 +62,12 @@ export class MKT_TriggerAppealUseCase {
         };
       });
     } catch (err: any) {
-      console.log('errornya ayonima banget', err);
-      console.error('Error in MKT_UpdateLoanApplicationUseCase:', err);
-      throw new BadRequestException(err.message || 'Gagal update pengajuan');
+      console.error('Error in MKT_TriggerAppealUseCase:', err);
+
+      // Pastikan pesan error bersih & aman
+      const message = err?.message || 'Gagal mengajukan banding';
+
+      throw new BadRequestException(message);
     }
   }
 }
