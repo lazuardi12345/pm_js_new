@@ -659,7 +659,6 @@ export class MinioFileStorageService implements IFileStorageRepository {
     customerId: number,
     customerName: string,
     filename: string,
-    isDraft: boolean = false,
   ): Promise<{ buffer: Buffer; mimetype: string; originalName: string }> {
     try {
       const bucket = this.approvalRecommendationBucket;
@@ -909,7 +908,6 @@ export class MinioFileStorageService implements IFileStorageRepository {
     const objects: MinioObject[] = [];
     const stream = this.minioClient.listObjectsV2(bucket, oldPrefix, true);
 
-    // 1️⃣ Ambil semua file yang ada di folder lama
     for await (const obj of stream) {
       objects.push(obj);
     }
@@ -918,7 +916,6 @@ export class MinioFileStorageService implements IFileStorageRepository {
       throw new Error(`No files found in ${oldPrefix}`);
     }
 
-    // 2️⃣ Copy semua file ke prefix baru
     for (const obj of objects) {
       const newKey = obj.name.replace(oldPrefix, newPrefix);
       await this.minioClient.copyObject(
@@ -928,7 +925,6 @@ export class MinioFileStorageService implements IFileStorageRepository {
       );
     }
 
-    // 3️⃣ Hapus file lama setelah berhasil dicopy
     for (const obj of objects) {
       await this.minioClient.removeObject(bucket, obj.name);
     }

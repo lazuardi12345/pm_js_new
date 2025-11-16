@@ -216,6 +216,11 @@ export class MKT_GetAllLoanApplicationUseCase {
               Number.isFinite(loanAmountNum) ? loanAmountNum : 0,
             );
 
+            const lastApprovedAmount = Number(item?.last_approval_nominal);
+            const lastApprovedAmountFormatted = formatCurrency(
+              Number.isFinite(lastApprovedAmount) ? lastApprovedAmount : 0,
+            );
+
             // build safe object with defaults
             return {
               loan_id: Number(item?.loan_id ?? 0),
@@ -234,16 +239,22 @@ export class MKT_GetAllLoanApplicationUseCase {
                 spv: {
                   spv_name: item?.spv_app_name ?? '-',
                   spv_response: item?.spv_app_status ?? '-',
+                  spv_appr_amount: item?.spv_app_amount ?? '-',
+                  spv_appr_tenor: item?.spv_app_tenor ?? '-',
                   spv_response_at: item?.spv_app_response_at ?? '-',
                 },
                 ca: {
                   ca_name: item?.ca_app_name ?? '-',
                   ca_response: item?.ca_app_status ?? '-',
+                  ca_appr_amount: item?.ca_app_amount ?? '-',
+                  ca_appr_tenor: item?.ca_app_tenor ?? '-',
                   ca_response_at: item?.ca_app_response_at ?? '-',
                 },
                 hm: {
                   hm_name: item?.hm_app_name ?? '-',
                   hm_response: item?.hm_app_status ?? '-',
+                  hm_appr_amount: item?.hm_app_amount ?? '-',
+                  hm_appr_tenor: item?.hm_app_tenor ?? '-',
                   hm_response_at: item?.hm_app_response_at ?? '-',
                 },
               },
@@ -251,14 +262,20 @@ export class MKT_GetAllLoanApplicationUseCase {
                 ca: {
                   ca_name: item?.ca_appeal_name ?? '-',
                   ca_response: item?.ca_appeal_status ?? '-',
+                  ca_appr_amount: item?.ca_appeal_amount ?? '-',
+                  ca_appr_tenor: item?.ca_appeal_tenor ?? '-',
                   ca_response_at: item?.ca_appeal_response_at ?? '-',
                 },
                 hm: {
                   hm_name: item?.hm_appeal_name ?? '-',
                   hm_response: item?.hm_appeal_status ?? '-',
+                  ca_appr_amount: item?.hm_appeal_amount ?? '-',
+                  ca_appr_tenor: item?.hm_appeal_tenor ?? '-',
                   hm_response_at: item?.hm_appeal_response_at ?? '-',
                 },
               },
+              last_approved_amount: lastApprovedAmountFormatted,
+              last_approved_tenor: Number(item?.last_approval_tenor),
             };
           } catch (itemErr) {
             // Jika satu item gagal diproses, jangan gagalkan seluruh list.

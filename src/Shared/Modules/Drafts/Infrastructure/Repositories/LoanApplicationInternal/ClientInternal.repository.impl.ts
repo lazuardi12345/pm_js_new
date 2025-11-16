@@ -132,7 +132,10 @@ export class LoanApplicationRepositoryImpl
   }
 
   async softDelete(id: string): Promise<boolean> {
-    const result = await Model.updateOne({ _id: id }, { deleted: true });
+    const result = await this.loanAppModel.updateOne(
+      { _id: id },
+      { isDeleted: true },
+    );
     return result.modifiedCount > 0;
   }
 }
