@@ -4,6 +4,7 @@ export const CLIENT_INTERNAL_REPOSITORY = Symbol('CLIENT_INTERNAL_REPOSITORY');
 
 export interface IClientInternalRepository {
   findById(id: number): Promise<ClientInternal | null>;
+  findByKtp(noKtp: string): Promise<ClientInternal | null>;
   findByMarketingId(marketingId: number): Promise<ClientInternal[]>;
   findAll(): Promise<ClientInternal[]>;
   save(address: ClientInternal): Promise<ClientInternal>;

@@ -696,7 +696,7 @@ export class MKT_CreateRepeatOrderUseCase {
     }
   }
 
-  async executeCreateDraft(
+  async executeCreateRepeatOrder(
     dto: PayloadDTO,
     client_id: number,
     marketingId: number, // ← Tambah parameter marketing_id
@@ -708,8 +708,6 @@ export class MKT_CreateRepeatOrderUseCase {
 
       // ============== ASSIGN marketing_id ke DTO ==============
       dto.marketing_id = marketingId;
-
-      console.log('>>>>>>>>>>>>>>>>>>>..', dto);
 
       // ============== LOG REQUEST INFO ==============
       console.log('=== Create Draft Repeat Order ===');
@@ -972,7 +970,7 @@ export class MKT_CreateRepeatOrderUseCase {
     }
   }
 
-  async renderDraftByMarketingId(marketingId: number) {
+  async renderRepeatOrderByMarketingId(marketingId: number) {
     try {
       // ================= VALIDASI PARAMETER =================
       if (
@@ -1165,7 +1163,7 @@ export class MKT_CreateRepeatOrderUseCase {
     }
   }
 
-  async updateDraftById(
+  async updateRepeatOrderById(
     Id: string,
     updateData: Partial<CreateDraftRepeatOrderDto>,
     files?: Record<string, Express.Multer.File[]>,
@@ -1343,7 +1341,7 @@ export class MKT_CreateRepeatOrderUseCase {
     }
   }
 
-  async renderDraftById(Id: string) {
+  async renderRepeatOrderById(Id: string) {
     try {
       // ========== 1. VALIDASI INPUT ==========
       if (Id === null || Id === undefined || String(Id).trim() === '') {
@@ -1484,6 +1482,84 @@ export class MKT_CreateRepeatOrderUseCase {
           },
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async deleteRepeatOrderByMarketingId(id: string) {
+    try {
+      const deleteResult = await this.repeatOrderRepo.softDelete(id);
+
+      // Kalau repository ngasih indikasi "not found"
+      if (!deleteResult) {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Draft loan application not found for this ID',
+              reference: 'LOAN_NOT_FOUND',
+            },
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      return {
+        payload: {
+          error: false,
+          message: 'Draft loan application deleted',
+          reference: 'LOAN_DELETE_OK',
+          data: [],
+        },
+      };
+    } catch (error) {
+      console.error('DeleteDraft Error >>>', error);
+
+      // HttpException tetap diteruskan
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      // DB connection error
+      if (error.code === 'ECONNREFUSED' || error.name === 'MongoNetworkError') {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Database connection error',
+              reference: 'DB_CONNECTION_ERROR',
+            },
+          },
+          HttpStatus.SERVICE_UNAVAILABLE,
+        );
+      }
+
+      // Kalau ID invalid (misalnya Mongo ObjectId invalid)
+      if (error.name === 'CastError') {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Invalid draft ID format',
+              reference: 'INVALID_ID_FORMAT',
+            },
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // fallback (bukan 500 langsung)
+      throw new HttpException(
+        {
+          payload: {
+            error: true,
+            message:
+              error?.message ||
+              'Unexpected error while deleting draft loan application',
+            reference: 'LOAN_DELETE_ERROR',
+          },
+        },
+        HttpStatus.BAD_REQUEST,
       );
     }
   }

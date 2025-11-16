@@ -112,16 +112,17 @@ export class MKT_CreateLoanApplicationUseCase {
     private readonly collateralRepo: ICollateralInternalRepository,
     @Inject(RELATIVE_INTERNAL_REPOSITORY)
     private readonly relativeRepo: IRelativesInternalRepository,
-    @Inject(CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY)
-    private readonly loanAppDraftRepo: ILoanApplicationDraftRepository,
-    @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
-    private readonly approvalRecomRepo: IApprovalRecommendationRepository,
+    // @Inject(CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY)
+    // private readonly loanAppDraftRepo: ILoanApplicationDraftRepository,
+    // @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
+    // private readonly approvalRecomRepo: IApprovalRecommendationRepository,
     @Inject(UNIT_OF_WORK)
     private readonly uow: IUnitOfWork,
   ) {}
 
   async execute(dto: CreateLoanApplicationDto, marketing_id: number) {
     const now = new Date();
+    const nowWIB = new Date(now.getTime() + 7 * 60 * 60 * 1000);
 
     try {
       return await this.uow.start(async () => {
@@ -160,54 +161,58 @@ export class MKT_CreateLoanApplicationUseCase {
         }
 
         // ==========================
-        // 2. Simpan ClientInternal
+        // 2. CEK NIK - PAKAI YANG ADA ATAU BUAT BARU
         // ==========================
-        let customer;
-        try {
-          const client = new ClientInternal(
-            { id: marketing_id },
-            client_internal.nama_lengkap,
-            client_internal.no_ktp,
-            client_internal.jenis_kelamin as GENDER,
-            client_internal.tempat_lahir,
-            new Date(client_internal.tanggal_lahir),
-            undefined,
-            false,
-            String(client_internal.points),
-            now,
-            now,
-            undefined,
-          );
+        let customer = await this.clientRepo.findByKtp(client_internal.no_ktp);
 
-          customer = await this.clientRepo.save(client);
-        } catch (e) {
-          console.error('Error saving client:', e);
+        if (!customer) {
+          // NIK BARU - Buat client baru
+          try {
+            const client = new ClientInternal(
+              { id: marketing_id },
+              client_internal.nama_lengkap,
+              client_internal.no_ktp,
+              client_internal.jenis_kelamin as GENDER,
+              client_internal.tempat_lahir,
+              new Date(client_internal.tanggal_lahir),
+              undefined,
+              false,
+              String(client_internal.points),
+              nowWIB,
+              nowWIB,
+              undefined,
+            );
 
-          // Duplicate KTP error (MySQL / Mongo)
-          if (e?.code === 'ER_DUP_ENTRY' || e?.code === 11000) {
-            throw new BadRequestException({
-              payload: {
-                error: true,
-                message: 'Nomor KTP sudah terdaftar',
-                reference: 'KTP_DUPLICATE',
+            customer = await this.clientRepo.save(client);
+          } catch (e) {
+            console.error('Error saving client:', e);
+
+            if (e?.code === 'ER_DUP_ENTRY' || e?.code === 11000) {
+              throw new BadRequestException({
+                payload: {
+                  error: true,
+                  message: 'Nomor KTP sudah terdaftar',
+                  reference: 'KTP_DUPLICATE',
+                },
+              });
+            }
+
+            throw new HttpException(
+              {
+                payload: {
+                  error: true,
+                  message: 'Gagal menyimpan data nasabah',
+                  reference: 'CLIENT_SAVE_ERROR',
+                },
               },
-            });
+              HttpStatus.INTERNAL_SERVER_ERROR,
+            );
           }
-
-          throw new HttpException(
-            {
-              payload: {
-                error: true,
-                message: 'Gagal menyimpan data nasabah',
-                reference: 'CLIENT_SAVE_ERROR',
-              },
-            },
-            HttpStatus.INTERNAL_SERVER_ERROR,
-          );
         }
+        // ELSE: customer udah ada, langsung pake aja!
 
         // ==========================
-        // Save other entities (same pattern)
+        // 3. SIMPAN SEMUA DATA LAIN (TETEP INSERT)
         // ==========================
         await this.addressRepo.save(
           new AddressInternal(
@@ -221,11 +226,11 @@ export class MKT_CreateLoanApplicationUseCase {
             address_internal.status_rumah as StatusRumahEnum,
             address_internal.domisili as DomisiliEnum,
             undefined,
-            now,
+            nowWIB,
             undefined,
             (address_internal.status_rumah_ktp as StatusRumahEnum) ?? null,
             address_internal.alamat_lengkap ?? '',
-            now,
+            nowWIB,
           ),
         );
 
@@ -272,7 +277,7 @@ export class MKT_CreateLoanApplicationUseCase {
         );
 
         // ==========================
-        // Loan Application
+        // 4. LOAN APPLICATION (BARU)
         // ==========================
         const isBandingBoolean =
           loan_application_internal.is_banding === 1 ? true : false;
@@ -302,7 +307,7 @@ export class MKT_CreateLoanApplicationUseCase {
         );
 
         // ==========================
-        // Profile
+        // 5. CLIENT PROFILE (BARU)
         // ==========================
         await this.clientProfileRepo.save(
           new ClientInternalProfile(
@@ -328,7 +333,7 @@ export class MKT_CreateLoanApplicationUseCase {
         );
 
         // ==========================
-        // Collateral
+        // 6. COLLATERAL
         // ==========================
         await this.collateralRepo.save(
           new CollateralInternal(
@@ -356,7 +361,7 @@ export class MKT_CreateLoanApplicationUseCase {
         );
 
         // ==========================
-        // Kerabat (optional)
+        // 7. KERABAT (optional)
         // ==========================
         if (relative_internal) {
           await this.relativeRepo.save(
