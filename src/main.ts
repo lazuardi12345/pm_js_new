@@ -23,10 +23,10 @@ async function bootstrap() {
   app.enableCors({
     origin: (origin, callback) => {
       const allowedOrigins = [
-        'http://localhost:5173',
-        'http://localhost:3000',
-        'http://localhost:5000',
-        'http://127.0.0.1:5500',
+        // 'http://localhost:5173',
+        // 'http://localhost:3000',
+        // 'http://localhost:5000',
+        // 'http://127.0.0.1:5500',
         'http://192.182.6.100:3000',
         'http://app.local:3000',
         'http://app.local:5000',

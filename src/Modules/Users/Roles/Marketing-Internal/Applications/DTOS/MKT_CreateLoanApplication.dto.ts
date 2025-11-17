@@ -552,6 +552,8 @@ export interface TypeApprovalDetail {
   is_banding?: number;
   keterangan: string;
   kesimpulan: string;
+  tenor_persetujuan: number;
+  nominal_persetujuan: number;
   created_at: string;
   updated_at: string;
   user_id: number;
@@ -566,6 +568,8 @@ export interface TypeStatusApproval {
     status: string | null;
     keterangan: string | null;
     kesimpulan: string | null;
+    approved_tenor: number | null;
+    approved_amount: number | null;
     created_at: string | null;
     updated_at: string | null;
   };

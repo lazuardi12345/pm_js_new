@@ -152,6 +152,8 @@ export class HM_GetLoanApplicationByIdUseCase {
           status: approval.status,
           keterangan: approval.keterangan,
           kesimpulan: approval.kesimpulan,
+          approved_tenor: approval.tenor_persetujuan,
+          approved_amount: approval.nominal_persetujuan,
           created_at: approval.created_at,
           updated_at: approval.updated_at,
         },
