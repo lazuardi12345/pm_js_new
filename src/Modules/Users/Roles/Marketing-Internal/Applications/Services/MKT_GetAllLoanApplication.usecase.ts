@@ -62,10 +62,7 @@ export class MKT_GetAllLoanApplicationUseCase {
             pageSize,
           );
       } catch (repoErr) {
-        console.error(
-          'Error calling SP callSP_MKT_GetAllLoanApplications_Internal:',
-          repoErr,
-        );
+        console.error('Error calling Stored Procedure:', repoErr);
 
         if (
           repoErr?.name === 'MongoNetworkError' ||

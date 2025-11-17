@@ -18,7 +18,7 @@ import { MarketingInternalUseCaseModule } from './Modules/Users/Roles/Marketing-
 import { SupervisorInternalUseCaseModule } from './Modules/Users/Roles/Supervisor-Internal/supervisor-internal.module';
 import { PersistenceLoanAppModule } from './Modules/LoanAppInternal/PersistenceLoanAppModule.module';
 import { CreditAnalystInternalUseCaseModule } from './Modules/Users/Roles/CreditAnalyst-Internal/credit-analyst-internal.module';
-import { HeadMarketingInternalUsecaseModule } from './Modules/Users/Roles/Head-Marketing-Internal/head-marketing-internal-module';
+import { HeadMarketingInternalUsecaseModule } from './Modules/Users/Roles/Head-Marketing-Internal/head-marketing-internal.module';
 
 import { FileSystemStorageModules } from './Shared/Modules/Storage/ModuleStorage.module';
 import { AdminBICheckingUseCaseModule } from './Modules/Users/Roles/Admin/BI/admin-bi.module';

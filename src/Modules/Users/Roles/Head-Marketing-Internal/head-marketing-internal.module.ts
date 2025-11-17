@@ -27,6 +27,9 @@ import { HM_GetApprovalHistoryController } from './Presentation/Controllers/HM_G
 import { HM_ApprovedOrRejectController } from './Presentation/Controllers/HM_ApprovedOrReject.controller';
 import { HM_GetAllUsers_Controller } from './Presentation/Controllers/HM_GetAllUsers.controller';
 import { HM_LoanAppealResponseController } from './Presentation/Controllers/HM_LoanAppealResponse.controller';
+import { ApprovalRecommendationModule } from 'src/Modules/Admin/BI-Checking/Modules/approval-recommendation.module';
+import { DraftRepeatOrderModule } from 'src/Shared/Modules/Drafts/Modules/DraftRepeatOrder.module';
+import { DraftLoanApplicationModule } from 'src/Shared/Modules/Drafts/Modules/CreateLoanAppInt.module';
 
 @Module({
   imports: [
@@ -38,6 +41,9 @@ import { HM_LoanAppealResponseController } from './Presentation/Controllers/HM_L
       Users_ORM_Entity,
       LoanApplicationInternal_ORM_Entity,
     ]),
+    DraftLoanApplicationModule,
+    DraftRepeatOrderModule,
+    ApprovalRecommendationModule,
   ],
   controllers: [
     HM_GetLoanApplicationByIdController,

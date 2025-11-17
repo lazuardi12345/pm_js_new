@@ -17,22 +17,31 @@ import {
   TypeApprovalDetail,
   TypeStatusApproval,
 } from '../DTOS/MKT_CreateLoanApplication.dto';
+import {
+  APPROVAL_RECOMMENDATION_REPOSITORY,
+  IApprovalRecommendationRepository,
+} from 'src/Modules/Admin/BI-Checking/Domain/Repositories/approval-recommendation.repository';
+import {
+  CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY,
+  ILoanApplicationDraftRepository,
+} from 'src/Shared/Modules/Drafts/Domain/Repositories/LoanAppInt.repository';
 
 @Injectable()
 export class MKT_GetLoanApplicationByIdUseCase {
   constructor(
     @Inject(LOAN_APPLICATION_INTERNAL_REPOSITORY)
     private readonly loanAppRepo: ILoanApplicationInternalRepository,
+    @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
+    private readonly approvalRecomRepo: IApprovalRecommendationRepository,
+    @Inject(CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY)
+    private readonly loanAppDraftRepo: ILoanApplicationDraftRepository,
   ) {}
 
   async execute(id: number) {
     try {
-      // --- VALIDASI PARAMETER ---
       if (!id || typeof id !== 'number' || isNaN(id)) {
         throw new BadRequestException('Invalid loan application ID');
       }
-
-      // --- CALL STORED PROCEDURE ---
       const result =
         await this.loanAppRepo.callSP_MKT_GetDetail_LoanApplicationsInternal_ById(
           id,
@@ -51,9 +60,90 @@ export class MKT_GetLoanApplicationByIdUseCase {
 
       const loanData = loanDataRows?.[0];
 
-      // --- JIKA ID TIDAK DITEMUKAN ---
       if (!loanData) {
         throw new NotFoundException(`Loan Application with id ${id} not found`);
+      }
+
+      let approval_recommendation: any = null;
+      const noKtp = loanData.no_ktp ?? null;
+      const nominalPinjaman = Number(loanData.nominal_pinjaman ?? 0);
+
+      try {
+        let draftData: any = null;
+        if (noKtp !== null) {
+          draftData = await this.loanAppDraftRepo.findStatus(noKtp);
+          console.log(draftData);
+        }
+
+        console.log(
+          'back to be friends',
+          await this.loanAppDraftRepo.findStatus(noKtp),
+        );
+
+        if (draftData) {
+          try {
+            const approvalData = await this.approvalRecomRepo.findByDraftId(
+              draftData.draft_id,
+            );
+
+            console.log('ANJAY', approvalData);
+
+            if (approvalData) {
+              approval_recommendation = {
+                draft_id: approvalData.draft_id ?? draftData.draft_id,
+                nama_nasabah:
+                  approvalData.nama_nasabah ?? loanData.nama_lengkap ?? '-',
+                recommendation: approvalData.recommendation ?? null,
+                filePath: approvalData.filePath ?? null,
+                catatan: approvalData.catatan ?? null,
+                last_updated: approvalData.updated_at ?? null,
+                isNeedCheck: !!draftData.isNeedCheck,
+              };
+
+              const approvalNominal = Number(
+                approvalData.nominal_pinjaman ?? 0,
+              );
+              if (!Number.isNaN(approvalNominal) && approvalNominal < 7000000) {
+                approval_recommendation.dont_have_check = true;
+              }
+            } else {
+              if (!Number.isNaN(nominalPinjaman) && nominalPinjaman < 7000000) {
+                approval_recommendation = {
+                  draft_id: draftData.draft_id,
+                  isNeedCheck: !!draftData.isNeedCheck,
+                  dont_have_check: true,
+                };
+              } else {
+                approval_recommendation = null;
+              }
+            }
+          } catch (approvalErr) {
+            console.error(
+              `Warning: failed to fetch approval recommendation for draft_id=${draftData.draft_id}`,
+              approvalErr,
+            );
+            approval_recommendation = {
+              error: true,
+              message: 'Failed to fetch approval recommendation',
+              reference: 'RECOMMENDATION_FETCH_FAILED',
+            };
+          }
+        } else {
+          // Fallback: jika tidak ada draftData tapi nominal <7jt -> mark dont_have_check
+          if (!Number.isNaN(nominalPinjaman) && nominalPinjaman < 7000000) {
+            approval_recommendation = {
+              dont_have_check: true,
+            };
+          } else {
+            approval_recommendation = null;
+          }
+        }
+      } catch (draftErr) {
+        console.error(
+          `Warning: failed to fetch draft status for no_ktp=${noKtp}`,
+          draftErr,
+        );
+        // Biarkan approval_recommendation = null jika gagal ambil draft, tapi tidak abort
       }
 
       const loanAppStatus: Record<string, TypeStatusApproval | null> = {};
@@ -84,6 +174,8 @@ export class MKT_GetLoanApplicationByIdUseCase {
             status: approval.status,
             keterangan: approval.keterangan,
             kesimpulan: approval.kesimpulan,
+            approved_tenor: approval.tenor_persetujuan,
+            approved_amount: approval.nominal_persetujuan,
             created_at: approval.created_at,
             updated_at: approval.updated_at,
           },
@@ -200,7 +292,7 @@ export class MKT_GetLoanApplicationByIdUseCase {
               bukti_absensi_file: loanData.bukti_absensi_file,
             },
           },
-
+          approval_recommendation,
           loan_app_status: loanAppStatus,
           appeal_status: appealStatus,
         },
