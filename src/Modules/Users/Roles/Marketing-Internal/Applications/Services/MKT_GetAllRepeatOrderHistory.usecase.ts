@@ -43,7 +43,7 @@ export class MKT_GetAllRepeatOrderHistoryUseCase {
           id: Number(c.id),
           nasabah_id: Number(c.id),
           marketing_id: Number(c.marketing_id),
-          points: Number(c.points ?? 0),
+          // points: Number(c.points ?? 0),
           profile_id: c.profile_id ? Number(c.profile_id) : null,
         })) ?? [];
 

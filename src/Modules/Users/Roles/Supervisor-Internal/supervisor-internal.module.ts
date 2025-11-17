@@ -31,6 +31,8 @@ import { SPV_GetDraftByMarketingIdUseCase } from './Applications/Services/SPV_Ge
 import { SPV_GetDraftByMarketingIdController } from './Presentation/Controllers/SPV_GetDraftsbyMarketingId.controller';
 import { SPV_GetDetailDraftByIdUseCase } from './Applications/Services/SPV_GetDetailDraftById.usecase';
 import { SPV_GetDetailDraftByIdController } from './Presentation/Controllers/SPV_GetDetailDraftById.controller';
+import { DraftRepeatOrderModule } from 'src/Shared/Modules/Drafts/Modules/DraftRepeatOrder.module';
+import { ApprovalRecommendationModule } from 'src/Modules/Admin/BI-Checking/Modules/approval-recommendation.module';
 
 @Module({
   imports: [
@@ -43,6 +45,8 @@ import { SPV_GetDetailDraftByIdController } from './Presentation/Controllers/SPV
       LoanApplicationInternal_ORM_Entity,
     ]),
     DraftLoanApplicationModule,
+    DraftRepeatOrderModule,
+    ApprovalRecommendationModule,
   ],
   controllers: [
     SPV_ApprovedOrRejectController,

@@ -25,6 +25,9 @@ import { CA_GetLoanApplicationByIdController } from './Presentation/Controllers/
 import { CA_GetAllApprovalRequest_Controller } from './Presentation/Controllers/CA_GetAlllAppprovalRequest.controller';
 import { CA_GetApprovalHistory_Controller } from './Presentation/Controllers/CA_GetApprovalHistory.controller';
 import { CA_LoanAppealResponseController } from './Presentation/Controllers/CA_LoanAppealResponse.controller';
+import { DraftLoanApplicationModule } from 'src/Shared/Modules/Drafts/Modules/CreateLoanAppInt.module';
+import { DraftRepeatOrderModule } from 'src/Shared/Modules/Drafts/Modules/DraftRepeatOrder.module';
+import { ApprovalRecommendationModule } from 'src/Modules/Admin/BI-Checking/Modules/approval-recommendation.module';
 
 @Module({
   imports: [
@@ -36,6 +39,9 @@ import { CA_LoanAppealResponseController } from './Presentation/Controllers/CA_L
       Users_ORM_Entity,
       LoanApplicationInternal_ORM_Entity,
     ]),
+    DraftLoanApplicationModule,
+    DraftRepeatOrderModule,
+    ApprovalRecommendationModule,
   ],
   controllers: [
     CA_ApprovedOrRejectController,
