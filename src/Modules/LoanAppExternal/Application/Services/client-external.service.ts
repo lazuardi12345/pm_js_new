@@ -6,7 +6,10 @@ import {
 import { ClientExternal } from '../../Domain/Entities/client-external.entity';
 import { CreateClientExternalDto } from '../DTOS/dto-ClientExternal/create-client-external.dto';
 import { UpdateClientExternalDto } from '../DTOS/dto-ClientExternal/update-client-external.dto';
-import { GENDER, MARRIAGE_STATUS } from 'src/Shared/Enums/External/Client-External.enum';
+import {
+  GENDER,
+  MARRIAGE_STATUS,
+} from 'src/Shared/Enums/External/Client-External.enum';
 
 @Injectable()
 export class ClientExternalService {
@@ -19,18 +22,18 @@ export class ClientExternalService {
     const now = new Date();
 
     const client = new ClientExternal(
-      { id: dto.marketing_id },          
+      { id: dto.marketing_id },
       dto.nama_lengkap,
       dto.nik,
       dto.no_kk,
-      dto.no_rek || '',                  
+      dto.no_rek || '',
       dto.foto_rekening || '',
       dto.jenis_kelamin as GENDER,
       dto.tempat_lahir,
       dto.tanggal_lahir,
       dto.no_hp,
       dto.status_nikah as MARRIAGE_STATUS,
-      undefined,                   
+      undefined,
       dto.email,
       dto.foto_ktp_peminjam,
       dto.foto_ktp_penjamin,
@@ -39,9 +42,11 @@ export class ClientExternalService {
       dto.dokumen_pendukung,
       dto.validasi_nasabah,
       dto.catatan,
-      now,                              // created_at
-      now,                              // updated_at
-      null,                             // deleted_at
+      dto.enable_edit,
+      dto.points,
+      now, // created_at
+      now, // updated_at
+      null, // deleted_at
     );
 
     return this.repo.save(client);

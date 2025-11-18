@@ -84,4 +84,12 @@ export class CreateClientExternalDto {
   @IsOptional()
   @IsString()
   catatan?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  enable_edit?: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  points?: number;
 }

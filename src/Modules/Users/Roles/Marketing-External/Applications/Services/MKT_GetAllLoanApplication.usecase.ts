@@ -61,7 +61,6 @@ export class MKT_GetAllLoanApplicationUseCase {
             page,
             pageSize,
           );
-        console.log('catch SP RES: ', spResult);
       } catch (repoErr) {
         console.error('Error calling Stored Procedure:', repoErr);
 
@@ -127,7 +126,6 @@ export class MKT_GetAllLoanApplicationUseCase {
             try {
               if (noKtp !== null) {
                 draftData = await this.loanAppDraftRepo.findStatus(noKtp);
-                console.log('catch draft-data', { draftData, noKtp });
               }
             } catch (draftErr) {
               console.error(
@@ -144,8 +142,6 @@ export class MKT_GetAllLoanApplicationUseCase {
                 const approvalData = await this.approvalRecomRepo.findByDraftId(
                   draftData.draft_id,
                 );
-
-                console.log('catch: ', approvalData);
 
                 if (approvalData) {
                   approval_recommendation = {

@@ -3,7 +3,6 @@ import { IsOptional, IsString, IsNumber } from 'class-validator';
 //!!!!!! BELUM KELARRRR CUYYYYYYYYYYYYYYYYY
 
 export class CreatePengajuanSHMDto {
-
   @IsNumber()
   pengajuan_id: number;
 
@@ -43,7 +42,6 @@ export class CreatePengajuanSHMDto {
   @IsString()
   foto_objek_jaminan?: string; //array
 
-
   @IsOptional()
   @IsString()
   foto_buku_nikah_suami?: string;
@@ -52,29 +50,27 @@ export class CreatePengajuanSHMDto {
   @IsString()
   foto_buku_nikah_istri?: string;
 
-   @IsOptional()
+  @IsOptional()
   @IsString()
-  foto_npwp?: string; 
+  foto_npwp?: string;
 
-   @IsOptional()
+  @IsOptional()
   @IsString()
   foto_imb?: string;
-  
-   @IsOptional()
+
+  @IsOptional()
   @IsString()
   foto_surat_ahli_waris?: string;
-  
-   @IsOptional()
+
+  @IsOptional()
   @IsString()
   foto_surat_akte_kematian?: string;
-  
-   @IsOptional()
+
+  @IsOptional()
   @IsString()
   foto_surat_pernyataan_kepemilikan_tanah?: string;
-  
-   @IsOptional()
+
+  @IsOptional()
   @IsString()
   foto_surat_pernyataan_tidak_dalam_sengketa?: string;
-  
-
 }

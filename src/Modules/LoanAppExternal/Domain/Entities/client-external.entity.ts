@@ -1,4 +1,7 @@
-import { GENDER, MARRIAGE_STATUS } from 'src/Shared/Enums/External/Client-External.enum';
+import {
+  GENDER,
+  MARRIAGE_STATUS,
+} from 'src/Shared/Enums/External/Client-External.enum';
 
 export class ClientExternal {
   // Identitas dan relasi
@@ -31,6 +34,8 @@ export class ClientExternal {
   public dokumen_pendukung?: string;
   public validasi_nasabah?: boolean;
   public catatan?: string;
+  public enable_edit?: boolean;
+  public points?: number;
 
   constructor(
     marketing: { id: number },
@@ -53,6 +58,8 @@ export class ClientExternal {
     dokumen_pendukung?: string,
     validasi_nasabah?: boolean,
     catatan?: string,
+    enable_edit?: boolean,
+    points?: number,
     created_at: Date = new Date(),
     updated_at: Date = new Date(),
     deleted_at: Date | null = null,
@@ -78,6 +85,8 @@ export class ClientExternal {
     this.dokumen_pendukung = dokumen_pendukung;
     this.validasi_nasabah = validasi_nasabah;
     this.catatan = catatan;
+    this.enable_edit = enable_edit;
+    this.points = points;
 
     this.created_at = created_at;
     this.updated_at = updated_at;
