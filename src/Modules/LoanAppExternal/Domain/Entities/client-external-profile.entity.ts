@@ -13,36 +13,45 @@ export class ClientExternalProfile {
   public readonly deleted_at?: Date | null;
 
   public nama_lengkap: string;
+  public no_rek: string;
   public jenis_kelamin: GENDER;
-  public tipe_nasabah: CLIENT_TYPE;
   public no_hp: string;
   public status_nikah: MARRIAGE_STATUS;
+
   public email?: string;
-  public foto_ktp?: string;
-  public foto_kk?: string;
-  public foto_id_card?: string;
   public foto_rekening?: string;
-  public no_rekening?: string;
-  public updated_at: Date;
-  foto_ktp_penjamin?: FileMetadata;
-  foto_id_card_penjamin?: FileMetadata;
-  bukti_absensi_file?: FileMetadata;
+  public foto_ktp_peminjam?: string;
+  public foto_ktp_penjamin?: string;
+  public foto_kk_peminjam?: string;
+  public foto_kk_penjamin?: string;
+  public dokumen_pendukung?: string;
+  public validasi_nasabah?: boolean;
+  public catatan?: string;
+  public enable_edit?: boolean;
+  public points?: number;
+  public tipe_nasabah?: string;
+
+  public updated_at?: Date;
 
   constructor(
     nasabah: { id: number },
     pengajuan: { id: number } | undefined,
     nama_lengkap: string,
+    no_rek: string,
+    foto_rekening: string,
     jenis_kelamin: GENDER,
-    tipe_nasabah: CLIENT_TYPE,
     no_hp: string,
     status_nikah: MARRIAGE_STATUS,
     id?: number,
     email?: string,
-    foto_ktp?: string,
-    foto_kk?: string,
-    foto_id_card?: string,
-    foto_rekening?: string,
-    no_rekening?: string,
+    foto_ktp_peminjam?: string,
+    foto_ktp_penjamin?: string,
+    foto_kk_peminjam?: string,
+    foto_kk_penjamin?: string,
+    dokumen_pendukung?: string,
+    validasi_nasabah?: boolean,
+    catatan?: string,
+    enable_edit?: boolean,
     created_at: Date = new Date(),
     updated_at: Date = new Date(),
     deleted_at: Date | null = null,
@@ -51,18 +60,22 @@ export class ClientExternalProfile {
     this.pengajuan =
       typeof pengajuan === 'number' ? { id: pengajuan } : pengajuan;
     this.nama_lengkap = nama_lengkap;
+    this.no_rek = no_rek;
+    this.foto_rekening = foto_rekening;
     this.jenis_kelamin = jenis_kelamin;
-    this.tipe_nasabah = tipe_nasabah;
     this.no_hp = no_hp;
     this.status_nikah = status_nikah;
 
     this.id = id;
     this.email = email;
-    this.foto_ktp = foto_ktp;
-    this.foto_kk = foto_kk;
-    this.foto_id_card = foto_id_card;
-    this.foto_rekening = foto_rekening;
-    this.no_rekening = no_rekening;
+    this.foto_ktp_peminjam = foto_ktp_peminjam;
+    this.foto_ktp_penjamin = foto_ktp_penjamin;
+    this.foto_kk_peminjam = foto_kk_peminjam;
+    this.foto_kk_penjamin = foto_kk_penjamin;
+    this.dokumen_pendukung = dokumen_pendukung;
+    this.validasi_nasabah = validasi_nasabah;
+    this.catatan = catatan;
+    this.enable_edit = enable_edit;
 
     this.created_at = created_at;
     this.updated_at = updated_at;

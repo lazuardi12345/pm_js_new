@@ -17,13 +17,13 @@ import {
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import multer from 'multer';
 import { MKT_CreateRepeatOrderUseCase } from '../../Applications/Services/MKT_CreateRepeatOrder.usecase';
-import { PayloadDTO } from 'src/Shared/Modules/Drafts/Applications/DTOS/RepeatOrderInt_MarketingInput/CreateRO_DraftRepeatOrder.dto';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
 import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/roles.decorator';
 import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
+import { PayloadExternalDTO } from 'src/Shared/Modules/Drafts/Applications/DTOS/RepeatOrderExt_MarketingInput/CreateRO_DraftRepeatOrder.dto';
 
 @Controller('mkt/int/loan-apps')
 @UseGuards(RolesGuard)
@@ -87,7 +87,7 @@ export class MKT_CreateRepeatOrderController {
       // ============== VALIDATE DTO ==============
       parsedPayload.marketing_id = marketingId;
 
-      const dtoInstance = plainToInstance(PayloadDTO, parsedPayload, {
+      const dtoInstance = plainToInstance(PayloadExternalDTO, parsedPayload, {
         enableImplicitConversion: true,
       });
 

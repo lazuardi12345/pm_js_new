@@ -10,7 +10,7 @@ import {
 import {
   CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY,
   ILoanApplicationDraftRepository,
-} from 'src/Shared/Modules/Drafts/Domain/Repositories/LoanAppInt.repository';
+} from 'src/Shared/Modules/Drafts/Domain/Repositories/int/LoanAppInt.repository';
 
 @Injectable()
 export class MKT_GetAllLoanApplicationUseCase {

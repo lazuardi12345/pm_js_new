@@ -10,6 +10,7 @@ import {
   IsPositive,
   IsDate,
   IsBoolean,
+  isString,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
@@ -26,6 +27,7 @@ import {
   StatusPinjamanEnum,
   StatusPengajuanEnum,
   JenisPembiayaanEnum,
+  LoanType,
 } from 'src/Shared/Enums/External/Loan-Application.enum';
 
 import { RumahDomisiliEnum } from 'src/Shared/Enums/External/Address.enum';
@@ -51,6 +53,28 @@ export class ClientExternalDto {
   no_kk: string;
 
   @IsString()
+  tempat_lahir: string;
+
+  @Type(() => Date)
+  @IsDate()
+  tanggal_lahir: Date;
+
+  @IsString()
+  no_hp: string;
+
+  @IsEmail()
+  @IsOptional()
+  email?: string;
+
+  @IsEnum(MARRIAGE_STATUS)
+  status_nikah: MARRIAGE_STATUS;
+}
+
+export class ClientExternalProfileDto {
+  @IsString()
+  nama_lengkap: string;
+
+  @IsString()
   no_rek: string;
 
   @IsString()
@@ -58,13 +82,6 @@ export class ClientExternalDto {
 
   @IsEnum(GENDER)
   jenis_kelamin: GENDER;
-
-  @IsString()
-  tempat_lahir: string;
-
-  @Type(() => Date)
-  @IsDate()
-  tanggal_lahir: Date;
 
   @IsString()
   no_hp: string;
@@ -107,6 +124,10 @@ export class ClientExternalDto {
   @IsOptional()
   @IsNumber()
   points?: number;
+
+  @IsOptional()
+  @IsString()
+  tipe_nasabah?: number;
 }
 //#endregion
 
@@ -477,7 +498,7 @@ export class PengajuanBPJSDto {
 
   @IsOptional()
   @IsDateString()
-  tanggal_bayar_terakhir?: string;
+  tanggal_bayar_terakhir?: Date;
 
   @IsOptional()
   @IsString()
@@ -774,7 +795,7 @@ export class PengajuanUmkmDto {
 
   @IsOptional()
   @IsString()
-  foto_usaha?: string; //!! AARAYYYY MASSSS
+  foto_usaha?: string[]; //!! AARAYYYY MASSSS
 
   @IsOptional()
   @IsString()
@@ -972,6 +993,10 @@ export class CreateLoanApplicationExternalDto {
   client_external: ClientExternalDto;
 
   @ValidateNested()
+  @Type(() => ClientExternalDto)
+  client_external_profile: ClientExternalProfileDto;
+
+  @ValidateNested()
   @Type(() => AddressExternalDto)
   address_external: AddressExternalDto;
 
@@ -1044,6 +1069,10 @@ export class CreateLoanApplicationExternalDto {
   @IsOptional()
   @Type(() => FilesDto)
   documents_files?: FilesDto;
+
+  @ValidateNested()
+  @IsNotEmpty()
+  type: LoanType;
 }
 //#endregion
 
@@ -1280,25 +1309,25 @@ export interface TypeLoanApplicationDetail {
   };
 
   // ========== ATTACHMENT DATA - Emergency Contact ==========
-  emergency_contacts?: Array<{
+  emergency_contacts: {
     nasabah_id: number;
     nama_kontak_darurat: string;
     hubungan_kontak_darurat: string;
     no_hp_kontak_darurat: string;
     validasi_kontak_darurat?: boolean;
     catatan?: string;
-  }>;
+  };
 
   // ========== ATTACHMENT DATA - Financial Dependents ==========
-  financial_dependents?: {
+  financial_dependents: {
     nasabah_id: number;
     kondisi_tanggungan?: string;
     validasi_tanggungan?: boolean;
-    catatan?: string;
+    catatan_tanggungan?: string;
   };
 
   // ========== ATTACHMENT DATA - Loan Guarantor ==========
-  loan_guarantors?: Array<{
+  loan_guarantors: {
     nasabah_id: number;
     hubungan_penjamin: string;
     nama_penjamin: string;
@@ -1308,11 +1337,11 @@ export interface TypeLoanApplicationDetail {
     persetujuan_penjamin: string;
     foto_ktp_penjamin: string;
     validasi_penjamin?: boolean;
-    catatan?: string;
-  }>;
+    catatan_penjamin?: string;
+  };
 
   // ========== ATTACHMENT DATA - Other Existing Loans ==========
-  other_loans?: Array<{
+  other_loans: {
     nasabah_id: number;
     cicilan_lain: string;
     nama_pembiayaan: string;
@@ -1320,8 +1349,8 @@ export interface TypeLoanApplicationDetail {
     cicilan_perbulan: number;
     sisa_tenor: number;
     validasi_pinjaman_lain?: boolean;
-    catatan?: string;
-  }>;
+    catatan_pinjaman_lain?: string;
+  };
 
   // ========== ATTACHMENT DATA - Survey Reports ==========
   survey_report?: {

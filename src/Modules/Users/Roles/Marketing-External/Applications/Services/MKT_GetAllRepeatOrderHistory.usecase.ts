@@ -1,8 +1,8 @@
 import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
 import {
-  ILoanApplicationInternalRepository,
-  LOAN_APPLICATION_INTERNAL_REPOSITORY,
-} from 'src/Modules/LoanAppInternal/Domain/Repositories/loanApp-internal.repository';
+  ILoanApplicationExternalRepository,
+  LOAN_APPLICATION_EXTERNAL_REPOSITORY,
+} from 'src/Modules/LoanAppExternal/Domain/Repositories/loanApp-external.repository';
 import {
   StatusPengajuanAkhirEnum,
   StatusPengajuanEnum,
@@ -11,14 +11,14 @@ import {
 @Injectable()
 export class MKT_GetAllRepeatOrderHistoryUseCase {
   constructor(
-    @Inject(LOAN_APPLICATION_INTERNAL_REPOSITORY)
-    private readonly loanAppRepo: ILoanApplicationInternalRepository,
+    @Inject(LOAN_APPLICATION_EXTERNAL_REPOSITORY)
+    private readonly loanAppRepo: ILoanApplicationExternalRepository,
   ) {}
 
   async execute(p_marketing_id: number, p_page = 1, p_pageSize = 10) {
     try {
       const { pagination, ClientData, ClientHistoryLoanApplicationsData } =
-        await this.loanAppRepo.callSP_MKT_GetAllRepeatOrderHistory_Internal(
+        await this.loanAppRepo.callSP_MKT_GetAllRepeatOrderHistory_External(
           p_marketing_id,
           p_page,
           p_pageSize,

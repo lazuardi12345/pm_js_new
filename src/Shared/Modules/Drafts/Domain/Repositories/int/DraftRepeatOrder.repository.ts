@@ -1,4 +1,4 @@
-import { RepeatOrderEntity } from '../Entities/DraftRepeatOrder.entity';
+import { RepeatOrderEntity } from '../../Entities/int/DraftRepeatOrder.entity';
 
 export const CREATE_DRAFT_REPEAT_ORDER_REPOSITORY = Symbol(
   'CREATE_DRAFT_REPEAT_ORDER_REPOSITORY',

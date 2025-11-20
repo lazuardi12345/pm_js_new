@@ -11,23 +11,27 @@ import {
 // highlight-start
 // Impor enum dari file entity, bukan mendefinisikannya di sini
 import {
-  CLIENT_TYPE,
   GENDER,
   MARRIAGE_STATUS,
 } from 'src/Shared/Enums/External/Client-External.enum';
 
-// Definisi enum lokal DIHAPUS dari sini
-
-export class CreateClientExternalDto {
+export class CreateClientExternalProfileDto {
   @Type(() => Number)
   @IsNumber()
-  marketing_id: number;
+  nasabah_id;
+
+  @Type(() => Number)
+  @IsNumber()
+  pengajuan_id;
 
   @IsString()
   nama_lengkap: string;
 
-  @IsNumber()
-  nik: number;
+  @IsEnum(GENDER)
+  jenis_kelamin: GENDER;
+
+  @IsString()
+  nik: string;
 
   @IsString()
   no_kk: string;
@@ -37,9 +41,6 @@ export class CreateClientExternalDto {
 
   @IsString()
   foto_rekening: string;
-
-  @IsEnum(GENDER)
-  jenis_kelamin: GENDER;
 
   @IsString()
   tempat_lahir: string;
@@ -89,12 +90,4 @@ export class CreateClientExternalDto {
   @IsOptional()
   @IsBoolean()
   enable_edit?: boolean;
-
-  @IsOptional()
-  @IsNumber()
-  points?: number;
-
-  @IsOptional()
-  @IsEnum(CLIENT_TYPE)
-  tipe_nasabah?: string;
 }

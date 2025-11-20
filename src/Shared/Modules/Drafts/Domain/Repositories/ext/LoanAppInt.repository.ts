@@ -1,4 +1,4 @@
-import { LoanApplicationEntity } from '../Entities/LoanAppInt.entity';
+import { LoanApplicationEntity } from '../../Entities/int/LoanAppInt.entity';
 
 export const CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY = Symbol(
   'CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY',

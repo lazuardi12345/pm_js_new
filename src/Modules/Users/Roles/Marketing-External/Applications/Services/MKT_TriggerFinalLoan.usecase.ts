@@ -5,21 +5,21 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
-  ILoanApplicationInternalRepository,
-  LOAN_APPLICATION_INTERNAL_REPOSITORY,
-} from 'src/Modules/LoanAppInternal/Domain/Repositories/loanApp-internal.repository';
+  ILoanApplicationExternalRepository,
+  LOAN_APPLICATION_EXTERNAL_REPOSITORY,
+} from 'src/Modules/LoanAppExternal/Domain/Repositories/loanApp-external.repository';
 import {
   IUnitOfWork,
   UNIT_OF_WORK,
 } from 'src/Modules/LoanAppInternal/Domain/Repositories/IUnitOfWork.repository';
-import { LoanInternalDto } from '../DTOS/MKT_CreateLoanApplicationExternal.dto';
+import { LoanApplicationExternalDto } from '../DTOS/MKT_CreateLoanApplicationExternal.dto';
 import { StatusPengajuanAkhirEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
 
 @Injectable()
 export class MKT_TriggerFinalLoanStatusUseCase {
   constructor(
-    @Inject(LOAN_APPLICATION_INTERNAL_REPOSITORY)
-    private readonly loanAppRepo: ILoanApplicationInternalRepository,
+    @Inject(LOAN_APPLICATION_EXTERNAL_REPOSITORY)
+    private readonly loanAppRepo: ILoanApplicationExternalRepository,
 
     @Inject(UNIT_OF_WORK)
     private readonly uow: IUnitOfWork,
@@ -44,7 +44,7 @@ export class MKT_TriggerFinalLoanStatusUseCase {
         }
 
         // Loan application (khusus karena pakai findByNasabahId)
-        let updatedLoanAppData: Partial<LoanInternalDto> = {};
+        let updatedLoanAppData: Partial<LoanApplicationExternalDto> = {};
 
         // Validasi enum tetap sama
         if (

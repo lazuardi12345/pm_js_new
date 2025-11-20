@@ -5,8 +5,8 @@ import {
   LoanApplication,
   LoanApplicationDocument,
 } from '../../Schemas/LoanAppInternal/CreateLoanApplicaton_Marketing.schema';
-import { ILoanApplicationDraftRepository } from '../../../Domain/Repositories/LoanAppInt.repository';
-import { LoanApplicationEntity } from '../../../Domain/Entities/LoanAppInt.entity';
+import { ILoanApplicationDraftRepository } from '../../../Domain/Repositories/int/LoanAppInt.repository';
+import { LoanApplicationEntity } from '../../../Domain/Entities/int/LoanAppInt.entity';
 import { merge, isEqual } from 'lodash';
 
 @Injectable()

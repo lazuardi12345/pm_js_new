@@ -9,12 +9,12 @@ import {
 import {
   CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY,
   ILoanApplicationDraftRepository,
-} from 'src/Shared/Modules/Drafts/Domain/Repositories/LoanAppInt.repository';
+} from 'src/Shared/Modules/Drafts/Domain/Repositories/int/LoanAppInt.repository';
 import {
   CreateDraftLoanApplicationDto,
   PayloadDTO,
 } from 'src/Shared/Modules/Drafts/Applications/DTOS/LoanAppInt_MarketingInput/CreateDraft_LoanAppInt.dto';
-import { LoanApplicationEntity } from 'src/Shared/Modules/Drafts/Domain/Entities/LoanAppInt.entity';
+import { LoanApplicationEntity } from 'src/Shared/Modules/Drafts/Domain/Entities/int/LoanAppInt.entity';
 import {
   FILE_STORAGE_SERVICE,
   FileMetadata,

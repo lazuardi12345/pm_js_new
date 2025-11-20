@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Inject } from '@nestjs/common';
 import {
   CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY,
   ILoanApplicationDraftRepository,
-} from 'src/Shared/Modules/Drafts/Domain/Repositories/LoanAppInt.repository';
+} from 'src/Shared/Modules/Drafts/Domain/Repositories/int/LoanAppInt.repository';
 
 export class SPV_GetDetailDraftByIdUseCase {
   constructor(

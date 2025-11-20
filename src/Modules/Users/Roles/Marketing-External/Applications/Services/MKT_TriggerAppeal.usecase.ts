@@ -5,9 +5,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
-  ILoanApplicationInternalRepository,
-  LOAN_APPLICATION_INTERNAL_REPOSITORY,
-} from 'src/Modules/LoanAppInternal/Domain/Repositories/loanApp-internal.repository';
+  ILoanApplicationExternalRepository,
+  LOAN_APPLICATION_EXTERNAL_REPOSITORY,
+} from 'src/Modules/LoanAppExternal/Domain/Repositories/loanApp-external.repository';
 import {
   IUnitOfWork,
   UNIT_OF_WORK,
@@ -16,8 +16,8 @@ import {
 @Injectable()
 export class MKT_TriggerAppealUseCase {
   constructor(
-    @Inject(LOAN_APPLICATION_INTERNAL_REPOSITORY)
-    private readonly loanAppRepo: ILoanApplicationInternalRepository,
+    @Inject(LOAN_APPLICATION_EXTERNAL_REPOSITORY)
+    private readonly loanAppRepo: ILoanApplicationExternalRepository,
     @Inject(UNIT_OF_WORK)
     private readonly uow: IUnitOfWork,
   ) {}

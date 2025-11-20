@@ -24,6 +24,7 @@ import {
   JenisPembiayaanEnum,
   StatusPinjamanEnum,
   StatusPengajuanEnum,
+  StatusPengajuanAkhirEnum,
 } from 'src/Shared/Enums/External/Loan-Application.enum';
 import { CollateralByKedinasan_Non_MOU_ORM_Entity } from './collateral-kedinasan-non-mou.orm-entity';
 import { CollateralByUMKM_ORM_Entity } from './collateral-umkm.orm.entity';
@@ -86,6 +87,12 @@ export class LoanApplicationExternal_ORM_Entity {
     default: StatusPengajuanEnum.PENDING,
   })
   status_pengajuan: StatusPengajuanEnum;
+
+  @Column({
+    type: 'enum',
+    enum: StatusPengajuanAkhirEnum,
+  })
+  status_pengajuan_akhir: StatusPengajuanAkhirEnum;
 
   @Column({ type: 'tinyint', width: 1, nullable: true })
   validasi_pengajuan?: boolean;

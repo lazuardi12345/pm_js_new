@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  Inject,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import {
   ILoanApplicationExternalRepository,
   LOAN_APPLICATION_EXTERNAL_REPOSITORY,
@@ -37,6 +33,7 @@ export class LoanApplicationExternalService {
       dto.realisasi_pinjaman,
       dto.cicilan_perbulan,
       dto.status_pengajuan,
+      dto.status_pengajuan_akhir,
       dto.validasi_pengajuan,
       dto.catatan,
       dto.catatan_spv,

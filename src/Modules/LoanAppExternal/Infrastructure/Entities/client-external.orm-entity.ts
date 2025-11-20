@@ -10,7 +10,10 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { GENDER, MARRIAGE_STATUS } from 'src/Shared/Enums/External/Client-External.enum';
+import {
+  GENDER,
+  MARRIAGE_STATUS,
+} from 'src/Shared/Enums/External/Client-External.enum';
 import { Users_ORM_Entity } from 'src/Modules/Users/Infrastructure/Entities/users.orm-entity';
 import { AddressExternal_ORM_Entity } from './address-external.orm-entity';
 import { EmergencyContactExternal_ORM_Entity } from './emergency-contact.orm-entity';
@@ -19,6 +22,7 @@ import { LoanApplicationExternal_ORM_Entity } from './loan-application-external.
 import { LoanGuarantorExternal_ORM_Entity } from './loan-guarantor.orm-entity';
 import { OtherExistLoansExternal_ORM_Entity } from './other-exist-loans.orm-entity';
 import { FinancialDependentsExternal_ORM_Entity } from './financial-dependents.orm-entity';
+import { IsNumber, IsOptional } from 'class-validator';
 
 @Entity('client_external')
 export class ClientExternal_ORM_Entity {
@@ -38,20 +42,12 @@ export class ClientExternal_ORM_Entity {
   @Column()
   nama_lengkap: string;
 
-  @Column()
-  nik: string;
+  @Column({ type: 'bigint' })
+  @IsNumber()
+  nik: number;
 
   @Column()
   no_kk: string;
-
-  @Column()
-  no_rek: string;
-
-  @Column()
-  foto_rekening: string;
-
-  @Column({ type: 'enum', enum: GENDER })
-  jenis_kelamin: GENDER;
 
   @Column()
   tempat_lahir: string;
@@ -60,34 +56,9 @@ export class ClientExternal_ORM_Entity {
   tanggal_lahir: Date;
 
   @Column()
-  no_hp: string;
-
-  @Column({ nullable: true })
-  email?: string;
-
-  @Column({ type: 'enum', enum: MARRIAGE_STATUS })
-  status_nikah: MARRIAGE_STATUS;
-
-  @Column({ nullable: true })
-  foto_ktp_peminjam?: string;
-
-  @Column({ nullable: true })
-  foto_ktp_penjamin?: string;
-
-  @Column({ nullable: true })
-  foto_kk_peminjam?: string;
-
-  @Column({ nullable: true })
-  foto_kk_penjamin?: string;
-
-  @Column({ nullable: true })
-  dokumen_pendukung?: string;
-
-  @Column({ type: 'tinyint', nullable: true })
-  validasi_nasabah?: boolean;
-
-  @Column({ nullable: true })
-  catatan?: string;
+  @IsNumber()
+  @IsOptional()
+  points: number;
 
   @CreateDateColumn({ type: 'timestamp', nullable: true })
   created_at?: Date;

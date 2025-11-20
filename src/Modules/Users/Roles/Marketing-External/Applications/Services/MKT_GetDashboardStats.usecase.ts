@@ -1,14 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
-  ILoanApplicationInternalRepository,
-  LOAN_APPLICATION_INTERNAL_REPOSITORY,
-} from 'src/Modules/LoanAppInternal/Domain/Repositories/loanApp-internal.repository';
+  ILoanApplicationExternalRepository,
+  LOAN_APPLICATION_EXTERNAL_REPOSITORY,
+} from 'src/Modules/LoanAppExternal/Domain/Repositories/loanApp-external.repository';
 
 @Injectable()
 export class MKT_GetDashboardStatsUseCase {
   constructor(
-    @Inject(LOAN_APPLICATION_INTERNAL_REPOSITORY)
-    private readonly loanAppRepo: ILoanApplicationInternalRepository,
+    @Inject(LOAN_APPLICATION_EXTERNAL_REPOSITORY)
+    private readonly loanAppRepo: ILoanApplicationExternalRepository,
   ) {}
 
   async execute(marketingId: number) {
@@ -35,7 +35,7 @@ export class MKT_GetDashboardStatsUseCase {
       let stats: any;
 
       try {
-        stats = await this.loanAppRepo.callSP_MKT_GetDashboard_Internal(
+        stats = await this.loanAppRepo.callSP_MKT_GetDashboard_External(
           Number(marketingId),
         );
       } catch (err) {

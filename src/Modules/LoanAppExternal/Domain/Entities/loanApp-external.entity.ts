@@ -2,11 +2,12 @@ import {
   JenisPembiayaanEnum,
   StatusPinjamanEnum,
   StatusPengajuanEnum,
+  StatusPengajuanAkhirEnum,
 } from 'src/Shared/Enums/External/Loan-Application.enum';
 
 export class LoanApplicationExternal {
   constructor(
-    public readonly nasabah: {id: number},
+    public readonly nasabah: { id: number },
     public readonly jenis_pembiayaan: JenisPembiayaanEnum,
     public readonly nominal_pinjaman: number,
     public readonly tenor: number,
@@ -19,6 +20,7 @@ export class LoanApplicationExternal {
     public readonly realisasi_pinjaman?: string,
     public readonly cicilan_perbulan?: number,
     public readonly status_pengajuan: StatusPengajuanEnum = StatusPengajuanEnum.PENDING,
+    public status_pengajuan_akhir?: StatusPengajuanAkhirEnum | null,
     public readonly validasi_pengajuan?: boolean,
     public readonly catatan?: string,
     public readonly catatan_spv?: string,

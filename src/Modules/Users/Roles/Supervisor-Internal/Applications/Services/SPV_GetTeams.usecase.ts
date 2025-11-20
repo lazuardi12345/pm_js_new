@@ -7,7 +7,7 @@ import {
 import {
   CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY,
   ILoanApplicationDraftRepository,
-} from 'src/Shared/Modules/Drafts/Domain/Repositories/LoanAppInt.repository';
+} from 'src/Shared/Modules/Drafts/Domain/Repositories/int/LoanAppInt.repository';
 import { TeamStats } from 'src/Shared/Interface/SPV_GetTeams/SPV_GetTeamsStats.interface';
 
 @Injectable()

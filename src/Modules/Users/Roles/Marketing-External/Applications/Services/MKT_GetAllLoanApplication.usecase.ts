@@ -4,19 +4,19 @@ import {
   IApprovalRecommendationRepository,
 } from 'src/Modules/Admin/BI-Checking/Domain/Repositories/approval-recommendation.repository';
 import {
-  ILoanApplicationInternalRepository,
-  LOAN_APPLICATION_INTERNAL_REPOSITORY,
-} from 'src/Modules/LoanAppInternal/Domain/Repositories/loanApp-internal.repository';
+  ILoanApplicationExternalRepository,
+  LOAN_APPLICATION_EXTERNAL_REPOSITORY,
+} from 'src/Modules/LoanAppExternal/Domain/Repositories/loanApp-external.repository';
 import {
   CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY,
   ILoanApplicationDraftRepository,
-} from 'src/Shared/Modules/Drafts/Domain/Repositories/LoanAppInt.repository';
+} from 'src/Shared/Modules/Drafts/Domain/Repositories/int/LoanAppInt.repository';
 
 @Injectable()
 export class MKT_GetAllLoanApplicationUseCase {
   constructor(
-    @Inject(LOAN_APPLICATION_INTERNAL_REPOSITORY)
-    private readonly loanAppRepo: ILoanApplicationInternalRepository,
+    @Inject(LOAN_APPLICATION_EXTERNAL_REPOSITORY)
+    private readonly loanAppRepo: ILoanApplicationExternalRepository,
     @Inject(CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY)
     private readonly loanAppDraftRepo: ILoanApplicationDraftRepository,
     @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
@@ -56,7 +56,7 @@ export class MKT_GetAllLoanApplicationUseCase {
       let spResult;
       try {
         spResult =
-          await this.loanAppRepo.callSP_MKT_GetAllLoanApplications_Internal(
+          await this.loanAppRepo.callSP_MKT_GetAllLoanApplications_External(
             marketingId,
             page,
             pageSize,
