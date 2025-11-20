@@ -6,7 +6,12 @@ import {
   IsNumber,
   IsBoolean,
 } from 'class-validator';
-import { JenisPembiayaanEnum, StatusPinjamanEnum, StatusPengajuanEnum } from 'src/Shared/Enums/External/Loan-Application.enum';
+import {
+  JenisPembiayaanEnum,
+  StatusPinjamanEnum,
+  StatusPengajuanEnum,
+  StatusPengajuanAkhirEnum,
+} from 'src/Shared/Enums/External/Loan-Application.enum';
 
 export class CreateLoanApplicationExternalDto {
   @IsNumber()
@@ -52,6 +57,10 @@ export class CreateLoanApplicationExternalDto {
   @IsOptional()
   @IsEnum(StatusPengajuanEnum)
   status_pengajuan?: StatusPengajuanEnum;
+
+  @IsOptional()
+  @IsEnum(StatusPengajuanAkhirEnum)
+  status_pengajuan_akhir?: StatusPengajuanAkhirEnum;
 
   @IsOptional()
   @IsBoolean()

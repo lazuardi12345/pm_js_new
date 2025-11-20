@@ -11,6 +11,7 @@ import {
 // highlight-start
 // Impor enum dari file entity, bukan mendefinisikannya di sini
 import {
+  CLIENT_TYPE,
   GENDER,
   MARRIAGE_STATUS,
 } from 'src/Shared/Enums/External/Client-External.enum';
@@ -25,8 +26,8 @@ export class CreateClientExternalDto {
   @IsString()
   nama_lengkap: string;
 
-  @IsString()
-  nik: string;
+  @IsNumber()
+  nik: number;
 
   @IsString()
   no_kk: string;
@@ -84,4 +85,16 @@ export class CreateClientExternalDto {
   @IsOptional()
   @IsString()
   catatan?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  enable_edit?: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  points?: number;
+
+  @IsOptional()
+  @IsEnum(CLIENT_TYPE)
+  tipe_nasabah?: string;
 }

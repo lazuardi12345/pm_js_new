@@ -4,7 +4,7 @@ import {
   LoanApplication,
   LoanApplicationSchema,
 } from '../Infrastructure/Schemas/LoanAppInternal/CreateLoanApplicaton_Marketing.schema';
-import { CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY } from '../Domain/Repositories/LoanAppInt.repository';
+import { CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY } from '../Domain/Repositories/int/LoanAppInt.repository';
 import { LoanApplicationRepositoryImpl } from '../Infrastructure/Repositories/LoanApplicationInternal/ClientInternal.repository.impl';
 import { CreateDraftLoanApplicationController } from '../Presentations/Controllers/Drafts.controller';
 import { CreateDraftLoanApplicationUseCase } from '../Applications/Services/LoanAppInternal/CreateLoanApplication_Marketing.usecase';

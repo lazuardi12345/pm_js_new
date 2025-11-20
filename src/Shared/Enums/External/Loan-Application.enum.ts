@@ -32,3 +32,17 @@ export enum StatusPengajuanEnum {
   VERIFIKASI = 'verifikasi',
   SURVEY_SELESAI = 'survey selesai',
 }
+
+export enum StatusPengajuanAkhirEnum {
+  DONE = 'done',
+  CLOSED = 'closed',
+}
+
+export enum LoanType {
+  UMKM = 'UMKM',
+  SHM = 'SHM',
+  KEDINASAN_MOU = 'KEDINASAN_MOU',
+  KEDINASAN_NON_MOU = 'KEDINASAN_NON_MOU',
+  BPJS = 'BPJS',
+  BPKB = 'BPKB',
+}

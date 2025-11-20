@@ -95,7 +95,7 @@ import sharp from 'sharp';
 import {
   CREATE_DRAFT_REPEAT_ORDER_REPOSITORY,
   IDraftRepeatOrderRepository,
-} from 'src/Shared/Modules/Drafts/Domain/Repositories/DraftRepeatOrder.repository';
+} from 'src/Shared/Modules/Drafts/Domain/Repositories/int/DraftRepeatOrder.repository';
 import {
   CreateDraftRepeatOrderDto,
   PayloadDTO,
@@ -105,7 +105,7 @@ import {
   APPROVAL_RECOMMENDATION_REPOSITORY,
   IApprovalRecommendationRepository,
 } from 'src/Modules/Admin/BI-Checking/Domain/Repositories/approval-recommendation.repository';
-import { RepeatOrderEntity } from 'src/Shared/Modules/Drafts/Domain/Entities/DraftRepeatOrder.entity';
+import { RepeatOrderEntity } from 'src/Shared/Modules/Drafts/Domain/Entities/int/DraftRepeatOrder.entity';
 
 @Injectable()
 export class MKT_CreateRepeatOrderUseCase {

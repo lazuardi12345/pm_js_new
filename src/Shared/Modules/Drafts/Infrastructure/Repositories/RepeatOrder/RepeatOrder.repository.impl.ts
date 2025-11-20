@@ -2,12 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { merge, isEqual } from 'lodash';
-import { IDraftRepeatOrderRepository } from '../../../Domain/Repositories/DraftRepeatOrder.repository';
+import { IDraftRepeatOrderRepository } from '../../../Domain/Repositories/int/DraftRepeatOrder.repository';
 import {
   RepeatOrder,
   RepeatOrderDocument,
 } from '../../Schemas/LoanAppInternal/RepeatOrder_Marketing.schema';
-import { RepeatOrderEntity } from '../../../Domain/Entities/DraftRepeatOrder.entity';
+import { RepeatOrderEntity } from '../../../Domain/Entities/int/DraftRepeatOrder.entity';
 
 @Injectable()
 export class DraftRepeatOrderRepositoryImpl

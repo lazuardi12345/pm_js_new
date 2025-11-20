@@ -8,9 +8,9 @@ import {
 import {
   CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY,
   ILoanApplicationDraftRepository,
-} from '../../../Domain/Repositories/LoanAppInt.repository';
+} from '../../../Domain/Repositories/int/LoanAppInt.repository';
 import { CreateDraftLoanApplicationDto } from '../../DTOS/LoanAppInt_MarketingInput/CreateDraft_LoanAppInt.dto';
-import { LoanApplicationEntity } from '../../../Domain/Entities/LoanAppInt.entity';
+import { LoanApplicationEntity } from '../../../Domain/Entities/int/LoanAppInt.entity';
 import { UpdateDraftLoanApplicationDto } from '../../DTOS/LoanAppInt_MarketingInput/UpdateDraft_LoanAppInt.dto';
 import { isEqual, merge } from 'lodash';
 

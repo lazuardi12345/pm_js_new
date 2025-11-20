@@ -75,6 +75,10 @@ export interface ILoanApplicationInternalRepository {
   }>;
 
   //! ========== MARKETING ==========
+  callSP_MKT_GetDashboard_Internal(
+    marketingId: number,
+  ): Promise<MarketingStats>;
+
   callSP_MKT_GetAllLoanApplications_Internal(
     marketingId: number,
     page: number,
@@ -94,10 +98,6 @@ export interface ILoanApplicationInternalRepository {
   callSP_MKT_GetDetail_LoanApplicationsInternal_ById(
     loanAppId: number,
   ): Promise<[TypeLoanApplicationDetail[], TypeApprovalDetail[]]>;
-
-  callSP_MKT_GetDashboard_Internal(
-    marketingId: number,
-  ): Promise<MarketingStats>;
 
   //! ========== SUPERVISOR (SPV) ==========
   callSP_SPV_GetAllApprovalHistory_ByTeam(

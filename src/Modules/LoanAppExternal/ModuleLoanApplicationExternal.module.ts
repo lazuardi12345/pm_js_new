@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { AddressExternalModule } from './Modules/address-external.module';
 import { ApprovalExternalModule } from './Modules/approval-external.module';
 import { ClientExternalModule } from './Modules/client-external.module';
+import { ClientExternalProfileModule } from './Modules/client-external-profile.module';
 import { CollateralByBPJS_External_Module } from './Modules/collateral-bpjs-external.module';
 import { CollateralByBPKB_External_Module } from './Modules/collateral-bpkb-external.module';
 import { CollateralBySHM_External_Module } from './Modules/collateral-shm-external.module';
@@ -21,6 +22,7 @@ import { SurveyReports_External_Module } from './Modules/survey-reports-external
 //Controller
 import { AddressExternalController } from './Presentation/Controllers/address-external.controller';
 import { ClientExternalController } from './Presentation/Controllers/client-external.controller';
+import { ClientExternalProfileController } from './Presentation/Controllers/client-external-profile.controller';
 import { JobExternalController } from './Presentation/Controllers/job-external.controller';
 import { ApprovalExternalController } from './Presentation/Controllers/approval-external.controller';
 import { LoanApplicationExternalController } from './Presentation/Controllers/loanApp-external.controller';
@@ -40,6 +42,7 @@ import { CollateralKedinasan_Non_MOU_ExternalController } from './Presentation/C
     AddressExternalModule,
     ApprovalExternalModule,
     ClientExternalModule,
+    ClientExternalProfileModule,
     CollateralByBPJS_External_Module,
     CollateralByBPKB_External_Module,
     CollateralBySHM_External_Module,
@@ -58,6 +61,7 @@ import { CollateralKedinasan_Non_MOU_ExternalController } from './Presentation/C
   controllers: [
     AddressExternalController,
     ClientExternalController,
+    ClientExternalProfileController,
     JobExternalController,
     ApprovalExternalController,
     LoanApplicationExternalController,
@@ -76,6 +80,7 @@ import { CollateralKedinasan_Non_MOU_ExternalController } from './Presentation/C
     AddressExternalModule,
     ApprovalExternalModule,
     ClientExternalModule,
+    ClientExternalProfileModule,
     CollateralByBPJS_External_Module,
     CollateralByBPKB_External_Module,
     CollateralBySHM_External_Module,

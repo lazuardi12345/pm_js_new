@@ -6,12 +6,12 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { CreateDraftRepeatOrderDto } from '../../DTOS/RepeatOrderInt_MarketingInput/CreateRO_DraftRepeatOrder.dto';
-import { LoanApplicationEntity } from '../../../Domain/Entities/LoanAppInt.entity';
+import { LoanApplicationEntity } from '../../../Domain/Entities/int/LoanAppInt.entity';
 import { isEqual, merge } from 'lodash';
 import {
   CREATE_DRAFT_REPEAT_ORDER_REPOSITORY,
   IDraftRepeatOrderRepository,
-} from '../../../Domain/Repositories/DraftRepeatOrder.repository';
+} from '../../../Domain/Repositories/int/DraftRepeatOrder.repository';
 
 @Injectable()
 export class CreateDraftRepeatOrderUseCase {
