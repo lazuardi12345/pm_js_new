@@ -1,8 +1,8 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { CreateDraftRepeatOrderExtDto } from './CreateRO_DraftRepeatOrder.dto';
+import { CreateDraftLoanApplicationExtDto } from './CreateDraft_LoanAppExt.dto';
 
-export class UpdateDraftRepearOrderExtDto extends PartialType(
-  CreateDraftRepeatOrderExtDto,
+export class UpdateDraftLoanApplicationExtDto extends PartialType(
+  CreateDraftLoanApplicationExtDto,
 ) {
   // Tambahkan ini agar bisa terima langsung tanpa "payload"
   client_external?: any;

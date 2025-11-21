@@ -21,6 +21,7 @@ import {
   IFileStorageRepository,
 } from '../../Domain/Repositories/IFileStorage.repository';
 import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
+import { REQUEST_TYPE } from '../../Infrastructure/Service/Interface/RequestType.interface';
 
 @Controller('storage')
 export class FileStorageController {
@@ -41,7 +42,7 @@ export class FileStorageController {
       customerId,
       customerName,
       { files },
-      false,
+      REQUEST_TYPE.INTERNAL,
     );
     return { message: 'Files uploaded successfully', data: result };
   }
@@ -125,7 +126,7 @@ export class FileStorageController {
     const files = await this.fileStorageService.listFiles(
       customerId,
       customerName,
-      false,
+      REQUEST_TYPE.INTERNAL,
     );
     return { files };
   }
@@ -191,7 +192,7 @@ export class FileStorageController {
       customerName,
       filename,
       files[0],
-      false,
+      REQUEST_TYPE.EXTERNAL,
     );
     return { message: 'File updated successfully', data: result };
   }

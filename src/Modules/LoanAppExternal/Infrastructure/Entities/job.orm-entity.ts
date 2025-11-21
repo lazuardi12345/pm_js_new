@@ -11,15 +11,22 @@ import {
   DeleteDateColumn,
 } from 'typeorm';
 
-@Entity('jobs_external')
+@Entity('job_external')
 export class JobExternal_ORM_Entity {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
 
-  @ManyToOne(() => ClientExternal_ORM_Entity, (clientExternal) => clientExternal.id, {
-    onDelete: 'CASCADE',
+  @ManyToOne(
+    () => ClientExternal_ORM_Entity,
+    (clientExternal) => clientExternal.id,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
+  @JoinColumn({
+    name: 'nasabah_id',
+    foreignKeyConstraintName: 'FK_ClientExternalID_at_JobExternal',
   })
-  @JoinColumn({ name: 'nasabah_id', foreignKeyConstraintName: 'FK_ClientExternalID_at_JobExternal' })
   nasabah: ClientExternal_ORM_Entity;
 
   @Column({ type: 'varchar', length: 255 })

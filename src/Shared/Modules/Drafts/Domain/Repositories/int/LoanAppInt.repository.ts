@@ -1,10 +1,10 @@
 import { LoanApplicationEntity } from '../../Entities/int/LoanAppInt.entity';
 
-export const CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY = Symbol(
+export const DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY = Symbol(
   'CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY',
 );
 
-export interface ILoanApplicationDraftRepository {
+export interface ILoanApplicationDraftInternalRepository {
   create(data: Partial<LoanApplicationEntity>): Promise<LoanApplicationEntity>;
   findStatus(
     nik: string,

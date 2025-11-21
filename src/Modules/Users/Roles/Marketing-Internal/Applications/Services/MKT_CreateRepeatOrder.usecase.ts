@@ -93,10 +93,6 @@ import {
 } from 'src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository';
 import sharp from 'sharp';
 import {
-  CREATE_DRAFT_REPEAT_ORDER_REPOSITORY,
-  IDraftRepeatOrderRepository,
-} from 'src/Shared/Modules/Drafts/Domain/Repositories/int/DraftRepeatOrder.repository';
-import {
   CreateDraftRepeatOrderDto,
   PayloadDTO,
 } from 'src/Shared/Modules/Drafts/Applications/DTOS/RepeatOrderInt_MarketingInput/CreateRO_DraftRepeatOrder.dto';
@@ -106,15 +102,19 @@ import {
   IApprovalRecommendationRepository,
 } from 'src/Modules/Admin/BI-Checking/Domain/Repositories/approval-recommendation.repository';
 import { RepeatOrderEntity } from 'src/Shared/Modules/Drafts/Domain/Entities/int/DraftRepeatOrder.entity';
-
+import { REQUEST_TYPE } from 'src/Shared/Modules/Storage/Infrastructure/Service/Interface/RequestType.interface';
+import {
+  DRAFT_REPEAT_ORDER_INTERNAL_REPOSITORY,
+  IDraftRepeatOrderInternalRepository,
+} from 'src/Shared/Modules/Drafts/Domain/Repositories/int/DraftRepeatOrder.repository';
 @Injectable()
 export class MKT_CreateRepeatOrderUseCase {
   private readonly logger = new Logger(MKT_CreateRepeatOrderUseCase.name);
   constructor(
     @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
     private readonly approvalRecommendationRepo: IApprovalRecommendationRepository,
-    @Inject(CREATE_DRAFT_REPEAT_ORDER_REPOSITORY)
-    private readonly repeatOrderRepo: IDraftRepeatOrderRepository,
+    @Inject(DRAFT_REPEAT_ORDER_INTERNAL_REPOSITORY)
+    private readonly repeatOrderRepo: IDraftRepeatOrderInternalRepository,
     @Inject(CLIENT_INTERNAL_REPOSITORY)
     private readonly clientRepo: IClientInternalRepository,
     @Inject(CLIENT_INTERNAL_PROFILE_REPOSITORY)
@@ -449,7 +449,7 @@ export class MKT_CreateRepeatOrderUseCase {
             nextPengajuanIndex = await this.fileStorage.getNextPengajuanIndex(
               nikNumber,
               client_internal.nama_lengkap,
-              false,
+              REQUEST_TYPE.INTERNAL,
             );
           } catch (e) {
             console.error('getNextPengajuanIndex failed:', e);
@@ -758,7 +758,7 @@ export class MKT_CreateRepeatOrderUseCase {
         const nextPengajuanIndex = await this.fileStorage.getNextPengajuanIndex(
           Number(dto.client_internal.no_ktp),
           dto.client_internal.nama_lengkap,
-          true, // isDraft = true untuk draft
+          REQUEST_TYPE.INTERNAL, // isDraft = true untuk draft
         );
 
         console.log('MinIO Upload Info:', {

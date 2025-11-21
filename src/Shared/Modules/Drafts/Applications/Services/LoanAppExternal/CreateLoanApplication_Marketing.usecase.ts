@@ -6,36 +6,43 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {
-  DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY,
-  ILoanApplicationDraftInternalRepository,
-} from '../../../Domain/Repositories/int/LoanAppInt.repository';
-import { CreateDraftLoanApplicationIntDto } from '../../DTOS/LoanAppInt_MarketingInput/CreateDraft_LoanAppInt.dto';
-import { LoanApplicationEntity } from '../../../Domain/Entities/int/LoanAppInt.entity';
+  DRAFT_LOAN_APPLICATION_EXTERNAL_REPOSITORY,
+  ILoanApplicationDraftExternalRepository,
+} from '../../../Domain/Repositories/ext/LoanAppInt.repository';
+import { CreateDraftLoanApplicationExtDto } from '../../DTOS/LoanAppExt_MarketingInput/CreateDraft_LoanAppExt.dto';
+import { LoanApplicationExtEntity } from '../../../Domain/Entities/ext/LoanAppInt.entity';
 import { UpdateDraftLoanApplicationDto } from '../../DTOS/LoanAppInt_MarketingInput/UpdateDraft_LoanAppInt.dto';
 import { isEqual, merge } from 'lodash';
 
 @Injectable()
-export class CreateDraftLoanApplicationIntUseCase {
+export class CreateDraftLoanApplicationExtUseCase {
   constructor(
-    @Inject(DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY)
-    private readonly loanAppDraftRepo: ILoanApplicationDraftInternalRepository,
+    @Inject(DRAFT_LOAN_APPLICATION_EXTERNAL_REPOSITORY)
+    private readonly loanAppDraftRepo: ILoanApplicationDraftExternalRepository,
   ) {}
 
   async executeCreateDraft(
     marketingId: number,
-    dto: CreateDraftLoanApplicationIntDto,
+    dto: CreateDraftLoanApplicationExtDto,
   ) {
     try {
       console.log(dto);
       const loanApp = await this.loanAppDraftRepo.create({
         marketing_id: marketingId,
-        client_internal: dto.payload.client_internal,
-        address_internal: dto.payload.address_internal,
-        family_internal: dto.payload.family_internal,
-        job_internal: dto.payload.job_internal,
-        loan_application_internal: dto.payload.loan_application_internal,
-        collateral_internal: dto.payload.collateral_internal,
-        relative_internal: dto.payload.relative_internal,
+        client_external: dto.payload.client_external,
+        address_external: dto.payload.address_external,
+        job_external: dto.payload.job_external,
+        loan_application_external: dto.payload.loan_application_external,
+        loan_guarantor_external: dto.payload.loan_guarantor,
+        emergency_contact_external: dto.payload.emergency_contact_dto,
+        financial_dependents_external: dto.payload.financial_dependents,
+        other_exist_loan_external: dto.payload.other_exist_loan,
+        collateral_bpjs: dto.payload.collateral_bpjs,
+        collateral_bpkb: dto.payload.collateral_bpkb,
+        collateral_shm: dto.payload.collateral_shm,
+        collateral_umkm: dto.payload.collateral_umkm,
+        collateral_kedinasan_mou: dto.payload.collateral_kedinasan_mou,
+        collateral_kedinasan_non_mou: dto.payload.collateral_kedinasan_non_mou,
         uploaded_files: dto.uploaded_files,
       });
 
@@ -183,7 +190,7 @@ export class CreateDraftLoanApplicationIntUseCase {
       };
     }
 
-    const entityUpdate: Partial<LoanApplicationEntity> = {
+    const entityUpdate: Partial<LoanApplicationExtEntity> = {
       payload: mergedPayload,
       uploaded_files: mergedFiles,
     };

@@ -1,11 +1,18 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import * as Minio from 'minio';
-import * as crypto from 'crypto';
+import { EncKey } from './private/EncKey.priv';
 import {
   IFileStorageRepository,
   FileMetadata,
 } from '../../Domain/Repositories/IFileStorage.repository';
 import { SingleUploadFileType } from 'src/Shared/Interface/Storage_SingleUploadType/SingleUploadFile.interface';
+import { REQUEST_TYPE } from './Interface/RequestType.interface';
 
 type MinioObject = {
   name: string;
@@ -18,11 +25,9 @@ type MinioObject = {
 export class MinioFileStorageService implements IFileStorageRepository {
   private readonly logger = new Logger(MinioFileStorageService.name);
   private minioClient: Minio.Client;
-
-  private readonly algorithm = 'aes-256-cbc';
-  private readonly key: Buffer;
-  private readonly mainBucket = 'customer-files';
-  private readonly draftBucket = 'customer-drafts';
+  private readonly encKey: EncKey;
+  private readonly customer_internal = 'customer-internal';
+  private readonly customer_external = 'customer-external';
   private readonly approvalRecommendationBucket =
     'approval-recommendation-files';
 
@@ -38,41 +43,11 @@ export class MinioFileStorageService implements IFileStorageRepository {
       secretKey: process.env.MINIO_SECRET_KEY || 'admin123',
     });
 
-    // Encryption key (32 bytes)
-    this.key = Buffer.from(
-      process.env.CRYPT_KEY || 'your-super-secret-32-char-key!',
-    ).slice(0, 32);
-
     // Ensure buckets exist
-    this.ensureBucket(this.mainBucket);
-    this.ensureBucket(this.draftBucket);
+    this.ensureBucket(this.customer_internal);
+    this.ensureBucket(this.customer_external);
     this.ensureBucket(this.approvalRecommendationBucket);
   }
-
-  // ============== ENCRYPT ION HELPERS ==============
-  private encrypt(buffer: Buffer): { encrypted: Buffer; iv: string } {
-    // Ambil IV dari env atau generate random
-    const ivString = process.env.CRYPT_IV;
-    const iv = Buffer.from(ivString!, 'utf-8');
-    // Pastikan panjang key valid
-    if (this.key.length !== 32) {
-      throw new Error(
-        `Invalid key length: ${this.key.length}. Must be 32 bytes for AES-256-CBC.`,
-      );
-    }
-    const cipher = crypto.createCipheriv(this.algorithm, this.key, iv);
-    const encrypted = Buffer.concat([cipher.update(buffer), cipher.final()]);
-
-    return { encrypted, iv: iv.toString('utf-8') };
-  }
-
-  private decrypt(encryptedBuffer: Buffer, ivHex: string): Buffer {
-    const iv = Buffer.from(ivHex, 'utf-8');
-    const decipher = crypto.createDecipheriv(this.algorithm, this.key, iv);
-    return Buffer.concat([decipher.update(encryptedBuffer), decipher.final()]);
-  }
-
-  // ============== BUCKET HELPERS ==============
 
   private async ensureBucket(bucketName: string): Promise<void> {
     try {
@@ -86,20 +61,23 @@ export class MinioFileStorageService implements IFileStorageRepository {
     }
   }
 
-  private getBucketName(isDraft: boolean): string {
-    return isDraft ? this.draftBucket : this.mainBucket;
+  private getBucketType(type: REQUEST_TYPE): string {
+    switch (type) {
+      case 'internal':
+        return REQUEST_TYPE.INTERNAL;
+      case 'external':
+        return REQUEST_TYPE.EXTERNAL;
+      case 'ro-internal':
+        return REQUEST_TYPE.RO_INT;
+      case 'ro-external':
+        return REQUEST_TYPE.RO_EXT;
+      default:
+        throw new HttpException('REQUEST IS NOT VALID', HttpStatus.BAD_REQUEST);
+    }
   }
 
   private getCustomerPrefix(customerId: number, customerName: string): string {
     return `${customerId}-${customerName}/`;
-  }
-
-  private getCustomerRepeatOrderPrefix(
-    customerId: number,
-    customerName: string,
-    index: number,
-  ): string {
-    return `repeat-order-${index}/${customerId}-${customerName}/`;
   }
 
   private async findFolderByLoanId(
@@ -217,10 +195,10 @@ export class MinioFileStorageService implements IFileStorageRepository {
   async getNextPengajuanIndex(
     customerId: number,
     customerName: string,
-    isDraft: boolean = false,
+    type: REQUEST_TYPE,
   ): Promise<number> {
     try {
-      const bucket = this.getBucketName(isDraft);
+      const bucket = this.getBucketType(type);
       const customerPrefix = this.getCustomerPrefix(customerId, customerName);
 
       // List semua objects di customer folder (recursive untuk dapat subfolder)
@@ -261,9 +239,9 @@ export class MinioFileStorageService implements IFileStorageRepository {
     customerId: number,
     customerName: string,
     files: Record<string, Express.Multer.File[] | undefined>,
-    isDraft: boolean = false,
+    type: REQUEST_TYPE,
   ): Promise<Record<string, FileMetadata[]>> {
-    const bucket = this.getBucketName(isDraft);
+    const bucket = this.getBucketType(type);
     const prefix = this.getCustomerPrefix(customerId, customerName);
     const savedFiles: Record<string, FileMetadata[]> = {};
 
@@ -294,9 +272,9 @@ export class MinioFileStorageService implements IFileStorageRepository {
     customerId: number,
     customerName: string,
     files: Record<string, Express.Multer.File[] | undefined>,
-    isDraft: boolean = false,
+    type: REQUEST_TYPE,
   ): Promise<Record<string, FileMetadata[]>> {
-    const bucket = this.getBucketName(isDraft);
+    const bucket = this.getBucketType(type);
     const prefix = this.getCustomerPrefix(customerId, customerName);
     const savedFiles: Record<string, FileMetadata[]> = {};
 
@@ -340,7 +318,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
     originalLoanId?: number;
   }> {
     try {
-      const bucket = this.mainBucket;
+      const bucket = this.customer_internal;
       const customerPrefix = this.getCustomerPrefix(customerId, customerName);
 
       let targetPengajuanIndex = nextPengajuanIndex;
@@ -466,7 +444,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
     type_prefix?: SingleUploadFileType,
   ): Promise<FileMetadata> {
     try {
-      const { encrypted, iv } = this.encrypt(file.buffer);
+      const { encrypted, iv } = this.encKey.encrypt(file.buffer);
 
       const filenameToUse = customFileName || file.originalname;
       const encryptedName = `${prefix}${filenameToUse}.enc`;
@@ -540,7 +518,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
   ): Promise<FileMetadata> {
     try {
       // Encrypt file
-      const { encrypted, iv } = this.encrypt(file.buffer);
+      const { encrypted, iv } = this.encKey.encrypt(file.buffer);
 
       // Tentukan nama file yang akan di-upload
       const filenameToUse = customFileName || file.originalname;
@@ -603,10 +581,10 @@ export class MinioFileStorageService implements IFileStorageRepository {
     customerId: number,
     customerName: string,
     filename: string,
-    isDraft: boolean = false,
+    type: REQUEST_TYPE,
   ): Promise<{ buffer: Buffer; mimetype: string; originalName: string }> {
     try {
-      const bucket = this.getBucketName(isDraft);
+      const bucket = this.getBucketType(type);
       const prefix = this.getCustomerPrefix(customerId, customerName);
       const encryptedName = filename.endsWith('.enc')
         ? `${prefix}${filename}`
@@ -639,7 +617,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
       const encryptedBuffer = Buffer.concat(chunks);
 
       // Decrypt
-      const decryptedBuffer = this.decrypt(encryptedBuffer, iv);
+      const decryptedBuffer = this.encKey.decrypt(encryptedBuffer, iv);
 
       return {
         buffer: decryptedBuffer,
@@ -694,7 +672,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
       const encryptedBuffer = Buffer.concat(chunks);
 
       // Decrypt
-      const decryptedBuffer = this.decrypt(encryptedBuffer, iv);
+      const decryptedBuffer = this.encKey.decrypt(encryptedBuffer, iv);
 
       return {
         buffer: decryptedBuffer,
@@ -717,7 +695,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
     index?: number, // ← Kalau ada index, ambil dari repeat-order-{index}/
   ): Promise<{ buffer: Buffer; mimetype: string; originalName: string }> {
     try {
-      const bucket = this.mainBucket;
+      const bucket = this.customer_internal;
       const customerPrefix = this.getCustomerPrefix(customerId, customerName);
 
       // ============== BUILD PATH BERDASARKAN INDEX ==============
@@ -768,7 +746,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
       const encryptedBuffer = Buffer.concat(chunks);
 
       // Decrypt
-      const decryptedBuffer = this.decrypt(encryptedBuffer, iv);
+      const decryptedBuffer = this.encKey.decrypt(encryptedBuffer, iv);
 
       this.logger.log(`File retrieved successfully: ${encryptedName}`);
 
@@ -792,10 +770,10 @@ export class MinioFileStorageService implements IFileStorageRepository {
     customerId: number,
     customerName: string,
     pengajuanIndex: number,
-    isDraft: boolean = false,
+    type: REQUEST_TYPE,
   ): Promise<FileMetadata[]> {
     try {
-      const bucket = this.getBucketName(isDraft);
+      const bucket = this.getBucketType(type);
       const customerPrefix = this.getCustomerPrefix(customerId, customerName);
       const pengajuanFolder = `${customerPrefix}pengajuan-${pengajuanIndex}/`;
 
@@ -840,10 +818,10 @@ export class MinioFileStorageService implements IFileStorageRepository {
     customerName: string,
     filename: string,
     file: Express.Multer.File,
-    isDraft: boolean = false,
+    type: REQUEST_TYPE,
   ): Promise<FileMetadata> {
     try {
-      const bucket = this.getBucketName(isDraft);
+      const bucket = this.getBucketType(type);
       const prefix = this.getCustomerPrefix(customerId, customerName);
       const encryptedName = filename.endsWith('.enc')
         ? `${prefix}${filename}`
@@ -863,7 +841,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
       }
 
       // Encrypt new file
-      const { encrypted, iv } = this.encrypt(file.buffer);
+      const { encrypted, iv } = this.encKey.encrypt(file.buffer);
 
       // Replace file
       await this.minioClient.putObject(
@@ -942,10 +920,10 @@ export class MinioFileStorageService implements IFileStorageRepository {
   async listFiles(
     customerId: number,
     customerName: string,
-    isDraft: boolean = false,
+    type: REQUEST_TYPE,
   ): Promise<FileMetadata[]> {
     try {
-      const bucket = this.getBucketName(isDraft);
+      const bucket = this.getBucketType(type);
       const prefix = this.getCustomerPrefix(customerId, customerName);
       const files: FileMetadata[] = [];
 
@@ -983,10 +961,10 @@ export class MinioFileStorageService implements IFileStorageRepository {
     customerId: number,
     customerName: string,
     filename: string,
-    isDraft: boolean = false,
+    type: REQUEST_TYPE,
   ): Promise<void> {
     try {
-      const bucket = this.getBucketName(isDraft);
+      const bucket = this.getBucketType(type);
       const prefix = this.getCustomerPrefix(customerId, customerName);
       const encryptedName = filename.endsWith('.enc')
         ? `${prefix}${filename}`
@@ -1011,10 +989,10 @@ export class MinioFileStorageService implements IFileStorageRepository {
   async deleteCustomerFiles(
     customerId: number,
     customerName: string,
-    isDraft: boolean = false,
+    type: REQUEST_TYPE,
   ): Promise<void> {
     try {
-      const bucket = this.getBucketName(isDraft);
+      const bucket = this.getBucketType(type);
       const prefix = this.getCustomerPrefix(customerId, customerName);
 
       const objectsList: string[] = [];

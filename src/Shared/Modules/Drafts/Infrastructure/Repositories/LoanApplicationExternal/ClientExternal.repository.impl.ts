@@ -1,33 +1,35 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { merge, isEqual } from 'lodash';
-import { IDraftRepeatOrderRepository } from '../../../Domain/Repositories/int/DraftRepeatOrder.repository';
 import {
-  RepeatOrder,
-  RepeatOrderDocument,
-} from '../../Schemas/LoanAppInternal/RepeatOrder_Marketing.schema';
-import { RepeatOrderEntity } from '../../../Domain/Entities/int/DraftRepeatOrder.entity';
+  LoanApplicationInt,
+  LoanApplicationDocument,
+} from '../../Schemas/LoanAppInternal/CreateLoanApplicaton_Marketing.schema';
+import { ILoanApplicationDraftExternalRepository } from '../../../Domain/Repositories/ext/LoanAppInt.repository';
+import { LoanApplicationEntity } from '../../../Domain/Entities/int/LoanAppInt.entity';
+import { merge, isEqual } from 'lodash';
 
 @Injectable()
-export class DraftRepeatOrderRepositoryImpl
-  implements IDraftRepeatOrderRepository
+export class LoanApplicationExtRepositoryImpl
+  implements ILoanApplicationDraftExternalRepository
 {
   constructor(
-    @InjectModel(RepeatOrder.name, 'mongoConnection')
-    private readonly repeatOrderModel: Model<RepeatOrderDocument>,
+    @InjectModel(LoanApplicationInt.name, 'mongoConnection')
+    private readonly loanAppModel: Model<LoanApplicationDocument>,
   ) {}
 
-  async create(data: Partial<RepeatOrderEntity>): Promise<RepeatOrderEntity> {
-    const created = new this.repeatOrderModel(data);
+  async create(
+    data: Partial<LoanApplicationEntity>,
+  ): Promise<LoanApplicationEntity> {
+    const created = new this.loanAppModel(data);
     const saved = await created.save();
-    return new RepeatOrderEntity(saved.toObject());
+    return new LoanApplicationEntity(saved.toObject());
   }
 
   async findStatus(
     nik: string,
   ): Promise<{ draft_id: string; isNeedCheck: boolean } | null> {
-    const found = await this.repeatOrderModel
+    const found = await this.loanAppModel
       .findOne({ 'client_internal.no_ktp': nik }, { isNeedCheck: 1, _id: 1 })
       .lean();
 
@@ -39,15 +41,17 @@ export class DraftRepeatOrderRepositoryImpl
     };
   }
 
-  async findById(id: string): Promise<RepeatOrderEntity | null> {
-    const found = await this.repeatOrderModel
+  async findById(id: string): Promise<LoanApplicationEntity | null> {
+    const found = await this.loanAppModel
       .findOne({ _id: id, isDeleted: false })
       .exec();
-    return found ? new RepeatOrderEntity(found.toObject()) : null;
+    return found ? new LoanApplicationEntity(found.toObject()) : null;
   }
 
-  async findByMarketingId(marketingId: number): Promise<RepeatOrderEntity[]> {
-    const list = await this.repeatOrderModel
+  async findByMarketingId(
+    marketingId: number,
+  ): Promise<LoanApplicationEntity[]> {
+    const list = await this.loanAppModel
       .find(
         { marketing_id: marketingId, isDeleted: false },
         {
@@ -65,19 +69,19 @@ export class DraftRepeatOrderRepositoryImpl
       )
       .exec();
 
-    return list.map((doc) => new RepeatOrderEntity(doc.toObject()));
+    return list.map((doc) => new LoanApplicationEntity(doc.toObject()));
   }
 
-  async findAll(): Promise<RepeatOrderEntity[]> {
-    const all = await this.repeatOrderModel.find({ isDeleted: false }).exec();
-    return all.map((doc) => new RepeatOrderEntity(doc.toObject()));
+  async findAll(): Promise<LoanApplicationEntity[]> {
+    const all = await this.loanAppModel.find({ isDeleted: false }).exec();
+    return all.map((doc) => new LoanApplicationEntity(doc.toObject()));
   }
 
   async updateDraftById(
     id: string,
-    updateData: Partial<RepeatOrderEntity>,
-  ): Promise<{ entity: RepeatOrderEntity | null; isUpdated: boolean }> {
-    const existing = await this.repeatOrderModel
+    updateData: Partial<LoanApplicationEntity>,
+  ): Promise<{ entity: LoanApplicationEntity | null; isUpdated: boolean }> {
+    const existing = await this.loanAppModel
       .findOne({ _id: id, isDeleted: false })
       .lean()
       .exec();
@@ -88,15 +92,15 @@ export class DraftRepeatOrderRepositoryImpl
 
     if (!hasChanged) {
       console.log('⚪ Tidak ada perubahan data — skip update');
-      return { entity: new RepeatOrderEntity(existing), isUpdated: false };
+      return { entity: new LoanApplicationEntity(existing), isUpdated: false };
     }
 
-    const updated = await this.repeatOrderModel
+    const updated = await this.loanAppModel
       .findByIdAndUpdate(id, mergedData, { new: true })
       .exec();
 
     return {
-      entity: updated ? new RepeatOrderEntity(updated.toObject()) : null,
+      entity: updated ? new LoanApplicationEntity(updated.toObject()) : null,
       isUpdated: true,
     };
   }
@@ -115,7 +119,7 @@ export class DraftRepeatOrderRepositoryImpl
     console.log('Jembus Wedut >>>>>>>>>>>>>>>>>>>>>>', nominal_fixtype);
 
     if (nominal_fixtype >= 7000000) {
-      const response = await this.repeatOrderModel.updateOne(
+      const response = await this.loanAppModel.updateOne(
         { _id: draft_id },
         { isNeedCheck: true },
       );
@@ -128,7 +132,7 @@ export class DraftRepeatOrderRepositoryImpl
   }
 
   async softDelete(id: string): Promise<boolean> {
-    const result = await this.repeatOrderModel.updateOne(
+    const result = await this.loanAppModel.updateOne(
       { _id: id },
       { isDeleted: true },
     );

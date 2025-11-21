@@ -9,7 +9,7 @@ import { LoanApplicationInternal_ORM_Entity } from 'src/Modules/LoanAppInternal/
 import { LoanApplicationExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/loan-application-external.orm-entity';
 import { InjectModel } from '@nestjs/mongoose';
 import {
-  LoanApplication,
+  LoanApplicationInt,
   LoanApplicationDocument,
 } from 'src/Shared/Modules/Drafts/Infrastructure/Schemas/LoanAppInternal/CreateLoanApplicaton_Marketing.schema';
 import { Model } from 'mongoose';
@@ -25,7 +25,7 @@ export class ApprovalRecommendationRepositoryImpl
   constructor(
     @InjectRepository(ApprovalRecommendation_ORM_Entity)
     private readonly ormRepository: Repository<ApprovalRecommendation_ORM_Entity>,
-    @InjectModel(LoanApplication.name, 'mongoConnection')
+    @InjectModel(LoanApplicationInt.name, 'mongoConnection')
     private readonly mongoDraftRepository: Model<LoanApplicationDocument>,
     @InjectModel(RepeatOrder.name, 'mongoConnection')
     private readonly repeatOrderRepository: Model<RepeatOrderDocument>,

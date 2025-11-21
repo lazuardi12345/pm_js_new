@@ -106,10 +106,7 @@ import {
   IFileStorageRepository,
 } from 'src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository';
 import sharp from 'sharp';
-import {
-  CREATE_DRAFT_REPEAT_ORDER_REPOSITORY,
-  IDraftRepeatOrderRepository,
-} from 'src/Shared/Modules/Drafts/Domain/Repositories/int/DraftRepeatOrder.repository';
+import { DRAFT_REPEAT_ORDER_INTERNAL_REPOSITORY } from 'src/Shared/Modules/Drafts/Domain/Repositories/int/DraftRepeatOrder.repository';
 import {
   CreateDraftRepeatOrderDto,
   PayloadExternalDTO,
@@ -144,6 +141,7 @@ import {
   DRAFT_REPEAT_ORDER_EXTERNAL_REPOSITORY,
   IDraftRepeatOrderExternalRepository,
 } from 'src/Shared/Modules/Drafts/Domain/Repositories/ext/DraftRepeatOrder.repository';
+import { REQUEST_TYPE } from 'src/Shared/Modules/Storage/Infrastructure/Service/Interface/RequestType.interface';
 
 @Injectable()
 export class MKT_CreateRepeatOrderUseCase {
@@ -151,7 +149,7 @@ export class MKT_CreateRepeatOrderUseCase {
   constructor(
     @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
     private readonly approvalRecommendationRepo: IApprovalRecommendationRepository,
-    @Inject(DRAFT_REPEAT_ORDER_EXTERNAL_REPOSITORY)
+    @Inject(DRAFT_REPEAT_ORDER_INTERNAL_REPOSITORY)
     private readonly repeatOrderRepo: IDraftRepeatOrderExternalRepository,
     @Inject(CLIENT_EXTERNAL_REPOSITORY)
     private readonly clientRepo: IClientExternalRepository,
@@ -532,7 +530,7 @@ export class MKT_CreateRepeatOrderUseCase {
             nextPengajuanIndex = await this.fileStorage.getNextPengajuanIndex(
               nikNumber,
               client_external.nama_lengkap,
-              false,
+              REQUEST_TYPE.RO_INT,
             );
           } catch (e) {
             console.error('getNextPengajuanIndex failed:', e);
@@ -1086,7 +1084,7 @@ export class MKT_CreateRepeatOrderUseCase {
         const nextPengajuanIndex = await this.fileStorage.getNextPengajuanIndex(
           Number(dto.client_external.nik),
           dto.client_external.nama_lengkap,
-          true, // isDraft = true untuk draft
+          REQUEST_TYPE.RO_INT, // isDraft = true untuk draft
         );
 
         console.log('MinIO Upload Info:', {

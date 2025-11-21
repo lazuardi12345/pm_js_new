@@ -9,15 +9,15 @@ import { CreateDraftRepeatOrderDto } from '../../DTOS/RepeatOrderInt_MarketingIn
 import { LoanApplicationEntity } from '../../../Domain/Entities/int/LoanAppInt.entity';
 import { isEqual, merge } from 'lodash';
 import {
-  CREATE_DRAFT_REPEAT_ORDER_REPOSITORY,
-  IDraftRepeatOrderRepository,
+  DRAFT_REPEAT_ORDER_INTERNAL_REPOSITORY,
+  IDraftRepeatOrderInternalRepository,
 } from '../../../Domain/Repositories/int/DraftRepeatOrder.repository';
 
 @Injectable()
-export class CreateDraftRepeatOrderUseCase {
+export class CreateDraftRepeatOrderIntUseCase {
   constructor(
-    @Inject(CREATE_DRAFT_REPEAT_ORDER_REPOSITORY)
-    private readonly loanAppDraftRepo: IDraftRepeatOrderRepository,
+    @Inject(DRAFT_REPEAT_ORDER_INTERNAL_REPOSITORY)
+    private readonly loanAppDraftRepo: IDraftRepeatOrderInternalRepository,
   ) {}
 
   async executeCreateDraft(

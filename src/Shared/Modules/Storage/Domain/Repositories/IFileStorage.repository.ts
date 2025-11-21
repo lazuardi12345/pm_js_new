@@ -1,3 +1,5 @@
+import { REQUEST_TYPE } from '../../Infrastructure/Service/Interface/RequestType.interface';
+
 export const FILE_STORAGE_SERVICE = Symbol('FILE_STORAGE_SERVICE');
 
 export interface FileMetadata {
@@ -28,14 +30,14 @@ export interface IFileStorageRepository {
     customerId: number,
     customerName: string,
     files: Record<string, Express.Multer.File[] | undefined>,
-    isDraft?: boolean,
+    type?: REQUEST_TYPE,
   ): Promise<Record<string, FileMetadata[]>>;
 
   saveDraftsFiles(
     customerId: number,
     customerName: string,
     files: Record<string, Express.Multer.File[] | undefined>,
-    isDraft?: boolean,
+    type?: REQUEST_TYPE,
   ): Promise<Record<string, FileMetadata[]>>;
 
   saveApprovalRecommedationFiles(
@@ -49,7 +51,7 @@ export interface IFileStorageRepository {
     customerId: number,
     customerName: string,
     filename: string,
-    isDraft?: boolean,
+    type?: REQUEST_TYPE,
   ): Promise<{ buffer: Buffer; mimetype: string; originalName: string }>;
 
   getFilesForApprovalRecommendations(
@@ -69,7 +71,7 @@ export interface IFileStorageRepository {
   listFiles(
     customerId: number,
     customerName: string,
-    isDraft?: boolean,
+    type?: REQUEST_TYPE,
   ): Promise<FileMetadata[]>;
 
   // Update
@@ -78,7 +80,7 @@ export interface IFileStorageRepository {
     customerName: string,
     filename: string,
     file: Express.Multer.File,
-    isDraft?: boolean,
+    type?: REQUEST_TYPE,
   ): Promise<FileMetadata>;
 
   updateFileDirectory(
@@ -97,13 +99,13 @@ export interface IFileStorageRepository {
     customerId: number,
     customerName: string,
     filename: string,
-    isDraft?: boolean,
+    type?: REQUEST_TYPE,
   ): Promise<void>;
 
   deleteCustomerFiles(
     customerId: number,
     customerName: string,
-    isDraft?: boolean,
+    type?: REQUEST_TYPE,
   ): Promise<void>;
 
   saveRepeatOrderFiles(
@@ -118,13 +120,13 @@ export interface IFileStorageRepository {
   getNextPengajuanIndex(
     customerId: number,
     customerName: string,
-    isDraft?: boolean,
+    type?: REQUEST_TYPE,
   ): Promise<number>;
 
   getFilesByPengajuanIndex(
     customerId: number,
     customerName: string,
     pengajuanIndex: number,
-    isDraft?: boolean,
+    type?: REQUEST_TYPE,
   ): Promise<FileMetadata[]>;
 }

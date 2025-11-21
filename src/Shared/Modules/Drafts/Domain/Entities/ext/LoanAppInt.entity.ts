@@ -1,17 +1,24 @@
 import { Types } from 'mongoose';
 
-export class LoanApplicationEntity {
+export class LoanApplicationExtEntity {
   readonly _id?: string | Types.ObjectId;
   id?: string;
   marketing_id?: number;
 
-  client_internal: any;
-  address_internal?: any;
-  family_internal?: any;
-  job_internal?: any;
-  loan_application_internal?: any;
-  collateral_internal?: any;
-  relative_internal?: any;
+  client_external?: any;
+  address_external?: any;
+  job_external?: any;
+  loan_application_external?: any;
+  loan_guarantor_external?: any;
+  financial_dependents_external?: any;
+  other_exist_loan_external?: any;
+  emergency_contact_external?: any;
+  collateral_bpjs?: any;
+  collateral_bpkb: any;
+  collateral_shm: any;
+  collateral_umkm: any;
+  collateral_kedinasan_mou: any;
+  collateral_kedinasan_non_mou: any;
 
   uploaded_files?: any;
   isDeleted?: boolean;
@@ -19,7 +26,7 @@ export class LoanApplicationEntity {
   isNeedCheck?: boolean;
   payload: any;
 
-  constructor(partial: Partial<LoanApplicationEntity>) {
+  constructor(partial: Partial<LoanApplicationExtEntity>) {
     Object.assign(this, partial);
   }
 }

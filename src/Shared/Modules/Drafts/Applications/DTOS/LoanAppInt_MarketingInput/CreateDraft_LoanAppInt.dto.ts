@@ -11,7 +11,6 @@ import {
   IsBoolean,
   isNumber,
 } from 'class-validator';
-import { RecordWithTtl } from 'dns';
 import {
   DomisiliEnum,
   StatusRumahEnum,
@@ -227,7 +226,7 @@ export class PayloadDTO {
   marketing_id: number;
 }
 
-export class CreateDraftLoanApplicationDto {
+export class CreateDraftLoanApplicationIntDto {
   @ValidateNested()
   @Type(() => PayloadDTO)
   payload: PayloadDTO;

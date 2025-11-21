@@ -11,8 +11,8 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { CreateDraftLoanApplicationDto } from '../../Applications/DTOS/LoanAppInt_MarketingInput/CreateDraft_LoanAppInt.dto';
-import { CreateDraftRepeatOrderUseCase } from '../../Applications/Services/LoanAppInternal/CreateDraftRepeatOrder_Marketing.usecase';
+import { CreateDraftLoanApplicationIntDto } from '../../Applications/DTOS/LoanAppInt_MarketingInput/CreateDraft_LoanAppInt.dto';
+import { CreateDraftRepeatOrderIntUseCase } from '../../Applications/Services/LoanAppInternal/CreateDraftRepeatOrder_Marketing.usecase';
 import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
 import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/jwtAuth.guard';
@@ -26,13 +26,13 @@ import { merge, isEqual } from 'lodash';
 export class CreateDraftRepeatOrderController {
   updateDraftService: any;
   constructor(
-    private readonly createDraftLoanAppUseCase: CreateDraftRepeatOrderUseCase,
+    private readonly createDraftLoanAppUseCase: CreateDraftRepeatOrderIntUseCase,
   ) {}
 
   @Post('add')
   async createDraft(
     @CurrentUser('id') marketingId: number,
-    @Body() dto: CreateDraftLoanApplicationDto,
+    @Body() dto: CreateDraftLoanApplicationIntDto,
   ) {
     return this.createDraftLoanAppUseCase.executeCreateDraft(marketingId, dto);
   }

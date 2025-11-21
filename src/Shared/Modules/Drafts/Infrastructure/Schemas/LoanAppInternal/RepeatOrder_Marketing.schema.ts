@@ -1,5 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { IsEnum } from 'class-validator';
 import { HydratedDocument } from 'mongoose';
 import {
   DomisiliEnum,
@@ -166,4 +165,4 @@ export class RepeatOrder {
 }
 
 export type RepeatOrderDocument = HydratedDocument<RepeatOrder>;
-export const RepeatOrderSchema = SchemaFactory.createForClass(RepeatOrder);
+export const RepeatOrderIntSchema = SchemaFactory.createForClass(RepeatOrder);

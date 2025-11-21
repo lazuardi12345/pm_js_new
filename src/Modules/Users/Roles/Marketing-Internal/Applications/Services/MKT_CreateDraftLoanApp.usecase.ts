@@ -7,11 +7,11 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {
-  CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY,
-  ILoanApplicationDraftRepository,
+  DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY,
+  ILoanApplicationDraftInternalRepository,
 } from 'src/Shared/Modules/Drafts/Domain/Repositories/int/LoanAppInt.repository';
 import {
-  CreateDraftLoanApplicationDto,
+  CreateDraftLoanApplicationIntDto,
   PayloadDTO,
 } from 'src/Shared/Modules/Drafts/Applications/DTOS/LoanAppInt_MarketingInput/CreateDraft_LoanAppInt.dto';
 import { LoanApplicationEntity } from 'src/Shared/Modules/Drafts/Domain/Entities/int/LoanAppInt.entity';
@@ -30,8 +30,8 @@ import { MKT_GetDraftByMarketingId_ApprovalRecommendation } from 'src/Shared/Int
 @Injectable()
 export class MKT_CreateDraftLoanApplicationUseCase {
   constructor(
-    @Inject(CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY)
-    private readonly loanAppDraftRepo: ILoanApplicationDraftRepository,
+    @Inject(DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY)
+    private readonly loanAppDraftRepo: ILoanApplicationDraftInternalRepository,
     @Inject(FILE_STORAGE_SERVICE)
     private readonly fileStorage: IFileStorageRepository,
     @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
@@ -147,7 +147,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
 
   async updateDraftById(
     Id: string,
-    updateData: Partial<CreateDraftLoanApplicationDto>,
+    updateData: Partial<CreateDraftLoanApplicationIntDto>,
     files?: Record<string, Express.Multer.File[]>,
   ) {
     const { payload } = updateData;

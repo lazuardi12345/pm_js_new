@@ -5,37 +5,44 @@ import {
   Inject,
   BadRequestException,
 } from '@nestjs/common';
-import {
-  DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY,
-  ILoanApplicationDraftInternalRepository,
-} from '../../../Domain/Repositories/int/LoanAppInt.repository';
-import { CreateDraftLoanApplicationIntDto } from '../../DTOS/LoanAppInt_MarketingInput/CreateDraft_LoanAppInt.dto';
+import { CreateDraftRepeatOrderExtDto } from '../../DTOS/RepeatOrderExt_MarketingInput/CreateRO_DraftRepeatOrder.dto';
 import { LoanApplicationEntity } from '../../../Domain/Entities/int/LoanAppInt.entity';
-import { UpdateDraftLoanApplicationDto } from '../../DTOS/LoanAppInt_MarketingInput/UpdateDraft_LoanAppInt.dto';
 import { isEqual, merge } from 'lodash';
+import {
+  DRAFT_REPEAT_ORDER_EXTERNAL_REPOSITORY,
+  IDraftRepeatOrderExternalRepository,
+} from '../../../Domain/Repositories/ext/DraftRepeatOrder.repository';
 
 @Injectable()
-export class CreateDraftLoanApplicationIntUseCase {
+export class CreateDraftRepeatOrderExtUseCase {
   constructor(
-    @Inject(DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY)
-    private readonly loanAppDraftRepo: ILoanApplicationDraftInternalRepository,
+    @Inject(DRAFT_REPEAT_ORDER_EXTERNAL_REPOSITORY)
+    private readonly loanAppDraftRepo: IDraftRepeatOrderExternalRepository,
   ) {}
 
   async executeCreateDraft(
     marketingId: number,
-    dto: CreateDraftLoanApplicationIntDto,
+    dto: CreateDraftRepeatOrderExtDto,
   ) {
     try {
       console.log(dto);
       const loanApp = await this.loanAppDraftRepo.create({
         marketing_id: marketingId,
-        client_internal: dto.payload.client_internal,
-        address_internal: dto.payload.address_internal,
-        family_internal: dto.payload.family_internal,
-        job_internal: dto.payload.job_internal,
-        loan_application_internal: dto.payload.loan_application_internal,
-        collateral_internal: dto.payload.collateral_internal,
-        relative_internal: dto.payload.relative_internal,
+        client_external: dto.payload.client_external,
+        address_external: dto.payload.address_external,
+        job_external: dto.payload.job_external,
+        loan_application_external: dto.payload.loan_application_external,
+        loan_guarantor_external: dto.payload.loan_guarantor,
+        emergency_contact_external: dto.payload.emergency_contact_dto,
+        financial_dependents_external: dto.payload.financial_dependents,
+        other_exist_loan_external: dto.payload.other_exist_loan,
+        collateral_bpjs: dto.payload.collateral_bpjs,
+        collateral_bpkb: dto.payload.collateral_bpkb,
+        collateral_shm: dto.payload.collateral_shm,
+        collateral_umkm: dto.payload.collateral_umkm,
+        collateral_kedinasan_mou: dto.payload.collateral_kedinasan_mou,
+        collateral_kedinasan_non_mou: dto.payload.collateral_kedinasan_non_mou,
+
         uploaded_files: dto.uploaded_files,
       });
 

@@ -1,32 +1,45 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import {
-  LoanApplication,
-  LoanApplicationSchema,
+  LoanApplicationInt,
+  LoanApplicationIntSchema,
 } from '../Infrastructure/Schemas/LoanAppInternal/CreateLoanApplicaton_Marketing.schema';
-import { CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY } from '../Domain/Repositories/int/LoanAppInt.repository';
-import { LoanApplicationRepositoryImpl } from '../Infrastructure/Repositories/LoanApplicationInternal/ClientInternal.repository.impl';
+import { DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY } from '../Domain/Repositories/int/LoanAppInt.repository';
+import { LoanApplicationIntRepositoryImpl } from '../Infrastructure/Repositories/LoanApplicationInternal/ClientInternal.repository.impl';
 import { CreateDraftLoanApplicationController } from '../Presentations/Controllers/Drafts.controller';
 import { CreateDraftLoanApplicationUseCase } from '../Applications/Services/LoanAppInternal/CreateLoanApplication_Marketing.usecase';
+import {
+  LoanApplicationExt,
+  LoanApplicationExtSchema,
+} from '../Infrastructure/Schemas/LoanAppExternal/CreateLoanApplicaton_Marketing.schema';
+import { DRAFT_LOAN_APPLICATION_EXTERNAL_REPOSITORY } from '../Domain/Repositories/ext/LoanAppInt.repository';
+import { LoanApplicationExtRepositoryImpl } from '../Infrastructure/Repositories/LoanApplicationExternal/ClientExternal.repository.impl';
 
 @Module({
   imports: [
     MongooseModule.forFeature(
-      [{ name: LoanApplication.name, schema: LoanApplicationSchema }],
+      [
+        { name: LoanApplicationInt.name, schema: LoanApplicationIntSchema },
+        { name: LoanApplicationExt.name, schema: LoanApplicationExtSchema },
+      ],
       'mongoConnection',
     ),
   ],
   providers: [
     {
-      provide: CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY,
-      useClass: LoanApplicationRepositoryImpl,
+      provide: DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY,
+      useClass: LoanApplicationIntRepositoryImpl,
+    },
+    {
+      provide: DRAFT_LOAN_APPLICATION_EXTERNAL_REPOSITORY,
+      useClass: LoanApplicationExtRepositoryImpl,
     },
     CreateDraftLoanApplicationUseCase,
   ],
   controllers: [CreateDraftLoanApplicationController],
   exports: [
     CreateDraftLoanApplicationUseCase,
-    CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY,
+    DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY,
   ],
 })
 export class DraftLoanApplicationModule {}

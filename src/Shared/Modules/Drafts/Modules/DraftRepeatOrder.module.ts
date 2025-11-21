@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { CREATE_DRAFT_REPEAT_ORDER_REPOSITORY } from '../Domain/Repositories/int/DraftRepeatOrder.repository';
-import { DraftRepeatOrderRepositoryImpl } from '../Infrastructure/Repositories/RepeatOrder/RepeatOrder.repository.impl';
+import { DRAFT_REPEAT_ORDER_INTERNAL_REPOSITORY } from '../Domain/Repositories/int/DraftRepeatOrder.repository';
+import { DraftRepeatOrderRepositoryImpl } from '../Infrastructure/Repositories/RepeatOrderInternal/RepeatOrder.repository.impl';
 import { CreateDraftRepeatOrderController } from '../Presentations/Controllers/DraftsRepeatOrder.controller';
 import { CreateDraftRepeatOrderUseCase } from '../Applications/Services/LoanAppInternal/CreateDraftRepeatOrder_Marketing.usecase';
 import {
@@ -18,7 +18,7 @@ import {
   ],
   providers: [
     {
-      provide: CREATE_DRAFT_REPEAT_ORDER_REPOSITORY,
+      provide: DRAFT_REPEAT_ORDER_INTERNAL_REPOSITORY,
       useClass: DraftRepeatOrderRepositoryImpl,
     },
     CreateDraftRepeatOrderUseCase,
@@ -26,7 +26,7 @@ import {
   controllers: [CreateDraftRepeatOrderController],
   exports: [
     CreateDraftRepeatOrderUseCase,
-    CREATE_DRAFT_REPEAT_ORDER_REPOSITORY,
+    DRAFT_REPEAT_ORDER_INTERNAL_REPOSITORY,
   ],
 })
 export class DraftRepeatOrderModule {}

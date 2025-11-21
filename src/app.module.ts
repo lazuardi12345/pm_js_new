@@ -23,6 +23,7 @@ import { HeadMarketingInternalUsecaseModule } from './Modules/Users/Roles/Head-M
 import { FileSystemStorageModules } from './Shared/Modules/Storage/ModuleStorage.module';
 import { AdminBICheckingUseCaseModule } from './Modules/Users/Roles/Admin/BI/admin-bi.module';
 import { ConfigModule } from '@nestjs/config';
+import { MarketingExternalUseCaseModule } from './Modules/Users/Roles/Marketing-External/marketing-external.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -74,6 +75,7 @@ import { ConfigModule } from '@nestjs/config';
 
     //? --- All Use Cases ---
     MarketingInternalUseCaseModule,
+    MarketingExternalUseCaseModule,
     SupervisorInternalUseCaseModule,
     CreditAnalystInternalUseCaseModule,
     HeadMarketingInternalUsecaseModule,
