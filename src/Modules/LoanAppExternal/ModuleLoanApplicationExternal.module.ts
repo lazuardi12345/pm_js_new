@@ -7,7 +7,7 @@ import { CollateralByBPJS_External_Module } from './Modules/collateral-bpjs-exte
 import { CollateralByBPKB_External_Module } from './Modules/collateral-bpkb-external.module';
 import { CollateralBySHM_External_Module } from './Modules/collateral-shm-external.module';
 import { CollateralByUMKM_External_Module } from './Modules/collateral-umkm.module';
-import { CollateralByKedinasan_External_Module } from './Modules/collateral-kedinasan-mou-external.module';
+import { CollateralByKedinasan_MOU_External_Module } from './Modules/collateral-kedinasan-mou-external.module';
 import { CollateralByKedinasan_Non_MOU_External_Module } from './Modules/collateral-kedinasan-non-mou-external.module';
 import { EmergencyContactExternalModule } from './Modules/emergency-contact-external.module';
 import { FinancialDependentsExternalModule } from './Modules/financial-dependents-external.module';
@@ -45,7 +45,7 @@ import { CollateralKedinasan_Non_MOU_ExternalController } from './Presentation/C
     CollateralByBPJS_External_Module,
     CollateralByBPKB_External_Module,
     CollateralBySHM_External_Module,
-    CollateralByKedinasan_External_Module,
+    CollateralByKedinasan_MOU_External_Module,
     CollateralByKedinasan_Non_MOU_External_Module,
     CollateralByUMKM_External_Module,
     EmergencyContactExternalModule,
@@ -84,7 +84,7 @@ import { CollateralKedinasan_Non_MOU_ExternalController } from './Presentation/C
     CollateralByBPKB_External_Module,
     CollateralBySHM_External_Module,
     CollateralByUMKM_External_Module,
-    CollateralByKedinasan_External_Module,
+    CollateralByKedinasan_MOU_External_Module,
     CollateralByKedinasan_Non_MOU_External_Module,
     EmergencyContactExternalModule,
     FinancialDependentsExternalModule,

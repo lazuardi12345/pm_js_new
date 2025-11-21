@@ -61,6 +61,14 @@ import { LoanApplicationExternalModule } from 'src/Modules/LoanAppExternal/Modul
 import { LoanGuarantorExternalModule } from 'src/Modules/LoanAppExternal/Modules/loan-guarantor-external.module';
 import { EmergencyContactExternalModule } from 'src/Modules/LoanAppExternal/Modules/emergency-contact-external.module';
 import { FinancialDependentsExternalModule } from 'src/Modules/LoanAppExternal/Modules/financial-dependents-external.module';
+import { OtherExistLoansExternalModule } from 'src/Modules/LoanAppExternal/Modules/other-exist-loans-external.module';
+import { CollateralByBPJS_External_Module } from 'src/Modules/LoanAppExternal/Modules/collateral-bpjs-external.module';
+import { CollateralByBPKB_External_Module } from 'src/Modules/LoanAppExternal/Modules/collateral-bpkb-external.module';
+import { CollateralBySHM_External_Module } from 'src/Modules/LoanAppExternal/Modules/collateral-shm-external.module';
+import { CollateralByUMKM_External_Module } from 'src/Modules/LoanAppExternal/Modules/collateral-umkm.module';
+import { CollateralByKedinasan_MOU_External_Module } from 'src/Modules/LoanAppExternal/Modules/collateral-kedinasan-mou-external.module';
+import { CollateralByKedinasan_Non_MOU_External_Module } from 'src/Modules/LoanAppExternal/Modules/collateral-kedinasan-non-mou-external.module';
+
 import { DataSource } from 'typeorm';
 import { HttpModule } from '@nestjs/axios';
 
@@ -76,6 +84,16 @@ import { DraftRepeatOrderModule } from 'src/Shared/Modules/Drafts/Modules/DraftR
     ClientExternalProfileModule,
     JobsExternalModule,
     LoanApplicationExternalModule,
+    LoanGuarantorExternalModule,
+    EmergencyContactExternalModule,
+    FinancialDependentsExternalModule,
+    OtherExistLoansExternalModule,
+    CollateralByBPJS_External_Module,
+    CollateralByBPKB_External_Module,
+    CollateralByKedinasan_MOU_External_Module,
+    CollateralByKedinasan_Non_MOU_External_Module,
+    CollateralBySHM_External_Module,
+    CollateralByUMKM_External_Module,
     TypeOrmModule.forFeature([
       ClientExternal_ORM_Entity,
       ClientExternalProfile_ORM_Entity,
