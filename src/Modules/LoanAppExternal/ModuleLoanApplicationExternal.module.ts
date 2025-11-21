@@ -1,4 +1,3 @@
-// Presentation/ModuleLoanApplicationInternal.module.ts
 import { Module } from '@nestjs/common';
 import { AddressExternalModule } from './Modules/address-external.module';
 import { ApprovalExternalModule } from './Modules/approval-external.module';
@@ -10,12 +9,12 @@ import { CollateralBySHM_External_Module } from './Modules/collateral-shm-extern
 import { CollateralByUMKM_External_Module } from './Modules/collateral-umkm.module';
 import { CollateralByKedinasan_External_Module } from './Modules/collateral-kedinasan-mou-external.module';
 import { CollateralByKedinasan_Non_MOU_External_Module } from './Modules/collateral-kedinasan-non-mou-external.module';
-import { EmergencyContact_External_Module } from './Modules/emergency-contact-external.module';
-import { FinancialDependents_External_Module } from './Modules/financial-dependents-external.module';
-import { Jobs_External_Module } from './Modules/job-external.module';
-import { LoanGuarantor_External_Module } from './Modules/loan-guarantor-external.module';
-import { LoanApplication_External_Module } from './Modules/loanApp-external.module';
-import { OtherExistLoans_External_Module } from './Modules/other-exist-loans-external.module';
+import { EmergencyContactExternalModule } from './Modules/emergency-contact-external.module';
+import { FinancialDependentsExternalModule } from './Modules/financial-dependents-external.module';
+import { JobsExternalModule } from './Modules/job-external.module';
+import { LoanGuarantorExternalModule } from './Modules/loan-guarantor-external.module';
+import { LoanApplicationExternalModule } from './Modules/loanApp-external.module';
+import { OtherExistLoansExternalModule } from './Modules/other-exist-loans-external.module';
 import { SurveyPhotos_External_Module } from './Modules/survey-photos-external.module';
 import { SurveyReports_External_Module } from './Modules/survey-reports-external.module';
 
@@ -49,12 +48,12 @@ import { CollateralKedinasan_Non_MOU_ExternalController } from './Presentation/C
     CollateralByKedinasan_External_Module,
     CollateralByKedinasan_Non_MOU_External_Module,
     CollateralByUMKM_External_Module,
-    EmergencyContact_External_Module,
-    FinancialDependents_External_Module,
-    Jobs_External_Module,
-    LoanGuarantor_External_Module,
-    LoanApplication_External_Module,
-    OtherExistLoans_External_Module,
+    EmergencyContactExternalModule,
+    FinancialDependentsExternalModule,
+    JobsExternalModule,
+    LoanGuarantorExternalModule,
+    LoanApplicationExternalModule,
+    OtherExistLoansExternalModule,
     SurveyPhotos_External_Module,
     SurveyReports_External_Module,
   ],
@@ -87,12 +86,12 @@ import { CollateralKedinasan_Non_MOU_ExternalController } from './Presentation/C
     CollateralByUMKM_External_Module,
     CollateralByKedinasan_External_Module,
     CollateralByKedinasan_Non_MOU_External_Module,
-    EmergencyContact_External_Module,
-    FinancialDependents_External_Module,
-    Jobs_External_Module,
-    LoanGuarantor_External_Module,
-    LoanApplication_External_Module,
-    OtherExistLoans_External_Module,
+    EmergencyContactExternalModule,
+    FinancialDependentsExternalModule,
+    JobsExternalModule,
+    LoanGuarantorExternalModule,
+    LoanApplicationExternalModule,
+    OtherExistLoansExternalModule,
     SurveyPhotos_External_Module,
     SurveyReports_External_Module,
   ],

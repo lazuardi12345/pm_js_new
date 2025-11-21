@@ -22,4 +22,4 @@ import { LoanApplicationExternalService } from '../Application/Services/loanApp-
     // GetAddressByNasabahIdUseCase,
   ],
 })
-export class LoanApplication_External_Module {}
+export class LoanApplicationExternalModule {}

@@ -8,7 +8,7 @@ import {
   Param,
   UseGuards,
 } from '@nestjs/common';
-import { OtherExistLaonExternalService } from '../../Application/Services/other-exist-loans-external.service';
+import { OtherExistLoanExternalService } from '../../Application/Services/other-exist-loans-external.service';
 import { CreateOtherExistLoansExternalDto } from '../../Application/DTOS/dto-Other-Exist-Loans/create-other-exist-loans.dto';
 import { UpdateOtherExistLoansExternalDto } from '../../Application/DTOS/dto-Other-Exist-Loans/update-other-exist-loans.dto';
 import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
@@ -20,7 +20,7 @@ import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorat
 @Controller('other-exist-external')
 export class OtherExixtLoansExternalController {
   constructor(
-    private readonly OtherExistLoansExternalService: OtherExistLaonExternalService,
+    private readonly OtherExistLoansExternalService: OtherExistLoanExternalService,
   ) {}
 
   @Post()

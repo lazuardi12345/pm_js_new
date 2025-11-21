@@ -8,15 +8,12 @@ import { JobExternalService } from '../Application/Services/job-external.service
 @Module({
   imports: [TypeOrmModule.forFeature([JobExternal_ORM_Entity])],
   providers: [
-    JobExternalService, 
+    JobExternalService,
     {
       provide: JOB_EXTERNAL_REPOSITORY,
       useClass: JobExternalRepositoryImpl,
     },
   ],
-  exports: [
-    JobExternalService, 
-    JOB_EXTERNAL_REPOSITORY,
-  ],
+  exports: [JobExternalService, JOB_EXTERNAL_REPOSITORY],
 })
-export class Jobs_External_Module {}
+export class JobsExternalModule {}
