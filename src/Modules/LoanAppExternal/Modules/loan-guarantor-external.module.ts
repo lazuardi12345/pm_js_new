@@ -22,4 +22,4 @@ import { LoanGuarantorExternalService } from '../Application/Services/loan-guara
     // GetAddressByNasabahIdUseCase,
   ],
 })
-export class LoanGuarantor_External_Module {}
+export class LoanGuarantorExternalModule {}

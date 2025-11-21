@@ -22,4 +22,4 @@ import { FinancialDependentsExternalService } from '../Application/Services/fina
     // GetAddressByNasabahIdUseCase,
   ],
 })
-export class FinancialDependents_External_Module {}
+export class FinancialDependentsExternalModule {}

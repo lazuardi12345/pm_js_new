@@ -7,7 +7,7 @@ import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorato
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
 import { LoanType } from 'src/Shared/Enums/External/Loan-Application.enum';
-@Controller('mkt/int/loan-apps')
+@Controller('mkt/ext/loan-apps')
 export class MKT_GetLoanApplicationByIdController {
   constructor(
     @Inject(MKT_GetLoanApplicationByIdUseCase)

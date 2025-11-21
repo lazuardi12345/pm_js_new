@@ -22,4 +22,4 @@ import { CollateralKedinasanMOUExternalService } from '../Application/Services/c
     // GetAddressByNasabahIdUseCase,
   ],
 })
-export class CollateralByKedinasan_External_Module {}
+export class CollateralByKedinasan_MOU_External_Module {}

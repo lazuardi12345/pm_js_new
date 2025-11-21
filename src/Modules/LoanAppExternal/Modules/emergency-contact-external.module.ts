@@ -6,7 +6,6 @@ import { EmergencyContactExternalRepositoryImpl } from '../Infrastructure/Reposi
 import { EMERGENCY_CONTACTS_EXTERNAL_REPOSITORY } from '../Domain/Repositories/emergency-contact-external.repository';
 import { EmergencyContactExternalService } from '../Application/Services/emergency-contact-external.service';
 
-
 @Module({
   imports: [TypeOrmModule.forFeature([EmergencyContactExternal_ORM_Entity])],
   providers: [
@@ -23,4 +22,4 @@ import { EmergencyContactExternalService } from '../Application/Services/emergen
     // GetAddressByNasabahIdUseCase,
   ],
 })
-export class EmergencyContact_External_Module {}
+export class EmergencyContactExternalModule {}

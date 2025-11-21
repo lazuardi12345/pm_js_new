@@ -23,7 +23,7 @@ import multer from 'multer';
 import { FileUploadAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/file-upload.decorator';
 
 @UseGuards(FileUploadAuthGuard)
-@Controller('mkt/int/drafts')
+@Controller('mkt/ext/drafts')
 export class MKT_CreateDraftLoanApplicationController {
   constructor(
     private readonly MKT_CreateDraftLoanAppUseCase: MKT_CreateDraftLoanApplicationUseCase,

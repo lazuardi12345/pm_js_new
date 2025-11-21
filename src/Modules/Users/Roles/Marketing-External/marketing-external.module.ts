@@ -3,13 +3,21 @@ import { Module } from '@nestjs/common';
 import { getDataSourceToken, TypeOrmModule } from '@nestjs/typeorm';
 
 // ORM entities
-import { ClientInternal_ORM_Entity } from 'src/Modules/LoanAppInternal/Infrastructure/Entities/client-internal.orm-entity';
-import { AddressInternal_ORM_Entity } from 'src/Modules/LoanAppInternal/Infrastructure/Entities/address-internal.orm-entity';
-import { FamilyInternal_ORM_Entity } from 'src/Modules/LoanAppInternal/Infrastructure/Entities/family-internal.orm-entity';
-import { JobInternal_ORM_Entity } from 'src/Modules/LoanAppInternal/Infrastructure/Entities/job-internal.orm-entity';
-import { LoanApplicationInternal_ORM_Entity } from 'src/Modules/LoanAppInternal/Infrastructure/Entities/loan-application-internal.orm-entity';
-import { CollateralInternal_ORM_Entity } from 'src/Modules/LoanAppInternal/Infrastructure/Entities/collateral-internal.orm-entity';
-import { RelativeInternal_ORM_Entity } from 'src/Modules/LoanAppInternal/Infrastructure/Entities/relative-internal.orm-entity';
+import { ClientExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/client-external.orm-entity';
+import { ClientExternalProfile_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/client-external-profile.orm-entity';
+import { AddressExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/address-external.orm-entity';
+import { JobExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/job.orm-entity';
+import { LoanApplicationExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/loan-application-external.orm-entity';
+import { EmergencyContactExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/emergency-contact.orm-entity';
+import { FinancialDependentsExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/financial-dependents.orm-entity';
+import { LoanGuarantorExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/loan-guarantor.orm-entity';
+import { OtherExistLoansExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/other-exist-loans.orm-entity';
+import { CollateralByBPJS_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/collateral-bpjs.orm-entity';
+import { CollateralByBPKB_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/collateral-bpkb.orm-entity';
+import { CollateralBySHM_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/collateral-shm.orm-entity';
+import { CollateralByUMKM_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/collateral-umkm.orm.entity';
+import { CollateralByKedinasan_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/collateral-kedinasan-mou.orm-entity';
+import { CollateralByKedinasan_Non_MOU_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/collateral-kedinasan-non-mou.orm-entity';
 
 // Tokens & infra impl
 import { UNIT_OF_WORK } from 'src/Modules/LoanAppInternal/Domain/Repositories/IUnitOfWork.repository';
@@ -44,44 +52,54 @@ import { MKT_GetClientDatabaseController } from './Presentation/Controllers/MKT_
 import { MKT_CreateRepeatOrderController } from './Presentation/Controllers/MKT_CreateRepeatOrder.controller';
 import { MKT_GetAllRepeatOrderHistoryController } from './Presentation/Controllers/MKT_GetAllRepeatOrderHistory.controller';
 
-import { AddressInternalModule } from 'src/Modules/LoanAppInternal/Modules/address-internal.module';
-import { ApprovalInternalModule } from 'src/Modules/LoanAppInternal/Modules/approval-internal.module';
-import { ClientInternalModule } from 'src/Modules/LoanAppInternal/Modules/client-internal.module';
-import { CollateralInternalModule } from 'src/Modules/LoanAppInternal/Modules/collateral-internal.module';
-import { JobInternalModule } from 'src/Modules/LoanAppInternal/Modules/job-internal.module';
-import { FamilyInternalModule } from 'src/Modules/LoanAppInternal/Modules/family-internal.module';
-import { LoanApplicationInternalModule } from 'src/Modules/LoanAppInternal/Modules/loanApp-internal.module';
-import { RelativeInternalModule } from 'src/Modules/LoanAppInternal/Modules/relative-internal.module';
+import { AddressExternalModule } from 'src/Modules/LoanAppExternal/Modules/address-external.module';
+import { ApprovalExternalModule } from 'src/Modules/LoanAppExternal/Modules/approval-external.module';
+import { ClientExternalModule } from 'src/Modules/LoanAppExternal/Modules/client-external.module';
+import { ClientExternalProfileModule } from 'src/Modules/LoanAppExternal/Modules/client-external-profile.module';
+import { JobsExternalModule } from 'src/Modules/LoanAppExternal/Modules/job-external.module';
+import { LoanApplicationExternalModule } from 'src/Modules/LoanAppExternal/Modules/loanApp-external.module';
+import { LoanGuarantorExternalModule } from 'src/Modules/LoanAppExternal/Modules/loan-guarantor-external.module';
+import { EmergencyContactExternalModule } from 'src/Modules/LoanAppExternal/Modules/emergency-contact-external.module';
+import { FinancialDependentsExternalModule } from 'src/Modules/LoanAppExternal/Modules/financial-dependents-external.module';
+import { OtherExistLoansExternalModule } from 'src/Modules/LoanAppExternal/Modules/other-exist-loans-external.module';
+import { CollateralByBPJS_External_Module } from 'src/Modules/LoanAppExternal/Modules/collateral-bpjs-external.module';
+import { CollateralByBPKB_External_Module } from 'src/Modules/LoanAppExternal/Modules/collateral-bpkb-external.module';
+import { CollateralBySHM_External_Module } from 'src/Modules/LoanAppExternal/Modules/collateral-shm-external.module';
+import { CollateralByUMKM_External_Module } from 'src/Modules/LoanAppExternal/Modules/collateral-umkm.module';
+import { CollateralByKedinasan_MOU_External_Module } from 'src/Modules/LoanAppExternal/Modules/collateral-kedinasan-mou-external.module';
+import { CollateralByKedinasan_Non_MOU_External_Module } from 'src/Modules/LoanAppExternal/Modules/collateral-kedinasan-non-mou-external.module';
+
 import { DataSource } from 'typeorm';
 import { HttpModule } from '@nestjs/axios';
 
 import { DraftLoanApplicationModule } from 'src/Shared/Modules/Drafts/Modules/CreateLoanAppInt.module';
-import { ClientInternalProfileModule } from 'src/Modules/LoanAppInternal/Modules/client-internal-profile.module';
-import { ClientInternalProfile_ORM_Entity } from 'src/Modules/LoanAppInternal/Infrastructure/Entities/client-internal-profile.orm-entity';
 import { ApprovalRecommendationModule } from 'src/Modules/Admin/BI-Checking/Modules/approval-recommendation.module';
 import { DraftRepeatOrderModule } from 'src/Shared/Modules/Drafts/Modules/DraftRepeatOrder.module';
-
 @Module({
   imports: [
     HttpModule,
-    AddressInternalModule,
-    ApprovalInternalModule,
-    ClientInternalModule,
-    ClientInternalProfileModule,
-    CollateralInternalModule,
-    JobInternalModule,
-    FamilyInternalModule,
-    LoanApplicationInternalModule,
-    RelativeInternalModule,
+    AddressExternalModule,
+    ApprovalExternalModule,
+    ClientExternalModule,
+    ClientExternalProfileModule,
+    JobsExternalModule,
+    LoanApplicationExternalModule,
+    LoanGuarantorExternalModule,
+    EmergencyContactExternalModule,
+    FinancialDependentsExternalModule,
+    OtherExistLoansExternalModule,
+    CollateralByBPJS_External_Module,
+    CollateralByBPKB_External_Module,
+    CollateralByKedinasan_MOU_External_Module,
+    CollateralByKedinasan_Non_MOU_External_Module,
+    CollateralBySHM_External_Module,
+    CollateralByUMKM_External_Module,
     TypeOrmModule.forFeature([
-      ClientInternal_ORM_Entity,
-      ClientInternalProfile_ORM_Entity,
-      AddressInternal_ORM_Entity,
-      FamilyInternal_ORM_Entity,
-      JobInternal_ORM_Entity,
-      LoanApplicationInternal_ORM_Entity,
-      CollateralInternal_ORM_Entity,
-      RelativeInternal_ORM_Entity,
+      ClientExternal_ORM_Entity,
+      ClientExternalProfile_ORM_Entity,
+      AddressExternal_ORM_Entity,
+      JobExternal_ORM_Entity,
+      LoanApplicationExternal_ORM_Entity,
     ]),
 
     //? untuk API Drafts agar bisa diinject ke roles:

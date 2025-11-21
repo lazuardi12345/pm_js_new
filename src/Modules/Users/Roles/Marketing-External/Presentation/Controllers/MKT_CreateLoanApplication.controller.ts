@@ -15,7 +15,7 @@ import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 import { CreateLoanApplicationExternalDto } from '../../Applications/DTOS/MKT_CreateLoanApplicationExternal.dto';
 import { AuthGuard } from '@nestjs/passport';
 
-@Controller('mkt/int/loan-apps')
+@Controller('mkt/ext/loan-apps')
 export class MKT_CreateLoanApplicationController {
   constructor(
     private readonly createLoanApplication: MKT_CreateLoanApplicationUseCase,

@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { MKT_TriggerAppealUseCase } from '../../Applications/Services/MKT_TriggerAppeal.usecase';
 
-@Controller('mkt/int/loan-apps')
+@Controller('mkt/ext/loan-apps')
 export class MKT_TriggerAppealController {
   constructor(private readonly triggerAppeal: MKT_TriggerAppealUseCase) {}
   @Patch('create-appeal/:id')

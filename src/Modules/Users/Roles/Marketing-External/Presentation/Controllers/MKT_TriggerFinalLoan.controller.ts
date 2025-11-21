@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { MKT_TriggerFinalLoanStatusUseCase } from '../../Applications/Services/MKT_TriggerFinalLoan.usecase';
 
-@Controller('mkt/int/loan-apps')
+@Controller('mkt/ext/loan-apps')
 export class MKT_TriggerFinalLoanStatusController {
   constructor(
     private readonly triggerAppeal: MKT_TriggerFinalLoanStatusUseCase,
