@@ -25,7 +25,7 @@ import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Gua
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 import { PayloadExternalDTO } from 'src/Shared/Modules/Drafts/Applications/DTOS/RepeatOrderExt_MarketingInput/CreateRO_DraftRepeatOrder.dto';
 
-@Controller('mkt/int/loan-apps')
+@Controller('mkt/ext/loan-apps')
 @UseGuards(RolesGuard)
 export class MKT_CreateRepeatOrderController {
   constructor(

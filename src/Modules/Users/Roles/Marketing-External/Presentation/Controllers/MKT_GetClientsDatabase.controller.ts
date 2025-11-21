@@ -14,7 +14,7 @@ import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Gua
 import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/roles.decorator';
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 
-@Controller('mkt/int/loan-apps')
+@Controller('mkt/ext/loan-apps')
 export class MKT_GetClientDatabaseController {
   constructor(
     @Inject(MKT_GetClientsDatabaseUseCase)

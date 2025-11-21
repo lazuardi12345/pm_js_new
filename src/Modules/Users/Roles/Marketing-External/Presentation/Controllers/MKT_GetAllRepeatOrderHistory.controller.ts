@@ -15,7 +15,7 @@ import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
 import { MKT_GetAllRepeatOrderHistoryUseCase } from '../../Applications/Services/MKT_GetAllRepeatOrderHistory.usecase';
 
-@Controller('mkt/int/loan-apps')
+@Controller('mkt/ext/loan-apps')
 export class MKT_GetAllRepeatOrderHistoryController {
   constructor(
     @Inject(MKT_GetAllRepeatOrderHistoryUseCase)

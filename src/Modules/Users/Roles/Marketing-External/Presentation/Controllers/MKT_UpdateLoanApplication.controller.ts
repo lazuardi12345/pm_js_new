@@ -14,7 +14,7 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
 import { LoanApplicationInternalService } from 'src/Modules/LoanAppInternal/Application/Services/loan-app-internal.service';
 
-@Controller('mkt/int/loan-apps')
+@Controller('mkt/ext/loan-apps')
 export class MKT_UpdateLoanApplicationController {
   constructor(
     private readonly updateLoanApplication: MKT_UpdateLoanApplicationUseCase,

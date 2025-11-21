@@ -1,6 +1,12 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { IPasswordHasher, PASSWORD_HASHER } from '../../Domain/Service/HashPassword.service';
-import { IUsersRepository, USERS_REPOSITORY } from 'src/Modules/Users/Domain/Repositories/users.repository';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import {
+  IPasswordHasher,
+  PASSWORD_HASHER,
+} from '../../Domain/Service/HashPassword.service';
+import {
+  IUsersRepository,
+  USERS_REPOSITORY,
+} from 'src/Modules/Users/Domain/Repositories/users.repository';
 import { TYPE, USERSTATUS, USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 import { UsersEntity } from 'src/Modules/Users/Domain/Entities/users.entity';
 
@@ -22,9 +28,25 @@ export class RegisterUseCase {
     isActive: boolean;
   }) {
     const pwHash = await this.passwordHasher.hash(dto.password);
+    const checkEmail = await this.usersRepo.findByEmail(dto.email);
+
+    if (
+      dto.usertype === USERTYPE.MARKETING &&
+      (dto.spvId === null || dto.spvId === undefined)
+    ) {
+      throw new HttpException(
+        'Supervisor ID is required for marketing user',
+        HttpStatus.BAD_REQUEST,
+      );
+    } else if (dto.email === checkEmail?.email) {
+      throw new HttpException(
+        'Email was already taken',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
 
     const userEntity = new UsersEntity(
-      dto.nama, // harus ada nama sesuai constructor
+      dto.nama,
       dto.email,
       pwHash,
       dto.usertype,
