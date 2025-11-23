@@ -6,7 +6,7 @@ import {
   LoanApplicationDocument,
 } from '../../Schemas/LoanAppInternal/CreateLoanApplicaton_Marketing.schema';
 import { ILoanApplicationDraftExternalRepository } from '../../../Domain/Repositories/ext/LoanAppInt.repository';
-import { LoanApplicationEntity } from '../../../Domain/Entities/int/LoanAppInt.entity';
+import { LoanApplicationExtEntity } from '../../../Domain/Entities/ext/LoanAppExt.entity';
 import { merge, isEqual } from 'lodash';
 
 @Injectable()
@@ -19,11 +19,11 @@ export class LoanApplicationExtRepositoryImpl
   ) {}
 
   async create(
-    data: Partial<LoanApplicationEntity>,
-  ): Promise<LoanApplicationEntity> {
+    data: Partial<LoanApplicationExtEntity>,
+  ): Promise<LoanApplicationExtEntity> {
     const created = new this.loanAppModel(data);
     const saved = await created.save();
-    return new LoanApplicationEntity(saved.toObject());
+    return new LoanApplicationExtEntity(saved.toObject());
   }
 
   async findStatus(
@@ -41,16 +41,16 @@ export class LoanApplicationExtRepositoryImpl
     };
   }
 
-  async findById(id: string): Promise<LoanApplicationEntity | null> {
+  async findById(id: string): Promise<LoanApplicationExtEntity | null> {
     const found = await this.loanAppModel
       .findOne({ _id: id, isDeleted: false })
       .exec();
-    return found ? new LoanApplicationEntity(found.toObject()) : null;
+    return found ? new LoanApplicationExtEntity(found.toObject()) : null;
   }
 
   async findByMarketingId(
     marketingId: number,
-  ): Promise<LoanApplicationEntity[]> {
+  ): Promise<LoanApplicationExtEntity[]> {
     const list = await this.loanAppModel
       .find(
         { marketing_id: marketingId, isDeleted: false },
@@ -69,18 +69,18 @@ export class LoanApplicationExtRepositoryImpl
       )
       .exec();
 
-    return list.map((doc) => new LoanApplicationEntity(doc.toObject()));
+    return list.map((doc) => new LoanApplicationExtEntity(doc.toObject()));
   }
 
-  async findAll(): Promise<LoanApplicationEntity[]> {
+  async findAll(): Promise<LoanApplicationExtEntity[]> {
     const all = await this.loanAppModel.find({ isDeleted: false }).exec();
-    return all.map((doc) => new LoanApplicationEntity(doc.toObject()));
+    return all.map((doc) => new LoanApplicationExtEntity(doc.toObject()));
   }
 
   async updateDraftById(
     id: string,
-    updateData: Partial<LoanApplicationEntity>,
-  ): Promise<{ entity: LoanApplicationEntity | null; isUpdated: boolean }> {
+    updateData: Partial<LoanApplicationExtEntity>,
+  ): Promise<{ entity: LoanApplicationExtEntity | null; isUpdated: boolean }> {
     const existing = await this.loanAppModel
       .findOne({ _id: id, isDeleted: false })
       .lean()
@@ -92,7 +92,10 @@ export class LoanApplicationExtRepositoryImpl
 
     if (!hasChanged) {
       console.log('⚪ Tidak ada perubahan data — skip update');
-      return { entity: new LoanApplicationEntity(existing), isUpdated: false };
+      return {
+        entity: new LoanApplicationExtEntity(existing),
+        isUpdated: false,
+      };
     }
 
     const updated = await this.loanAppModel
@@ -100,7 +103,7 @@ export class LoanApplicationExtRepositoryImpl
       .exec();
 
     return {
-      entity: updated ? new LoanApplicationEntity(updated.toObject()) : null,
+      entity: updated ? new LoanApplicationExtEntity(updated.toObject()) : null,
       isUpdated: true,
     };
   }

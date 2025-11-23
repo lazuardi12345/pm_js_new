@@ -7,13 +7,14 @@ import {
 import { DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY } from '../Domain/Repositories/int/LoanAppInt.repository';
 import { LoanApplicationIntRepositoryImpl } from '../Infrastructure/Repositories/LoanApplicationInternal/ClientInternal.repository.impl';
 import { CreateDraftLoanApplicationController } from '../Presentations/Controllers/Drafts.controller';
-import { CreateDraftLoanApplicationUseCase } from '../Applications/Services/LoanAppInternal/CreateLoanApplication_Marketing.usecase';
+import { CreateDraftLoanApplicationIntUseCase } from '../Applications/Services/LoanAppInternal/CreateLoanApplication_Marketing.usecase';
 import {
   LoanApplicationExt,
   LoanApplicationExtSchema,
 } from '../Infrastructure/Schemas/LoanAppExternal/CreateLoanApplicaton_Marketing.schema';
 import { DRAFT_LOAN_APPLICATION_EXTERNAL_REPOSITORY } from '../Domain/Repositories/ext/LoanAppInt.repository';
 import { LoanApplicationExtRepositoryImpl } from '../Infrastructure/Repositories/LoanApplicationExternal/ClientExternal.repository.impl';
+import { CreateDraftLoanApplicationExtUseCase } from '../Applications/Services/LoanAppExternal/CreateLoanApplication_Marketing.usecase';
 
 @Module({
   imports: [
@@ -34,12 +35,15 @@ import { LoanApplicationExtRepositoryImpl } from '../Infrastructure/Repositories
       provide: DRAFT_LOAN_APPLICATION_EXTERNAL_REPOSITORY,
       useClass: LoanApplicationExtRepositoryImpl,
     },
-    CreateDraftLoanApplicationUseCase,
+    CreateDraftLoanApplicationIntUseCase,
+    CreateDraftLoanApplicationExtUseCase,
   ],
   controllers: [CreateDraftLoanApplicationController],
   exports: [
-    CreateDraftLoanApplicationUseCase,
+    CreateDraftLoanApplicationIntUseCase,
     DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY,
+    CreateDraftLoanApplicationExtUseCase,
+    DRAFT_LOAN_APPLICATION_EXTERNAL_REPOSITORY,
   ],
 })
 export class DraftLoanApplicationModule {}

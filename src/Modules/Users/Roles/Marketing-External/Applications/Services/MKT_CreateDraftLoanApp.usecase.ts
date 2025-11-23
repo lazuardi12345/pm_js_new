@@ -63,16 +63,16 @@ export class MKT_CreateDraftLoanApplicationUseCase {
 
         // simpan file ke storage
         filePaths = await this.fileStorage.saveDraftsFiles(
-          Number(dto?.client_internal?.no_ktp) ?? dto.client_internal.no_ktp,
-          dto?.client_internal?.nama_lengkap ??
-            `draft-${dto.client_internal.no_ktp}`,
+          Number(dto?.client_external?.nik) ?? dto.client_external.nik,
+          dto?.client_external?.nama_lengkap ??
+            `draft-${dto.client_external.nik}`,
           files,
         );
 
         // Assign hasil upload ke DTO sesuai field
         for (const [field, paths] of Object.entries(filePaths)) {
           if (paths && paths.length > 0) {
-            dto.client_internal[field] = paths[0].url;
+            dto.client_external[field] = paths[0].url;
           }
         }
       }
@@ -88,7 +88,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
       } else {
         await this.loanAppDraftRepo.triggerIsNeedCheckBeingTrue(
           loanApp._id?.toString(),
-          Number(dto.loan_application_internal?.nominal_pinjaman),
+          Number(dto.loan_application_external?.nominal_pinjaman),
         );
       }
 
@@ -175,8 +175,8 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         }
 
         filePaths = await this.fileStorage.saveDraftsFiles(
-          Number(payload?.client_internal?.no_ktp) ?? Id,
-          payload?.client_internal?.nama_lengkap ?? `draft-${Id}`,
+          Number(payload?.client_external?.nik) ?? Id,
+          payload?.client_external?.nama_lengkap ?? `draft-${Id}`,
           files,
         );
 
@@ -184,7 +184,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
           if (paths && paths.length > 0) {
             // Tentukan di object mana field ini berada
             const parentKeys = [
-              'client_internal',
+              'client_external',
               'job_internal',
               'collateral_internal',
               'relative_internal',

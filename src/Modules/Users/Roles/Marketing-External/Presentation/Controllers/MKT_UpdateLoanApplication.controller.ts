@@ -12,13 +12,13 @@ import {
 import { MKT_UpdateLoanApplicationUseCase } from '../../Applications/Services/MKT_UpdateLoanApplication.usecase';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
-import { LoanApplicationInternalService } from 'src/Modules/LoanAppInternal/Application/Services/loan-app-internal.service';
+import { LoanApplicationExternalService } from 'src/Modules/LoanAppExternal/Application/Services/loanApp-external.service';
 
 @Controller('mkt/ext/loan-apps')
 export class MKT_UpdateLoanApplicationController {
   constructor(
     private readonly updateLoanApplication: MKT_UpdateLoanApplicationUseCase,
-    private readonly loanAppService: LoanApplicationInternalService,
+    private readonly loanAppService: LoanApplicationExternalService,
   ) {}
 
   @Patch('update/:id')

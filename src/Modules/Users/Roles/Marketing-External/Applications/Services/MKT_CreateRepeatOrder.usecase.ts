@@ -108,7 +108,7 @@ import {
 import sharp from 'sharp';
 import { DRAFT_REPEAT_ORDER_INTERNAL_REPOSITORY } from 'src/Shared/Modules/Drafts/Domain/Repositories/int/DraftRepeatOrder.repository';
 import {
-  CreateDraftRepeatOrderDto,
+  CreateDraftRepeatOrderExtDto,
   PayloadExternalDTO,
 } from 'src/Shared/Modules/Drafts/Applications/DTOS/RepeatOrderExt_MarketingInput/CreateRO_DraftRepeatOrder.dto';
 import { MKT_GetDraftByMarketingId_ApprovalRecommendation } from 'src/Shared/Interface/MKT_GetDraft/MKT_GetDraftByMarketingId.interface';
@@ -1491,7 +1491,7 @@ export class MKT_CreateRepeatOrderUseCase {
 
   async updateRepeatOrderById(
     Id: string,
-    updateData: Partial<CreateDraftRepeatOrderDto>,
+    updateData: Partial<CreateDraftRepeatOrderExtDto>,
     files?: Record<string, Express.Multer.File[]>,
   ) {
     const { payload } = updateData;

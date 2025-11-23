@@ -10,7 +10,7 @@ import {
   ILoanApplicationDraftExternalRepository,
 } from '../../../Domain/Repositories/ext/LoanAppInt.repository';
 import { CreateDraftLoanApplicationExtDto } from '../../DTOS/LoanAppExt_MarketingInput/CreateDraft_LoanAppExt.dto';
-import { LoanApplicationExtEntity } from '../../../Domain/Entities/ext/LoanAppInt.entity';
+import { LoanApplicationExtEntity } from '../../../Domain/Entities/ext/LoanAppExt.entity';
 import { UpdateDraftLoanApplicationDto } from '../../DTOS/LoanAppInt_MarketingInput/UpdateDraft_LoanAppInt.dto';
 import { isEqual, merge } from 'lodash';
 

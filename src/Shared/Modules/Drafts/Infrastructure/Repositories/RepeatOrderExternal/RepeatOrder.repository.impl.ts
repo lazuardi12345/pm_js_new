@@ -2,26 +2,28 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { merge, isEqual } from 'lodash';
-import { IDraftRepeatOrderInternalRepository } from '../../../Domain/Repositories/int/DraftRepeatOrder.repository';
+import { IDraftRepeatOrderExternalRepository } from '../../../Domain/Repositories/ext/DraftRepeatOrder.repository';
 import {
   RepeatOrder,
   RepeatOrderDocument,
 } from '../../Schemas/LoanAppInternal/RepeatOrder_Marketing.schema';
-import { RepeatOrderEntity } from '../../../Domain/Entities/int/DraftRepeatOrder.entity';
+import { RepeatOrderExternalEntity } from '../../../Domain/Entities/ext/DraftRepeatOrder.entity';
 
 @Injectable()
-export class DraftRepeatOrderInternalRepositoryImpl
-  implements IDraftRepeatOrderInternalRepository
+export class DraftRepeatOrderExternalRepositoryImpl
+  implements IDraftRepeatOrderExternalRepository
 {
   constructor(
     @InjectModel(RepeatOrder.name, 'mongoConnection')
     private readonly repeatOrderModel: Model<RepeatOrderDocument>,
   ) {}
 
-  async create(data: Partial<RepeatOrderEntity>): Promise<RepeatOrderEntity> {
+  async create(
+    data: Partial<RepeatOrderExternalEntity>,
+  ): Promise<RepeatOrderExternalEntity> {
     const created = new this.repeatOrderModel(data);
     const saved = await created.save();
-    return new RepeatOrderEntity(saved.toObject());
+    return new RepeatOrderExternalEntity(saved.toObject());
   }
 
   async findStatus(
@@ -39,14 +41,16 @@ export class DraftRepeatOrderInternalRepositoryImpl
     };
   }
 
-  async findById(id: string): Promise<RepeatOrderEntity | null> {
+  async findById(id: string): Promise<RepeatOrderExternalEntity | null> {
     const found = await this.repeatOrderModel
       .findOne({ _id: id, isDeleted: false })
       .exec();
-    return found ? new RepeatOrderEntity(found.toObject()) : null;
+    return found ? new RepeatOrderExternalEntity(found.toObject()) : null;
   }
 
-  async findByMarketingId(marketingId: number): Promise<RepeatOrderEntity[]> {
+  async findByMarketingId(
+    marketingId: number,
+  ): Promise<RepeatOrderExternalEntity[]> {
     const list = await this.repeatOrderModel
       .find(
         { marketing_id: marketingId, isDeleted: false },
@@ -65,18 +69,18 @@ export class DraftRepeatOrderInternalRepositoryImpl
       )
       .exec();
 
-    return list.map((doc) => new RepeatOrderEntity(doc.toObject()));
+    return list.map((doc) => new RepeatOrderExternalEntity(doc.toObject()));
   }
 
-  async findAll(): Promise<RepeatOrderEntity[]> {
+  async findAll(): Promise<RepeatOrderExternalEntity[]> {
     const all = await this.repeatOrderModel.find({ isDeleted: false }).exec();
-    return all.map((doc) => new RepeatOrderEntity(doc.toObject()));
+    return all.map((doc) => new RepeatOrderExternalEntity(doc.toObject()));
   }
 
   async updateDraftById(
     id: string,
-    updateData: Partial<RepeatOrderEntity>,
-  ): Promise<{ entity: RepeatOrderEntity | null; isUpdated: boolean }> {
+    updateData: Partial<RepeatOrderExternalEntity>,
+  ): Promise<{ entity: RepeatOrderExternalEntity | null; isUpdated: boolean }> {
     const existing = await this.repeatOrderModel
       .findOne({ _id: id, isDeleted: false })
       .lean()
@@ -88,7 +92,10 @@ export class DraftRepeatOrderInternalRepositoryImpl
 
     if (!hasChanged) {
       console.log('⚪ Tidak ada perubahan data — skip update');
-      return { entity: new RepeatOrderEntity(existing), isUpdated: false };
+      return {
+        entity: new RepeatOrderExternalEntity(existing),
+        isUpdated: false,
+      };
     }
 
     const updated = await this.repeatOrderModel
@@ -96,7 +103,9 @@ export class DraftRepeatOrderInternalRepositoryImpl
       .exec();
 
     return {
-      entity: updated ? new RepeatOrderEntity(updated.toObject()) : null,
+      entity: updated
+        ? new RepeatOrderExternalEntity(updated.toObject())
+        : null,
       isUpdated: true,
     };
   }

@@ -17,10 +17,10 @@ import {
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
 import { MKT_CreateDraftLoanApplicationUseCase } from '../../Applications/Services/MKT_CreateDraftLoanApp.usecase';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { PayloadDTO } from 'src/Shared/Modules/Drafts/Applications/DTOS/LoanAppInt_MarketingInput/CreateDraft_LoanAppInt.dto';
 import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
 import multer from 'multer';
 import { FileUploadAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/file-upload.decorator';
+import { PayloadExternalDTO } from 'src/Shared/Modules/Drafts/Applications/DTOS/LoanAppExt_MarketingInput/CreateDraft_LoanAppExt.dto';
 
 @UseGuards(FileUploadAuthGuard)
 @Controller('mkt/ext/drafts')
@@ -53,16 +53,15 @@ export class MKT_CreateDraftLoanApplicationController {
     @Body() dto: any,
   ) {
     try {
-      let payload: PayloadDTO;
+      let payload: PayloadExternalDTO;
 
-      // parsing dto.payload biar tetap fleksibel (string / object)
       if (dto.payload) {
         payload =
           typeof dto.payload === 'string'
             ? JSON.parse(dto.payload)
             : dto.payload;
       } else {
-        payload = { client_internal: {} } as PayloadDTO;
+        payload = { client_external: {} } as PayloadExternalDTO;
       }
       payload.marketing_id = marketingId;
 
