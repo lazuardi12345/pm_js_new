@@ -14,7 +14,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log', 'debug'], // atur level log
   });
-  app.setGlobalPrefix('api-v1/loan-app', {
+  app.setGlobalPrefix('', {
     exclude: ['storage/(.*)'],
   });
   app.useGlobalGuards(new JwtAuthGuard(app.get(Reflector)));
@@ -70,7 +70,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
 
-  await app.listen(process.env.PORT ?? 3001, '0.0.0.0');
+  await app.listen(3002, '0.0.0.0');
   console.log(
     `Server Successfully Started at http://localhost:${process.env.PORT}`,
   );

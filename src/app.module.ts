@@ -38,13 +38,12 @@ import { MarketingExternalUseCaseModule } from './Modules/Users/Roles/Marketing-
       username: process.env.MYSQL_USN,
       password: process.env.MYSQL_PWD,
       database: process.env.DB_DEV || 'pm_js_test',
-      autoLoadEntities: true, // ⬅️ cara paling mudah
+      autoLoadEntities: true,
       synchronize: true,
       timezone: '+07:00',
       extra: {
-        decimalNumbers: true, // ini kuncinya
+        decimalNumbers: true,
       },
-      // logging: true, // ini buat lihat query yg dijalankan
     }),
 
     //? --- MongoDB Connection ---
@@ -53,15 +52,9 @@ import { MarketingExternalUseCaseModule } from './Modules/Users/Roles/Marketing-
         ? process.env.MONGO_URI
         : 'mongodb://root:root@192.182.6.69:27017',
       {
-        connectionName: 'mongoConnection', // kasih nama juga
+        connectionName: 'mongoConnection',
       },
     ),
-
-    //? --- Static Files ---
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'), // path fisik folder
-      serveRoot: '/uploads', // URL prefix
-    }),
 
     //? --- Boundaries Modules ---
     ModuleLoanApplicationInternal,
