@@ -443,50 +443,40 @@ export class MKT_CreateRepeatOrderUseCase {
             }
           }
 
-          // getNextPengajuanIndex might fail — tangani
-          let nextPengajuanIndex: number | null = null;
-          try {
-            nextPengajuanIndex = await this.fileStorage.getNextPengajuanIndex(
-              nikNumber,
-              client_internal.nama_lengkap,
-              REQUEST_TYPE.INTERNAL,
-            );
-          } catch (e) {
-            console.error('getNextPengajuanIndex failed:', e);
-            // Jika fungsi index penting untuk nama folder, kita bisa fallback ke timestamp
-            nextPengajuanIndex = Date.now();
-            this.logger.warn(
-              'Fallback nextPengajuanIndex to timestamp:',
-              nextPengajuanIndex,
-            );
-          }
-
           // Upload ke Minio (atau service storage). Harus tangani hasilnya.
           try {
             minioUploadResult = await this.fileStorage.saveRepeatOrderFiles(
               nikNumber,
               client_internal.nama_lengkap,
-              nextPengajuanIndex,
               files,
-              repeatFromLoanId,
-              {
-                loanId: loanApp.id!,
-                nasabahId: client_id,
-                nominalPinjaman:
-                  loan_application_internal.nominal_pinjaman ?? 0,
-                tenor: loan_application_internal.tenor ?? 0,
-              },
+              REQUEST_TYPE.INTERNAL, // ← Sesuai pattern baru
             );
 
             // Basic sanity checks on result
             if (!minioUploadResult || typeof minioUploadResult !== 'object') {
               throw new Error('Invalid upload result from fileStorage');
             }
-            if (minioUploadResult.error) {
-              throw new Error(minioUploadResult.errorMessage || 'Upload error');
+
+            // Check if any field has files
+            const hasFiles = Object.values(minioUploadResult).some(
+              (fileArray) => Array.isArray(fileArray) && fileArray.length > 0,
+            );
+
+            if (!hasFiles) {
+              throw new Error('No files were uploaded successfully');
             }
+
+            // Optional: Log metadata untuk tracking
+            console.log('RO Files uploaded:', {
+              customerId: nikNumber,
+              customerName: client_internal.nama_lengkap,
+              loanId: loanApp.id,
+              nasabahId: client_id,
+              filesUploaded: Object.keys(minioUploadResult).length,
+            });
           } catch (uploadErr) {
             console.error('File upload failed:', uploadErr);
+
             // Jika storage down, kita pertimbangkan sebagai SERVICE_UNAVAILABLE supaya operator aware
             throw new HttpException(
               {
@@ -754,35 +744,12 @@ export class MKT_CreateRepeatOrderUseCase {
           }
         }
 
-        // ============== GET NEXT PENGAJUAN INDEX ==============
-        const nextPengajuanIndex = await this.fileStorage.getNextPengajuanIndex(
-          Number(dto.client_internal.no_ktp),
-          dto.client_internal.nama_lengkap,
-          REQUEST_TYPE.INTERNAL, // isDraft = true untuk draft
-        );
-
-        console.log('MinIO Upload Info:', {
-          nextPengajuanIndex,
-          repeatFromLoanId,
-          nik: dto.client_internal.no_ktp,
-          customerName: dto.client_internal.nama_lengkap,
-          isDraft: true,
-        });
-
         // ============== SAVE FILES PAKAI saveRepeatOrderFiles ==============
         minioUploadResult = await this.fileStorage.saveRepeatOrderFiles(
           Number(dto.client_internal.no_ktp),
           dto.client_internal.nama_lengkap,
-          nextPengajuanIndex,
           files,
-          repeatFromLoanId,
-          {
-            loanId: null, // Draft belum punya loanId permanent
-            nasabahId: client_id,
-            nominalPinjaman:
-              dto.loan_application_internal?.nominal_pinjaman ?? 0,
-            tenor: dto.loan_application_internal?.tenor ?? 0,
-          },
+          REQUEST_TYPE.EXTERNAL,
         );
 
         console.log('MinIO upload success:', {
@@ -1192,7 +1159,7 @@ export class MKT_CreateRepeatOrderUseCase {
           }
         }
 
-        filePaths = await this.fileStorage.saveDraftsFiles(
+        filePaths = await this.fileStorage.saveFiles(
           Number(payload?.client_internal?.no_ktp) ?? Id,
           payload?.client_internal?.nama_lengkap ?? `draft-${Id}`,
           files,

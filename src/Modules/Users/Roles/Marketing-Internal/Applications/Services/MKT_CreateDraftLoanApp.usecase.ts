@@ -26,6 +26,7 @@ import {
   IApprovalRecommendationRepository,
 } from 'src/Modules/Admin/BI-Checking/Domain/Repositories/approval-recommendation.repository';
 import { MKT_GetDraftByMarketingId_ApprovalRecommendation } from 'src/Shared/Interface/MKT_GetDraft/MKT_GetDraftByMarketingId.interface';
+import { REQUEST_TYPE } from 'src/Shared/Modules/Storage/Infrastructure/Service/Interface/RequestType.interface';
 
 @Injectable()
 export class MKT_CreateDraftLoanApplicationUseCase {
@@ -62,11 +63,12 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         }
 
         // simpan file ke storage
-        filePaths = await this.fileStorage.saveDraftsFiles(
+        filePaths = await this.fileStorage.saveFiles(
           Number(dto?.client_internal?.no_ktp) ?? dto.client_internal.no_ktp,
           dto?.client_internal?.nama_lengkap ??
             `draft-${dto.client_internal.no_ktp}`,
           files,
+          REQUEST_TYPE.INTERNAL,
         );
 
         // Assign hasil upload ke DTO sesuai field
@@ -174,7 +176,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
           }
         }
 
-        filePaths = await this.fileStorage.saveDraftsFiles(
+        filePaths = await this.fileStorage.saveFiles(
           Number(payload?.client_internal?.no_ktp) ?? Id,
           payload?.client_internal?.nama_lengkap ?? `draft-${Id}`,
           files,
@@ -407,16 +409,15 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         await this.loanAppDraftRepo.findByMarketingId(marketingId);
 
       if (!loanApps || loanApps.length === 0) {
-        throw new HttpException(
-          {
-            payload: {
-              error: 'NOT FOUND',
-              message: 'No draft loan applications found for this marketing ID',
-              reference: 'LOAN_NOT_FOUND',
-            },
+        const res = {
+          payload: {
+            error: 'false',
+            message: 'No draft loan applications found for this marketing ID',
+            reference: 'LOAN_NOT_FOUND',
           },
-          HttpStatus.NOT_FOUND,
-        );
+        };
+
+        return res;
       }
 
       const processedLoans: Array<

@@ -155,7 +155,7 @@ export class MKT_UpdateLoanApplicationUseCase {
               const finalFileName = `${client.nama_lengkap}-${fieldName}${newExt}.enc`;
 
               await this.fileStorage.updateFile(
-                prepareForClientId,
+                prepareForClientId.toString(),
                 prepareForClientName,
                 finalFileName,
                 { ...file, buffer: newBuffer },

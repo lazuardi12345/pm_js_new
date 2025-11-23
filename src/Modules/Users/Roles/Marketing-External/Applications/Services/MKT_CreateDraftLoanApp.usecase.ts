@@ -26,6 +26,7 @@ import {
   IApprovalRecommendationRepository,
 } from 'src/Modules/Admin/BI-Checking/Domain/Repositories/approval-recommendation.repository';
 import { MKT_GetDraftByMarketingId_ApprovalRecommendation } from 'src/Shared/Interface/MKT_GetDraft/MKT_GetDraftByMarketingId.interface';
+import { REQUEST_TYPE } from 'src/Shared/Modules/Storage/Infrastructure/Service/Interface/RequestType.interface';
 
 @Injectable()
 export class MKT_CreateDraftLoanApplicationUseCase {
@@ -62,11 +63,12 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         }
 
         // simpan file ke storage
-        filePaths = await this.fileStorage.saveDraftsFiles(
+        filePaths = await this.fileStorage.saveFiles(
           Number(dto?.client_external?.nik) ?? dto.client_external.nik,
           dto?.client_external?.nama_lengkap ??
             `draft-${dto.client_external.nik}`,
           files,
+          REQUEST_TYPE.EXTERNAL,
         );
 
         // Assign hasil upload ke DTO sesuai field
@@ -174,10 +176,11 @@ export class MKT_CreateDraftLoanApplicationUseCase {
           }
         }
 
-        filePaths = await this.fileStorage.saveDraftsFiles(
+        filePaths = await this.fileStorage.saveFiles(
           Number(payload?.client_external?.nik) ?? Id,
           payload?.client_external?.nama_lengkap ?? `draft-${Id}`,
           files,
+          REQUEST_TYPE.EXTERNAL,
         );
 
         for (const [field, paths] of Object.entries(filePaths)) {

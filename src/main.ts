@@ -70,7 +70,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
 
-  await app.listen(3002, '0.0.0.0');
+  await app.listen(process.env.PORT ?? 3001, '0.0.0.0');
   console.log(
     `Server Successfully Started at http://localhost:${process.env.PORT}`,
   );
