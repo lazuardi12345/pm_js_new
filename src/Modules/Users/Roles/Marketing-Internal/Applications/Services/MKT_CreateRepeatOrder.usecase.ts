@@ -749,7 +749,7 @@ export class MKT_CreateRepeatOrderUseCase {
           Number(dto.client_internal.no_ktp),
           dto.client_internal.nama_lengkap,
           files,
-          REQUEST_TYPE.EXTERNAL,
+          REQUEST_TYPE.INTERNAL,
         );
 
         console.log('MinIO upload success:', {
@@ -962,16 +962,13 @@ export class MKT_CreateRepeatOrderUseCase {
         await this.repeatOrderRepo.findByMarketingId(marketingId);
 
       if (!loanApps || loanApps.length === 0) {
-        throw new HttpException(
-          {
-            payload: {
-              error: true,
-              message: 'No draft loan applications found for this marketing ID',
-              reference: 'LOAN_NOT_FOUND',
-            },
+        return {
+          payload: {
+            error: false,
+            message: 'No draft loan applications found for this marketing ID',
+            reference: 'LOAN_NOT_FOUND',
           },
-          HttpStatus.NOT_FOUND,
-        );
+        };
       }
 
       // ================= BUILD RESPONSE =================
@@ -1163,11 +1160,11 @@ export class MKT_CreateRepeatOrderUseCase {
           Number(payload?.client_internal?.no_ktp) ?? Id,
           payload?.client_internal?.nama_lengkap ?? `draft-${Id}`,
           files,
+          REQUEST_TYPE.INTERNAL,
         );
 
         for (const [field, paths] of Object.entries(filePaths)) {
           if (paths && paths.length > 0) {
-            // Tentukan di object mana field ini berada
             const parentKeys = [
               'client_internal',
               'job_internal',
@@ -1178,7 +1175,7 @@ export class MKT_CreateRepeatOrderUseCase {
 
             for (const key of parentKeys) {
               if (payload[key] && field in payload[key]) {
-                payload[key][field] = paths[0].url; // assign URL string
+                payload[key][field] = paths[0].url;
                 assigned = true;
                 break;
               }

@@ -27,12 +27,18 @@ import {
 } from 'src/Modules/Admin/BI-Checking/Domain/Repositories/approval-recommendation.repository';
 import { MKT_GetDraftByMarketingId_ApprovalRecommendation } from 'src/Shared/Interface/MKT_GetDraft/MKT_GetDraftByMarketingId.interface';
 import { REQUEST_TYPE } from 'src/Shared/Modules/Storage/Infrastructure/Service/Interface/RequestType.interface';
+import {
+  CLIENT_INTERNAL_REPOSITORY,
+  IClientInternalRepository,
+} from 'src/Modules/LoanAppInternal/Domain/Repositories/client-internal.repository';
 
 @Injectable()
 export class MKT_CreateDraftLoanApplicationUseCase {
   constructor(
     @Inject(DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY)
     private readonly loanAppDraftRepo: ILoanApplicationDraftInternalRepository,
+    @Inject(CLIENT_INTERNAL_REPOSITORY)
+    private readonly clientRepo: IClientInternalRepository,
     @Inject(FILE_STORAGE_SERVICE)
     private readonly fileStorage: IFileStorageRepository,
     @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
@@ -44,6 +50,18 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     files?: Record<string, Express.Multer.File[]>,
   ) {
     try {
+      const duplicateChecker = await this.clientRepo.findByKtp(
+        dto.client_internal.no_ktp,
+      );
+
+      console.log('kontol dupli check', duplicateChecker);
+
+      if (duplicateChecker) {
+        throw new HttpException(
+          'This Client National Identity Number already registered',
+          HttpStatus.FORBIDDEN,
+        );
+      }
       let filePaths: Record<string, FileMetadata[]> = {};
 
       // Proses file kalau ada
@@ -103,7 +121,13 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         },
       };
     } catch (err) {
-      console.log(err);
+      if (
+        err instanceof HttpException ||
+        typeof err.getStatus === 'function' ||
+        typeof err.status === 'number'
+      ) {
+        throw err;
+      }
 
       // Mongoose validation error
       if (err.name === 'ValidationError') {
@@ -138,7 +162,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         {
           payload: {
             error: 'UNEXPECTED ERROR',
-            message: 'Unexpected error',
+            message: err?.message || 'Unexpected error',
             reference: 'LOAN_UNKNOWN_ERROR',
           },
         },
@@ -180,6 +204,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
           Number(payload?.client_internal?.no_ktp) ?? Id,
           payload?.client_internal?.nama_lengkap ?? `draft-${Id}`,
           files,
+          REQUEST_TYPE.INTERNAL,
         );
 
         for (const [field, paths] of Object.entries(filePaths)) {

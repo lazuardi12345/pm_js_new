@@ -19,11 +19,13 @@ export class CA_ApprovedOrRejectController {
     @Param('id') loan_id: number,
     @Body()
     body: {
-      status: ApprovalInternalStatusEnum;
-      keterangan?: string;
-      kesimpulan?: string;
-      tenor_persetujuan?: number;
-      nominal_persetujuan?: number;
+      payload: {
+        status: ApprovalInternalStatusEnum;
+        keterangan?: string;
+        kesimpulan?: string;
+        tenor_persetujuan?: number;
+        nominal_persetujuan?: number;
+      };
     },
     @CurrentUser('id') creditAnalystId: number,
   ) {
@@ -32,21 +34,23 @@ export class CA_ApprovedOrRejectController {
       throw new Error('CA ID tidak ditemukan di cookie');
     }
 
+    console.log('dari controller', body);
+
     // Jalankan use case
     const savedApproval = await this.approveOrRejectUseCase.execute(
       loan_id,
       creditAnalystId,
       USERTYPE.CA,
-      body.status,
-      body.tenor_persetujuan,
-      body.nominal_persetujuan,
-      body.keterangan,
-      body.kesimpulan,
+      body.payload.status,
+      body.payload.tenor_persetujuan,
+      body.payload.nominal_persetujuan,
+      body.payload.keterangan,
+      body.payload.kesimpulan,
     );
 
     // Return response
     return {
-      message: `Approval berhasil disimpan dengan status ${body.status}`,
+      message: `Approval berhasil disimpan dengan status ${body.payload.status}`,
       data: {
         id: savedApproval.data.id,
         status: savedApproval.data.status,

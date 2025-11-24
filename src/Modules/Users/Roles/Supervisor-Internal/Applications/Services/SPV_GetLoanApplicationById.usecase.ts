@@ -125,7 +125,6 @@ export class SPV_GetLoanApplicationByIdUseCase {
         `Warning: failed to fetch draft status for no_ktp=${noKtp}`,
         draftErr,
       );
-      // Biarkan approval_recommendation = null jika gagal ambil draft, tapi tidak abort
     }
 
     const loanAppStatus: Record<string, TypeStatusApproval | null> = {};
@@ -268,8 +267,8 @@ export class SPV_GetLoanApplicationByIdUseCase {
             foto_ktp_penjamin: loanData.foto_ktp_penjamin,
             foto_id_card_penjamin: loanData.foto_id_card_penjamin,
           },
+          approval_recommendation,
         },
-        approval_recommendation,
         loan_app_status: loanAppStatus,
         appeal_status: appealStatus,
       },

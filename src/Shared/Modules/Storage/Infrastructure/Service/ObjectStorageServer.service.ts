@@ -300,6 +300,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
 
     const cleanName = customerName.toLowerCase().replace(/\s+/g, '_');
     const plainPrefix = `${customerId}-${cleanName}`;
+
     const encryptedCustomerId = this.encKey.encryptString(
       customerId.toString(),
     );
@@ -308,8 +309,6 @@ export class MinioFileStorageService implements IFileStorageRepository {
     const safeCustomerName =
       encryptedCustomerName.encrypted.toString('base64url');
     const encryptedPrefix = `${safeCustomerId}-${safeCustomerName}`;
-
-    // Generate RO folder
     let repeatOrderFolder = generateRandomFolder();
     let fullPlainPrefix = `${plainPrefix}/${repeatOrderFolder}`;
 
@@ -318,6 +317,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
       bucket,
       fullPlainPrefix,
     );
+
     while (exists) {
       repeatOrderFolder = generateRandomFolder();
       fullPlainPrefix = `${plainPrefix}/${repeatOrderFolder}`;
@@ -334,7 +334,6 @@ export class MinioFileStorageService implements IFileStorageRepository {
       for (const file of fileList) {
         const ext = file.originalname.split('.').pop();
         const newFileName = `${cleanName}-${field}.${ext}`;
-
         const metadata = await this.uploadSingleFile(
           bucket,
           fullPlainPrefix,
@@ -344,16 +343,19 @@ export class MinioFileStorageService implements IFileStorageRepository {
         );
 
         metadata.url = `${process.env.BACKEND_URI}/storage/${bucket}/${encryptedPrefix}/${repeatOrderFolder}/${newFileName}`;
-
-        // Metadata tambahan
-        metadata.encryptedPath = `${encryptedPrefix}/${repeatOrderFolder}`;
-        metadata.encryptedCustomerIdIv = encryptedCustomerId.iv;
-        metadata.encryptedCustomerNameIv = encryptedCustomerName.iv;
+        metadata.encryptedPath = encryptedPrefix;
         metadata.repeatOrderFolder = repeatOrderFolder;
-
         savedFiles[field].push(metadata);
       }
     }
+
+    this.logger.log('Repeat order files saved:', {
+      customerId,
+      customerName,
+      encryptedPrefix,
+      repeatOrderFolder,
+      fileCount: Object.keys(savedFiles).length,
+    });
 
     return savedFiles;
   }

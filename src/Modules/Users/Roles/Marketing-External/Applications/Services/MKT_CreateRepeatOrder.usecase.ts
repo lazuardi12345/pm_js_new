@@ -1256,16 +1256,13 @@ export class MKT_CreateRepeatOrderUseCase {
         await this.repeatOrderRepo.findByMarketingId(marketingId);
 
       if (!loanApps || loanApps.length === 0) {
-        throw new HttpException(
-          {
-            payload: {
-              error: true,
-              message: 'No draft loan applications found for this marketing ID',
-              reference: 'LOAN_NOT_FOUND',
-            },
+        return {
+          payload: {
+            error: false,
+            message: 'No draft loan applications found for this marketing ID',
+            reference: 'LOAN_NOT_FOUND',
           },
-          HttpStatus.NOT_FOUND,
-        );
+        };
       }
 
       // ================= BUILD RESPONSE =================
