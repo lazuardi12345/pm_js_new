@@ -689,43 +689,34 @@ export class MKT_CreateRepeatOrderUseCase {
   async executeCreateRepeatOrder(
     dto: PayloadDTO,
     client_id: number,
-    marketingId: number, // ← Tambah parameter marketing_id
+    marketingId: number,
     files?: Record<string, Express.Multer.File[]>,
     repeatFromLoanId?: number,
   ) {
     try {
-      let minioUploadResult;
+      let minioUploadResult: Record<string, FileMetadata[]> | undefined; // ← Fix type
 
-      // ============== ASSIGN marketing_id ke DTO ==============
       dto.marketing_id = marketingId;
 
-      // ============== LOG REQUEST INFO ==============
       console.log('=== Create Draft Repeat Order ===');
       console.log('Marketing ID:', marketingId);
       console.log('Client ID:', client_id);
       console.log('Repeat From Loan ID:', repeatFromLoanId);
       console.log('Files received:', files ? Object.keys(files) : 'No files');
-      console.log('Payload preview:', {
-        nama: dto.client_internal?.nama_lengkap,
-        nik: dto.client_internal?.no_ktp,
-        nominal: dto.loan_application_internal?.nominal_pinjaman,
-      });
 
       // ============== PROSES FILE KALAU ADA ==============
       if (files && Object.keys(files).length > 0) {
-        // ============== CONVERT IMAGES TO JPEG USING SHARP ==============
+        // Convert images to JPEG
         for (const [field, fileArray] of Object.entries(files)) {
           if (!fileArray) continue;
 
           for (const file of fileArray) {
-            // Convert gambar ke JPEG tanpa resize
             if (file.mimetype.startsWith('image/')) {
               try {
                 const outputBuffer = await sharp(file.buffer)
                   .jpeg({ quality: 100 })
                   .toBuffer();
 
-                // Update file buffer dan filename
                 file.buffer = outputBuffer;
                 file.originalname = file.originalname.replace(
                   /\.\w+$/,
@@ -738,13 +729,11 @@ export class MKT_CreateRepeatOrderUseCase {
                 );
               } catch (error) {
                 console.error(`✗ Error converting ${field} to JPEG:`, error);
-                // Skip conversion kalau error, tetep pake file original
               }
             }
           }
         }
 
-        // ============== SAVE FILES PAKAI saveRepeatOrderFiles ==============
         minioUploadResult = await this.fileStorage.saveRepeatOrderFiles(
           Number(dto.client_internal.no_ktp),
           dto.client_internal.nama_lengkap,
@@ -753,66 +742,70 @@ export class MKT_CreateRepeatOrderUseCase {
         );
 
         console.log('MinIO upload success:', {
-          folder: minioUploadResult?.pengajuanFolder,
-          filesCount: minioUploadResult?.savedFiles
-            ? Object.keys(minioUploadResult.savedFiles).length
+          filesCount: minioUploadResult
+            ? Object.keys(minioUploadResult).length
             : 0,
+          fields: minioUploadResult ? Object.keys(minioUploadResult) : [],
         });
       }
 
-      // ============== BUILD UPLOADED FILES OBJECT ==============
       const uploadedFiles: Record<string, any> = {
-        ...(minioUploadResult?.savedFiles ?? {}),
+        ...(minioUploadResult ?? {}),
       };
 
-      // ============== ASSIGN URL FILE KE DTO ==============
-      if (minioUploadResult?.savedFiles) {
-        const savedFiles = minioUploadResult.savedFiles;
-
-        // Bukti absensi ke job_internal (kalau ada)
-        if (savedFiles.bukti_absensi?.[0]?.url && dto.job_internal) {
-          dto.job_internal.bukti_absensi = savedFiles.bukti_absensi[0].url;
+      if (minioUploadResult) {
+        // Bukti absensi ke job_internal
+        if (minioUploadResult.bukti_absensi?.[0]?.url && dto.job_internal) {
+          dto.job_internal.bukti_absensi =
+            minioUploadResult.bukti_absensi[0].url;
           console.log('✓ Assigned bukti_absensi URL to job_internal');
         }
 
-        // File penjamin ke collateral_internal (kalau ada)
-        if (savedFiles.foto_ktp_penjamin?.[0]?.url && dto.collateral_internal) {
+        // File penjamin ke collateral_internal
+        if (
+          minioUploadResult.foto_ktp_penjamin?.[0]?.url &&
+          dto.collateral_internal
+        ) {
           dto.collateral_internal.foto_ktp_penjamin =
-            savedFiles.foto_ktp_penjamin[0].url;
+            minioUploadResult.foto_ktp_penjamin[0].url;
           console.log(
             '✓ Assigned foto_ktp_penjamin URL to collateral_internal',
           );
         }
+
         if (
-          savedFiles.foto_id_card_penjamin?.[0]?.url &&
+          minioUploadResult.foto_id_card_penjamin?.[0]?.url &&
           dto.collateral_internal
         ) {
           dto.collateral_internal.foto_id_card_penjamin =
-            savedFiles.foto_id_card_penjamin[0].url;
+            minioUploadResult.foto_id_card_penjamin[0].url;
           console.log(
             '✓ Assigned foto_id_card_penjamin URL to collateral_internal',
           );
         }
       }
 
-      // ============== SIMPAN DRAFT KE MONGODB ==============
+      // SIMPAN DRAFT KE MONGODB
       const draftData: any = {
         ...dto,
         uploaded_files: uploadedFiles,
       };
 
-      // Tambahkan minio_metadata kalau ada upload file
-      if (minioUploadResult) {
+      // Tambahkan minio_metadata (extract dari FileMetadata)
+      if (minioUploadResult && Object.keys(minioUploadResult).length > 0) {
+        const firstFileMetadata = Object.values(minioUploadResult)[0][0];
+
         draftData.minio_metadata = {
-          pengajuanFolder: minioUploadResult.pengajuanFolder,
-          isUpdate: minioUploadResult.isUpdate ?? false,
-          originalLoanId: minioUploadResult.originalLoanId,
+          encryptedPath: firstFileMetadata.encryptedPath,
+          repeatOrderFolder: firstFileMetadata.repeatOrderFolder,
           isRepeatOrder: !!repeatFromLoanId,
-          nextPengajuanIndex: minioUploadResult.nextPengajuanIndex,
+          uploadedAt: new Date(),
         };
       }
 
       console.log('Saving draft to MongoDB...');
+      console.log('uploaded_files:', uploadedFiles); // ← Debug
+
       const loanApp = await this.repeatOrderRepo.create(draftData);
 
       if (!loanApp) {
@@ -825,8 +818,9 @@ export class MKT_CreateRepeatOrderUseCase {
       const nominalPinjaman = Number(
         dto.loan_application_internal?.nominal_pinjaman ?? 0,
       );
+
       if (nominalPinjaman >= 7000000) {
-        console.log(' Nominal >= 7jt, triggering BI Checking...');
+        console.log('📋 Nominal >= 7jt, triggering BI Checking...');
         await this.repeatOrderRepo.triggerIsNeedCheckBeingTrue(
           loanApp._id?.toString(),
           nominalPinjaman,
@@ -838,18 +832,15 @@ export class MKT_CreateRepeatOrderUseCase {
       const response = {
         dto: {
           error: false,
-          message: minioUploadResult?.isUpdate
-            ? `Draft Repeat Order ke-${minioUploadResult.originalLoanId} berhasil dibuat`
-            : 'Draft pengajuan baru berhasil dibuat',
+          message: 'Draft Repeat Order berhasil dibuat',
           reference: 'LOAN_CREATE_OK',
           data: {
             _id: loanApp._id,
             client_internal: loanApp.client_internal,
             loan_application_internal: loanApp.loan_application_internal,
-            filesUploaded: minioUploadResult?.savedFiles
-              ? Object.keys(minioUploadResult.savedFiles).length
+            filesUploaded: minioUploadResult
+              ? Object.keys(minioUploadResult).length
               : 0,
-            pengajuanFolder: minioUploadResult?.pengajuanFolder,
             isRepeatOrder: !!repeatFromLoanId,
             requiresBICheck: nominalPinjaman >= 7000000,
           },
@@ -857,12 +848,18 @@ export class MKT_CreateRepeatOrderUseCase {
       };
 
       console.log('=== Draft Created Successfully ===\n');
+      console.log('=== Trying to Change isCompleted to be true');
+
+      const draftId = loanApp._id?.toString();
+      await this.repeatOrderRepo.triggerIsCompletedBeingTrue(draftId!);
+      console.log('=== Completed to Change isCompleted to be true');
+
       return response;
     } catch (err) {
       console.error('=== Error Creating Draft ===');
       console.error(err);
 
-      // =================== HANDLE MONGOOSE VALIDATION ERROR ===================
+      // Error handling sama seperti sebelumnya...
       if (err?.name === 'ValidationError') {
         const message = Object.values(err.errors)
           .map((e: any) => e.message)
@@ -880,7 +877,6 @@ export class MKT_CreateRepeatOrderUseCase {
         );
       }
 
-      // =================== HANDLE DUPLICATE KEY ERROR ===================
       if (err?.code === 11000) {
         throw new HttpException(
           {
@@ -895,35 +891,6 @@ export class MKT_CreateRepeatOrderUseCase {
         );
       }
 
-      // =================== HANDLE MINIO / FILE SYSTEM ERRORS ===================
-      if (err?.isMinioError) {
-        throw new HttpException(
-          {
-            payload: {
-              error: true,
-              message: err.message || 'File storage error',
-              reference: 'MINIO_FILE_ERROR',
-            },
-          },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-
-      // =================== HANDLE SHARP IMAGE PROCESSING ERRORS ===================
-      if (err?.message?.includes('Sharp')) {
-        throw new HttpException(
-          {
-            payload: {
-              error: true,
-              message: 'Image processing failed',
-              reference: 'IMAGE_PROCESSING_ERROR',
-            },
-          },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-
-      // =================== GENERIC ERROR (FALLBACK) ===================
       throw new HttpException(
         {
           payload: {
@@ -1134,6 +1101,10 @@ export class MKT_CreateRepeatOrderUseCase {
   ) {
     const { payload } = updateData;
 
+    console.log(
+      '========================== PATH NYA KETEMBAK ===========================',
+    );
+
     if (!payload) {
       throw new BadRequestException('Payload is required');
     }
@@ -1142,7 +1113,7 @@ export class MKT_CreateRepeatOrderUseCase {
       let filePaths: Record<string, FileMetadata[]> = {};
 
       if (files && Object.keys(files).length > 0) {
-        // Convert gambar ke JPEG tanpa resize
+        // Convert gambar ke JPEG
         for (const [field, fileArray] of Object.entries(files)) {
           for (const file of fileArray) {
             if (file.mimetype.startsWith('image/')) {
@@ -1156,34 +1127,72 @@ export class MKT_CreateRepeatOrderUseCase {
           }
         }
 
-        filePaths = await this.fileStorage.saveFiles(
-          Number(payload?.client_internal?.no_ktp) ?? Id,
-          payload?.client_internal?.nama_lengkap ?? `draft-${Id}`,
-          files,
-          REQUEST_TYPE.INTERNAL,
-        );
+        const existingDraft = await this.repeatOrderRepo.findById(Id);
+        if (!existingDraft) {
+          throw new NotFoundException(`Draft with id ${Id} not found`);
+        }
 
-        for (const [field, paths] of Object.entries(filePaths)) {
-          if (paths && paths.length > 0) {
-            const parentKeys = [
-              'client_internal',
-              'job_internal',
-              'collateral_internal',
-              'relative_internal',
-            ];
-            let assigned = false;
+        for (const [field, fileArray] of Object.entries(files)) {
+          if (!fileArray || fileArray.length === 0) continue;
 
-            for (const key of parentKeys) {
-              if (payload[key] && field in payload[key]) {
-                payload[key][field] = paths[0].url;
-                assigned = true;
-                break;
-              }
+          const file = fileArray[0];
+          let existingFileUrl: string | undefined;
+
+          // Cari di berbagai parent keys
+          const parentKeys = [
+            'client_internal',
+            'job_internal',
+            'collateral_internal',
+            'relative_internal',
+          ];
+
+          for (const key of parentKeys) {
+            if (existingDraft[key] && existingDraft[key][field]) {
+              existingFileUrl = existingDraft[key][field];
+              break;
             }
+          }
 
-            if (!assigned) {
-              // fallback: assign di root payload
-              payload[field] = paths[0].url;
+          // Fallback ke root
+          if (!existingFileUrl && existingDraft[field]) {
+            existingFileUrl = existingDraft[field];
+          }
+
+          let updatedFile: FileMetadata;
+
+          if (existingFileUrl) {
+            console.log(`Updating existing file via URL: ${existingFileUrl}`);
+
+            updatedFile = await this.fileStorage.updateFile(
+              existingFileUrl, // ← URL lengkap
+              '', // ← Ga perlu
+              field, // ← foto_ktp, foto_kk, dll (field type)
+              file,
+              REQUEST_TYPE.INTERNAL,
+            );
+          } else {
+            // Ga ada file lama, upload baru
+            console.log(
+              `No existing file found for ${field}, uploading new file`,
+            );
+
+            const uploadResult = await this.fileStorage.saveFiles(
+              Number(payload?.client_internal?.no_ktp) ?? Id,
+              payload?.client_internal?.nama_lengkap ?? `draft-${Id}`,
+              { [field]: [file] },
+              REQUEST_TYPE.INTERNAL,
+            );
+
+            updatedFile = uploadResult[field][0];
+          }
+
+          // ✅ Assign URL ke payload
+          filePaths[field] = [updatedFile];
+
+          for (const key of parentKeys) {
+            if (payload[key] && field in payload[key]) {
+              payload[key][field] = updatedFile.url;
+              break;
             }
           }
         }
@@ -1198,20 +1207,14 @@ export class MKT_CreateRepeatOrderUseCase {
         throw new NotFoundException(`Draft with id ${Id} not found`);
       }
 
-      // HAPUS file lama dengan field name yang sama (base name tanpa ekstensi)
+      // ✅ Merge files (cleanup old, add new)
       const existingFiles = { ...(existingDraft.uploaded_files || {}) };
+      const getBaseName = (fieldName: string): string =>
+        fieldName.split('.')[0];
 
-      // Helper function untuk dapat base name (tanpa ekstensi)
-      const getBaseName = (fieldName: string): string => {
-        // Hapus ekstensi: foto_kk.jpeg.enc → foto_kk
-        return fieldName.split('.')[0];
-      };
-
-      // Hapus file lama yang field name-nya sama dengan file baru
       for (const newFieldName of Object.keys(filePaths)) {
         const newBaseName = getBaseName(newFieldName);
 
-        // Cari dan hapus semua file lama dengan base name yang sama
         for (const existingFieldName of Object.keys(existingFiles)) {
           const existingBaseName = getBaseName(existingFieldName);
 
@@ -1225,12 +1228,10 @@ export class MKT_CreateRepeatOrderUseCase {
       }
 
       const mergedFiles = {
-        ...existingFiles, // ← File lama yang sudah di-cleanup
-        ...filePaths, // ← File baru
+        ...existingFiles,
+        ...filePaths,
       };
 
-      console.log('Old files (after cleanup):', existingFiles);
-      console.log('New files:', filePaths);
       console.log('Merged files:', mergedFiles);
 
       const entityUpdate: Partial<RepeatOrderEntity> = {
@@ -1256,12 +1257,10 @@ export class MKT_CreateRepeatOrderUseCase {
     } catch (err) {
       console.error('Update error:', err);
 
-      // Re-throw HttpException (termasuk NotFoundException)
       if (err instanceof HttpException) {
         throw err;
       }
 
-      // Mongoose validation error
       if (err.name === 'ValidationError') {
         throw new HttpException(
           {
@@ -1277,7 +1276,6 @@ export class MKT_CreateRepeatOrderUseCase {
         );
       }
 
-      // Duplicate key error
       if (err.code === 11000) {
         throw new HttpException(
           {
@@ -1291,7 +1289,6 @@ export class MKT_CreateRepeatOrderUseCase {
         );
       }
 
-      // Fallback error
       throw new HttpException(
         {
           payload: {

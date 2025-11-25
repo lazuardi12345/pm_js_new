@@ -11,7 +11,7 @@ export interface FileMetadata {
   encryptedPath?: string;
   encryptedCustomerIdIv?: string;
   encryptedCustomerNameIv?: string;
-  repeatOrderFolder?: Promise<string>;
+  repeatOrderFolder?: string;
 }
 
 export interface LoanMetadata {
@@ -66,11 +66,13 @@ export interface IFileStorageRepository {
 
   // Update
   updateFile(
-    customerNIN: string,
+    customerId_OR_URL: string,
     customerName: string,
     filename: string,
     file: Express.Multer.File,
     type?: REQUEST_TYPE,
+    isRepeatOrder?: boolean,
+    repeatOrderPath?: string,
   ): Promise<FileMetadata>;
 
   updateFileDirectory(
@@ -96,6 +98,8 @@ export interface IFileStorageRepository {
     customerNIN: string,
     customerName: string,
     type?: REQUEST_TYPE,
+    isRepeatOrder?: boolean,
+    repeatOrderPath?: string,
   ): Promise<void>;
 
   saveRepeatOrderFiles(

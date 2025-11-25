@@ -112,7 +112,6 @@ export class DraftRepeatOrderInternalRepositoryImpl
     }
 
     const nominal_fixtype = Number(nominal_pinjaman);
-    console.log('Jembus Wedut >>>>>>>>>>>>>>>>>>>>>>', nominal_fixtype);
 
     if (nominal_fixtype >= 7000000) {
       const response = await this.repeatOrderModel.updateOne(
@@ -125,6 +124,17 @@ export class DraftRepeatOrderInternalRepositoryImpl
         console.log('Updated isNeedCheck to true for draft_id:', draft_id);
       }
     }
+  }
+
+  async triggerIsCompletedBeingTrue(draft_id: string): Promise<void> {
+    if (!draft_id) {
+      throw new Error('draft_id is required');
+    }
+
+    await this.repeatOrderModel.updateOne(
+      { _id: draft_id },
+      { isCompleted: true },
+    );
   }
 
   async softDelete(id: string): Promise<boolean> {

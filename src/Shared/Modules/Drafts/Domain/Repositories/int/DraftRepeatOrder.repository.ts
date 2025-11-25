@@ -19,5 +19,6 @@ export interface IDraftRepeatOrderInternalRepository {
     draft_id?: string,
     nominal_pinjaman?: number,
   ): Promise<void>;
+  triggerIsCompletedBeingTrue(draft_id: string): Promise<void>;
   softDelete(id: string): Promise<boolean>;
 }
