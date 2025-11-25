@@ -80,6 +80,7 @@ import {
   IFileStorageRepository,
 } from 'src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository';
 import { UpdateOtherExistLoansExternalDto } from 'src/Modules/LoanAppExternal/Application/DTOS/dto-Other-Exist-Loans/update-other-exist-loans.dto';
+import { REQUEST_TYPE } from 'src/Shared/Modules/Storage/Infrastructure/Service/Interface/RequestType.interface';
 @Injectable()
 export class MKT_UpdateLoanApplicationUseCase {
   private readonly baseFileUrl = `http://${process.env.BACKEND_URI}/storage`;
@@ -214,11 +215,11 @@ export class MKT_UpdateLoanApplicationUseCase {
               const finalFileName = `${client.nama_lengkap}-${fieldName}${newExt}.enc`;
 
               await this.fileStorage.updateFile(
-                prepareForClientId,
+                prepareForClientId.toString(),
                 prepareForClientName,
                 finalFileName,
                 { ...file, buffer: newBuffer },
-                false,
+                REQUEST_TYPE.INTERNAL,
               );
 
               filePaths[fieldName] =

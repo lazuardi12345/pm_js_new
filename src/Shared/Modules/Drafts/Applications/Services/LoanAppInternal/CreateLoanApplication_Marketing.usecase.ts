@@ -6,24 +6,24 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {
-  CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY,
-  ILoanApplicationDraftRepository,
+  DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY,
+  ILoanApplicationDraftInternalRepository,
 } from '../../../Domain/Repositories/int/LoanAppInt.repository';
-import { CreateDraftLoanApplicationDto } from '../../DTOS/LoanAppInt_MarketingInput/CreateDraft_LoanAppInt.dto';
+import { CreateDraftLoanApplicationIntDto } from '../../DTOS/LoanAppInt_MarketingInput/CreateDraft_LoanAppInt.dto';
 import { LoanApplicationEntity } from '../../../Domain/Entities/int/LoanAppInt.entity';
 import { UpdateDraftLoanApplicationDto } from '../../DTOS/LoanAppInt_MarketingInput/UpdateDraft_LoanAppInt.dto';
 import { isEqual, merge } from 'lodash';
 
 @Injectable()
-export class CreateDraftLoanApplicationUseCase {
+export class CreateDraftLoanApplicationIntUseCase {
   constructor(
-    @Inject(CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY)
-    private readonly loanAppDraftRepo: ILoanApplicationDraftRepository,
+    @Inject(DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY)
+    private readonly loanAppDraftRepo: ILoanApplicationDraftInternalRepository,
   ) {}
 
   async executeCreateDraft(
     marketingId: number,
-    dto: CreateDraftLoanApplicationDto,
+    dto: CreateDraftLoanApplicationIntDto,
   ) {
     try {
       console.log(dto);

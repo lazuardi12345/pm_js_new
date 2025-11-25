@@ -1,13 +1,13 @@
 import { HttpException, HttpStatus, Inject } from '@nestjs/common';
 import {
-  CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY,
-  ILoanApplicationDraftRepository,
+  DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY,
+  ILoanApplicationDraftInternalRepository,
 } from 'src/Shared/Modules/Drafts/Domain/Repositories/int/LoanAppInt.repository';
 
 export class SPV_GetDetailDraftByIdUseCase {
   constructor(
-    @Inject(CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY)
-    private readonly loanAppDraftRepo: ILoanApplicationDraftRepository,
+    @Inject(DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY)
+    private readonly loanAppDraftRepo: ILoanApplicationDraftInternalRepository,
   ) {}
   async renderDraftById(Id: string) {
     try {

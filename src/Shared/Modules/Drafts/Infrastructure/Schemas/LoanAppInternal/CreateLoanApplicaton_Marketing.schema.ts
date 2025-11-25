@@ -144,7 +144,7 @@ export const RelativeInternalSchema =
 // ================= Root LoanApplication =================
 
 @Schema({ timestamps: true })
-export class LoanApplication {
+export class LoanApplicationInt {
   @Prop({ required: true }) marketing_id: number;
 
   @Prop({ type: ClientInternalSchema, required: true })
@@ -164,6 +164,6 @@ export class LoanApplication {
   @Prop({ default: false }) isNeedCheck?: boolean;
 }
 
-export type LoanApplicationDocument = HydratedDocument<LoanApplication>;
-export const LoanApplicationSchema =
-  SchemaFactory.createForClass(LoanApplication);
+export type LoanApplicationDocument = HydratedDocument<LoanApplicationInt>;
+export const LoanApplicationIntSchema =
+  SchemaFactory.createForClass(LoanApplicationInt);

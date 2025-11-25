@@ -84,14 +84,14 @@ import {
   PenjaminEnum,
   RiwayatPinjamPenjaminEnum,
 } from 'src/Shared/Enums/Internal/Collateral.enum';
-import {
-  CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY,
-  ILoanApplicationDraftRepository,
-} from 'src/Shared/Modules/Drafts/Domain/Repositories/int/LoanAppInt.repository';
-import {
-  APPROVAL_RECOMMENDATION_REPOSITORY,
-  IApprovalRecommendationRepository,
-} from 'src/Modules/Admin/BI-Checking/Domain/Repositories/approval-recommendation.repository';
+// import {
+//   CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY,
+//   ILoanApplicationDraftRepository,
+// } from 'src/Shared/Modules/Drafts/Domain/Repositories/int/LoanAppInt.repository';
+// import {
+//   APPROVAL_RECOMMENDATION_REPOSITORY,
+//   IApprovalRecommendationRepository,
+// } from 'src/Modules/Admin/BI-Checking/Domain/Repositories/approval-recommendation.repository';
 
 @Injectable()
 export class MKT_CreateLoanApplicationUseCase {

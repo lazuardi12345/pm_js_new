@@ -11,8 +11,8 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { CreateDraftLoanApplicationDto } from '../../Applications/DTOS/LoanAppInt_MarketingInput/CreateDraft_LoanAppInt.dto';
-import { CreateDraftLoanApplicationUseCase } from '../../Applications/Services/LoanAppInternal/CreateLoanApplication_Marketing.usecase';
+import { CreateDraftLoanApplicationIntDto } from '../../Applications/DTOS/LoanAppInt_MarketingInput/CreateDraft_LoanAppInt.dto';
+import { CreateDraftLoanApplicationIntUseCase } from '../../Applications/Services/LoanAppInternal/CreateLoanApplication_Marketing.usecase';
 import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
 import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/jwtAuth.guard';
@@ -27,13 +27,13 @@ import { merge, isEqual } from 'lodash';
 export class CreateDraftLoanApplicationController {
   updateDraftService: any;
   constructor(
-    private readonly createDraftLoanAppUseCase: CreateDraftLoanApplicationUseCase,
+    private readonly createDraftLoanAppUseCase: CreateDraftLoanApplicationIntUseCase,
   ) {}
 
   @Post('add')
   async createDraft(
     @CurrentUser('id') marketingId: number,
-    @Body() dto: CreateDraftLoanApplicationDto,
+    @Body() dto: CreateDraftLoanApplicationIntDto,
   ) {
     return this.createDraftLoanAppUseCase.executeCreateDraft(marketingId, dto);
   }

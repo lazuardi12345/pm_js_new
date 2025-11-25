@@ -3,13 +3,13 @@ import { Module } from '@nestjs/common';
 import { DraftLoanApplicationModule } from './Modules/CreateLoanAppInt.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import {
-  LoanApplication,
-  LoanApplicationSchema,
+  LoanApplicationInt,
+  LoanApplicationIntSchema,
 } from './Infrastructure/Schemas/LoanAppInternal/CreateLoanApplicaton_Marketing.schema';
 import { DraftRepeatOrderModule } from './Modules/DraftRepeatOrder.module';
 import {
   RepeatOrder,
-  RepeatOrderSchema,
+  RepeatOrderIntSchema,
 } from './Infrastructure/Schemas/LoanAppInternal/RepeatOrder_Marketing.schema';
 
 @Module({
@@ -18,8 +18,8 @@ import {
     DraftRepeatOrderModule,
     MongooseModule.forFeature(
       [
-        { name: LoanApplication.name, schema: LoanApplicationSchema },
-        { name: RepeatOrder.name, schema: RepeatOrderSchema },
+        { name: LoanApplicationInt.name, schema: LoanApplicationIntSchema },
+        { name: RepeatOrder.name, schema: RepeatOrderIntSchema },
       ],
       'mongoConnection',
     ),
@@ -29,8 +29,8 @@ import {
     DraftLoanApplicationModule,
     DraftRepeatOrderModule,
     MongooseModule.forFeature([
-      { name: LoanApplication.name, schema: LoanApplicationSchema },
-      { name: RepeatOrder.name, schema: RepeatOrderSchema },
+      { name: LoanApplicationInt.name, schema: LoanApplicationIntSchema },
+      { name: RepeatOrder.name, schema: RepeatOrderIntSchema },
     ]),
   ],
 })

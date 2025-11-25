@@ -14,7 +14,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log', 'debug'], // atur level log
   });
-  app.setGlobalPrefix('api-v1/loan-app', {
+  app.setGlobalPrefix('', {
     exclude: ['storage/(.*)'],
   });
   app.useGlobalGuards(new JwtAuthGuard(app.get(Reflector)));

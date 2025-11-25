@@ -1,10 +1,10 @@
 import { RepeatOrderEntity } from '../../Entities/int/DraftRepeatOrder.entity';
 
-export const CREATE_DRAFT_REPEAT_ORDER_REPOSITORY = Symbol(
+export const DRAFT_REPEAT_ORDER_INTERNAL_REPOSITORY = Symbol(
   'CREATE_DRAFT_REPEAT_ORDER_REPOSITORY',
 );
 
-export interface IDraftRepeatOrderRepository {
+export interface IDraftRepeatOrderInternalRepository {
   create(data: Partial<RepeatOrderEntity>): Promise<RepeatOrderEntity>;
   findStatus(
     nik: string,
@@ -19,5 +19,6 @@ export interface IDraftRepeatOrderRepository {
     draft_id?: string,
     nominal_pinjaman?: number,
   ): Promise<void>;
+  triggerIsCompletedBeingTrue(draft_id: string): Promise<void>;
   softDelete(id: string): Promise<boolean>;
 }

@@ -78,6 +78,7 @@ import { DraftRepeatOrderModule } from 'src/Shared/Modules/Drafts/Modules/DraftR
 @Module({
   imports: [
     HttpModule,
+    DraftLoanApplicationModule,
     AddressExternalModule,
     ApprovalExternalModule,
     ClientExternalModule,
@@ -147,4 +148,4 @@ import { DraftRepeatOrderModule } from 'src/Shared/Modules/Drafts/Modules/DraftR
   ],
   exports: [UNIT_OF_WORK, FILE_STORAGE_SERVICE], // biar bisa dipake module lain
 })
-export class MarketingInternalUseCaseModule {}
+export class MarketingExternalUseCaseModule {}

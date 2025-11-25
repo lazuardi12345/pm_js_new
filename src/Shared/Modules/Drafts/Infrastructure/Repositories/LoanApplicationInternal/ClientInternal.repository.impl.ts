@@ -2,19 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
-  LoanApplication,
+  LoanApplicationInt,
   LoanApplicationDocument,
 } from '../../Schemas/LoanAppInternal/CreateLoanApplicaton_Marketing.schema';
-import { ILoanApplicationDraftRepository } from '../../../Domain/Repositories/int/LoanAppInt.repository';
+import { ILoanApplicationDraftInternalRepository } from '../../../Domain/Repositories/int/LoanAppInt.repository';
 import { LoanApplicationEntity } from '../../../Domain/Entities/int/LoanAppInt.entity';
 import { merge, isEqual } from 'lodash';
 
 @Injectable()
-export class LoanApplicationRepositoryImpl
-  implements ILoanApplicationDraftRepository
+export class LoanApplicationIntRepositoryImpl
+  implements ILoanApplicationDraftInternalRepository
 {
   constructor(
-    @InjectModel(LoanApplication.name, 'mongoConnection')
+    @InjectModel(LoanApplicationInt.name, 'mongoConnection')
     private readonly loanAppModel: Model<LoanApplicationDocument>,
   ) {}
 

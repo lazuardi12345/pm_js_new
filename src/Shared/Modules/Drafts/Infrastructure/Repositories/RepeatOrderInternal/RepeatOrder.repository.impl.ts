@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { merge, isEqual } from 'lodash';
-import { IDraftRepeatOrderRepository } from '../../../Domain/Repositories/int/DraftRepeatOrder.repository';
+import { IDraftRepeatOrderInternalRepository } from '../../../Domain/Repositories/int/DraftRepeatOrder.repository';
 import {
   RepeatOrder,
   RepeatOrderDocument,
@@ -10,8 +10,8 @@ import {
 import { RepeatOrderEntity } from '../../../Domain/Entities/int/DraftRepeatOrder.entity';
 
 @Injectable()
-export class DraftRepeatOrderRepositoryImpl
-  implements IDraftRepeatOrderRepository
+export class DraftRepeatOrderInternalRepositoryImpl
+  implements IDraftRepeatOrderInternalRepository
 {
   constructor(
     @InjectModel(RepeatOrder.name, 'mongoConnection')
@@ -112,7 +112,6 @@ export class DraftRepeatOrderRepositoryImpl
     }
 
     const nominal_fixtype = Number(nominal_pinjaman);
-    console.log('Jembus Wedut >>>>>>>>>>>>>>>>>>>>>>', nominal_fixtype);
 
     if (nominal_fixtype >= 7000000) {
       const response = await this.repeatOrderModel.updateOne(
@@ -125,6 +124,17 @@ export class DraftRepeatOrderRepositoryImpl
         console.log('Updated isNeedCheck to true for draft_id:', draft_id);
       }
     }
+  }
+
+  async triggerIsCompletedBeingTrue(draft_id: string): Promise<void> {
+    if (!draft_id) {
+      throw new Error('draft_id is required');
+    }
+
+    await this.repeatOrderModel.updateOne(
+      { _id: draft_id },
+      { isCompleted: true },
+    );
   }
 
   async softDelete(id: string): Promise<boolean> {

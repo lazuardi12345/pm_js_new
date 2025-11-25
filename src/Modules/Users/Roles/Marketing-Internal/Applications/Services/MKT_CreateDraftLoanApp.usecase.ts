@@ -7,11 +7,11 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {
-  CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY,
-  ILoanApplicationDraftRepository,
+  DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY,
+  ILoanApplicationDraftInternalRepository,
 } from 'src/Shared/Modules/Drafts/Domain/Repositories/int/LoanAppInt.repository';
 import {
-  CreateDraftLoanApplicationDto,
+  CreateDraftLoanApplicationIntDto,
   PayloadDTO,
 } from 'src/Shared/Modules/Drafts/Applications/DTOS/LoanAppInt_MarketingInput/CreateDraft_LoanAppInt.dto';
 import { LoanApplicationEntity } from 'src/Shared/Modules/Drafts/Domain/Entities/int/LoanAppInt.entity';
@@ -26,12 +26,19 @@ import {
   IApprovalRecommendationRepository,
 } from 'src/Modules/Admin/BI-Checking/Domain/Repositories/approval-recommendation.repository';
 import { MKT_GetDraftByMarketingId_ApprovalRecommendation } from 'src/Shared/Interface/MKT_GetDraft/MKT_GetDraftByMarketingId.interface';
+import { REQUEST_TYPE } from 'src/Shared/Modules/Storage/Infrastructure/Service/Interface/RequestType.interface';
+import {
+  CLIENT_INTERNAL_REPOSITORY,
+  IClientInternalRepository,
+} from 'src/Modules/LoanAppInternal/Domain/Repositories/client-internal.repository';
 
 @Injectable()
 export class MKT_CreateDraftLoanApplicationUseCase {
   constructor(
-    @Inject(CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY)
-    private readonly loanAppDraftRepo: ILoanApplicationDraftRepository,
+    @Inject(DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY)
+    private readonly loanAppDraftRepo: ILoanApplicationDraftInternalRepository,
+    @Inject(CLIENT_INTERNAL_REPOSITORY)
+    private readonly clientRepo: IClientInternalRepository,
     @Inject(FILE_STORAGE_SERVICE)
     private readonly fileStorage: IFileStorageRepository,
     @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
@@ -43,6 +50,18 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     files?: Record<string, Express.Multer.File[]>,
   ) {
     try {
+      const duplicateChecker = await this.clientRepo.findByKtp(
+        dto.client_internal.no_ktp,
+      );
+
+      console.log('kontol dupli check', duplicateChecker);
+
+      if (duplicateChecker) {
+        throw new HttpException(
+          'This Client National Identity Number already registered',
+          HttpStatus.FORBIDDEN,
+        );
+      }
       let filePaths: Record<string, FileMetadata[]> = {};
 
       // Proses file kalau ada
@@ -62,11 +81,12 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         }
 
         // simpan file ke storage
-        filePaths = await this.fileStorage.saveDraftsFiles(
+        filePaths = await this.fileStorage.saveFiles(
           Number(dto?.client_internal?.no_ktp) ?? dto.client_internal.no_ktp,
           dto?.client_internal?.nama_lengkap ??
             `draft-${dto.client_internal.no_ktp}`,
           files,
+          REQUEST_TYPE.INTERNAL,
         );
 
         // Assign hasil upload ke DTO sesuai field
@@ -101,7 +121,13 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         },
       };
     } catch (err) {
-      console.log(err);
+      if (
+        err instanceof HttpException ||
+        typeof err.getStatus === 'function' ||
+        typeof err.status === 'number'
+      ) {
+        throw err;
+      }
 
       // Mongoose validation error
       if (err.name === 'ValidationError') {
@@ -136,7 +162,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         {
           payload: {
             error: 'UNEXPECTED ERROR',
-            message: 'Unexpected error',
+            message: err?.message || 'Unexpected error',
             reference: 'LOAN_UNKNOWN_ERROR',
           },
         },
@@ -147,7 +173,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
 
   async updateDraftById(
     Id: string,
-    updateData: Partial<CreateDraftLoanApplicationDto>,
+    updateData: Partial<CreateDraftLoanApplicationIntDto>,
     files?: Record<string, Express.Multer.File[]>,
   ) {
     const { payload } = updateData;
@@ -174,10 +200,11 @@ export class MKT_CreateDraftLoanApplicationUseCase {
           }
         }
 
-        filePaths = await this.fileStorage.saveDraftsFiles(
+        filePaths = await this.fileStorage.saveFiles(
           Number(payload?.client_internal?.no_ktp) ?? Id,
           payload?.client_internal?.nama_lengkap ?? `draft-${Id}`,
           files,
+          REQUEST_TYPE.INTERNAL,
         );
 
         for (const [field, paths] of Object.entries(filePaths)) {
@@ -407,16 +434,15 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         await this.loanAppDraftRepo.findByMarketingId(marketingId);
 
       if (!loanApps || loanApps.length === 0) {
-        throw new HttpException(
-          {
-            payload: {
-              error: 'NOT FOUND',
-              message: 'No draft loan applications found for this marketing ID',
-              reference: 'LOAN_NOT_FOUND',
-            },
+        const res = {
+          payload: {
+            error: 'false',
+            message: 'No draft loan applications found for this marketing ID',
+            reference: 'LOAN_NOT_FOUND',
           },
-          HttpStatus.NOT_FOUND,
-        );
+        };
+
+        return res;
       }
 
       const processedLoans: Array<

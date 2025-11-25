@@ -1,8 +1,8 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { CreateDraftLoanApplicationDto } from './CreateDraft_LoanAppInt.dto';
+import { CreateDraftLoanApplicationIntDto } from './CreateDraft_LoanAppInt.dto';
 
 export class UpdateDraftLoanApplicationDto extends PartialType(
-  CreateDraftLoanApplicationDto,
+  CreateDraftLoanApplicationIntDto,
 ) {
   // Tambahkan ini agar bisa terima langsung tanpa "payload"
   client_internal?: any;

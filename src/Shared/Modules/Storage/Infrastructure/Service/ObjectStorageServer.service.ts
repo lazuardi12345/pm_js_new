@@ -1,11 +1,23 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import * as Minio from 'minio';
-import * as crypto from 'crypto';
+import { EncKey } from './helper/Func_EncKey.help';
 import {
   IFileStorageRepository,
   FileMetadata,
 } from '../../Domain/Repositories/IFileStorage.repository';
-import { SingleUploadFileType } from 'src/Shared/Interface/Storage_SingleUploadType/SingleUploadFile.interface';
+// import { SingleUploadFileType } from 'src/Shared/Interface/Storage_SingleUploadType/SingleUploadFile.interface';
+import { REQUEST_TYPE } from './Interface/RequestType.interface';
+import { generateRandomFolder } from './helper/Func_GenerateRandom.help';
+import { checkPathExists } from './helper/Func_isPathExist.help';
+import { buildFileUrl } from './helper/Func_URLBuilder.help';
+import { parseUrlPath } from './helper/Func_ParseURL.help';
 
 type MinioObject = {
   name: string;
@@ -18,13 +30,14 @@ type MinioObject = {
 export class MinioFileStorageService implements IFileStorageRepository {
   private readonly logger = new Logger(MinioFileStorageService.name);
   private minioClient: Minio.Client;
-
-  private readonly algorithm = 'aes-256-cbc';
-  private readonly key: Buffer;
-  private readonly mainBucket = 'customer-files';
-  private readonly draftBucket = 'customer-drafts';
+  private readonly encKey: EncKey;
+  private readonly customer_internal = 'customer-internal';
+  private readonly customer_external = 'customer-external';
   private readonly approvalRecommendationBucket =
     'approval-recommendation-files';
+  private readonly randomFolderGenerator = generateRandomFolder;
+  private readonly isPathExist = checkPathExists;
+  private readonly buildFileUrl = buildFileUrl;
 
   constructor() {
     // Initialize MinIO Client
@@ -38,41 +51,13 @@ export class MinioFileStorageService implements IFileStorageRepository {
       secretKey: process.env.MINIO_SECRET_KEY || 'admin123',
     });
 
-    // Encryption key (32 bytes)
-    this.key = Buffer.from(
-      process.env.CRYPT_KEY || 'your-super-secret-32-char-key!',
-    ).slice(0, 32);
+    this.encKey = new EncKey(); // <-- Tambahkan baris ini
 
     // Ensure buckets exist
-    this.ensureBucket(this.mainBucket);
-    this.ensureBucket(this.draftBucket);
+    this.ensureBucket(this.customer_internal);
+    this.ensureBucket(this.customer_external);
     this.ensureBucket(this.approvalRecommendationBucket);
   }
-
-  // ============== ENCRYPT ION HELPERS ==============
-  private encrypt(buffer: Buffer): { encrypted: Buffer; iv: string } {
-    // Ambil IV dari env atau generate random
-    const ivString = process.env.CRYPT_IV;
-    const iv = Buffer.from(ivString!, 'utf-8');
-    // Pastikan panjang key valid
-    if (this.key.length !== 32) {
-      throw new Error(
-        `Invalid key length: ${this.key.length}. Must be 32 bytes for AES-256-CBC.`,
-      );
-    }
-    const cipher = crypto.createCipheriv(this.algorithm, this.key, iv);
-    const encrypted = Buffer.concat([cipher.update(buffer), cipher.final()]);
-
-    return { encrypted, iv: iv.toString('utf-8') };
-  }
-
-  private decrypt(encryptedBuffer: Buffer, ivHex: string): Buffer {
-    const iv = Buffer.from(ivHex, 'utf-8');
-    const decipher = crypto.createDecipheriv(this.algorithm, this.key, iv);
-    return Buffer.concat([decipher.update(encryptedBuffer), decipher.final()]);
-  }
-
-  // ============== BUCKET HELPERS ==============
 
   private async ensureBucket(bucketName: string): Promise<void> {
     try {
@@ -86,350 +71,27 @@ export class MinioFileStorageService implements IFileStorageRepository {
     }
   }
 
-  private getBucketName(isDraft: boolean): string {
-    return isDraft ? this.draftBucket : this.mainBucket;
-  }
-
-  private getCustomerPrefix(customerId: number, customerName: string): string {
-    return `${customerId}-${customerName}/`;
-  }
-
-  private getCustomerRepeatOrderPrefix(
-    customerId: number,
-    customerName: string,
-    index: number,
-  ): string {
-    return `repeat-order-${index}/${customerId}-${customerName}/`;
-  }
-
-  private async findFolderByLoanId(
-    bucket: string,
-    customerPrefix: string,
-    loanId: number,
-  ): Promise<{ pengajuanIndex: number; folderPath: string } | null> {
-    try {
-      // Scan all files under customer prefix
-      const stream = this.minioClient.listObjectsV2(
-        bucket,
-        customerPrefix,
-        true, // recursive
-      );
-
-      for await (const obj of stream) {
-        try {
-          // Get metadata
-          const stat = await this.minioClient.statObject(bucket, obj.name);
-          const metadata = stat.metaData;
-
-          // Check if loan-id matches
-          const fileLoanId = metadata['x-loan-id'] || metadata['X-Loan-Id'];
-
-          if (fileLoanId === loanId.toString()) {
-            // Extract index from path
-            // Path example: "NIK-NAMA/repeat-order-2/file.enc"
-            const match = obj.name.match(/repeat-order-(\d+)\//);
-
-            if (match) {
-              const pengajuanIndex = parseInt(match[1]);
-              const folderPath = obj.name.substring(
-                0,
-                obj.name.indexOf('/', customerPrefix.length) + 1,
-              );
-
-              this.logger.log(
-                `Found existing repeat-order folder: ${folderPath} with loan_id: ${loanId}`,
-              );
-
-              return {
-                pengajuanIndex,
-                folderPath,
-              };
-            }
-          }
-        } catch (error) {
-          // Skip files that can't be read
-          continue;
-        }
-      }
-
-      return null;
-    } catch (error) {
-      this.logger.error(`Error finding folder by loan ID: ${error.message}`);
-      return null;
+  private getBucketType(type: REQUEST_TYPE): string {
+    switch (type) {
+      case 'customer-internal':
+        return REQUEST_TYPE.INTERNAL;
+      case 'customer-external':
+        return REQUEST_TYPE.EXTERNAL;
+      default:
+        throw new HttpException('REQUEST IS NOT VALID', HttpStatus.BAD_REQUEST);
     }
   }
 
-  private async hasValidRootFiles(
-    bucket: string,
-    customerPrefix: string,
-  ): Promise<boolean> {
-    try {
-      const requiredFiles = [
-        'foto_ktp',
-        'foto_kk',
-        'foto_rekening',
-        'bukti_absensi',
-      ];
-
-      let foundFilesCount = 0;
-
-      // List files di root folder (non-recursive)
-      const stream = this.minioClient.listObjectsV2(
-        bucket,
-        customerPrefix,
-        false, // Non-recursive: cuma di root folder
-      );
-
-      for await (const obj of stream) {
-        // Skip kalau file ada di subfolder
-        if (obj.name.includes('repeat-order')) {
-          continue;
-        }
-
-        // Cek apakah file termasuk required files
-        const fileName = obj.name
-          .replace(customerPrefix, '')
-          .replace('.enc', '');
-
-        for (const requiredField of requiredFiles) {
-          if (fileName.includes(requiredField)) {
-            foundFilesCount++;
-            this.logger.log(`Found required file in root: ${fileName}`);
-            break;
-          }
-        }
-
-        // Kalau udah ketemu 4, langsung return true
-        if (foundFilesCount >= 4) {
-          this.logger.log(`Valid root files found: ${foundFilesCount}/4`);
-          return true;
-        }
-      }
-
-      this.logger.log(`Insufficient root files: ${foundFilesCount}/4`);
-      return false;
-    } catch (error) {
-      this.logger.error(`Error checking root files: ${error.message}`);
-      return false;
-    }
-  }
-
-  async getNextPengajuanIndex(
-    customerId: number,
-    customerName: string,
-    isDraft: boolean = false,
-  ): Promise<number> {
-    try {
-      const bucket = this.getBucketName(isDraft);
-      const customerPrefix = this.getCustomerPrefix(customerId, customerName);
-
-      // List semua objects di customer folder (recursive untuk dapat subfolder)
-      const stream = this.minioClient.listObjectsV2(
-        bucket,
-        customerPrefix,
-        true, // ← RECURSIVE biar dapat semua subfolder
-      );
-
-      let maxIndex = 0;
-
-      for await (const obj of stream) {
-        // Match pattern: repeat-order-1/, repeat-order-2/, etc
-        const match = obj.name.match(/repeat-order-(\d+)\//);
-        if (match) {
-          const index = parseInt(match[1]);
-          if (index > maxIndex) {
-            maxIndex = index;
-          }
-        }
-      }
-
-      const nextIndex = maxIndex + 1;
-      this.logger.log(
-        `Next repeat-order index: ${nextIndex} (found max: ${maxIndex})`,
-      );
-
-      return nextIndex;
-    } catch (error) {
-      this.logger.error(`Error getting next pengajuan index: ${error.message}`);
-      return 1; // Default kalau error
-    }
+  private getCustomerPrefix(customerNIN: string, customerName: string): string {
+    return `${customerNIN}-${customerName}/`;
   }
 
   // ============== CREATE/UPLOAD ==============
 
-  async saveFiles(
-    customerId: number,
-    customerName: string,
-    files: Record<string, Express.Multer.File[] | undefined>,
-    isDraft: boolean = false,
-  ): Promise<Record<string, FileMetadata[]>> {
-    const bucket = this.getBucketName(isDraft);
-    const prefix = this.getCustomerPrefix(customerId, customerName);
-    const savedFiles: Record<string, FileMetadata[]> = {};
-
-    for (const [field, fileList] of Object.entries(files)) {
-      if (!fileList || fileList.length === 0) continue;
-
-      savedFiles[field] = [];
-
-      for (const file of fileList) {
-        const ext = file.originalname.split('.').pop();
-        const cleanName = customerName.toLowerCase().replace(/\s+/g, '_');
-        const newFileName = `${cleanName}-${field}.${ext}`;
-
-        const metadata = await this.uploadSingleFile(
-          bucket,
-          prefix,
-          file,
-          newFileName,
-        );
-        savedFiles[field].push(metadata);
-      }
-    }
-
-    return savedFiles;
-  }
-
-  async saveDraftsFiles(
-    customerId: number,
-    customerName: string,
-    files: Record<string, Express.Multer.File[] | undefined>,
-    isDraft: boolean = false,
-  ): Promise<Record<string, FileMetadata[]>> {
-    const bucket = this.getBucketName(isDraft);
-    const prefix = this.getCustomerPrefix(customerId, customerName);
-    const savedFiles: Record<string, FileMetadata[]> = {};
-
-    for (const [field, fileList] of Object.entries(files)) {
-      if (!fileList || fileList.length === 0) continue;
-
-      savedFiles[field] = [];
-
-      for (const file of fileList) {
-        const ext = file.originalname.split('.').pop();
-        const newFileName = `${customerName}-${field}.${ext}`;
-        const metadata = await this.uploadSingleFile(
-          bucket,
-          prefix,
-          file,
-          newFileName,
-        );
-        savedFiles[field].push(metadata);
-      }
-    }
-
-    return savedFiles;
-  }
-
-  async saveRepeatOrderFiles(
-    customerId: number,
-    customerName: string,
-    nextPengajuanIndex: number,
-    files: Record<string, Express.Multer.File[] | undefined>,
-    repeatFromLoanId?: number,
-    loanMetadata?: {
-      loanId: number;
-      nasabahId: number;
-      nominalPinjaman: number;
-      tenor: number;
-    },
-  ): Promise<{
-    savedFiles: Record<string, FileMetadata[]>;
-    isUpdate: boolean;
-    pengajuanFolder: string;
-    originalLoanId?: number;
-  }> {
-    try {
-      const bucket = this.mainBucket;
-      const customerPrefix = this.getCustomerPrefix(customerId, customerName);
-
-      let targetPengajuanIndex = nextPengajuanIndex;
-      let isUpdate = false;
-      let originalLoanId: number | undefined;
-
-      //cek minimal file wajib
-      const hasValidFiles = await this.hasValidRootFiles(
-        bucket,
-        customerPrefix,
-      );
-
-      this.logger.log('Root files validation:', {
-        customerPrefix,
-        hasValidFiles,
-        nextPengajuanIndex,
-      });
-
-      let pengajuanFolder: string;
-      if (!hasValidFiles) {
-        pengajuanFolder = customerPrefix;
-        this.logger.log('NO valid root files: using ROOT folder');
-      } else {
-        if (repeatFromLoanId) {
-          const existingFolder = await this.findFolderByLoanId(
-            bucket,
-            customerPrefix,
-            repeatFromLoanId,
-          );
-
-          if (existingFolder) {
-            targetPengajuanIndex = existingFolder.pengajuanIndex;
-            isUpdate = true;
-            originalLoanId = repeatFromLoanId;
-            this.logger.log(
-              `UPDATING existing folder: repeat-order-${targetPengajuanIndex}`,
-            );
-          } else {
-            this.logger.log(
-              `Creating NEW folder: repeat-order-${nextPengajuanIndex}`,
-            );
-          }
-        } else {
-          this.logger.log(
-            `Creating NEW folder: repeat-order-${nextPengajuanIndex}`,
-          );
-        }
-
-        pengajuanFolder = `${customerPrefix}repeat-order-${targetPengajuanIndex}/`;
-      }
-
-      const savedFiles: Record<string, FileMetadata[]> = {};
-
-      // ============== UPLOAD FILES ==============
-      for (const [field, fileList] of Object.entries(files)) {
-        if (!fileList || fileList.length === 0) continue;
-
-        savedFiles[field] = [];
-
-        for (const file of fileList) {
-          const ext = file.originalname.split('.').pop();
-          const newFileName = `${customerName}-${field}.${ext}`;
-
-          const metadata = await this.uploadSingleFile(
-            bucket,
-            pengajuanFolder,
-            file,
-            newFileName,
-            hasValidFiles ? SingleUploadFileType.REPEAT_ORDER : undefined,
-          );
-
-          savedFiles[field].push(metadata);
-        }
-      }
-
-      return {
-        savedFiles,
-        isUpdate,
-        pengajuanFolder,
-        originalLoanId,
-      };
-    } catch (error) {
-      this.logger.error(`Error saving pengajuan files: ${error.message}`);
-      throw error;
-    }
-  }
+  //? ADMIN BI =====================================!
 
   async saveApprovalRecommedationFiles(
-    customerId: number,
+    customerId: string,
     customerName: string,
     files: Record<string, Express.Multer.File[] | undefined>,
   ): Promise<Record<string, FileMetadata[]>> {
@@ -458,80 +120,6 @@ export class MinioFileStorageService implements IFileStorageRepository {
     return savedFiles;
   }
 
-  private async uploadSingleFile(
-    bucket: string,
-    prefix: string,
-    file: Express.Multer.File,
-    customFileName?: string,
-    type_prefix?: SingleUploadFileType,
-  ): Promise<FileMetadata> {
-    try {
-      const { encrypted, iv } = this.encrypt(file.buffer);
-
-      const filenameToUse = customFileName || file.originalname;
-      const encryptedName = `${prefix}${filenameToUse}.enc`;
-
-      const metadata: Record<string, string> = {
-        'Content-Type': 'application/octet-stream',
-        'X-Original-Mimetype': file.mimetype,
-        'X-Encryption-IV': iv,
-        'X-Original-Filename': file.originalname,
-        'X-Original-Size': file.size.toString(),
-      };
-
-      await this.minioClient.putObject(
-        bucket,
-        encryptedName,
-        encrypted,
-        encrypted.length,
-        metadata,
-      );
-
-      // ============== PARSE PREFIX UNTUK URL ==============
-      const prefixParser = (prefix: string) => {
-        const trimmed = prefix.endsWith('/') ? prefix.slice(0, -1) : prefix;
-        const parts = trimmed.split('/');
-
-        if (parts.length === 1) {
-          const firstDashIndex = parts[0].indexOf('-');
-          const id = parts[0].substring(0, firstDashIndex);
-          const name = parts[0].substring(firstDashIndex + 1);
-          return { id, name, subfolder: null };
-        } else {
-          const firstDashIndex = parts[0].indexOf('-');
-          const id = parts[0].substring(0, firstDashIndex);
-          const name = parts[0].substring(firstDashIndex + 1);
-          const subfolder = parts[1];
-          return { id, name, subfolder };
-        }
-      };
-
-      const { id, name, subfolder } = prefixParser(prefix);
-
-      // ============== BUILD URL ==============
-      let url: string;
-      if (subfolder) {
-        url = `${process.env.BACKEND_URI}/storage/${id}/${name}/${subfolder}/${filenameToUse}`;
-      } else {
-        url = `${process.env.BACKEND_URI}/storage/${id}/${name}/${filenameToUse}`;
-      }
-
-      this.logger.log(`File uploaded: ${encryptedName}`);
-
-      return {
-        originalName: file.originalname,
-        mimetype: file.mimetype,
-        encryptedName: encryptedName,
-        size: file.size,
-        url: url,
-      };
-    } catch (error: any) {
-      console.log('Error uploading file', error);
-      this.logger.error(`Error uploading file: ${error.message}`);
-      throw error;
-    }
-  }
-
   private async uploadApprovalRecommendationFile(
     bucket: string,
     prefix: string,
@@ -540,7 +128,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
   ): Promise<FileMetadata> {
     try {
       // Encrypt file
-      const { encrypted, iv } = this.encrypt(file.buffer);
+      const { encrypted, iv } = this.encKey.encrypt(file.buffer);
 
       // Tentukan nama file yang akan di-upload
       const filenameToUse = customFileName || file.originalname;
@@ -597,72 +185,14 @@ export class MinioFileStorageService implements IFileStorageRepository {
     }
   }
 
-  // ============== READ/GET ==============
-
-  async getFile(
-    customerId: number,
-    customerName: string,
-    filename: string,
-    isDraft: boolean = false,
-  ): Promise<{ buffer: Buffer; mimetype: string; originalName: string }> {
-    try {
-      const bucket = this.getBucketName(isDraft);
-      const prefix = this.getCustomerPrefix(customerId, customerName);
-      const encryptedName = filename.endsWith('.enc')
-        ? `${prefix}${filename}`
-        : `${prefix}${filename}.enc`;
-
-      console.log('kamilah duo trio: ', { bucket, prefix, encryptedName });
-
-      // Get metadata
-      const stat = await this.minioClient.statObject(bucket, encryptedName);
-      const iv = stat.metaData['x-encryption-iv'];
-      const mimetype =
-        stat.metaData['x-original-mimetype'] || 'application/octet-stream';
-      const originalName = stat.metaData['x-original-filename'] || filename;
-
-      if (!iv) {
-        throw new Error('Encryption IV not found in metadata');
-      }
-
-      // Download encrypted file
-      const dataStream = await this.minioClient.getObject(
-        bucket,
-        encryptedName,
-      );
-      const chunks: Buffer[] = [];
-
-      for await (const chunk of dataStream) {
-        chunks.push(chunk);
-      }
-
-      const encryptedBuffer = Buffer.concat(chunks);
-
-      // Decrypt
-      const decryptedBuffer = this.decrypt(encryptedBuffer, iv);
-
-      return {
-        buffer: decryptedBuffer,
-        mimetype,
-        originalName,
-      };
-    } catch (error) {
-      this.logger.error(`Error getting file: ${error.message}`);
-      if (error.code === 'NoSuchKey') {
-        throw new NotFoundException(`File not found: ${filename}`);
-      }
-      throw error;
-    }
-  }
-
   async getFilesForApprovalRecommendations(
-    customerId: number,
+    customerNIN: string,
     customerName: string,
     filename: string,
   ): Promise<{ buffer: Buffer; mimetype: string; originalName: string }> {
     try {
       const bucket = this.approvalRecommendationBucket;
-      const prefix = this.getCustomerPrefix(customerId, customerName);
+      const prefix = this.getCustomerPrefix(customerNIN, customerName);
       const encryptedName = filename.endsWith('.enc')
         ? `${prefix}${filename}`
         : `${prefix}${filename}.enc`;
@@ -694,7 +224,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
       const encryptedBuffer = Buffer.concat(chunks);
 
       // Decrypt
-      const decryptedBuffer = this.decrypt(encryptedBuffer, iv);
+      const decryptedBuffer = this.encKey.decrypt(encryptedBuffer, iv);
 
       return {
         buffer: decryptedBuffer,
@@ -710,51 +240,268 @@ export class MinioFileStorageService implements IFileStorageRepository {
     }
   }
 
-  async getFilesForRepeatOrders(
+  //? ==============================================!
+
+  //? MKT,SPV,CA,HM ================================!
+
+  // ============== SAVE FILES ==============
+  async saveFiles(
     customerId: number,
     customerName: string,
+    files: Record<string, Express.Multer.File[] | undefined>,
+    type: REQUEST_TYPE,
+  ): Promise<Record<string, FileMetadata[]>> {
+    const bucket = this.getBucketType(type);
+
+    const cleanName = customerName.toLowerCase().replace(/\s+/g, '_');
+    const plainPrefix = `${customerId}-${cleanName}`;
+
+    const encryptedCustomerId = this.encKey.encryptString(
+      customerId.toString(),
+    );
+    const encryptedCustomerName = this.encKey.encryptString(customerName);
+
+    const safeCustomerId = encryptedCustomerId.encrypted.toString('base64url');
+    const safeCustomerName =
+      encryptedCustomerName.encrypted.toString('base64url');
+
+    // ✅ Validate: Harusnya ga ada dot
+    console.log('Encoded ID:', safeCustomerId);
+    console.log('Has dot?', safeCustomerId.includes('.')); // Should be false!
+
+    if (safeCustomerId.includes('.') || safeCustomerName.includes('.')) {
+      console.error('⚠️ WARNING: base64url contains invalid dot character!');
+    }
+
+    // Format: {length}.{encId}{encName}
+    // Example: "22.oABhm_XJLgpBlOjeuA-dYw_fwbK9OFA3vu4zLAsYju"
+    const encryptedPrefix = `${safeCustomerId.length}.${safeCustomerId}${safeCustomerName}`;
+
+    this.logger.log('Generated encrypted prefix:', {
+      customerId,
+      customerName,
+      encryptedPrefix: encryptedPrefix.substring(0, 50) + '...',
+      idLength: safeCustomerId.length,
+    });
+
+    const savedFiles: Record<string, FileMetadata[]> = {};
+
+    for (const [field, fileList] of Object.entries(files)) {
+      if (!fileList || fileList.length === 0) continue;
+
+      savedFiles[field] = [];
+
+      for (const file of fileList) {
+        const ext = file.originalname.split('.').pop();
+        const newFileName = `${cleanName}-${field}.${ext}`;
+
+        const metadata = await this.uploadSingleFile(
+          bucket,
+          plainPrefix,
+          file,
+          newFileName,
+          false,
+        );
+
+        metadata.url = `${process.env.BACKEND_URI}/storage/${bucket}/${encryptedPrefix}/${newFileName}`;
+        metadata.encryptedPath = encryptedPrefix;
+
+        savedFiles[field].push(metadata);
+      }
+    }
+
+    return savedFiles;
+  }
+
+  async saveRepeatOrderFiles(
+    customerId: number,
+    customerName: string,
+    files: Record<string, Express.Multer.File[] | undefined>,
+    type: REQUEST_TYPE,
+  ): Promise<Record<string, FileMetadata[]>> {
+    const bucket = this.getBucketType(type);
+
+    const cleanName = customerName.toLowerCase().replace(/\s+/g, '_');
+    const plainPrefix = `${customerId}-${cleanName}`;
+
+    const encryptedCustomerId = this.encKey.encryptString(
+      customerId.toString(),
+    );
+    const encryptedCustomerName = this.encKey.encryptString(customerName);
+    const safeCustomerId = encryptedCustomerId.encrypted.toString('base64url');
+    const safeCustomerName =
+      encryptedCustomerName.encrypted.toString('base64url');
+    // Di saveRepeatOrderFiles()
+    const encryptedPrefix = `${safeCustomerId.length}.${safeCustomerId}${safeCustomerName}`;
+    let repeatOrderFolder = generateRandomFolder();
+    let fullPlainPrefix = `${plainPrefix}/${repeatOrderFolder}`;
+
+    let exists = await checkPathExists(
+      this.minioClient,
+      bucket,
+      fullPlainPrefix,
+    );
+
+    while (exists) {
+      repeatOrderFolder = generateRandomFolder();
+      fullPlainPrefix = `${plainPrefix}/${repeatOrderFolder}`;
+      exists = await checkPathExists(this.minioClient, bucket, fullPlainPrefix);
+    }
+
+    const savedFiles: Record<string, FileMetadata[]> = {};
+
+    for (const [field, fileList] of Object.entries(files)) {
+      if (!fileList || fileList.length === 0) continue;
+
+      savedFiles[field] = [];
+
+      for (const file of fileList) {
+        const ext = file.originalname.split('.').pop();
+        const newFileName = `${cleanName}-${field}.${ext}`;
+        const metadata = await this.uploadSingleFile(
+          bucket,
+          fullPlainPrefix,
+          file,
+          newFileName,
+          true,
+        );
+
+        metadata.url = `${process.env.BACKEND_URI}/storage/${bucket}/${encryptedPrefix}/${repeatOrderFolder}/${newFileName}`;
+        metadata.encryptedPath = encryptedPrefix;
+        metadata.repeatOrderFolder = repeatOrderFolder;
+        savedFiles[field].push(metadata);
+      }
+    }
+
+    this.logger.log('Repeat order files saved:', {
+      customerId,
+      customerName,
+      encryptedPrefix,
+      repeatOrderFolder,
+      fileCount: Object.keys(savedFiles).length,
+    });
+
+    return savedFiles;
+  }
+
+  private async uploadSingleFile(
+    bucket: string,
+    prefix: string, // Plain prefix (3201-john_doe)
+    file: Express.Multer.File,
+    customFileName?: string,
+    isRepeatOrder: boolean = false,
+  ): Promise<FileMetadata> {
+    try {
+      const { encrypted, iv } = this.encKey.encrypt(file.buffer);
+
+      const filenameToUse = customFileName || file.originalname;
+      const cleanPrefix = prefix.endsWith('/') ? prefix : `${prefix}/`;
+      const encryptedName = `${cleanPrefix}${filenameToUse}.enc`;
+
+      const metadata: Record<string, string> = {
+        'Content-Type': 'application/octet-stream',
+        'X-Original-Mimetype': file.mimetype,
+        'X-Encryption-IV': iv,
+        'X-Original-Filename': file.originalname,
+        'X-Original-Size': file.size.toString(),
+      };
+
+      await this.minioClient.putObject(
+        bucket,
+        encryptedName,
+        encrypted,
+        encrypted.length,
+        metadata,
+      );
+
+      this.logger.log(`File uploaded: ${encryptedName}`);
+
+      return {
+        originalName: file.originalname,
+        mimetype: file.mimetype,
+        encryptedName: encryptedName,
+        size: file.size,
+        url: '',
+      };
+    } catch (error: any) {
+      this.logger.error(`Error uploading file: ${error.message}`);
+      throw error;
+    }
+  }
+
+  //? ==============================================!
+
+  // ============== READ/GET ==============
+
+  async getFile(
+    encryptedPrefix: string,
     filename: string,
-    index?: number, // ← Kalau ada index, ambil dari repeat-order-{index}/
+    type: REQUEST_TYPE,
+    roFolder?: string,
   ): Promise<{ buffer: Buffer; mimetype: string; originalName: string }> {
     try {
-      const bucket = this.mainBucket;
-      const customerPrefix = this.getCustomerPrefix(customerId, customerName);
+      const bucket = this.getBucketType(type);
 
-      // ============== BUILD PATH BERDASARKAN INDEX ==============
-      let filePath: string;
+      // ✅ Parse length prefix
+      const dotIndex = encryptedPrefix.indexOf('.');
 
-      if (index !== undefined && index > 0) {
-        // Repeat Order: NIK-Name/repeat-order-{n}/filename.enc
-        filePath = `${customerPrefix}repeat-order-${index}/${filename}`;
-      } else {
-        // Root: NIK-Name/filename.enc
-        filePath = `${customerPrefix}${filename}`;
+      if (dotIndex === -1) {
+        throw new BadRequestException('Invalid encrypted prefix format');
       }
 
-      // Add .enc extension if not present
-      const encryptedName = filePath.endsWith('.enc')
-        ? filePath
-        : `${filePath}.enc`;
+      const idLength = parseInt(encryptedPrefix.substring(0, dotIndex), 10);
 
-      this.logger.log('Getting file:', {
-        bucket,
-        customerPrefix,
-        index,
-        encryptedName,
+      if (isNaN(idLength)) {
+        throw new BadRequestException('Invalid length in encrypted prefix');
+      }
+      const combined = encryptedPrefix.substring(dotIndex + 1);
+      const encId = combined.substring(0, idLength);
+      const encName = combined.substring(idLength);
+
+      this.logger.log('Parsing encrypted prefix:', {
+        idLength,
+        encIdLength: encId.length,
+        encNameLength: encName.length,
       });
+      let plainCustomerId: string;
+      let plainCustomerName: string;
 
-      // Get metadata
-      const stat = await this.minioClient.statObject(bucket, encryptedName);
-      const iv = stat.metaData['x-encryption-iv'];
-      const mimetype =
-        stat.metaData['x-original-mimetype'] || 'application/octet-stream';
-      const originalName = stat.metaData['x-original-filename'] || filename;
+      try {
+        plainCustomerId = this.encKey.decryptString({
+          encrypted: Buffer.from(encId, 'base64url'),
+        });
 
-      if (!iv) {
-        throw new Error('Encryption IV not found in metadata');
+        plainCustomerName = this.encKey.decryptString({
+          encrypted: Buffer.from(encName, 'base64url'),
+        });
+
+        this.logger.log('Decrypted successfully:', {
+          plainCustomerId,
+          plainCustomerName,
+        });
+      } catch (decryptError: any) {
+        this.logger.error('Decryption failed:', decryptError.message);
+        throw new BadRequestException('Invalid encrypted prefix');
       }
 
-      // Download encrypted file
+      // Build plain path
+      const cleanName = plainCustomerName.toLowerCase().replace(/\s+/g, '_');
+      const plainPrefix = `${plainCustomerId}-${cleanName}`;
+
+      let fullPath: string;
+      if (roFolder) {
+        fullPath = `${plainPrefix}/${roFolder}/${filename}`;
+      } else {
+        fullPath = `${plainPrefix}/${filename}`;
+      }
+
+      const encryptedName = fullPath.endsWith('.enc')
+        ? fullPath
+        : `${fullPath}.enc`;
+
+      this.logger.log('Fetching file:', { bucket, encryptedName });
+
+      // Get file
       const dataStream = await this.minioClient.getObject(
         bucket,
         encryptedName,
@@ -767,103 +514,203 @@ export class MinioFileStorageService implements IFileStorageRepository {
 
       const encryptedBuffer = Buffer.concat(chunks);
 
-      // Decrypt
-      const decryptedBuffer = this.decrypt(encryptedBuffer, iv);
+      // Get metadata
+      const stat = await this.minioClient.statObject(bucket, encryptedName);
+      const mimetype = stat.metaData['x-original-mimetype'];
+      const originalName = stat.metaData['x-original-filename'];
+      const storedIv = stat.metaData['x-encryption-iv'];
 
-      this.logger.log(`File retrieved successfully: ${encryptedName}`);
+      this.logger.log('File metadata retrieved');
+
+      // Decrypt file content
+      let decryptedBuffer: Buffer;
+
+      try {
+        if (storedIv) {
+          this.logger.log('Using stored IV (legacy)');
+          decryptedBuffer = this.encKey.decrypt(encryptedBuffer, storedIv);
+        } else {
+          this.logger.log('Using fixed IV');
+          decryptedBuffer = this.encKey.decrypt(encryptedBuffer);
+        }
+      } catch (decryptError: any) {
+        this.logger.error('File decryption failed:', decryptError.message);
+        throw new Error('Failed to decrypt file content');
+      }
 
       return {
         buffer: decryptedBuffer,
         mimetype,
         originalName,
       };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Error getting file: ${error.message}`);
+
       if (error.code === 'NoSuchKey') {
-        throw new NotFoundException(
-          `File not found: ${filename}${index ? ` in repeat-order-${index}` : ''}`,
-        );
+        throw new NotFoundException(`File not found: ${filename}`);
       }
+
       throw error;
     }
   }
 
-  async getFilesByPengajuanIndex(
-    customerId: number,
-    customerName: string,
-    pengajuanIndex: number,
-    isDraft: boolean = false,
-  ): Promise<FileMetadata[]> {
+  // Helper method untuk list semua RO folders dari customer tertentu
+  async listRepeatOrderFolders(
+    encryptedCustomerId: string,
+    encryptedCustomerName: string,
+    type: REQUEST_TYPE,
+  ): Promise<string[]> {
     try {
-      const bucket = this.getBucketName(isDraft);
-      const customerPrefix = this.getCustomerPrefix(customerId, customerName);
-      const pengajuanFolder = `${customerPrefix}pengajuan-${pengajuanIndex}/`;
+      const bucket = this.getBucketType(type);
+      const prefix = `${encryptedCustomerId}/${encryptedCustomerName}/`;
 
-      const stream = this.minioClient.listObjectsV2(
-        bucket,
-        pengajuanFolder,
-        true,
-      );
-
-      const files: FileMetadata[] = [];
+      const stream = this.minioClient.listObjectsV2(bucket, prefix, false);
+      const roFolders = new Set<string>();
 
       for await (const obj of stream) {
-        const stat = await this.minioClient.statObject(bucket, obj.name);
-        const metadata = stat.metaData;
+        // Parse path: {encId}/{encName}/ro-XXXXX/filename.enc
+        const pathParts = obj.name.split('/');
+        if (pathParts.length >= 4 && pathParts[2].startsWith('ro-')) {
+          roFolders.add(pathParts[2]); // ro-GH871S, ro-KLL891, etc
+        }
+      }
+
+      return Array.from(roFolders).sort();
+    } catch (error: any) {
+      this.logger.error(`Error listing RO folders: ${error.message}`);
+      return [];
+    }
+  }
+
+  async listCustomerFiles(
+    encryptedCustomerId: string,
+    encryptedCustomerName: string,
+    type: REQUEST_TYPE,
+    roFolder?: string,
+  ): Promise<
+    Array<{ filename: string; path: string; isRepeatOrder: boolean }>
+  > {
+    try {
+      const bucket = this.getBucketType(type);
+      let prefix: string;
+
+      if (roFolder) {
+        prefix = `${encryptedCustomerId}/${encryptedCustomerName}/${roFolder}/`;
+      } else {
+        prefix = `${encryptedCustomerId}/${encryptedCustomerName}/`;
+      }
+
+      const stream = this.minioClient.listObjectsV2(bucket, prefix, true);
+      const files: Array<{
+        filename: string;
+        path: string;
+        isRepeatOrder: boolean;
+      }> = [];
+
+      for await (const obj of stream) {
+        const pathParts = obj.name.split('/');
+        const filename = pathParts[pathParts.length - 1].replace('.enc', '');
+        const isRO = pathParts.length >= 4 && pathParts[2].startsWith('ro-');
 
         files.push({
-          originalName:
-            metadata['x-original-filename'] || metadata['X-Original-Filename'],
-          encryptedName: obj.name,
-          mimetype:
-            metadata['x-original-mimetype'] || metadata['X-Original-Mimetype'],
-          size: parseInt(
-            metadata['x-original-size'] || metadata['X-Original-Size'] || '0',
-          ),
-          url: `${bucket}/${obj.name}`,
+          filename,
+          path: obj.name,
+          isRepeatOrder: isRO,
         });
       }
 
       return files;
-    } catch (error) {
-      this.logger.error(
-        `Error getting files by pengajuan index: ${error.message}`,
-      );
-      throw error;
+    } catch (error: any) {
+      this.logger.error(`Error listing files: ${error.message}`);
+      return [];
     }
   }
 
-  // ============== UPDATE ==============
-
   async updateFile(
-    customerId: number,
+    customerId_OR_URL: string,
     customerName: string,
-    filename: string,
+    fieldType: string, // ← Ini field type (foto_ktp, foto_kk, dll)
     file: Express.Multer.File,
-    isDraft: boolean = false,
+    type: REQUEST_TYPE,
   ): Promise<FileMetadata> {
     try {
-      const bucket = this.getBucketName(isDraft);
-      const prefix = this.getCustomerPrefix(customerId, customerName);
-      const encryptedName = filename.endsWith('.enc')
-        ? `${prefix}${filename}`
-        : `${prefix}${filename}.enc`;
+      const bucket = this.getBucketType(type);
+
+      console.log('** Update File Input:', {
+        customerId_OR_URL,
+        customerName,
+        fieldType,
+        uploadedFile: file.originalname,
+      });
+
+      let pathInfo: {
+        customerId: string;
+        customerName: string;
+        isRepeatOrder: boolean;
+        roFolder?: string;
+        fieldType?: string; // ← Extract field dari URL
+        originalFilename?: string;
+      };
+
+      if (
+        customerId_OR_URL.includes('http://') ||
+        customerId_OR_URL.includes('https://')
+      ) {
+        pathInfo = parseUrlPath(customerId_OR_URL, this.encKey);
+        console.log('** Parsed from URL:', pathInfo);
+
+        const urlFilename = pathInfo.originalFilename || '';
+        const match = urlFilename.match(/-(foto_\w+|bukti_\w+)\./);
+        if (match) {
+          fieldType = match[1]; // foto_ktp, foto_kk, bukti_absensi, dll
+          console.log('** Extracted field type from URL:', fieldType);
+        }
+      } else {
+        pathInfo = {
+          customerId: customerId_OR_URL,
+          customerName: customerName,
+          isRepeatOrder: false,
+        };
+        console.log('** Using plain ID:', pathInfo);
+      }
+
+      const cleanName = pathInfo.customerName
+        .toLowerCase()
+        .replace(/\s+/g, '_');
+
+      const ext = file.originalname.split('.').pop();
+      const targetFilename = `${cleanName}-${fieldType}.${ext}`;
+
+      let plainPrefix: string;
+      if (pathInfo.isRepeatOrder && pathInfo.roFolder) {
+        plainPrefix = `${pathInfo.customerId}-${cleanName}/${pathInfo.roFolder}`;
+        console.log('==== RO Path:', plainPrefix);
+      } else {
+        plainPrefix = `${pathInfo.customerId}-${cleanName}`;
+        console.log('==== Root Path:', plainPrefix);
+      }
+
+      const fullPath = `${plainPrefix}/${targetFilename}`;
+      const encryptedName = fullPath.endsWith('.enc')
+        ? fullPath
+        : `${fullPath}.enc`;
+
+      console.log('==== Target file:', encryptedName);
 
       // Check if file exists
       try {
-        await this.minioClient.putObject(
-          bucket,
-          encryptedName,
-          file.buffer,
-          file.size,
-        );
-      } catch (error) {
-        console.log(error);
-        throw new NotFoundException(`File not found: ${filename}`);
+        await this.minioClient.statObject(bucket, encryptedName);
+        console.log('** File exists, proceeding with update');
+      } catch (error: any) {
+        if (error.code === 'NotFound' || error.code === 'NoSuchKey') {
+          console.error('# File not found:', encryptedName);
+          throw new NotFoundException(`File not found: ${encryptedName}`);
+        }
+        throw error;
       }
 
       // Encrypt new file
-      const { encrypted, iv } = this.encrypt(file.buffer);
+      const { encrypted, iv } = this.encKey.encrypt(file.buffer);
 
       // Replace file
       await this.minioClient.putObject(
@@ -880,26 +727,47 @@ export class MinioFileStorageService implements IFileStorageRepository {
         },
       );
 
-      this.logger.log(`File updated: ${encryptedName}`);
+      console.log('✅ File updated successfully:', encryptedName);
+
+      // Build encrypted prefix untuk new URL
+      const encryptedCustomerId = this.encKey.encryptString(
+        pathInfo.customerId,
+      );
+      const encryptedCustomerName = this.encKey.encryptString(
+        pathInfo.customerName,
+      );
+      const safeCustomerId =
+        encryptedCustomerId.encrypted.toString('base64url');
+      const safeCustomerName =
+        encryptedCustomerName.encrypted.toString('base64url');
+      const encryptedPrefix = `${safeCustomerId.length}.${safeCustomerId}${safeCustomerName}`;
+
+      // Build URL
+      const url =
+        pathInfo.isRepeatOrder && pathInfo.roFolder
+          ? `${process.env.BACKEND_URI}/storage/${bucket}/${encryptedPrefix}/${pathInfo.roFolder}/${targetFilename}`
+          : `${process.env.BACKEND_URI}/storage/${bucket}/${encryptedPrefix}/${targetFilename}`;
+
+      console.log('🔗 New URL:', url);
 
       return {
         originalName: file.originalname,
         encryptedName,
         mimetype: file.mimetype,
         size: file.size,
-        url: `${bucket}/${encryptedName}`,
+        url,
       };
-    } catch (error) {
+    } catch (error: any) {
+      console.error('❌ Update file error:', error);
       this.logger.error(`Error updating file: ${error.message}`);
       throw error;
     }
   }
 
   async updateFileDirectory(
-    customerId: number,
+    customerId: string,
     oldCustomerName: string,
     newCustomerName: string,
-    // filename: string, // boleh diabaikan kalau mau rename seluruh folder
   ) {
     const bucket = 'customer-files';
     const oldPrefix = `${customerId}-${oldCustomerName}/`;
@@ -940,12 +808,12 @@ export class MinioFileStorageService implements IFileStorageRepository {
   // ============== LIST ==============
 
   async listFiles(
-    customerId: number,
+    customerId: string,
     customerName: string,
-    isDraft: boolean = false,
+    type: REQUEST_TYPE,
   ): Promise<FileMetadata[]> {
     try {
-      const bucket = this.getBucketName(isDraft);
+      const bucket = this.getBucketType(type);
       const prefix = this.getCustomerPrefix(customerId, customerName);
       const files: FileMetadata[] = [];
 
@@ -980,13 +848,15 @@ export class MinioFileStorageService implements IFileStorageRepository {
   // ============== DELETE ==============
 
   async deleteFile(
-    customerId: number,
+    customerId: string,
     customerName: string,
     filename: string,
-    isDraft: boolean = false,
+    type: REQUEST_TYPE,
+    isRepeatOrder?: boolean,
+    repeatOrderPath?: string,
   ): Promise<void> {
     try {
-      const bucket = this.getBucketName(isDraft);
+      const bucket = this.getBucketType(type);
       const prefix = this.getCustomerPrefix(customerId, customerName);
       const encryptedName = filename.endsWith('.enc')
         ? `${prefix}${filename}`
@@ -1009,12 +879,12 @@ export class MinioFileStorageService implements IFileStorageRepository {
   }
 
   async deleteCustomerFiles(
-    customerId: number,
+    customerId: string,
     customerName: string,
-    isDraft: boolean = false,
+    type: REQUEST_TYPE,
   ): Promise<void> {
     try {
-      const bucket = this.getBucketName(isDraft);
+      const bucket = this.getBucketType(type);
       const prefix = this.getCustomerPrefix(customerId, customerName);
 
       const objectsList: string[] = [];

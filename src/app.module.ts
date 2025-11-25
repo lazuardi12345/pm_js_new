@@ -23,6 +23,7 @@ import { HeadMarketingInternalUsecaseModule } from './Modules/Users/Roles/Head-M
 import { FileSystemStorageModules } from './Shared/Modules/Storage/ModuleStorage.module';
 import { AdminBICheckingUseCaseModule } from './Modules/Users/Roles/Admin/BI/admin-bi.module';
 import { ConfigModule } from '@nestjs/config';
+import { MarketingExternalUseCaseModule } from './Modules/Users/Roles/Marketing-External/marketing-external.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -37,13 +38,12 @@ import { ConfigModule } from '@nestjs/config';
       username: process.env.MYSQL_USN,
       password: process.env.MYSQL_PWD,
       database: process.env.DB_DEV || 'pm_js_test',
-      autoLoadEntities: true, // ⬅️ cara paling mudah
+      autoLoadEntities: true,
       synchronize: true,
       timezone: '+07:00',
       extra: {
-        decimalNumbers: true, // ini kuncinya
+        decimalNumbers: true,
       },
-      // logging: true, // ini buat lihat query yg dijalankan
     }),
 
     //? --- MongoDB Connection ---
@@ -52,15 +52,9 @@ import { ConfigModule } from '@nestjs/config';
         ? process.env.MONGO_URI
         : 'mongodb://root:root@192.182.6.69:27017',
       {
-        connectionName: 'mongoConnection', // kasih nama juga
+        connectionName: 'mongoConnection',
       },
     ),
-
-    //? --- Static Files ---
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'), // path fisik folder
-      serveRoot: '/uploads', // URL prefix
-    }),
 
     //? --- Boundaries Modules ---
     ModuleLoanApplicationInternal,
@@ -74,6 +68,7 @@ import { ConfigModule } from '@nestjs/config';
 
     //? --- All Use Cases ---
     MarketingInternalUseCaseModule,
+    MarketingExternalUseCaseModule,
     SupervisorInternalUseCaseModule,
     CreditAnalystInternalUseCaseModule,
     HeadMarketingInternalUsecaseModule,

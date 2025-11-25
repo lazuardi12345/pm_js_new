@@ -1,32 +1,42 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { CREATE_DRAFT_REPEAT_ORDER_REPOSITORY } from '../Domain/Repositories/int/DraftRepeatOrder.repository';
-import { DraftRepeatOrderRepositoryImpl } from '../Infrastructure/Repositories/RepeatOrder/RepeatOrder.repository.impl';
+import { DRAFT_REPEAT_ORDER_INTERNAL_REPOSITORY } from '../Domain/Repositories/int/DraftRepeatOrder.repository';
+import { DraftRepeatOrderExternalRepositoryImpl } from '../Infrastructure/Repositories/RepeatOrderExternal/RepeatOrder.repository.impl';
+import { DraftRepeatOrderInternalRepositoryImpl } from '../Infrastructure/Repositories/RepeatOrderInternal/RepeatOrder.repository.impl';
 import { CreateDraftRepeatOrderController } from '../Presentations/Controllers/DraftsRepeatOrder.controller';
-import { CreateDraftRepeatOrderUseCase } from '../Applications/Services/LoanAppInternal/CreateDraftRepeatOrder_Marketing.usecase';
+import { CreateDraftRepeatOrderIntUseCase } from '../Applications/Services/LoanAppInternal/CreateDraftRepeatOrder_Marketing.usecase';
 import {
   RepeatOrder,
-  RepeatOrderSchema,
+  RepeatOrderIntSchema,
 } from '../Infrastructure/Schemas/LoanAppInternal/RepeatOrder_Marketing.schema';
+import { DRAFT_REPEAT_ORDER_EXTERNAL_REPOSITORY } from '../Domain/Repositories/ext/DraftRepeatOrder.repository';
+import { CreateDraftRepeatOrderExtUseCase } from '../Applications/Services/LoanAppExternal/CreateDraftRepeatOrder_Marketing.usecase';
 
 @Module({
   imports: [
     MongooseModule.forFeature(
-      [{ name: RepeatOrder.name, schema: RepeatOrderSchema }],
+      [{ name: RepeatOrder.name, schema: RepeatOrderIntSchema }],
       'mongoConnection',
     ),
   ],
   providers: [
     {
-      provide: CREATE_DRAFT_REPEAT_ORDER_REPOSITORY,
-      useClass: DraftRepeatOrderRepositoryImpl,
+      provide: DRAFT_REPEAT_ORDER_INTERNAL_REPOSITORY,
+      useClass: DraftRepeatOrderInternalRepositoryImpl,
     },
-    CreateDraftRepeatOrderUseCase,
+    CreateDraftRepeatOrderIntUseCase,
+    {
+      provide: DRAFT_REPEAT_ORDER_EXTERNAL_REPOSITORY,
+      useClass: DraftRepeatOrderExternalRepositoryImpl,
+    },
+    CreateDraftRepeatOrderExtUseCase,
   ],
   controllers: [CreateDraftRepeatOrderController],
   exports: [
-    CreateDraftRepeatOrderUseCase,
-    CREATE_DRAFT_REPEAT_ORDER_REPOSITORY,
+    CreateDraftRepeatOrderIntUseCase,
+    DRAFT_REPEAT_ORDER_INTERNAL_REPOSITORY,
+    CreateDraftRepeatOrderExtUseCase,
+    DRAFT_REPEAT_ORDER_EXTERNAL_REPOSITORY,
   ],
 })
 export class DraftRepeatOrderModule {}

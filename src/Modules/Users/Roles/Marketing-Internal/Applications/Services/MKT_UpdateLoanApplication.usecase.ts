@@ -43,6 +43,7 @@ import { LoanInternalDto } from '../DTOS/MKT_CreateLoanApplication.dto';
 import sharp from 'sharp';
 import { StatusPengajuanEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
 import { ClientInternal } from 'src/Modules/LoanAppInternal/Domain/Entities/client-internal.entity';
+import { REQUEST_TYPE } from 'src/Shared/Modules/Storage/Infrastructure/Service/Interface/RequestType.interface';
 
 @Injectable()
 export class MKT_UpdateLoanApplicationUseCase {
@@ -154,11 +155,11 @@ export class MKT_UpdateLoanApplicationUseCase {
               const finalFileName = `${client.nama_lengkap}-${fieldName}${newExt}.enc`;
 
               await this.fileStorage.updateFile(
-                prepareForClientId,
+                prepareForClientId.toString(),
                 prepareForClientName,
                 finalFileName,
                 { ...file, buffer: newBuffer },
-                false,
+                REQUEST_TYPE.INTERNAL,
               );
 
               filePaths[fieldName] =

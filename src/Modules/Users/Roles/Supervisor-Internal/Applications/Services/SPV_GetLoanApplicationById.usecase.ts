@@ -15,8 +15,8 @@ import {
   IApprovalRecommendationRepository,
 } from 'src/Modules/Admin/BI-Checking/Domain/Repositories/approval-recommendation.repository';
 import {
-  CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY,
-  ILoanApplicationDraftRepository,
+  DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY,
+  ILoanApplicationDraftInternalRepository,
 } from 'src/Shared/Modules/Drafts/Domain/Repositories/int/LoanAppInt.repository';
 
 @Injectable()
@@ -26,8 +26,8 @@ export class SPV_GetLoanApplicationByIdUseCase {
     private readonly loanAppRepo: ILoanApplicationInternalRepository,
     @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
     private readonly approvalRecomRepo: IApprovalRecommendationRepository,
-    @Inject(CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY)
-    private readonly loanAppDraftRepo: ILoanApplicationDraftRepository,
+    @Inject(DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY)
+    private readonly loanAppDraftRepo: ILoanApplicationDraftInternalRepository,
   ) {}
 
   async execute(id: number) {
@@ -125,7 +125,6 @@ export class SPV_GetLoanApplicationByIdUseCase {
         `Warning: failed to fetch draft status for no_ktp=${noKtp}`,
         draftErr,
       );
-      // Biarkan approval_recommendation = null jika gagal ambil draft, tapi tidak abort
     }
 
     const loanAppStatus: Record<string, TypeStatusApproval | null> = {};
@@ -268,8 +267,8 @@ export class SPV_GetLoanApplicationByIdUseCase {
             foto_ktp_penjamin: loanData.foto_ktp_penjamin,
             foto_id_card_penjamin: loanData.foto_id_card_penjamin,
           },
+          approval_recommendation,
         },
-        approval_recommendation,
         loan_app_status: loanAppStatus,
         appeal_status: appealStatus,
       },

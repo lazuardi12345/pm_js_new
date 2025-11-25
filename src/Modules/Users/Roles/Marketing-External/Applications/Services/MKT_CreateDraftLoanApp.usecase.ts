@@ -7,13 +7,13 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {
-  CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY,
-  ILoanApplicationDraftRepository,
+  DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY,
+  ILoanApplicationDraftInternalRepository,
 } from 'src/Shared/Modules/Drafts/Domain/Repositories/int/LoanAppInt.repository';
 import {
-  CreateDraftLoanApplicationDto,
-  PayloadDTO,
-} from 'src/Shared/Modules/Drafts/Applications/DTOS/LoanAppInt_MarketingInput/CreateDraft_LoanAppInt.dto';
+  PayloadExternalDTO,
+  CreateDraftLoanApplicationExtDto,
+} from 'src/Shared/Modules/Drafts/Applications/DTOS/LoanAppExt_MarketingInput/CreateDraft_LoanAppExt.dto';
 import { LoanApplicationEntity } from 'src/Shared/Modules/Drafts/Domain/Entities/int/LoanAppInt.entity';
 import {
   FILE_STORAGE_SERVICE,
@@ -26,12 +26,13 @@ import {
   IApprovalRecommendationRepository,
 } from 'src/Modules/Admin/BI-Checking/Domain/Repositories/approval-recommendation.repository';
 import { MKT_GetDraftByMarketingId_ApprovalRecommendation } from 'src/Shared/Interface/MKT_GetDraft/MKT_GetDraftByMarketingId.interface';
+import { REQUEST_TYPE } from 'src/Shared/Modules/Storage/Infrastructure/Service/Interface/RequestType.interface';
 
 @Injectable()
 export class MKT_CreateDraftLoanApplicationUseCase {
   constructor(
-    @Inject(CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY)
-    private readonly loanAppDraftRepo: ILoanApplicationDraftRepository,
+    @Inject(DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY)
+    private readonly loanAppDraftRepo: ILoanApplicationDraftInternalRepository,
     @Inject(FILE_STORAGE_SERVICE)
     private readonly fileStorage: IFileStorageRepository,
     @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
@@ -39,7 +40,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
   ) {}
 
   async executeCreateDraft(
-    dto: PayloadDTO,
+    dto: PayloadExternalDTO,
     files?: Record<string, Express.Multer.File[]>,
   ) {
     try {
@@ -62,17 +63,18 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         }
 
         // simpan file ke storage
-        filePaths = await this.fileStorage.saveDraftsFiles(
-          Number(dto?.client_internal?.no_ktp) ?? dto.client_internal.no_ktp,
-          dto?.client_internal?.nama_lengkap ??
-            `draft-${dto.client_internal.no_ktp}`,
+        filePaths = await this.fileStorage.saveFiles(
+          Number(dto?.client_external?.nik) ?? dto.client_external.nik,
+          dto?.client_external?.nama_lengkap ??
+            `draft-${dto.client_external.nik}`,
           files,
+          REQUEST_TYPE.EXTERNAL,
         );
 
         // Assign hasil upload ke DTO sesuai field
         for (const [field, paths] of Object.entries(filePaths)) {
           if (paths && paths.length > 0) {
-            dto.client_internal[field] = paths[0].url;
+            dto.client_external[field] = paths[0].url;
           }
         }
       }
@@ -88,7 +90,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
       } else {
         await this.loanAppDraftRepo.triggerIsNeedCheckBeingTrue(
           loanApp._id?.toString(),
-          Number(dto.loan_application_internal?.nominal_pinjaman),
+          Number(dto.loan_application_external?.nominal_pinjaman),
         );
       }
 
@@ -147,7 +149,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
 
   async updateDraftById(
     Id: string,
-    updateData: Partial<CreateDraftLoanApplicationDto>,
+    updateData: Partial<CreateDraftLoanApplicationExtDto>,
     files?: Record<string, Express.Multer.File[]>,
   ) {
     const { payload } = updateData;
@@ -174,17 +176,18 @@ export class MKT_CreateDraftLoanApplicationUseCase {
           }
         }
 
-        filePaths = await this.fileStorage.saveDraftsFiles(
-          Number(payload?.client_internal?.no_ktp) ?? Id,
-          payload?.client_internal?.nama_lengkap ?? `draft-${Id}`,
+        filePaths = await this.fileStorage.saveFiles(
+          Number(payload?.client_external?.nik) ?? Id,
+          payload?.client_external?.nama_lengkap ?? `draft-${Id}`,
           files,
+          REQUEST_TYPE.EXTERNAL,
         );
 
         for (const [field, paths] of Object.entries(filePaths)) {
           if (paths && paths.length > 0) {
             // Tentukan di object mana field ini berada
             const parentKeys = [
-              'client_internal',
+              'client_external',
               'job_internal',
               'collateral_internal',
               'relative_internal',

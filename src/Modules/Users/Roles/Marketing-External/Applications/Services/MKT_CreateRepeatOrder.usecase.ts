@@ -106,12 +106,9 @@ import {
   IFileStorageRepository,
 } from 'src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository';
 import sharp from 'sharp';
+import { DRAFT_REPEAT_ORDER_INTERNAL_REPOSITORY } from 'src/Shared/Modules/Drafts/Domain/Repositories/int/DraftRepeatOrder.repository';
 import {
-  CREATE_DRAFT_REPEAT_ORDER_REPOSITORY,
-  IDraftRepeatOrderRepository,
-} from 'src/Shared/Modules/Drafts/Domain/Repositories/int/DraftRepeatOrder.repository';
-import {
-  CreateDraftRepeatOrderDto,
+  CreateDraftRepeatOrderExtDto,
   PayloadExternalDTO,
 } from 'src/Shared/Modules/Drafts/Applications/DTOS/RepeatOrderExt_MarketingInput/CreateRO_DraftRepeatOrder.dto';
 import { MKT_GetDraftByMarketingId_ApprovalRecommendation } from 'src/Shared/Interface/MKT_GetDraft/MKT_GetDraftByMarketingId.interface';
@@ -144,6 +141,7 @@ import {
   DRAFT_REPEAT_ORDER_EXTERNAL_REPOSITORY,
   IDraftRepeatOrderExternalRepository,
 } from 'src/Shared/Modules/Drafts/Domain/Repositories/ext/DraftRepeatOrder.repository';
+import { REQUEST_TYPE } from 'src/Shared/Modules/Storage/Infrastructure/Service/Interface/RequestType.interface';
 
 @Injectable()
 export class MKT_CreateRepeatOrderUseCase {
@@ -151,7 +149,7 @@ export class MKT_CreateRepeatOrderUseCase {
   constructor(
     @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
     private readonly approvalRecommendationRepo: IApprovalRecommendationRepository,
-    @Inject(DRAFT_REPEAT_ORDER_EXTERNAL_REPOSITORY)
+    @Inject(DRAFT_REPEAT_ORDER_INTERNAL_REPOSITORY)
     private readonly repeatOrderRepo: IDraftRepeatOrderExternalRepository,
     @Inject(CLIENT_EXTERNAL_REPOSITORY)
     private readonly clientRepo: IClientExternalRepository,
@@ -347,38 +345,6 @@ export class MKT_CreateRepeatOrderUseCase {
           );
         }
 
-        // --- 3. Simpan FamilyInternal ---
-        // try {
-        //   const familyEntity = new FamilyInternal(
-        //     { id: client_id! },
-        //     family_internal.hubungan as HubunganEnum,
-        //     family_internal.nama,
-        //     family_internal.bekerja as BekerjaEnum,
-        //     undefined,
-        //     undefined,
-        //     undefined,
-        //     family_internal.nama_perusahaan!,
-        //     family_internal.jabatan!,
-        //     parseNumber(family_internal.penghasilan),
-        //     family_internal.alamat_kerja!,
-        //     family_internal.no_hp,
-        //     undefined,
-        //   );
-        //   await this.familyRepo.save(familyEntity);
-        // } catch (e) {
-        //   console.error('Error saving family:', e);
-        //   throw new HttpException(
-        //     {
-        //       payload: {
-        //         error: true,
-        //         message: 'Gagal menyimpan data keluarga',
-        //         reference: 'FAMILY_SAVE_ERROR',
-        //       },
-        //     },
-        //     HttpStatus.BAD_REQUEST,
-        //   );
-        // }
-
         // --- 4. Simpan JobInternal (bukti_absensi nanti di-update jika upload sukses) ---
         let jobEntity: JobExternal;
         try {
@@ -526,50 +492,40 @@ export class MKT_CreateRepeatOrderUseCase {
             }
           }
 
-          // getNextPengajuanIndex might fail — tangani
-          let nextPengajuanIndex: number | null = null;
-          try {
-            nextPengajuanIndex = await this.fileStorage.getNextPengajuanIndex(
-              nikNumber,
-              client_external.nama_lengkap,
-              false,
-            );
-          } catch (e) {
-            console.error('getNextPengajuanIndex failed:', e);
-            // Jika fungsi index penting untuk nama folder, kita bisa fallback ke timestamp
-            nextPengajuanIndex = Date.now();
-            this.logger.warn(
-              'Fallback nextPengajuanIndex to timestamp:',
-              nextPengajuanIndex,
-            );
-          }
-
           // Upload ke Minio (atau service storage). Harus tangani hasilnya.
           try {
             minioUploadResult = await this.fileStorage.saveRepeatOrderFiles(
               nikNumber,
               client_external.nama_lengkap,
-              nextPengajuanIndex,
               files,
-              repeatFromLoanId,
-              {
-                loanId: loanApp.id!,
-                nasabahId: client_id,
-                nominalPinjaman:
-                  loan_application_external.nominal_pinjaman ?? 0,
-                tenor: loan_application_external.tenor ?? 0,
-              },
+              REQUEST_TYPE.EXTERNAL, // ← Sesuai pattern baru
             );
 
             // Basic sanity checks on result
             if (!minioUploadResult || typeof minioUploadResult !== 'object') {
               throw new Error('Invalid upload result from fileStorage');
             }
-            if (minioUploadResult.error) {
-              throw new Error(minioUploadResult.errorMessage || 'Upload error');
+
+            // Check if any field has files
+            const hasFiles = Object.values(minioUploadResult).some(
+              (fileArray) => Array.isArray(fileArray) && fileArray.length > 0,
+            );
+
+            if (!hasFiles) {
+              throw new Error('No files were uploaded successfully');
             }
+
+            // Optional: Log metadata untuk tracking
+            console.log('RO Files uploaded:', {
+              customerId: nikNumber,
+              customerName: client_external.nama_lengkap,
+              loanId: loanApp.id,
+              nasabahId: client_id,
+              filesUploaded: Object.keys(minioUploadResult).length,
+            });
           } catch (uploadErr) {
             console.error('File upload failed:', uploadErr);
+
             // Jika storage down, kita pertimbangkan sebagai SERVICE_UNAVAILABLE supaya operator aware
             throw new HttpException(
               {
@@ -1082,35 +1038,12 @@ export class MKT_CreateRepeatOrderUseCase {
           }
         }
 
-        // ============== GET NEXT PENGAJUAN INDEX ==============
-        const nextPengajuanIndex = await this.fileStorage.getNextPengajuanIndex(
-          Number(dto.client_external.nik),
-          dto.client_external.nama_lengkap,
-          true, // isDraft = true untuk draft
-        );
-
-        console.log('MinIO Upload Info:', {
-          nextPengajuanIndex,
-          repeatFromLoanId,
-          nik: dto.client_external.nik,
-          customerName: dto.client_external.nama_lengkap,
-          isDraft: true,
-        });
-
         // ============== SAVE FILES PAKAI saveRepeatOrderFiles ==============
         minioUploadResult = await this.fileStorage.saveRepeatOrderFiles(
           Number(dto.client_external.nik),
           dto.client_external.nama_lengkap,
-          nextPengajuanIndex,
           files,
-          repeatFromLoanId,
-          {
-            loanId: null, // Draft belum punya loanId permanent
-            nasabahId: client_id,
-            nominalPinjaman:
-              dto.loan_application_external?.nominal_pinjaman ?? 0,
-            tenor: dto.loan_application_external?.tenor ?? 0,
-          },
+          REQUEST_TYPE.EXTERNAL,
         );
 
         console.log('MinIO upload success:', {
@@ -1323,16 +1256,13 @@ export class MKT_CreateRepeatOrderUseCase {
         await this.repeatOrderRepo.findByMarketingId(marketingId);
 
       if (!loanApps || loanApps.length === 0) {
-        throw new HttpException(
-          {
-            payload: {
-              error: true,
-              message: 'No draft loan applications found for this marketing ID',
-              reference: 'LOAN_NOT_FOUND',
-            },
+        return {
+          payload: {
+            error: false,
+            message: 'No draft loan applications found for this marketing ID',
+            reference: 'LOAN_NOT_FOUND',
           },
-          HttpStatus.NOT_FOUND,
-        );
+        };
       }
 
       // ================= BUILD RESPONSE =================
@@ -1493,7 +1423,7 @@ export class MKT_CreateRepeatOrderUseCase {
 
   async updateRepeatOrderById(
     Id: string,
-    updateData: Partial<CreateDraftRepeatOrderDto>,
+    updateData: Partial<CreateDraftRepeatOrderExtDto>,
     files?: Record<string, Express.Multer.File[]>,
   ) {
     const { payload } = updateData;
@@ -1520,7 +1450,7 @@ export class MKT_CreateRepeatOrderUseCase {
           }
         }
 
-        filePaths = await this.fileStorage.saveDraftsFiles(
+        filePaths = await this.fileStorage.saveFiles(
           Number(payload?.client_external?.nik) ?? Id,
           payload?.client_external?.nama_lengkap ?? `draft-${Id}`,
           files,

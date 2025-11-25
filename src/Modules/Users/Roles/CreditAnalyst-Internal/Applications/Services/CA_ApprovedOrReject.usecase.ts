@@ -103,6 +103,7 @@ export class CA_ApproveOrRejectUseCase {
 
       // Terapkan status approval
       let newLoanStatus: StatusPengajuanEnum;
+      console.log('meki kudanil', status);
       if (status === ApprovalInternalStatusEnum.APPROVED) {
         approval.approve();
         newLoanStatus = StatusPengajuanEnum.APPROVED_CA;

@@ -8,17 +8,17 @@ import {
   LOAN_APPLICATION_EXTERNAL_REPOSITORY,
 } from 'src/Modules/LoanAppExternal/Domain/Repositories/loanApp-external.repository';
 import {
-  CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY,
-  ILoanApplicationDraftRepository,
-} from 'src/Shared/Modules/Drafts/Domain/Repositories/int/LoanAppInt.repository';
+  DRAFT_LOAN_APPLICATION_EXTERNAL_REPOSITORY,
+  ILoanApplicationDraftExternalRepository,
+} from 'src/Shared/Modules/Drafts/Domain/Repositories/ext/LoanAppInt.repository';
 
 @Injectable()
 export class MKT_GetAllLoanApplicationUseCase {
   constructor(
     @Inject(LOAN_APPLICATION_EXTERNAL_REPOSITORY)
     private readonly loanAppRepo: ILoanApplicationExternalRepository,
-    @Inject(CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY)
-    private readonly loanAppDraftRepo: ILoanApplicationDraftRepository,
+    @Inject(DRAFT_LOAN_APPLICATION_EXTERNAL_REPOSITORY)
+    private readonly loanAppDraftRepo: ILoanApplicationDraftExternalRepository,
     @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
     private readonly approvalRecomRepo: IApprovalRecommendationRepository,
   ) {}

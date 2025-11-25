@@ -5,8 +5,8 @@ import {
   LOAN_APPLICATION_INTERNAL_REPOSITORY,
 } from 'src/Modules/LoanAppInternal/Domain/Repositories/loanApp-internal.repository';
 import {
-  CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY,
-  ILoanApplicationDraftRepository,
+  DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY,
+  ILoanApplicationDraftInternalRepository,
 } from 'src/Shared/Modules/Drafts/Domain/Repositories/int/LoanAppInt.repository';
 import { TeamStats } from 'src/Shared/Interface/SPV_GetTeams/SPV_GetTeamsStats.interface';
 
@@ -15,8 +15,8 @@ export class SPV_GetTeamsUseCase {
   constructor(
     @Inject(LOAN_APPLICATION_INTERNAL_REPOSITORY)
     private readonly loanAppRepo: ILoanApplicationInternalRepository,
-    @Inject(CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY)
-    private readonly createDraftRepo: ILoanApplicationDraftRepository,
+    @Inject(DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY)
+    private readonly createDraftRepo: ILoanApplicationDraftInternalRepository,
   ) {}
 
   async execute(spv_id: number) {
