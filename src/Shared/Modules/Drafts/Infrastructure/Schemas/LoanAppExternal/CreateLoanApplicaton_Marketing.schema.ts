@@ -20,16 +20,17 @@ import {
   PersetujuanPenjaminEnum,
 } from 'src/Shared/Enums/External/Loan-Guarantor.enum';
 import { CicilanLainEnum } from 'src/Shared/Enums/External/Other-Exist-Loans.enum';
+import { ExternalCollateralType } from 'src/Shared/Enums/General/General.enum';
 
 // ================= Client =================
 @Schema({ _id: false })
 class ClientExternal {
   @Prop({ required: true }) nama_lengkap: string;
   @Prop({ required: true }) nik: string;
-  @Prop({ required: true }) no_kk: string;
-  @Prop({ required: true }) no_rek: string;
   @Prop({ required: true }) no_hp: string;
   @Prop({ required: true }) email: string;
+  @Prop() no_kk: string;
+  @Prop() no_rek: string;
   @Prop() tempat_lahir: string;
   @Prop() jenis_kelamin: GENDER;
   @Prop() tanggal_lahir: Date;
@@ -83,8 +84,8 @@ export const AddressExternalSchema =
 class JobExternal {
   @Prop() perusahaan?: string;
   @Prop() alamat_perusahaan?: string;
-  @Prop() kontak_perusahaan?: number;
-  @Prop() jabatan?: number;
+  @Prop() kontak_perusahaan?: string;
+  @Prop() jabatan?: string;
   @Prop() lama_kerja?: string;
   @Prop() status_karyawan?: StatusKaryawanEnum;
   @Prop() lama_kontrak?: string;
@@ -103,9 +104,9 @@ export const JobExternalSchema = SchemaFactory.createForClass(JobExternal);
 // ================= Loan Application =================
 @Schema({ _id: false })
 class LoanApplicationExternal {
+  @Prop({ required: true }) nominal_pinjaman?: number;
   @Prop() jenis_pembiayaan?: JenisPembiayaanEnum;
   @Prop() pinjaman_ke?: number;
-  @Prop() nominal_pinjaman?: number;
   @Prop() tenor?: number;
   @Prop() status_pinjaman?: StatusPinjamanEnum;
   @Prop() pinjaman_terakhir?: number;
@@ -129,13 +130,13 @@ export const LoanApplicationExternalSchema = SchemaFactory.createForClass(
 
 @Schema({ _id: false })
 export class EmergencyContactExternal {
-  @Prop({ type: String, required: true })
+  @Prop({ type: String })
   nama_kontak_darurat: string;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: String })
   hubungan_kontak_darurat: string;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: String })
   no_hp_kontak_darurat: string;
 
   @Prop({ type: Boolean, default: false })
@@ -167,25 +168,51 @@ export const FinancialDependentsExternalSchema = SchemaFactory.createForClass(
 
 @Schema({ _id: false })
 export class LoanGuarantorExternal {
-  @Prop({ type: String, enum: HubunganPenjaminEnum, required: true })
+  @Prop({
+    type: String,
+    required: false,
+    validate: {
+      validator: function (v: string) {
+        if (v === '') return true;
+        return Object.values(HubunganPenjaminEnum).includes(
+          v as HubunganPenjaminEnum,
+        );
+      },
+      message: (props) =>
+        `${props.value} is not a valid value for ${props.path}. Value must be in Enum or empty string.`,
+    },
+  })
   hubungan_penjamin: HubunganPenjaminEnum;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: String })
   nama_penjamin: string;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: String })
   pekerjaan_penjamin: string;
 
-  @Prop({ type: Number, required: true })
+  @Prop({ type: Number })
   penghasilan_penjamin: number;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: String })
   no_hp_penjamin: string;
 
-  @Prop({ type: String, enum: PersetujuanPenjaminEnum, required: true })
+  @Prop({
+    type: String,
+    required: false,
+    validate: {
+      validator: function (v: string) {
+        if (v === '') return true;
+        return Object.values(PersetujuanPenjaminEnum).includes(
+          v as PersetujuanPenjaminEnum,
+        );
+      },
+      message: (props) =>
+        `${props.value} is not a valid value for ${props.path}. Value must be in Enum or empty string.`,
+    },
+  })
   persetujuan_penjamin: PersetujuanPenjaminEnum;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: String })
   foto_ktp_penjamin: string;
 
   @Prop({ type: Boolean, default: false })
@@ -201,19 +228,19 @@ export const LoanGuarantorExternalSchema = SchemaFactory.createForClass(
 
 @Schema({ _id: false })
 export class OtherExistLoansExternal {
-  @Prop({ type: String, enum: CicilanLainEnum, required: true })
+  @Prop({ type: String, enum: CicilanLainEnum })
   cicilan_lain: CicilanLainEnum;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: String })
   nama_pembiayaan: string;
 
   @Prop({ type: String })
   total_pinjaman?: string;
 
-  @Prop({ type: Number, required: true })
+  @Prop({ type: Number })
   cicilan_perbulan: number;
 
-  @Prop({ type: Number, required: true })
+  @Prop({ type: Number })
   sisa_tenor: number;
 
   @Prop({ type: Boolean, default: false })
@@ -487,7 +514,7 @@ export const CollateralByKedinasanNonMOUExternalSchema =
 export class LoanApplicationExt {
   @Prop({ required: true }) marketing_id: number;
 
-  @Prop({ type: ClientExternalSchema, required: true })
+  @Prop({ type: ClientExternalSchema })
   client_external: ClientExternal;
   @Prop({ type: AddressExternalSchema }) address_external?: AddressExternal;
   @Prop({ type: JobExternalSchema }) job_external?: JobExternal;
@@ -496,19 +523,19 @@ export class LoanApplicationExt {
   @Prop({ type: LoanGuarantorExternalSchema })
   loan_guarantor_external?: LoanGuarantorExternal;
   @Prop({ type: CollateralByBPJSExternalSchema })
-  collateral_by_bpjs?: CollateralByBPJSExternal;
+  collateral_bpjs_external?: CollateralByBPJSExternal;
   @Prop({ type: CollateralByBPKBExternalSchema })
-  collateral_by_bpkb?: CollateralByBPKBExternal;
+  collateral_bpkb_external?: CollateralByBPKBExternal;
   @Prop({ type: CollateralBySHMExternalSchema })
-  collateral_by_shm?: CollateralBySHMExternal;
+  collateral_shm_external?: CollateralBySHMExternal;
   @Prop({ type: CollateralByUMKMExternalSchema })
-  collateral_by_umkm?: CollateralByUMKMExternal;
+  collateral_umkm_external?: CollateralByUMKMExternal;
   @Prop({ type: CollateralByKedinasanMOUExternalSchema })
-  collateral_by_kedinasan_mou?: CollateralByKedinasanMOUExternal;
+  collateral_kedinasan_mou_external?: CollateralByKedinasanMOUExternal;
   @Prop({ type: CollateralByKedinasanNonMOUExternalSchema })
-  collateral_by_kedinasan_non_mou?: CollateralByKedinasanNonMOUExternal;
+  collateral_kedinasan_non_mou_external?: CollateralByKedinasanNonMOUExternal;
   @Prop({ type: OtherExistLoansExternalSchema })
-  other_exist_loans_external?: OtherExistLoansExternal;
+  other_exist_loan_external?: OtherExistLoansExternal;
   @Prop({ type: EmergencyContactExternalSchema })
   emergency_contact_external?: EmergencyContactExternal;
   @Prop({ type: FinancialDependentsExternalSchema })
@@ -516,6 +543,7 @@ export class LoanApplicationExt {
 
   @Prop({ type: Object })
   uploaded_files?: Record<string, string[]>;
+  @Prop({ default: '' }) loan_external_type!: ExternalCollateralType;
   @Prop({ default: false }) isDeleted: boolean; // flag soft delete
   @Prop({ default: false }) isCompleted?: boolean;
   @Prop({ default: false }) isNeedCheck?: boolean;

@@ -6,6 +6,13 @@ import { ICollateralByUMKMRepository } from '../../Domain/Repositories/collatera
 import { CollateralByUMKM_ORM_Entity } from '../Entities/collateral-umkm.orm.entity';
 import { LoanApplicationExternal_ORM_Entity } from '../Entities/loan-application-external.orm-entity';
 
+function toStringArray(
+  value: string | string[] | undefined,
+): string[] | undefined {
+  if (!value) return undefined;
+  return Array.isArray(value) ? value : [value];
+}
+
 @Injectable()
 export class CollateralUMKMRepositoryImpl
   implements ICollateralByUMKMRepository
@@ -29,6 +36,13 @@ export class CollateralUMKMRepositoryImpl
     );
   }
 
+  private toStringArray(
+    value: string | string[] | undefined,
+  ): string[] | undefined {
+    if (!value) return undefined;
+    return Array.isArray(value) ? value : [value];
+  }
+
   // ========================== MAPPER: DOMAIN → ORM ==========================
   private toORM(domain: CollateralByUMKM): CollateralByUMKM_ORM_Entity {
     const orm = new CollateralByUMKM_ORM_Entity();
@@ -36,10 +50,8 @@ export class CollateralUMKMRepositoryImpl
       id: domain.pengajuan?.id,
     } as LoanApplicationExternal_ORM_Entity;
     orm.foto_sku = domain.foto_sku;
-    orm.foto_usaha = domain.foto_usaha;
+    orm.foto_usaha = this.toStringArray(domain.foto_usaha);
     orm.foto_pembukuan = domain.foto_pembukuan;
-
-    // ✅ Pastikan fallback date agar tidak undefined
     orm.created_at = domain.created_at ?? new Date();
     orm.updated_at = domain.updated_at ?? new Date();
     orm.deleted_at = domain.deleted_at ?? null;
@@ -60,7 +72,8 @@ export class CollateralUMKMRepositoryImpl
     }
 
     if (partial.foto_sku !== undefined) orm.foto_sku = partial.foto_sku;
-    if (partial.foto_usaha !== undefined) orm.foto_usaha = partial.foto_usaha;
+    if (partial.foto_usaha !== undefined)
+      orm.foto_usaha = this.toStringArray(partial.foto_usaha);
     if (partial.foto_pembukuan !== undefined)
       orm.foto_pembukuan = partial.foto_pembukuan;
 

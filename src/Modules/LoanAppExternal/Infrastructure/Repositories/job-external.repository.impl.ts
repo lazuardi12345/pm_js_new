@@ -31,6 +31,7 @@ export class JobExternalRepositoryImpl implements IJobExternalRepository {
       orm.id_card_peminjam,
       orm.id_card_penjamin,
       orm.lama_kontrak,
+      orm.rekening_koran,
       orm.validasi_pekerjaan,
       orm.catatan,
       orm.id,
@@ -88,8 +89,10 @@ export class JobExternalRepositoryImpl implements IJobExternalRepository {
     if (partial.slip_gaji_penjamin)
       ormData.slip_gaji_penjamin = partial.slip_gaji_penjamin;
     if (partial.norek) ormData.norek = partial.norek;
-    if (partial.id_card_peminjam) ormData.id_card_peminjam = partial.id_card_peminjam;
-    if (partial.id_card_penjamin) ormData.id_card_penjamin = partial.id_card_penjamin;
+    if (partial.id_card_peminjam)
+      ormData.id_card_peminjam = partial.id_card_peminjam;
+    if (partial.id_card_penjamin)
+      ormData.id_card_penjamin = partial.id_card_penjamin;
     if (partial.lama_kontrak) ormData.lama_kontrak = partial.lama_kontrak;
     if (partial.validasi_pekerjaan !== undefined)
       ormData.validasi_pekerjaan = partial.validasi_pekerjaan;

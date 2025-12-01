@@ -32,20 +32,10 @@ export class MKT_CreateDraftLoanApplicationController {
   // @Public()
   @Post('add')
   @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        { name: 'foto_ktp', maxCount: 1 },
-        { name: 'foto_kk', maxCount: 1 },
-        { name: 'bukti_absensi', maxCount: 1 },
-        { name: 'foto_id_card_penjamin', maxCount: 1 },
-        { name: 'foto_ktp_penjamin', maxCount: 1 },
-        { name: 'foto_rekening', maxCount: 1 },
-      ],
-      {
-        storage: multer.memoryStorage(),
-        limits: { fileSize: 5 * 1024 * 1024 },
-      },
-    ),
+    FileFieldsInterceptor([{ name: 'foto_ktp', maxCount: 1 }], {
+      storage: multer.memoryStorage(),
+      limits: { fileSize: 5 * 1024 * 1024 },
+    }),
   )
   async createDraft(
     @UploadedFiles() files: Record<string, Express.Multer.File[]>,

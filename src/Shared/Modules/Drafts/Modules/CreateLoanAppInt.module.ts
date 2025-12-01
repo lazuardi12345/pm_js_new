@@ -12,7 +12,7 @@ import {
   LoanApplicationExt,
   LoanApplicationExtSchema,
 } from '../Infrastructure/Schemas/LoanAppExternal/CreateLoanApplicaton_Marketing.schema';
-import { DRAFT_LOAN_APPLICATION_EXTERNAL_REPOSITORY } from '../Domain/Repositories/ext/LoanAppInt.repository';
+import { DRAFT_LOAN_APPLICATION_EXTERNAL_REPOSITORY } from '../Domain/Repositories/ext/LoanAppExt.repository';
 import { LoanApplicationExtRepositoryImpl } from '../Infrastructure/Repositories/LoanApplicationExternal/ClientExternal.repository.impl';
 import { CreateDraftLoanApplicationExtUseCase } from '../Applications/Services/LoanAppExternal/CreateLoanApplication_Marketing.usecase';
 

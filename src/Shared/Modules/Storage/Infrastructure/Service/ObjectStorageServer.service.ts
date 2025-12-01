@@ -12,19 +12,11 @@ import {
   IFileStorageRepository,
   FileMetadata,
 } from '../../Domain/Repositories/IFileStorage.repository';
-// import { SingleUploadFileType } from 'src/Shared/Interface/Storage_SingleUploadType/SingleUploadFile.interface';
+
 import { REQUEST_TYPE } from './Interface/RequestType.interface';
 import { generateRandomFolder } from './helper/Func_GenerateRandom.help';
 import { checkPathExists } from './helper/Func_isPathExist.help';
-import { buildFileUrl } from './helper/Func_URLBuilder.help';
 import { parseUrlPath } from './helper/Func_ParseURL.help';
-
-type MinioObject = {
-  name: string;
-  size?: number;
-  etag?: string;
-  lastModified?: Date;
-};
 
 @Injectable()
 export class MinioFileStorageService implements IFileStorageRepository {
@@ -35,9 +27,6 @@ export class MinioFileStorageService implements IFileStorageRepository {
   private readonly customer_external = 'customer-external';
   private readonly approvalRecommendationBucket =
     'approval-recommendation-files';
-  private readonly randomFolderGenerator = generateRandomFolder;
-  private readonly isPathExist = checkPathExists;
-  private readonly buildFileUrl = buildFileUrl;
 
   constructor() {
     // Initialize MinIO Client
@@ -554,78 +543,6 @@ export class MinioFileStorageService implements IFileStorageRepository {
     }
   }
 
-  // Helper method untuk list semua RO folders dari customer tertentu
-  async listRepeatOrderFolders(
-    encryptedCustomerId: string,
-    encryptedCustomerName: string,
-    type: REQUEST_TYPE,
-  ): Promise<string[]> {
-    try {
-      const bucket = this.getBucketType(type);
-      const prefix = `${encryptedCustomerId}/${encryptedCustomerName}/`;
-
-      const stream = this.minioClient.listObjectsV2(bucket, prefix, false);
-      const roFolders = new Set<string>();
-
-      for await (const obj of stream) {
-        // Parse path: {encId}/{encName}/ro-XXXXX/filename.enc
-        const pathParts = obj.name.split('/');
-        if (pathParts.length >= 4 && pathParts[2].startsWith('ro-')) {
-          roFolders.add(pathParts[2]); // ro-GH871S, ro-KLL891, etc
-        }
-      }
-
-      return Array.from(roFolders).sort();
-    } catch (error: any) {
-      this.logger.error(`Error listing RO folders: ${error.message}`);
-      return [];
-    }
-  }
-
-  async listCustomerFiles(
-    encryptedCustomerId: string,
-    encryptedCustomerName: string,
-    type: REQUEST_TYPE,
-    roFolder?: string,
-  ): Promise<
-    Array<{ filename: string; path: string; isRepeatOrder: boolean }>
-  > {
-    try {
-      const bucket = this.getBucketType(type);
-      let prefix: string;
-
-      if (roFolder) {
-        prefix = `${encryptedCustomerId}/${encryptedCustomerName}/${roFolder}/`;
-      } else {
-        prefix = `${encryptedCustomerId}/${encryptedCustomerName}/`;
-      }
-
-      const stream = this.minioClient.listObjectsV2(bucket, prefix, true);
-      const files: Array<{
-        filename: string;
-        path: string;
-        isRepeatOrder: boolean;
-      }> = [];
-
-      for await (const obj of stream) {
-        const pathParts = obj.name.split('/');
-        const filename = pathParts[pathParts.length - 1].replace('.enc', '');
-        const isRO = pathParts.length >= 4 && pathParts[2].startsWith('ro-');
-
-        files.push({
-          filename,
-          path: obj.name,
-          isRepeatOrder: isRO,
-        });
-      }
-
-      return files;
-    } catch (error: any) {
-      this.logger.error(`Error listing files: ${error.message}`);
-      return [];
-    }
-  }
-
   async updateFile(
     customerId_OR_URL: string,
     customerName: string,
@@ -763,89 +680,6 @@ export class MinioFileStorageService implements IFileStorageRepository {
       throw error;
     }
   }
-
-  async updateFileDirectory(
-    customerId: string,
-    oldCustomerName: string,
-    newCustomerName: string,
-  ) {
-    const bucket = 'customer-files';
-    const oldPrefix = `${customerId}-${oldCustomerName}/`;
-    const newPrefix = `${customerId}-${newCustomerName}/`;
-
-    const objects: MinioObject[] = [];
-    const stream = this.minioClient.listObjectsV2(bucket, oldPrefix, true);
-
-    for await (const obj of stream) {
-      objects.push(obj);
-    }
-
-    if (objects.length === 0) {
-      throw new Error(`No files found in ${oldPrefix}`);
-    }
-
-    for (const obj of objects) {
-      const newKey = obj.name.replace(oldPrefix, newPrefix);
-      await this.minioClient.copyObject(
-        bucket,
-        newKey,
-        `/${bucket}/${obj.name}`,
-      );
-    }
-
-    for (const obj of objects) {
-      await this.minioClient.removeObject(bucket, obj.name);
-    }
-
-    return {
-      oldPrefix,
-      newPrefix,
-      totalMoved: objects.length,
-      message: 'All files moved successfully',
-    };
-  }
-
-  // ============== LIST ==============
-
-  async listFiles(
-    customerId: string,
-    customerName: string,
-    type: REQUEST_TYPE,
-  ): Promise<FileMetadata[]> {
-    try {
-      const bucket = this.getBucketType(type);
-      const prefix = this.getCustomerPrefix(customerId, customerName);
-      const files: FileMetadata[] = [];
-
-      const stream = this.minioClient.listObjects(bucket, prefix, true);
-
-      for await (const obj of stream) {
-        if (obj.name.endsWith('.enc')) {
-          try {
-            const stat = await this.minioClient.statObject(bucket, obj.name);
-            files.push({
-              originalName: stat.metaData['x-original-filename'] || obj.name,
-              encryptedName: obj.name,
-              mimetype:
-                stat.metaData['x-original-mimetype'] ||
-                'application/octet-stream',
-              size: parseInt(stat.metaData['x-original-size']) || obj.size,
-              url: `${bucket}/${obj.name}`,
-            });
-          } catch (err) {
-            this.logger.warn(`Could not get metadata for ${obj.name}`);
-          }
-        }
-      }
-
-      return files;
-    } catch (error) {
-      this.logger.error(`Error listing files: ${error.message}`);
-      throw error;
-    }
-  }
-
-  // ============== DELETE ==============
 
   async deleteFile(
     customerId: string,

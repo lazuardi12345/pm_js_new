@@ -77,8 +77,9 @@ export class ClientExternalProfileDto {
   @IsString()
   no_rek: string;
 
+  @IsOptional()
   @IsString()
-  foto_rekening: string;
+  foto_rekening?: string;
 
   @IsEnum(GENDER)
   jenis_kelamin: GENDER;
@@ -343,9 +344,9 @@ export class LoanApplicationExternalDto {
   @IsNumber()
   tenor: number;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  berkas_jaminan: string;
+  berkas_jaminan?: string;
 
   @IsEnum(StatusPinjamanEnum)
   @IsOptional()
@@ -871,7 +872,7 @@ export class LoanGuarantorExternalDto {
 
   @IsString()
   @IsNotEmpty()
-  foto_ktp_penjamin: string;
+  foto_ktp_penjamin?: string;
 
   @IsOptional()
   @IsBoolean()
@@ -960,25 +961,133 @@ export class OtherExistLoansExternalDto {
 //#region Files
 export class FilesDto {
   @IsOptional()
-  foto_ktp?: string | Express.Multer.File;
-
+  foto_rekening?: string | Express.Multer.File;
   @IsOptional()
-  foto_kk?: string | Express.Multer.File;
-
-  @IsOptional()
-  foto_id_card?: string | Express.Multer.File;
-
-  @IsOptional()
-  bukti_absensi_file?: string | Express.Multer.File;
-
+  foto_ktp_peminjam?: string | Express.Multer.File;
   @IsOptional()
   foto_ktp_penjamin?: string | Express.Multer.File;
-
+  @IsOptional()
+  foto_kk_peminjam?: string | Express.Multer.File;
+  @IsOptional()
+  foto_kk_penjamin?: string | Express.Multer.File;
+  @IsOptional()
+  dokumen_pendukung?: string | Express.Multer.File;
+  @IsOptional()
+  foto_meteran_listrik?: string | Express.Multer.File;
+  @IsOptional()
+  slip_gaji_peminjam?: string | Express.Multer.File;
+  @IsOptional()
+  slip_gaji_penjamin?: string | Express.Multer.File;
+  @IsOptional()
+  id_card_peminjam?: string | Express.Multer.File;
+  @IsOptional()
+  id_card_penjamin?: string | Express.Multer.File;
+  @IsOptional()
+  rekening_koran?: string | Express.Multer.File;
+  @IsOptional()
+  berkas_jaminan?: string | Express.Multer.File;
   @IsOptional()
   foto_id_card_penjamin?: string | Express.Multer.File;
-
   @IsOptional()
-  foto_rekening?: string | Express.Multer.File;
+  foto_bpjs?: string | Express.Multer.File;
+  @IsOptional()
+  jaminan_tambahan?: string | Express.Multer.File;
+  @IsOptional()
+  foto_no_rangka?: string | Express.Multer.File;
+  @IsOptional()
+  foto_no_mesin?: string | Express.Multer.File;
+  @IsOptional()
+  foto_faktur_kendaraan?: string | Express.Multer.File;
+  @IsOptional()
+  foto_snikb?: string | Express.Multer.File;
+  @IsOptional()
+  dokumen_bpkb?: string | Express.Multer.File;
+  @IsOptional()
+  foto_stnk_depan?: string | Express.Multer.File;
+  @IsOptional()
+  foto_stnk_belakang?: string | Express.Multer.File;
+  @IsOptional()
+  foto_kendaraan_depan?: string | Express.Multer.File;
+  @IsOptional()
+  foto_kendaraan_belakang?: string | Express.Multer.File;
+  @IsOptional()
+  foto_kendaraan_samping_kanan?: string | Express.Multer.File;
+  @IsOptional()
+  foto_kendaraan_samping_kiri?: string | Express.Multer.File;
+  @IsOptional()
+  foto_sambara?: string | Express.Multer.File;
+  @IsOptional()
+  foto_kwitansi_jual_beli?: string | Express.Multer.File;
+  @IsOptional()
+  foto_ktp_tangan_pertama?: string | Express.Multer.File;
+  @IsOptional()
+  surat_permohonan_kredit_mou?: string | Express.Multer.File;
+  @IsOptional()
+  surat_pernyataan_penjamin_mou?: string | Express.Multer.File;
+  @IsOptional()
+  surat_persetujuan_pimpinan_mou?: string | Express.Multer.File;
+  @IsOptional()
+  surat_keterangan_gaji_mou?: string | Express.Multer.File;
+  @IsOptional()
+  foto_form_pengajuan_mou?: string | Express.Multer.File;
+  @IsOptional()
+  foto_surat_kuasa_pemotongan_mou?: string | Express.Multer.File;
+  @IsOptional()
+  foto_surat_pernyataan_peminjam_mou?: string | Express.Multer.File;
+  @IsOptional()
+  foto_sk_golongan_terbaru_mou?: string | Express.Multer.File;
+  @IsOptional()
+  foto_keterangan_tpp_mou?: string | Express.Multer.File;
+  @IsOptional()
+  foto_biaya_operasional_mou?: string | Express.Multer.File;
+  @IsOptional()
+  foto_surat_kontrak_mou?: string | Express.Multer.File;
+  @IsOptional()
+  foto_rekomendasi_bendahara_mou?: string | Express.Multer.File;
+  @IsOptional()
+  surat_permohonan_kredit_non_mou?: string | Express.Multer.File;
+  @IsOptional()
+  surat_pernyataan_penjamin_non_mou?: string | Express.Multer.File;
+  @IsOptional()
+  surat_persetujuan_pimpinan_non_mou?: string | Express.Multer.File;
+  @IsOptional()
+  surat_keterangan_gaji_non_mou?: string | Express.Multer.File;
+  @IsOptional()
+  foto_surat_kontrak_non_mou?: string | Express.Multer.File;
+  @IsOptional()
+  foto_keterangan_tpp_non_mou?: string | Express.Multer.File;
+  @IsOptional()
+  foto_biaya_operasional_non_mou?: string | Express.Multer.File;
+  @IsOptional()
+  foto_shm?: string | Express.Multer.File;
+  @IsOptional()
+  foto_kk_pemilik_shm?: string | Express.Multer.File;
+  @IsOptional()
+  foto_pbb?: string | Express.Multer.File;
+  @IsOptional()
+  foto_objek_jaminan?: string | Express.Multer.File;
+  @IsOptional()
+  foto_buku_nikah_suami?: string | Express.Multer.File;
+  @IsOptional()
+  foto_buku_nikah_istri?: string | Express.Multer.File;
+  @IsOptional()
+  foto_npwp?: string | Express.Multer.File;
+  @IsOptional()
+  foto_imb?: string | Express.Multer.File;
+  @IsOptional()
+  foto_surat_ahli_waris?: string | Express.Multer.File;
+  @IsOptional()
+  foto_surat_akte_kematian?: string | Express.Multer.File;
+  @IsOptional()
+  foto_surat_pernyataan_kepemilikan_tanah?: string | Express.Multer.File;
+  @IsOptional()
+  foto_surat_pernyataan_tidak_dalam_sengketa?: string | Express.Multer.File;
+  @IsOptional()
+  foto_sku?: string | Express.Multer.File;
+  @IsOptional()
+  foto_usaha?: string | Express.Multer.File;
+  @IsOptional()
+  foto_pembukuan?: string | Express.Multer.File;
 }
 //#endregion
 
@@ -993,7 +1102,7 @@ export class CreateLoanApplicationExternalDto {
   client_external: ClientExternalDto;
 
   @ValidateNested()
-  @Type(() => ClientExternalDto)
+  @Type(() => ClientExternalProfileDto)
   client_external_profile: ClientExternalProfileDto;
 
   @ValidateNested()
@@ -1304,7 +1413,7 @@ export interface TypeLoanApplicationDetail {
   pengajuan_umkm?: {
     pengajuan_id: number;
     foto_sku?: string;
-    foto_usaha?: string;
+    foto_usaha?: string[];
     foto_pembukuan?: string;
   };
 

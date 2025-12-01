@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsEmail,
   IsNotEmpty,
@@ -39,6 +39,7 @@ import {
   PersetujuanPenjaminEnum,
 } from 'src/Shared/Enums/External/Loan-Guarantor.enum';
 import { CicilanLainEnum } from 'src/Shared/Enums/External/Other-Exist-Loans.enum';
+import { ExternalCollateralType } from 'src/Shared/Enums/General/General.enum';
 
 // ================= Client =================
 class ClientExternalDto {
@@ -48,32 +49,41 @@ class ClientExternalDto {
   @IsString()
   nik: string;
 
+  @IsOptional()
   @IsString()
-  no_kk: string;
+  no_kk?: string;
 
+  @IsOptional()
   @IsString()
   no_rek: string;
 
+  @IsOptional()
   @IsString()
   foto_rekening: string;
 
+  @IsOptional()
   @IsEnum(GENDER)
   jenis_kelamin: GENDER;
 
+  @IsOptional()
   @IsString()
   tempat_lahir: string;
 
+  @IsOptional()
   @Type(() => Date)
   @IsDate()
   tanggal_lahir: Date;
 
+  @IsOptional()
   @IsString()
   no_hp: string;
 
+  @IsOptional()
   @IsEmail()
   @IsOptional()
   email?: string;
 
+  @IsOptional()
   @IsEnum(MARRIAGE_STATUS)
   status_nikah: MARRIAGE_STATUS;
 
@@ -121,29 +131,30 @@ class ClientExternalDto {
 // ================= Address =================
 class AddressExternalDto {
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   alamat_ktp: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   rt_rw: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   kelurahan: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   kecamatan: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   kota: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   provinsi: string;
 
+  @IsOptional()
   @IsEnum(StatusRumahEnum)
   status_rumah: StatusRumahEnum;
 
@@ -155,6 +166,7 @@ class AddressExternalDto {
   @IsNumber()
   biaya_pertahun?: number;
 
+  @IsOptional()
   @IsEnum(DomisiliEnum)
   domisili: DomisiliEnum;
 
@@ -162,6 +174,7 @@ class AddressExternalDto {
   @IsString()
   alamat_domisili?: string;
 
+  @IsOptional()
   @IsEnum(RumahDomisiliEnum)
   rumah_domisili: RumahDomisiliEnum;
 
@@ -178,18 +191,18 @@ class AddressExternalDto {
   lama_tinggal?: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   atas_nama_listrik: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   hubungan: string;
 
   @IsOptional()
   @IsString()
   foto_meteran_listrik?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   share_loc_domisili?: string;
 
@@ -225,23 +238,23 @@ class AddressExternalDto {
 // ================= Job =================
 class JobExternalDto {
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   perusahaan: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   alamat_perusahaan: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   kontak_perusahaan: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   jabatan: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   lama_kerja: string;
 
   @IsEnum(StatusKaryawanEnum)
@@ -286,18 +299,20 @@ class JobExternalDto {
 
 // ================= Loan Application =================
 class LoanApplicationExternalDto {
+  @IsOptional()
   @IsEnum(JenisPembiayaanEnum)
   jenis_pembiayaan: JenisPembiayaanEnum;
 
   @IsNumber()
   nominal_pinjaman: number;
 
+  @IsOptional()
   @IsNumber()
   tenor: number;
 
   @IsString()
-  @IsNotEmpty()
-  berkas_jaminan: string;
+  @IsOptional()
+  berkas_jaminan?: string;
 
   @IsEnum(StatusPinjamanEnum)
   @IsOptional()
@@ -354,9 +369,6 @@ class LoanApplicationExternalDto {
 
 // ================= Collateral =================
 class CollateralByBPJSDto {
-  @IsNumber()
-  pengajuan_id: number;
-
   @IsOptional()
   @IsNumber()
   saldo_bpjs?: number;
@@ -568,7 +580,7 @@ class CollateralByKedinasanNonMOUDto {
   foto_biaya_operasional?: string;
 }
 
-class CollateralByKedinasanSHMDto {
+class CollateralBySHMDto {
   @IsOptional()
   @IsString()
   atas_nama_shm?: string;
@@ -638,7 +650,7 @@ class CollateralByKedinasanSHMDto {
   foto_surat_pernyataan_tidak_dalam_sengketa?: string;
 }
 
-class CollateralByKedinasanUMKMDto {
+class CollateralByUMKMDto {
   @IsOptional()
   @IsString()
   foto_sku?: string;
@@ -654,15 +666,15 @@ class CollateralByKedinasanUMKMDto {
 
 class EmergencyContactDto {
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   nama_kontak_darurat: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   hubungan_kontak_darurat: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   no_hp_kontak_darurat: string;
 
   @IsOptional()
@@ -689,29 +701,34 @@ class FinancialDependentsDto {
 }
 
 class LoanGuarantorDto {
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsEnum(HubunganPenjaminEnum)
-  hubungan_penjamin: HubunganPenjaminEnum;
+  @IsOptional()
+  hubungan_penjamin?: HubunganPenjaminEnum;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   nama_penjamin: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   pekerjaan_penjamin: string;
 
+  @IsOptional()
   @IsNumber()
   penghasilan_penjamin: number;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   no_hp_penjamin: string;
 
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsEnum(PersetujuanPenjaminEnum)
-  persetujuan_penjamin: PersetujuanPenjaminEnum;
+  @IsOptional()
+  persetujuan_penjamin?: PersetujuanPenjaminEnum;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   foto_ktp_penjamin: string;
 
   @IsOptional()
@@ -728,7 +745,7 @@ class OtherExistLoanDto {
   cicilan_lain: CicilanLainEnum;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   nama_pembiayaan: string;
 
   @IsOptional()
@@ -750,16 +767,6 @@ class OtherExistLoanDto {
   catatan?: string;
 }
 
-// ================= Relative =================
-// class RelativeExternalDto {
-//   @IsOptional() @IsString() kerabat_kerja?: string;
-//   @IsOptional() @IsString() nama?: string;
-//   @IsOptional() @IsString() alamat?: string;
-//   @IsOptional() @IsString() no_hp?: string;
-//   @IsOptional() @IsString() status_hubungan?: string;
-//   @IsOptional() @IsString() nama_perusahaan?: string;
-// }
-
 // ================= Uploaded Files =================
 class UploadedFilesDto {
   @IsOptional() @IsString() foto_ktp?: string;
@@ -778,11 +785,6 @@ export class PayloadExternalDTO {
   @Type(() => AddressExternalDto)
   address_external?: AddressExternalDto;
 
-  // @IsOptional()
-  // @ValidateNested()
-  // @Type(() => FamilyExternalDto)
-  // family_external?: FamilyExternalDto;
-
   @IsOptional()
   @ValidateNested()
   @Type(() => JobExternalDto)
@@ -796,22 +798,22 @@ export class PayloadExternalDTO {
   @IsOptional()
   @ValidateNested()
   @Type(() => EmergencyContactDto)
-  emergency_contact_dto?: EmergencyContactDto;
+  emergency_contact_external?: EmergencyContactDto;
 
   @IsOptional()
   @ValidateNested()
   @Type(() => FinancialDependentsDto)
-  financial_dependents?: FinancialDependentsDto;
+  financial_dependents_external?: FinancialDependentsDto;
 
   @IsOptional()
   @ValidateNested()
   @Type(() => LoanGuarantorDto)
-  loan_guarantor?: LoanGuarantorDto;
+  loan_guarantor_external?: LoanGuarantorDto;
 
   @IsOptional()
   @ValidateNested()
   @Type(() => OtherExistLoanDto)
-  other_exist_loan?: OtherExistLoanDto;
+  other_exist_loan_external?: OtherExistLoanDto;
 
   @IsOptional()
   @ValidateNested()
@@ -835,20 +837,23 @@ export class PayloadExternalDTO {
 
   @IsOptional()
   @ValidateNested()
-  @Type(() => CollateralByKedinasanSHMDto)
-  collateral_shm?: CollateralByKedinasanSHMDto;
+  @Type(() => CollateralBySHMDto)
+  collateral_shm?: CollateralBySHMDto;
 
   @IsOptional()
   @ValidateNested()
-  @Type(() => CollateralByKedinasanUMKMDto)
-  collateral_umkm?: CollateralByKedinasanUMKMDto;
+  @Type(() => CollateralByUMKMDto)
+  collateral_umkm?: CollateralByUMKMDto;
 
-  // @IsOptional()
-  // @ValidateNested()
-  // @Type(() => RelativeExternalDto)
-  // relative_external?: RelativeExternalDto;
-
+  @IsNotEmpty({ message: 'Marketing ID is required' })
   marketing_id: number;
+
+  @IsNotEmpty({ message: 'Loan external type is required' })
+  @IsEnum(ExternalCollateralType, {
+    message:
+      'Invalid collateral type. Must be one of: BPJS, BPKB, KEDINASAN_MOU, KEDINASAN_NON_MOU, SHM, UMKM',
+  })
+  loan_external_type: ExternalCollateralType;
 }
 
 export class CreateDraftLoanApplicationExtDto {

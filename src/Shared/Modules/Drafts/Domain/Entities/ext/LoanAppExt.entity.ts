@@ -1,4 +1,5 @@
 import { Types } from 'mongoose';
+import { ExternalCollateralType } from 'src/Shared/Enums/General/General.enum';
 
 export class LoanApplicationExtEntity {
   readonly _id?: string | Types.ObjectId;
@@ -21,6 +22,7 @@ export class LoanApplicationExtEntity {
   collateral_kedinasan_non_mou: any;
 
   uploaded_files?: any;
+  loan_external_type!: ExternalCollateralType;
   isDeleted?: boolean;
   isCompleted?: boolean;
   isNeedCheck?: boolean;

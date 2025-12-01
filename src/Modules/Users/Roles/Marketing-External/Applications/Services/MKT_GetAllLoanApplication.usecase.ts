@@ -10,7 +10,7 @@ import {
 import {
   DRAFT_LOAN_APPLICATION_EXTERNAL_REPOSITORY,
   ILoanApplicationDraftExternalRepository,
-} from 'src/Shared/Modules/Drafts/Domain/Repositories/ext/LoanAppInt.repository';
+} from 'src/Shared/Modules/Drafts/Domain/Repositories/ext/LoanAppExt.repository';
 
 @Injectable()
 export class MKT_GetAllLoanApplicationUseCase {

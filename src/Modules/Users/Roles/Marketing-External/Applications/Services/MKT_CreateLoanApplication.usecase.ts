@@ -26,12 +26,6 @@ import {
 import { StatusKaryawanEnum } from 'src/Shared/Enums/External/Job.enum';
 
 import { JenisPembiayaanEnum } from 'src/Shared/Enums/External/Loan-Application.enum';
-
-// import { KerabatKerjaEnum } from 'src/Shared/Enums/External/Relative.enum';
-// import {
-//   PenjaminEnum,
-//   RiwayatPinjamPenjaminEnum,
-// } from 'src/Shared/Enums/External/Collateral.enum';
 import {
   CLIENT_EXTERNAL_REPOSITORY,
   IClientExternalRepository,
@@ -271,7 +265,11 @@ export class MKT_CreateLoanApplicationUseCase {
             address_external.lama_tinggal,
             address_external.atas_nama_listrik,
             address_external.hubungan,
-            address_external.foto_meteran_listrik,
+            parseFileUrl(
+              documents_files?.foto_meteran_listrik ??
+                address_external.foto_meteran_listrik ??
+                null,
+            ),
             address_external.share_loc_domisili,
             address_external.share_loc_usaha,
             address_external.share_loc_tempat_kerja,
@@ -309,12 +307,33 @@ export class MKT_CreateLoanApplicationUseCase {
             job_external.lama_kerja!,
             job_external.status_karyawan! as StatusKaryawanEnum,
             job_external.pendapatan_perbulan,
-            job_external.slip_gaji_peminjam,
-            job_external.slip_gaji_penjamin,
+            parseFileUrl(
+              documents_files?.slip_gaji_peminjam ??
+                job_external.slip_gaji_peminjam ??
+                null,
+            ),
+            parseFileUrl(
+              documents_files?.slip_gaji_penjamin ??
+                job_external.slip_gaji_penjamin ??
+                null,
+            ),
             client_external_profile.no_rek, //! kudu di cek lebih lanjut, gw cuma takut ini no rek PEKERJAAN bukan PRIBADI
-            job_external.id_card_peminjam,
-            job_external.id_card_penjamin,
+            parseFileUrl(
+              documents_files?.id_card_peminjam ??
+                job_external.id_card_peminjam ??
+                null,
+            ),
+            parseFileUrl(
+              documents_files?.id_card_penjamin ??
+                job_external.id_card_penjamin ??
+                null,
+            ),
             job_external.lama_kontrak,
+            parseFileUrl(
+              documents_files?.rekening_koran ??
+                job_external.rekening_koran ??
+                null,
+            ),
             job_external.validasi_pekerjaan,
             job_external.catatan,
             undefined,
@@ -343,7 +362,11 @@ export class MKT_CreateLoanApplicationUseCase {
             loan_application_external.jenis_pembiayaan as JenisPembiayaanEnum,
             loan_application_external.nominal_pinjaman ?? 0,
             loan_application_external.tenor ?? 0,
-            loan_application_external.berkas_jaminan ?? '',
+            parseFileUrl(
+              documents_files?.berkas_jaminan ??
+                loan_application_external.berkas_jaminan ??
+                null,
+            ),
             loan_application_external.status_pinjaman,
             undefined,
             loan_application_external.pinjaman_ke,
@@ -371,17 +394,41 @@ export class MKT_CreateLoanApplicationUseCase {
             { id: loanApp.id! },
             client_external_profile.nama_lengkap,
             client_external_profile.no_rek,
-            client_external_profile.foto_rekening,
             client_external_profile.jenis_kelamin as GENDER,
             client_external_profile.no_hp,
             client_external_profile.status_nikah,
             undefined,
             client_external_profile.email,
-            client_external_profile.foto_ktp_peminjam,
-            client_external_profile.foto_ktp_penjamin,
-            client_external_profile.foto_kk_peminjam,
-            client_external_profile.foto_kk_penjamin,
-            client_external_profile.dokumen_pendukung,
+            parseFileUrl(
+              documents_files?.foto_rekening ??
+                client_external_profile.foto_rekening ??
+                null,
+            ),
+            parseFileUrl(
+              documents_files?.foto_ktp_peminjam ??
+                client_external_profile.foto_ktp_peminjam ??
+                null,
+            ),
+            parseFileUrl(
+              documents_files?.foto_ktp_penjamin ??
+                client_external_profile.foto_ktp_penjamin ??
+                null,
+            ),
+            parseFileUrl(
+              documents_files?.foto_kk_peminjam ??
+                client_external_profile.foto_kk_peminjam ??
+                null,
+            ),
+            parseFileUrl(
+              documents_files?.foto_kk_penjamin ??
+                client_external_profile.foto_kk_penjamin ??
+                null,
+            ),
+            parseFileUrl(
+              documents_files?.dokumen_pendukung ??
+                client_external_profile.dokumen_pendukung ??
+                null,
+            ),
             client_external_profile.validasi_nasabah,
             client_external_profile.catatan,
             false,
@@ -445,7 +492,11 @@ export class MKT_CreateLoanApplicationUseCase {
             loan_guarantor_external.penghasilan_penjamin,
             loan_guarantor_external.no_hp_penjamin,
             loan_guarantor_external.persetujuan_penjamin,
-            loan_guarantor_external.foto_ktp_penjamin,
+            parseFileUrl(
+              documents_files?.foto_ktp_penjamin ??
+                loan_guarantor_external.foto_ktp_penjamin ??
+                null,
+            ),
             undefined,
             loan_guarantor_external.validasi_penjamin,
             loan_guarantor_external.catatan,
@@ -459,53 +510,42 @@ export class MKT_CreateLoanApplicationUseCase {
         // 5. CLIENT PROFILE (BARU)
         // ==========================
         // await this.clientProfileRepo.save(
-        //   new ClientInternalProfile(
+        //   new ClientExternalProfile(
         //     { id: customer.id! },
         //     { id: loanApp.id! },
-        //     client_external.nama_lengkap,
-        //     client_external.jenis_kelamin,
-        //     client_external.tipe_nasabah as CLIENT_TYPE,
-        //     client_external.no_hp,
-        //     client_external.status_nikah as MARRIAGE_STATUS,
+        //     client_external_profile.nama_lengkap,
+        //     client_external_profile.no_rek,
+        //     client_external_profile.jenis_kelamin,
+        //     client_external_profile.no_hp,
+        //     client_external_profile.status_nikah as MARRIAGE_STATUS,
         //     undefined,
-        //     client_external.email,
+        //     client_external_profile.email,
         //     parseFileUrl(
-        //       documents_files?.foto_ktp ?? client_external.foto_ktp ?? null,
+        //       documents_files?.foto_rekening ??
+        //         client_external_profile.foto_rekening ??
+        //         null,
         //     ),
         //     parseFileUrl(
-        //       documents_files?.foto_kk ?? client_external.foto_kk ?? null,
+        //       documents_files?.foto_ktp_peminjam ??
+        //         client_external_profile.foto_ktp_peminjam ??
+        //         null,
         //     ),
-        //     parseFileUrl(documents_files?.foto_id_card ?? null),
-        //     parseFileUrl(documents_files?.foto_rekening ?? null),
-        //     client_external.no_rekening,
-        //   ),
-        // );
-
-        // ==========================
-        // 6. COLLATERAL
-        // ==========================
-        // await this.collateralRepo.save(
-        //   new CollateralInternal(
-        //     { id: customer.id! },
-        //     collateral_internal.jaminan_hrd,
-        //     collateral_internal.jaminan_cg,
-        //     collateral_internal.penjamin as PenjaminEnum,
-        //     undefined,
-        //     undefined,
-        //     undefined,
-        //     collateral_internal.nama_penjamin,
-        //     collateral_internal.lama_kerja_penjamin!,
-        //     collateral_internal.bagian!,
-        //     collateral_internal.absensi_penjamin!,
-        //     collateral_internal.riwayat_pinjam_penjamin as RiwayatPinjamPenjaminEnum,
-        //     collateral_internal.riwayat_nominal_penjamin!,
-        //     collateral_internal.riwayat_tenor_penjamin!,
-        //     collateral_internal.sisa_pinjaman_penjamin!,
-        //     collateral_internal.jaminan_cg_penjamin!,
-        //     collateral_internal.status_hubungan_penjamin!,
-        //     parseFileUrl(documents_files?.foto_ktp_penjamin ?? null),
-        //     parseFileUrl(documents_files?.foto_id_card_penjamin ?? null),
-        //     undefined,
+        //     parseFileUrl(
+        //       documents_files?.foto_ktp_peminjam ??
+        //         client_external_profile.foto_ktp_peminjam ??
+        //         null,
+        //     ),
+        //     parseFileUrl(
+        //       documents_files?.foto_kk_peminjam ??
+        //         client_external_profile.foto_kk_peminjam ??
+        //         null,
+        //     ),
+        //     parseFileUrl(
+        //       documents_files?.foto_kk_penjamin ??
+        //         client_external_profile.foto_kk_penjamin ??
+        //         null,
+        //     ),
+        //     parseFileUrl(documents_files?.dokumen_pendukung ?? null),
         //   ),
         // );
 
@@ -521,7 +561,11 @@ export class MKT_CreateLoanApplicationUseCase {
                 collateral_bpjs.tanggal_bayar_terakhir,
                 collateral_bpjs.username,
                 collateral_bpjs.password,
-                collateral_bpjs.foto_bpjs,
+                parseFileUrl(
+                  documents_files?.foto_bpjs ??
+                    collateral_bpjs.foto_bpjs ??
+                    null,
+                ),
                 collateral_bpjs.jaminan_tambahan,
                 undefined,
                 nowWIB,
@@ -529,7 +573,7 @@ export class MKT_CreateLoanApplicationUseCase {
                 undefined,
               ),
             );
-            return;
+            break;
           }
 
           // ==========================
@@ -547,29 +591,85 @@ export class MKT_CreateLoanApplicationUseCase {
                 collateral_bpkb.warna_kendaraan,
                 collateral_bpkb.stransmisi,
                 collateral_bpkb.no_rangka,
-                collateral_bpkb.foto_no_rangka,
+                parseFileUrl(
+                  documents_files?.foto_no_rangka ??
+                    collateral_bpkb.foto_no_rangka ??
+                    null,
+                ),
                 collateral_bpkb.no_mesin,
-                collateral_bpkb.foto_no_mesin,
+                parseFileUrl(
+                  documents_files?.foto_no_mesin ??
+                    collateral_bpkb.foto_no_mesin ??
+                    null,
+                ),
                 collateral_bpkb.no_bpkb,
-                collateral_bpkb.dokumen_bpkb,
-                collateral_bpkb.foto_stnk_depan,
-                collateral_bpkb.foto_stnk_belakang,
-                collateral_bpkb.foto_kendaraan_depan,
-                collateral_bpkb.foto_kendaraan_belakang,
-                collateral_bpkb.foto_kendaraan_samping_kanan,
-                collateral_bpkb.foto_kendaraan_samping_kiri,
-                collateral_bpkb.foto_sambara,
-                collateral_bpkb.foto_kwitansi_jual_beli,
-                collateral_bpkb.foto_ktp_tangan_pertama,
-                collateral_bpkb.foto_faktur_kendaraan,
-                collateral_bpkb.foto_snikb,
+                parseFileUrl(
+                  documents_files?.dokumen_bpkb ??
+                    collateral_bpkb.dokumen_bpkb ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_stnk_depan ??
+                    collateral_bpkb.foto_stnk_depan ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_stnk_belakang ??
+                    collateral_bpkb.foto_stnk_belakang ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_kendaraan_depan ??
+                    collateral_bpkb.foto_kendaraan_depan ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_kendaraan_belakang ??
+                    collateral_bpkb.foto_kendaraan_belakang ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_kendaraan_samping_kanan ??
+                    collateral_bpkb.foto_kendaraan_samping_kanan ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_kendaraan_samping_kiri ??
+                    collateral_bpkb.foto_kendaraan_samping_kiri ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_sambara ??
+                    collateral_bpkb.foto_sambara ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_kwitansi_jual_beli ??
+                    collateral_bpkb.foto_kwitansi_jual_beli ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_ktp_tangan_pertama ??
+                    collateral_bpkb.foto_ktp_tangan_pertama ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_faktur_kendaraan ??
+                    collateral_bpkb.foto_faktur_kendaraan ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_snikb ??
+                    collateral_bpkb.foto_snikb ??
+                    null,
+                ),
                 undefined,
                 nowWIB,
                 nowWIB,
                 undefined,
               ),
             );
-            return;
+            break;
           }
 
           // ==========================
@@ -580,25 +680,73 @@ export class MKT_CreateLoanApplicationUseCase {
               new CollateralByKedinasan_MOU(
                 { id: loanApp.id! },
                 collateral_kedinasan_mou.instansi,
-                collateral_kedinasan_mou.surat_permohonan_kredit,
-                collateral_kedinasan_mou.surat_pernyataan_penjamin,
-                collateral_kedinasan_mou.surat_persetujuan_pimpinan,
-                collateral_kedinasan_mou.surat_keterangan_gaji,
-                collateral_kedinasan_mou.foto_form_pengajuan,
-                collateral_kedinasan_mou.foto_surat_kuasa_pemotongan,
-                collateral_kedinasan_mou.foto_surat_pernyataan_peminjam,
-                collateral_kedinasan_mou.foto_sk_golongan_terbaru,
-                collateral_kedinasan_mou.foto_keterangan_tpp,
-                collateral_kedinasan_mou.foto_biaya_operasional,
-                collateral_kedinasan_mou.foto_surat_kontrak,
-                collateral_kedinasan_mou.foto_rekomendasi_bendahara,
+                parseFileUrl(
+                  documents_files?.surat_permohonan_kredit_mou ??
+                    collateral_kedinasan_mou.surat_permohonan_kredit ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.surat_pernyataan_penjamin_mou ??
+                    collateral_kedinasan_mou.surat_pernyataan_penjamin ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.surat_persetujuan_pimpinan_mou ??
+                    collateral_kedinasan_mou.surat_persetujuan_pimpinan ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.surat_keterangan_gaji_mou ??
+                    collateral_kedinasan_mou.surat_keterangan_gaji ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_form_pengajuan_mou ??
+                    collateral_kedinasan_mou.foto_form_pengajuan ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_surat_kuasa_pemotongan_mou ??
+                    collateral_kedinasan_mou.foto_surat_kuasa_pemotongan ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_surat_pernyataan_peminjam_mou ??
+                    collateral_kedinasan_mou.foto_surat_pernyataan_peminjam ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_sk_golongan_terbaru_mou ??
+                    collateral_kedinasan_mou.foto_sk_golongan_terbaru ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_keterangan_tpp_mou ??
+                    collateral_kedinasan_mou.foto_keterangan_tpp ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_shm ??
+                    collateral_kedinasan_mou.foto_biaya_operasional ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_surat_kontrak_mou ??
+                    collateral_kedinasan_mou.foto_surat_kontrak ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_rekomendasi_bendahara_mou ??
+                    collateral_kedinasan_mou.foto_rekomendasi_bendahara ??
+                    null,
+                ),
                 undefined,
                 nowWIB,
                 nowWIB,
                 undefined,
               ),
             );
-            return;
+            break;
           }
 
           // ==========================
@@ -609,20 +757,48 @@ export class MKT_CreateLoanApplicationUseCase {
               new CollateralByKedinasan_Non_MOU(
                 { id: loanApp.id! },
                 collateral_kedinasan_non_mou.instansi,
-                collateral_kedinasan_non_mou.surat_permohonan_kredit,
-                collateral_kedinasan_non_mou.surat_pernyataan_penjamin,
-                collateral_kedinasan_non_mou.surat_persetujuan_pimpinan,
-                collateral_kedinasan_non_mou.surat_keterangan_gaji,
-                collateral_kedinasan_non_mou.foto_surat_kontrak,
-                collateral_kedinasan_non_mou.foto_keterangan_tpp,
-                collateral_kedinasan_non_mou.foto_biaya_operasional,
+                parseFileUrl(
+                  documents_files?.surat_permohonan_kredit_mou ??
+                    collateral_kedinasan_non_mou.surat_permohonan_kredit ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.surat_pernyataan_penjamin_mou ??
+                    collateral_kedinasan_non_mou.surat_pernyataan_penjamin ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.surat_persetujuan_pimpinan_mou ??
+                    collateral_kedinasan_non_mou.surat_persetujuan_pimpinan ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.surat_keterangan_gaji_mou ??
+                    collateral_kedinasan_non_mou.surat_keterangan_gaji ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_surat_kontrak_mou ??
+                    collateral_kedinasan_non_mou.foto_surat_kontrak ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_keterangan_tpp_mou ??
+                    collateral_kedinasan_non_mou.foto_keterangan_tpp ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_biaya_operasional_mou ??
+                    collateral_kedinasan_non_mou.foto_biaya_operasional ??
+                    null,
+                ),
                 undefined,
                 nowWIB,
                 nowWIB,
                 undefined,
               ),
             );
-            return;
+            break;
           }
           // ==========================
           // 5. SHM
@@ -636,25 +812,67 @@ export class MKT_CreateLoanApplicationUseCase {
                 collateral_shm.alamat_shm,
                 collateral_shm.luas_shm,
                 collateral_shm.njop_shm,
-                collateral_shm.foto_shm,
-                collateral_shm.foto_kk_pemilik_shm,
-                collateral_shm.foto_pbb,
-                collateral_shm.foto_objek_jaminan,
-                collateral_shm.foto_buku_nikah_suami,
-                collateral_shm.foto_buku_nikah_istri,
-                collateral_shm.foto_npwp,
-                collateral_shm.foto_imb,
-                collateral_shm.foto_surat_ahli_waris,
-                collateral_shm.foto_surat_akte_kematian,
-                collateral_shm.foto_surat_pernyataan_kepemilikan_tanah,
-                collateral_shm.foto_surat_pernyataan_tidak_dalam_sengketa,
+                parseFileUrl(
+                  documents_files?.foto_shm ?? collateral_shm.foto_shm ?? null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_kk_pemilik_shm ??
+                    collateral_shm.foto_kk_pemilik_shm ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_pbb ?? collateral_shm.foto_pbb ?? null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_objek_jaminan ??
+                    collateral_shm.foto_objek_jaminan ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_buku_nikah_suami ??
+                    collateral_shm.foto_buku_nikah_suami ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_buku_nikah_istri ??
+                    collateral_shm.foto_buku_nikah_istri ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_npwp ??
+                    collateral_shm.foto_npwp ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_imb ?? collateral_shm.foto_imb ?? null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_surat_ahli_waris ??
+                    collateral_shm.foto_surat_ahli_waris ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_surat_akte_kematian ??
+                    collateral_shm.foto_surat_akte_kematian ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_surat_pernyataan_kepemilikan_tanah ??
+                    collateral_shm.foto_surat_pernyataan_kepemilikan_tanah ??
+                    null,
+                ),
+                parseFileUrl(
+                  documents_files?.foto_surat_pernyataan_tidak_dalam_sengketa ??
+                    collateral_shm.foto_surat_pernyataan_tidak_dalam_sengketa ??
+                    null,
+                ),
                 undefined,
                 nowWIB,
                 nowWIB,
                 undefined,
               ),
             );
-            return;
+            break;
           }
 
           // ==========================
@@ -664,16 +882,28 @@ export class MKT_CreateLoanApplicationUseCase {
             await this.collateralUMKMRepo.save(
               new CollateralByUMKM(
                 { id: loanApp.id! },
-                collateral_umkm.foto_sku,
-                collateral_umkm.foto_usaha,
-                collateral_umkm.foto_pembukuan,
+                parseFileUrl(
+                  documents_files?.foto_sku ?? collateral_umkm.foto_sku ?? null,
+                ),
+                parseFileUrl(
+                  normalizeFileInput(
+                    documents_files?.foto_usaha ??
+                      collateral_umkm.foto_usaha ??
+                      null,
+                  ),
+                ),
+                parseFileUrl(
+                  documents_files?.foto_pembukuan ??
+                    collateral_umkm.foto_pembukuan ??
+                    null,
+                ),
                 undefined,
                 nowWIB,
                 nowWIB,
                 undefined,
               ),
             );
-            return;
+            break;
           }
 
           // ==========================
@@ -682,27 +912,6 @@ export class MKT_CreateLoanApplicationUseCase {
           default:
             throw new BadRequestException(`Unknown collateral type: ${type}`);
         }
-
-        // ==========================
-        // 7. KERABAT (optional)
-        // ==========================
-        // if (relative_internal) {
-        //   await this.relativeRepo.save(
-        //     new RelativesInternal(
-        //       { id: customer.id! },
-        //       relative_internal.kerabat_kerja as KerabatKerjaEnum,
-        //       undefined,
-        //       relative_internal.nama,
-        //       relative_internal.alamat,
-        //       relative_internal.no_hp,
-        //       relative_internal.status_hubungan!,
-        //       relative_internal.nama_perusahaan!,
-        //       undefined,
-        //       undefined,
-        //       undefined,
-        //     ),
-        //   );
-        // }
 
         return {
           payload: {
@@ -718,10 +927,7 @@ export class MKT_CreateLoanApplicationUseCase {
     } catch (err) {
       console.error('Error in CreateLoanApplicationUseCase:', err);
 
-      // Kalau sudah HttpException → lempar aja
       if (err instanceof HttpException) throw err;
-
-      // DB connection down
       if (err.code === 'ECONNREFUSED' || err.name === 'MongoNetworkError') {
         throw new HttpException(
           {
@@ -734,8 +940,6 @@ export class MKT_CreateLoanApplicationUseCase {
           HttpStatus.SERVICE_UNAVAILABLE,
         );
       }
-
-      // Fallback
       throw new HttpException(
         {
           payload: {
@@ -750,16 +954,37 @@ export class MKT_CreateLoanApplicationUseCase {
   }
 }
 
+function normalizeFileInput(
+  input:
+    | string
+    | string[]
+    | Express.Multer.File
+    | Express.Multer.File[]
+    | null
+    | undefined,
+): string | Express.Multer.File | null {
+  if (input == null) return null;
+
+  if (Array.isArray(input)) {
+    return input.length > 0 ? input[0] : null;
+  }
+
+  return input;
+}
+
 function parseFileUrl(
   input: string | Express.Multer.File | null | undefined,
 ): string | undefined {
   if (!input) return undefined;
+
   if (typeof input === 'string') {
     return input;
   }
-  if (typeof input === 'object' && 'path' in input) {
+
+  if ('path' in input) {
     return `http://your-server-url.com/${input.path}`;
   }
+
   return undefined;
 }
 

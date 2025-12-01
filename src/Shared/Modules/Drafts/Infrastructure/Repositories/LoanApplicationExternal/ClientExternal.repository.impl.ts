@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
-  LoanApplicationInt,
+  LoanApplicationExt,
   LoanApplicationDocument,
-} from '../../Schemas/LoanAppInternal/CreateLoanApplicaton_Marketing.schema';
-import { ILoanApplicationDraftExternalRepository } from '../../../Domain/Repositories/ext/LoanAppInt.repository';
+} from '../../Schemas/LoanAppExternal/CreateLoanApplicaton_Marketing.schema';
+import { ILoanApplicationDraftExternalRepository } from '../../../Domain/Repositories/ext/LoanAppExt.repository';
 import { LoanApplicationExtEntity } from '../../../Domain/Entities/ext/LoanAppExt.entity';
 import { merge, isEqual } from 'lodash';
 
@@ -14,7 +14,7 @@ export class LoanApplicationExtRepositoryImpl
   implements ILoanApplicationDraftExternalRepository
 {
   constructor(
-    @InjectModel(LoanApplicationInt.name, 'mongoConnection')
+    @InjectModel(LoanApplicationExt.name, 'mongoConnection')
     private readonly loanAppModel: Model<LoanApplicationDocument>,
   ) {}
 
@@ -30,7 +30,7 @@ export class LoanApplicationExtRepositoryImpl
     nik: string,
   ): Promise<{ draft_id: string; isNeedCheck: boolean } | null> {
     const found = await this.loanAppModel
-      .findOne({ 'client_internal.no_ktp': nik }, { isNeedCheck: 1, _id: 1 })
+      .findOne({ 'client_external.no_ktp': nik }, { isNeedCheck: 1, _id: 1 })
       .lean();
 
     if (!found) return null;
@@ -56,11 +56,11 @@ export class LoanApplicationExtRepositoryImpl
         { marketing_id: marketingId, isDeleted: false },
         {
           _id: 1,
-          'client_internal.nama_lengkap': 1,
-          'client_internal.no_ktp': 1,
-          'client_internal.no_hp': 1,
-          'loan_application_internal.nominal_pinjaman': 1,
-          'loan_application_internal.tenor': 1,
+          'client_external.nama_lengkap': 1,
+          'client_external.nik': 1,
+          'client_external.no_hp': 1,
+          'loan_application_external.nominal_pinjaman': 1,
+          'loan_application_external.tenor': 1,
           isDeleted: 1,
           isNeedCheck: 1,
           isCompleted: 1,
@@ -119,7 +119,6 @@ export class LoanApplicationExtRepositoryImpl
     }
 
     const nominal_fixtype = Number(nominal_pinjaman);
-    console.log('Jembus Wedut >>>>>>>>>>>>>>>>>>>>>>', nominal_fixtype);
 
     if (nominal_fixtype >= 7000000) {
       const response = await this.loanAppModel.updateOne(

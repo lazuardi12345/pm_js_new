@@ -7,10 +7,6 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import {
-  DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY,
-  ILoanApplicationDraftInternalRepository,
-} from 'src/Shared/Modules/Drafts/Domain/Repositories/int/LoanAppInt.repository';
-import {
   PayloadExternalDTO,
   CreateDraftLoanApplicationExtDto,
 } from 'src/Shared/Modules/Drafts/Applications/DTOS/LoanAppExt_MarketingInput/CreateDraft_LoanAppExt.dto';
@@ -27,14 +23,26 @@ import {
 } from 'src/Modules/Admin/BI-Checking/Domain/Repositories/approval-recommendation.repository';
 import { MKT_GetDraftByMarketingId_ApprovalRecommendation } from 'src/Shared/Interface/MKT_GetDraft/MKT_GetDraftByMarketingId.interface';
 import { REQUEST_TYPE } from 'src/Shared/Modules/Storage/Infrastructure/Service/Interface/RequestType.interface';
+import {
+  CLIENT_EXTERNAL_REPOSITORY,
+  IClientExternalRepository,
+} from 'src/Modules/LoanAppExternal/Domain/Repositories/client-external.repository';
+import { ExternalCollateralType } from 'src/Shared/Enums/General/General.enum';
+import {
+  DRAFT_LOAN_APPLICATION_EXTERNAL_REPOSITORY,
+  ILoanApplicationDraftExternalRepository,
+} from 'src/Shared/Modules/Drafts/Domain/Repositories/ext/LoanAppExt.repository';
+import { JenisPembiayaanEnum } from 'src/Shared/Enums/External/Loan-Application.enum';
 
 @Injectable()
 export class MKT_CreateDraftLoanApplicationUseCase {
   constructor(
-    @Inject(DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY)
-    private readonly loanAppDraftRepo: ILoanApplicationDraftInternalRepository,
+    @Inject(DRAFT_LOAN_APPLICATION_EXTERNAL_REPOSITORY)
+    private readonly loanAppDraftRepo: ILoanApplicationDraftExternalRepository,
     @Inject(FILE_STORAGE_SERVICE)
     private readonly fileStorage: IFileStorageRepository,
+    @Inject(CLIENT_EXTERNAL_REPOSITORY)
+    private readonly clientRepo: IClientExternalRepository,
     @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
     private readonly approvalRecommendationRepo: IApprovalRecommendationRepository,
   ) {}
@@ -42,15 +50,70 @@ export class MKT_CreateDraftLoanApplicationUseCase {
   async executeCreateDraft(
     dto: PayloadExternalDTO,
     files?: Record<string, Express.Multer.File[]>,
+    external_loan_type?: ExternalCollateralType,
+    jenis_pembiayaan?: JenisPembiayaanEnum,
   ) {
-    try {
-      let filePaths: Record<string, FileMetadata[]> = {};
+    console.log(external_loan_type);
 
-      // Proses file kalau ada
+    const duplicateChecker = await this.clientRepo.findByKtp(
+      Number(dto.client_external.nik),
+    );
+
+    if (duplicateChecker) {
+      throw new HttpException(
+        'This Client National Identity Number already registered',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    try {
+      if (external_loan_type) {
+        const collateralFieldMap = {
+          t1: 'collateral_bpjs_external',
+          t2: 'collateral_bpkb_external',
+          t3: 'collateral_shm_external',
+          t4: 'collateral_umkm_external',
+          t5: 'collateral_kedinasan_mou_external',
+          t6: 'collateral_kedinasan_non_mou_external',
+        };
+
+        const targetCollateralField = collateralFieldMap[external_loan_type];
+
+        if (!targetCollateralField) {
+          throw new HttpException(
+            `Invalid external_loan_type: ${external_loan_type}`,
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+
+        if (!dto[targetCollateralField]) {
+          throw new HttpException(
+            `Collateral data for type ${external_loan_type} is required`,
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+
+        dto.loan_external_type = external_loan_type;
+
+        if (jenis_pembiayaan && dto.loan_application_external) {
+          dto.loan_application_external.jenis_pembiayaan = jenis_pembiayaan;
+          console.log(`✅ Assigned jenis_pembiayaan: ${jenis_pembiayaan}`);
+        }
+
+        Object.values(collateralFieldMap).forEach((field) => {
+          if (field !== targetCollateralField) {
+            delete dto[field];
+          }
+        });
+        console.log(
+          `✅ Cleaned collateral. Only keeping: ${targetCollateralField}`,
+        );
+      }
+
+      let filePaths: Record<string, FileMetadata[]> = {};
       if (files && Object.keys(files).length > 0) {
         for (const [field, fileArray] of Object.entries(files)) {
           for (const file of fileArray) {
-            // convert gambar ke JPEG tanpa resize
             if (file.mimetype.startsWith('image/')) {
               const outputBuffer = await sharp(file.buffer)
                 .jpeg({ quality: 100 })
@@ -62,7 +125,6 @@ export class MKT_CreateDraftLoanApplicationUseCase {
           }
         }
 
-        // simpan file ke storage
         filePaths = await this.fileStorage.saveFiles(
           Number(dto?.client_external?.nik) ?? dto.client_external.nik,
           dto?.client_external?.nama_lengkap ??
@@ -70,18 +132,30 @@ export class MKT_CreateDraftLoanApplicationUseCase {
           files,
           REQUEST_TYPE.EXTERNAL,
         );
-
-        // Assign hasil upload ke DTO sesuai field
-        for (const [field, paths] of Object.entries(filePaths)) {
+        for (const [fieldName, paths] of Object.entries(filePaths)) {
           if (paths && paths.length > 0) {
-            dto.client_external[field] = paths[0].url;
+            const url = paths[0].url;
+            const fieldToParentMap = {
+              foto_ktp: 'client_external',
+            };
+
+            const parentKey = fieldToParentMap[fieldName];
+
+            if (parentKey && dto[parentKey]) {
+              dto[parentKey][fieldName] = url;
+              console.log(`✅ Assigned ${fieldName} to ${parentKey}`);
+            } else {
+              console.log(
+                `⚠️  Warning: No parent found for ${fieldName}, skipping...`,
+              );
+            }
           }
         }
       }
 
-      // 3️⃣ Simpan draft loan application
       const loanApp = await this.loanAppDraftRepo.create({
         ...dto,
+        loan_external_type: dto.loan_external_type,
         uploaded_files: filePaths,
       });
 
@@ -105,7 +179,14 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     } catch (err) {
       console.log(err);
 
-      // Mongoose validation error
+      if (
+        err instanceof HttpException ||
+        typeof err.getStatus === 'function' ||
+        typeof err.status === 'number'
+      ) {
+        throw err;
+      }
+
       if (err.name === 'ValidationError') {
         throw new HttpException(
           {
@@ -121,7 +202,6 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         );
       }
 
-      // Duplicate key error
       if (err.code === 11000) {
         throw new HttpException(
           {
@@ -133,7 +213,6 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         );
       }
 
-      // fallback error
       throw new HttpException(
         {
           payload: {
@@ -151,6 +230,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     Id: string,
     updateData: Partial<CreateDraftLoanApplicationExtDto>,
     files?: Record<string, Express.Multer.File[]>,
+    type?: ExternalCollateralType,
   ) {
     const { payload } = updateData;
 
@@ -187,27 +267,63 @@ export class MKT_CreateDraftLoanApplicationUseCase {
           if (paths && paths.length > 0) {
             // Tentukan di object mana field ini berada
             const parentKeys = [
+              'loan_guarantor_external',
               'client_external',
-              'job_internal',
-              'collateral_internal',
-              'relative_internal',
+              'address_external',
+              'job_external',
+              'collateral_bpjs_external',
+              'collateral_bpkb_external',
+              'collateral_shm_external',
+              'collateral_umkm_external',
+              'collateral_kedinasan_mou_external',
+              'collateral_kedinasan_non_mou_external',
             ];
             let assigned = false;
 
             for (const key of parentKeys) {
               if (payload[key] && field in payload[key]) {
-                payload[key][field] = paths[0].url; // assign URL string
+                payload[key][field] = paths[0].url;
                 assigned = true;
                 break;
               }
             }
 
             if (!assigned) {
-              // fallback: assign di root payload
               payload[field] = paths[0].url;
             }
           }
         }
+      }
+
+      if (type) {
+        const collateralFieldMap = {
+          [ExternalCollateralType.t1]: 'collateral_shm_external',
+          [ExternalCollateralType.t2]: 'collateral_umkm_external',
+          [ExternalCollateralType.t3]: 'collateral_bpjs_external',
+          [ExternalCollateralType.t4]: 'collateral_bpkb_external',
+          [ExternalCollateralType.t5]: 'collateral_kedinasan_mou_external',
+          [ExternalCollateralType.t6]: 'collateral_kedinasan_non_mou_external',
+        };
+
+        const selectedCollateral = collateralFieldMap[type];
+
+        // Validasi: pastikan collateral yang dipilih ada datanya
+        if (!payload[selectedCollateral]) {
+          throw new HttpException(
+            `Collateral data for type ${type} is required`,
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+
+        // Set loan_external_type
+        payload.loan_external_type = type;
+
+        // Hapus semua collateral lain (set undefined biar MongoDB unset field-nya)
+        Object.values(collateralFieldMap).forEach((field) => {
+          if (field !== selectedCollateral) {
+            payload[field] = undefined; // ← Bakal di-unset sama MongoDB
+          }
+        });
       }
 
       console.log('File paths:', filePaths);
@@ -218,21 +334,15 @@ export class MKT_CreateDraftLoanApplicationUseCase {
       if (!existingDraft) {
         throw new NotFoundException(`Draft with id ${Id} not found`);
       }
-
-      // HAPUS file lama dengan field name yang sama (base name tanpa ekstensi)
       const existingFiles = { ...(existingDraft.uploaded_files || {}) };
 
-      // Helper function untuk dapat base name (tanpa ekstensi)
       const getBaseName = (fieldName: string): string => {
-        // Hapus ekstensi: foto_kk.jpeg.enc → foto_kk
         return fieldName.split('.')[0];
       };
 
-      // Hapus file lama yang field name-nya sama dengan file baru
       for (const newFieldName of Object.keys(filePaths)) {
         const newBaseName = getBaseName(newFieldName);
 
-        // Cari dan hapus semua file lama dengan base name yang sama
         for (const existingFieldName of Object.keys(existingFiles)) {
           const existingBaseName = getBaseName(existingFieldName);
 
@@ -387,8 +497,6 @@ export class MKT_CreateDraftLoanApplicationUseCase {
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
-
-      // Fallback error yang tetap friendly
       throw new HttpException(
         {
           payload: {
@@ -408,6 +516,8 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     try {
       const loanApps =
         await this.loanAppDraftRepo.findByMarketingId(marketingId);
+
+      console.log('this loan apps: ', loanApps);
 
       if (!loanApps || loanApps.length === 0) {
         throw new HttpException(
@@ -436,7 +546,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
 
       for (const loanApp of loanApps) {
         const nominalPinjaman =
-          loanApp?.loan_application_internal?.nominal_pinjaman ?? 0;
+          loanApp?.loan_application_external?.nominal_pinjaman ?? 0;
 
         let approvalRecommendation:
           | MKT_GetDraftByMarketingId_ApprovalRecommendation
