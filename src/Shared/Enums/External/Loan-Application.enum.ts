@@ -1,11 +1,10 @@
 export enum JenisPembiayaanEnum {
   BPJS = 'BPJS',
-  SHM = 'SHM',
   BPKB = 'BPKB',
-  KEDINASAN = 'Kedinasan',
+  SHM = 'SHM',
   UMKM = 'UMKM',
-  SF = 'SF',
-  KECAMATAN = 'Kecamatan',
+  KEDINASAN_MOU = 'KEDINASAN_MOU',
+  KEDINASAN_NON_MOU = 'KEDINASAN_NON_MOU',
 }
 
 export enum StatusPinjamanEnum {

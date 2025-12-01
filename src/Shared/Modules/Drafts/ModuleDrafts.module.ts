@@ -11,6 +11,10 @@ import {
   RepeatOrder,
   RepeatOrderIntSchema,
 } from './Infrastructure/Schemas/LoanAppInternal/RepeatOrder_Marketing.schema';
+import {
+  LoanApplicationExt,
+  LoanApplicationExtSchema,
+} from './Infrastructure/Schemas/LoanAppExternal/CreateLoanApplicaton_Marketing.schema';
 
 @Module({
   imports: [
@@ -19,6 +23,7 @@ import {
     MongooseModule.forFeature(
       [
         { name: LoanApplicationInt.name, schema: LoanApplicationIntSchema },
+        { name: LoanApplicationExt.name, schema: LoanApplicationExtSchema },
         { name: RepeatOrder.name, schema: RepeatOrderIntSchema },
       ],
       'mongoConnection',
@@ -30,6 +35,7 @@ import {
     DraftRepeatOrderModule,
     MongooseModule.forFeature([
       { name: LoanApplicationInt.name, schema: LoanApplicationIntSchema },
+      { name: LoanApplicationExt.name, schema: LoanApplicationExtSchema },
       { name: RepeatOrder.name, schema: RepeatOrderIntSchema },
     ]),
   ],

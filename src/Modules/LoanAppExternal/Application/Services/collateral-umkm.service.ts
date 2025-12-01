@@ -13,10 +13,15 @@ import { CollateralByUMKM } from '../../Domain/Entities/collateral-umkm.entity';
 import { CreatePengajuanUmkmDto } from '../DTOS/dto-Collateral-UMKM/create-collateral-umkm.dto';
 import { UpdatePengajuanUmkmDto } from '../DTOS/dto-Collateral-UMKM/update-collateral-umkm.dto';
 
+function toArray(value: string | string[] | undefined): string[] | undefined {
+  if (!value) return undefined;
+  return Array.isArray(value) ? value : [value];
+}
+
 @Injectable()
 export class CollateralUMKMService {
   findByPengajuanId(arg0: number) {
-      throw new Error('Method not implemented.');
+    throw new Error('Method not implemented.');
   }
   constructor(
     @Inject(COLLATERAL_UMKM_REPOSITORY)
@@ -55,17 +60,19 @@ export class CollateralUMKMService {
     }
   }
 
-  async update(id: number, dto: UpdatePengajuanUmkmDto): Promise<CollateralByUMKM> {
+  async update(
+    id: number,
+    dto: UpdatePengajuanUmkmDto,
+  ): Promise<CollateralByUMKM> {
     const existing = await this.repo.findById(id);
     if (!existing) {
-      throw new NotFoundException(`Collateral UMKM dengan ID ${id} tidak ditemukan`);
+      throw new NotFoundException(
+        `Collateral UMKM dengan ID ${id} tidak ditemukan`,
+      );
     }
 
-    const fotoUsahaArray: string[] | undefined = dto.foto_usaha
-      ? Array.isArray(dto.foto_usaha)
-        ? dto.foto_usaha
-        : [dto.foto_usaha]
-      : existing.foto_usaha;
+    const fotoUsahaArray =
+      toArray(dto.foto_usaha) ?? toArray(existing.foto_usaha);
 
     const updatedData = new CollateralByUMKM(
       existing.pengajuan,
@@ -82,14 +89,18 @@ export class CollateralUMKMService {
       return await this.repo.update(id, updatedData);
     } catch (error) {
       console.error('Update Collateral UMKM Error:', error);
-      throw new InternalServerErrorException('Gagal mengupdate collateral UMKM');
+      throw new InternalServerErrorException(
+        'Gagal mengupdate collateral UMKM',
+      );
     }
   }
 
   async findById(id: number): Promise<CollateralByUMKM> {
     const data = await this.repo.findById(id);
     if (!data) {
-      throw new NotFoundException(`Collateral UMKM dengan ID ${id} tidak ditemukan`);
+      throw new NotFoundException(
+        `Collateral UMKM dengan ID ${id} tidak ditemukan`,
+      );
     }
     return data;
   }
@@ -99,14 +110,18 @@ export class CollateralUMKMService {
       return await this.repo.findAll();
     } catch (error) {
       console.error('Find All Collateral UMKM Error:', error);
-      throw new InternalServerErrorException('Gagal mengambil data collateral UMKM');
+      throw new InternalServerErrorException(
+        'Gagal mengambil data collateral UMKM',
+      );
     }
   }
 
   async delete(id: number): Promise<void> {
     const existing = await this.repo.findById(id);
     if (!existing) {
-      throw new NotFoundException(`Collateral UMKM dengan ID ${id} tidak ditemukan`);
+      throw new NotFoundException(
+        `Collateral UMKM dengan ID ${id} tidak ditemukan`,
+      );
     }
 
     try {

@@ -1,9 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ClientExternal } from '../../Domain/Entities/client-external.entity';
-import { ClientExternal_ORM_Entity } from '../Entities/client-external.orm-entity';
-import { Users_ORM_Entity } from 'src/Modules/Users/Infrastructure/Entities/users.orm-entity';
 import { IClientExternalProfileRepository } from '../../Domain/Repositories/client-external-profile.repository';
 import { ClientExternalProfile } from '../../Domain/Entities/client-external-profile.entity';
 import { ClientExternalProfile_ORM_Entity } from '../Entities/client-external-profile.orm-entity';
@@ -27,12 +24,12 @@ export class ClientExternalProfileRepositoryImpl
       orm.pengajuan,
       orm.nama_lengkap,
       orm.no_rek,
-      orm.foto_rekening,
       orm.jenis_kelamin,
       orm.no_hp,
       orm.status_nikah,
       orm.id,
       orm.email,
+      orm.foto_rekening,
       orm.foto_ktp_peminjam,
       orm.foto_ktp_penjamin,
       orm.foto_kk_peminjam,

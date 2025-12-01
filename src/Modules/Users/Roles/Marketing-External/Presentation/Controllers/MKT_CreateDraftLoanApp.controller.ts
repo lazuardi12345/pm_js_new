@@ -21,6 +21,8 @@ import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorat
 import multer from 'multer';
 import { FileUploadAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/file-upload.decorator';
 import { PayloadExternalDTO } from 'src/Shared/Modules/Drafts/Applications/DTOS/LoanAppExt_MarketingInput/CreateDraft_LoanAppExt.dto';
+import { ExternalCollateralType } from 'src/Shared/Enums/General/General.enum';
+import { JenisPembiayaanEnum } from 'src/Shared/Enums/External/Loan-Application.enum';
 
 @UseGuards(FileUploadAuthGuard)
 @Controller('mkt/ext/drafts')
@@ -30,51 +32,64 @@ export class MKT_CreateDraftLoanApplicationController {
   ) {}
 
   // @Public()
-  @Post('add')
+  @Post('add/:type')
   @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        { name: 'foto_ktp', maxCount: 1 },
-        { name: 'foto_kk', maxCount: 1 },
-        { name: 'bukti_absensi', maxCount: 1 },
-        { name: 'foto_id_card_penjamin', maxCount: 1 },
-        { name: 'foto_ktp_penjamin', maxCount: 1 },
-        { name: 'foto_rekening', maxCount: 1 },
-      ],
-      {
-        storage: multer.memoryStorage(),
-        limits: { fileSize: 5 * 1024 * 1024 },
-      },
-    ),
+    FileFieldsInterceptor([{ name: 'foto_ktp', maxCount: 1 }], {
+      storage: multer.memoryStorage(),
+      limits: { fileSize: 5 * 1024 * 1024 },
+    }),
   )
   async createDraft(
     @UploadedFiles() files: Record<string, Express.Multer.File[]>,
     @CurrentUser('id') marketingId: number,
+    @Param('type') external_loan_type: string,
     @Body() dto: any,
   ) {
     try {
-      let payload: PayloadExternalDTO;
+      // ✅ Cuma butuh map jenis pembiayaan
+      const collateralToJenisPembiayaanMap = {
+        t1: JenisPembiayaanEnum.BPJS,
+        t2: JenisPembiayaanEnum.BPKB,
+        t3: JenisPembiayaanEnum.SHM,
+        t4: JenisPembiayaanEnum.UMKM,
+        t5: JenisPembiayaanEnum.KEDINASAN_MOU,
+        t6: JenisPembiayaanEnum.KEDINASAN_NON_MOU,
+      };
 
-      if (dto.payload) {
-        payload =
-          typeof dto.payload === 'string'
-            ? JSON.parse(dto.payload)
-            : dto.payload;
-      } else {
-        payload = { client_external: {} } as PayloadExternalDTO;
+      const jenisPembiayaan =
+        collateralToJenisPembiayaanMap[external_loan_type];
+
+      if (!jenisPembiayaan) {
+        throw new BadRequestException(
+          `Invalid loan type: ${external_loan_type}. Valid types: t1-t6`,
+        );
       }
+
+      let payload: PayloadExternalDTO =
+        typeof dto.payload === 'string'
+          ? JSON.parse(dto.payload)
+          : dto.payload || { client_external: {} };
+
       payload.marketing_id = marketingId;
 
       if (!files || Object.values(files).length === 0) {
         throw new BadRequestException('No files uploaded');
       }
 
+      // ✅ Kirim 't6' langsung, bukan di-map lagi
       return this.MKT_CreateDraftLoanAppUseCase.executeCreateDraft(
         payload,
         files,
+        external_loan_type as ExternalCollateralType, // 't6' as is
+        jenisPembiayaan,
       );
     } catch (error) {
       console.error('Error occurred:', error);
+
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
       throw new InternalServerErrorException(
         'An error occurred while processing your request',
       );
@@ -104,11 +119,10 @@ export class MKT_CreateDraftLoanApplicationController {
       { name: 'foto_ktp', maxCount: 1 },
       { name: 'foto_kk', maxCount: 1 },
       { name: 'foto_rekening', maxCount: 1 },
+      { name: 'dokumen_pendukung', maxCount: 1 },
+      { name: 'foto_meteran_listrik', maxCount: 1 },
       { name: 'foto_id_card', maxCount: 1 },
-      { name: 'foto_jaminan', maxCount: 3 },
-      { name: 'bukti_absensi', maxCount: 1 },
-      { name: 'foto_ktp_penjamin', maxCount: 1 },
-      { name: 'foto_id_card_penjamin', maxCount: 1 },
+      { name: 'slip_gaji', maxCount: 1 },
     ]),
   )
   async updateDraftById(

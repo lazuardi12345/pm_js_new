@@ -57,12 +57,12 @@ export interface IFileStorageRepository {
     filename: string,
   ): Promise<{ buffer: Buffer; mimetype: string; originalName: string }>;
 
-  // List files
-  listFiles(
-    customerNIN: string,
-    customerName: string,
-    type?: REQUEST_TYPE,
-  ): Promise<FileMetadata[]>;
+  //! DEL:  List files
+  // listFiles(
+  //   customerNIN: string,
+  //   customerName: string,
+  //   type?: REQUEST_TYPE,
+  // ): Promise<FileMetadata[]>;
 
   // Update
   updateFile(
@@ -75,16 +75,16 @@ export interface IFileStorageRepository {
     repeatOrderPath?: string,
   ): Promise<FileMetadata>;
 
-  updateFileDirectory(
-    customerNIN: string,
-    oldCustomerName: string,
-    newCustomerName: string,
-  ): Promise<{
-    oldPrefix: string;
-    newPrefix: string;
-    totalMoved: number;
-    message: string;
-  }>;
+  //! DEL: updateFileDirectory(
+  //   customerNIN: string,
+  //   oldCustomerName: string,
+  //   newCustomerName: string,
+  // ): Promise<{
+  //   oldPrefix: string;
+  //   newPrefix: string;
+  //   totalMoved: number;
+  //   message: string;
+  // }>;
 
   // Delete
   deleteFile(
@@ -108,17 +108,4 @@ export interface IFileStorageRepository {
     files: Record<string, Express.Multer.File[] | undefined>, // Files yang diupload: { foto_ktp: [file], foto_kk: [file] }
     type: REQUEST_TYPE,
   ): Promise<Record<string, FileMetadata[]>>;
-
-  // getNextPengajuanIndex(
-  //   customerNIN: string,
-  //   customerName: string,
-  //   type?: REQUEST_TYPE,
-  // ): Promise<number>;
-
-  // getFilesByPengajuanIndex(
-  //   customerNIN: string,
-  //   customerName: string,
-  //   pengajuanIndex: number,
-  //   type?: REQUEST_TYPE,
-  // ): Promise<FileMetadata[]>;
 }

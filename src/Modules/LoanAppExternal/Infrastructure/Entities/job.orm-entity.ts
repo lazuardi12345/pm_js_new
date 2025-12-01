@@ -68,6 +68,9 @@ export class JobExternal_ORM_Entity {
   @Column({ type: 'varchar', length: 255, nullable: true })
   lama_kontrak?: string;
 
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  rekening_koran?: string;
+
   @Column({ type: 'tinyint', width: 1, nullable: true })
   validasi_pekerjaan?: boolean;
 

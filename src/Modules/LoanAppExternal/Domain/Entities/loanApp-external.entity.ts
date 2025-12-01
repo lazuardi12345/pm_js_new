@@ -11,7 +11,7 @@ export class LoanApplicationExternal {
     public readonly jenis_pembiayaan: JenisPembiayaanEnum,
     public readonly nominal_pinjaman: number,
     public readonly tenor: number,
-    public readonly berkas_jaminan: string,
+    public readonly berkas_jaminan?: string,
     public readonly status_pinjaman: StatusPinjamanEnum = StatusPinjamanEnum.BARU,
     public readonly id?: number,
     public readonly pinjaman_ke?: number,

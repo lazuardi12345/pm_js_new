@@ -8,7 +8,7 @@ import {
 import {
   DRAFT_LOAN_APPLICATION_EXTERNAL_REPOSITORY,
   ILoanApplicationDraftExternalRepository,
-} from '../../../Domain/Repositories/ext/LoanAppInt.repository';
+} from '../../../Domain/Repositories/ext/LoanAppExt.repository';
 import { CreateDraftLoanApplicationExtDto } from '../../DTOS/LoanAppExt_MarketingInput/CreateDraft_LoanAppExt.dto';
 import { LoanApplicationExtEntity } from '../../../Domain/Entities/ext/LoanAppExt.entity';
 import { UpdateDraftLoanApplicationDto } from '../../DTOS/LoanAppInt_MarketingInput/UpdateDraft_LoanAppInt.dto';
@@ -26,17 +26,18 @@ export class CreateDraftLoanApplicationExtUseCase {
     dto: CreateDraftLoanApplicationExtDto,
   ) {
     try {
-      console.log(dto);
+      console.log('LU GUA CALL DISNI MEK', dto);
       const loanApp = await this.loanAppDraftRepo.create({
         marketing_id: marketingId,
         client_external: dto.payload.client_external,
         address_external: dto.payload.address_external,
         job_external: dto.payload.job_external,
         loan_application_external: dto.payload.loan_application_external,
-        loan_guarantor_external: dto.payload.loan_guarantor,
-        emergency_contact_external: dto.payload.emergency_contact_dto,
-        financial_dependents_external: dto.payload.financial_dependents,
-        other_exist_loan_external: dto.payload.other_exist_loan,
+        loan_guarantor_external: dto.payload.loan_application_external,
+        emergency_contact_external: dto.payload.emergency_contact_external,
+        financial_dependents_external:
+          dto.payload.financial_dependents_external,
+        other_exist_loan_external: dto.payload.other_exist_loan_external,
         collateral_bpjs: dto.payload.collateral_bpjs,
         collateral_bpkb: dto.payload.collateral_bpkb,
         collateral_shm: dto.payload.collateral_shm,
@@ -44,6 +45,7 @@ export class CreateDraftLoanApplicationExtUseCase {
         collateral_kedinasan_mou: dto.payload.collateral_kedinasan_mou,
         collateral_kedinasan_non_mou: dto.payload.collateral_kedinasan_non_mou,
         uploaded_files: dto.uploaded_files,
+        loan_external_type: dto.payload.loan_external_type,
       });
 
       return {

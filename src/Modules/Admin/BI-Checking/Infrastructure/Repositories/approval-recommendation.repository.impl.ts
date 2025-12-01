@@ -17,6 +17,7 @@ import {
   RepeatOrder,
   RepeatOrderDocument,
 } from 'src/Shared/Modules/Drafts/Infrastructure/Schemas/LoanAppInternal/RepeatOrder_Marketing.schema';
+import { LoanApplicationExt } from 'src/Shared/Modules/Drafts/Infrastructure/Schemas/LoanAppExternal/CreateLoanApplicaton_Marketing.schema';
 
 @Injectable()
 export class ApprovalRecommendationRepositoryImpl
@@ -26,7 +27,9 @@ export class ApprovalRecommendationRepositoryImpl
     @InjectRepository(ApprovalRecommendation_ORM_Entity)
     private readonly ormRepository: Repository<ApprovalRecommendation_ORM_Entity>,
     @InjectModel(LoanApplicationInt.name, 'mongoConnection')
-    private readonly mongoDraftRepository: Model<LoanApplicationDocument>,
+    private readonly mongoDraftInternalRepository: Model<LoanApplicationDocument>,
+    @InjectModel(LoanApplicationExt.name, 'mongoConnection')
+    private readonly mongoDraftExternalRepository: Model<LoanApplicationDocument>,
     @InjectModel(RepeatOrder.name, 'mongoConnection')
     private readonly repeatOrderRepository: Model<RepeatOrderDocument>,
   ) {}
@@ -137,8 +140,12 @@ export class ApprovalRecommendationRepositoryImpl
     return saveOrmPromise
       .then((savedOrm) => {
         // jalanin dua repo paralel
-        const mongoUpdatePromise = makeUpdatePromise(
-          this.mongoDraftRepository,
+        const mongoUpdateInternalPromise = makeUpdatePromise(
+          this.mongoDraftInternalRepository,
+          savedOrm,
+        );
+        const mongoUpdateExternalPromise = makeUpdatePromise(
+          this.mongoDraftExternalRepository,
           savedOrm,
         );
         const repeatUpdatePromise = makeUpdatePromise(
@@ -147,7 +154,8 @@ export class ApprovalRecommendationRepositoryImpl
         );
 
         return Promise.allSettled([
-          mongoUpdatePromise,
+          mongoUpdateInternalPromise,
+          mongoUpdateExternalPromise,
           repeatUpdatePromise,
         ]).then((results) => {
           const [mongoResult, repeatResult] = results;
@@ -260,7 +268,7 @@ export class ApprovalRecommendationRepositoryImpl
   }
   async findAllRecommendationRequests(): Promise<any[]> {
     // ambil data dari LoanApplication (draft)
-    const draftData = await this.mongoDraftRepository
+    const draftDataInternal = await this.mongoDraftInternalRepository
       .find(
         { isNeedCheck: true, isDeleted: false },
         {
@@ -272,6 +280,22 @@ export class ApprovalRecommendationRepositoryImpl
           'client_internal.email': 1,
           'client_internal.foto_ktp': 1,
           'loan_application_internal.nominal_pinjaman': 1,
+        },
+      )
+      .lean();
+
+    const draftDataExternal = await this.mongoDraftExternalRepository
+      .find(
+        { isNeedCheck: true, isDeleted: false },
+        {
+          marketing_id: 1,
+          _id: 1,
+          'client_external.nama_lengkap': 1,
+          'client_external.no_ktp': 1,
+          'client_external.no_hp': 1,
+          'client_external.email': 1,
+          'client_external.foto_ktp': 1,
+          'loan_application_external.nominal_pinjaman': 1,
         },
       )
       .lean();
@@ -320,7 +344,11 @@ export class ApprovalRecommendationRepositoryImpl
     });
 
     // gabung hasil dari dua koleksi
-    const result = [...draftData, ...mappedRepeatOrderData];
+    const result = [
+      ...draftDataInternal,
+      ...draftDataExternal,
+      ...mappedRepeatOrderData,
+    ];
 
     return result;
   }

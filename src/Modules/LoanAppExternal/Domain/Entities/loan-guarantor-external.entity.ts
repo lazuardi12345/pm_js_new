@@ -12,7 +12,7 @@ export class LoanGuarantorExternal {
     public readonly penghasilan_penjamin: number,
     public readonly no_hp_penjamin: string,
     public readonly persetujuan_penjamin: PersetujuanPenjaminEnum,
-    public readonly foto_ktp_penjamin: string,
+    public readonly foto_ktp_penjamin?: string,
     public readonly id?: number,
     public readonly validasi_penjamin?: boolean,
     public readonly catatan?: string,

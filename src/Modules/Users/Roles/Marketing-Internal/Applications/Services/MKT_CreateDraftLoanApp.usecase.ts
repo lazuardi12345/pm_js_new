@@ -31,6 +31,7 @@ import {
   CLIENT_INTERNAL_REPOSITORY,
   IClientInternalRepository,
 } from 'src/Modules/LoanAppInternal/Domain/Repositories/client-internal.repository';
+import { ExternalCollateralType } from 'src/Shared/Enums/General/General.enum';
 
 @Injectable()
 export class MKT_CreateDraftLoanApplicationUseCase {
@@ -53,8 +54,6 @@ export class MKT_CreateDraftLoanApplicationUseCase {
       const duplicateChecker = await this.clientRepo.findByKtp(
         dto.client_internal.no_ktp,
       );
-
-      console.log('kontol dupli check', duplicateChecker);
 
       if (duplicateChecker) {
         throw new HttpException(
@@ -97,7 +96,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         }
       }
 
-      // 3️⃣ Simpan draft loan application
+      // Simpan draft loan application
       const loanApp = await this.loanAppDraftRepo.create({
         ...dto,
         uploaded_files: filePaths,

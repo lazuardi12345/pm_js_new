@@ -30,7 +30,7 @@ export class DraftRepeatOrderExternalRepositoryImpl
     nik: string,
   ): Promise<{ draft_id: string; isNeedCheck: boolean } | null> {
     const found = await this.repeatOrderModel
-      .findOne({ 'client_internal.no_ktp': nik }, { isNeedCheck: 1, _id: 1 })
+      .findOne({ 'client_external.no_ktp': nik }, { isNeedCheck: 1, _id: 1 })
       .lean();
 
     if (!found) return null;
@@ -56,10 +56,10 @@ export class DraftRepeatOrderExternalRepositoryImpl
         { marketing_id: marketingId, isDeleted: false },
         {
           _id: 1,
-          'client_internal.nama_lengkap': 1,
-          'client_internal.no_ktp': 1,
-          'client_internal.no_hp': 1,
-          'loan_application_internal.nominal_pinjaman': 1,
+          'client_external.nama_lengkap': 1,
+          'client_external.no_ktp': 1,
+          'client_external.no_hp': 1,
+          'loan_application_external.nominal_pinjaman': 1,
           'loan_application_internal.tenor': 1,
           isDeleted: 1,
           isNeedCheck: 1,

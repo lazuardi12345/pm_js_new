@@ -3,7 +3,7 @@ export class CollateralByUMKM {
     public readonly pengajuan: { id: number },
 
     public readonly foto_sku?: string,
-    public readonly foto_usaha?: string[], // array foto usaha
+    public readonly foto_usaha?: string[] | string, // array foto usaha
     public readonly foto_pembukuan?: string,
 
     public readonly id?: number,
