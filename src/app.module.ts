@@ -1,7 +1,5 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ServeStaticModule } from '@nestjs/serve-static';
-
 import { ModuleLoanApplicationInternal } from './Modules/LoanAppInternal/ModuleLoanApplicationInternal.module';
 import { ModuleLoanApplicationExternal } from './Modules/LoanAppExternal/ModuleLoanApplicationExternal.module';
 import { AllTypeAdminsModule } from './Modules/Admin/ModuleAllTypeAdmins.module';
@@ -12,7 +10,6 @@ import { NotificationsModule } from './Shared/Modules/Notifications/ModuleNotifi
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { join } from 'path';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MarketingInternalUseCaseModule } from './Modules/Users/Roles/Marketing-Internal/marketing-internal.module';
 import { SupervisorInternalUseCaseModule } from './Modules/Users/Roles/Supervisor-Internal/supervisor-internal.module';
@@ -24,6 +21,8 @@ import { FileSystemStorageModules } from './Shared/Modules/Storage/ModuleStorage
 import { AdminBICheckingUseCaseModule } from './Modules/Users/Roles/Admin/BI/admin-bi.module';
 import { ConfigModule } from '@nestjs/config';
 import { MarketingExternalUseCaseModule } from './Modules/Users/Roles/Marketing-External/marketing-external.module';
+import { SupervisorExternalUseCaseModule } from './Modules/Users/Roles/Supervisor-External/supervisor-external.module';
+import { CreditAnalystExternalUseCaseModule } from './Modules/Users/Roles/CreditAnalyst-External/credit-analyst-external.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -70,7 +69,9 @@ import { MarketingExternalUseCaseModule } from './Modules/Users/Roles/Marketing-
     MarketingInternalUseCaseModule,
     MarketingExternalUseCaseModule,
     SupervisorInternalUseCaseModule,
+    SupervisorExternalUseCaseModule,
     CreditAnalystInternalUseCaseModule,
+    CreditAnalystExternalUseCaseModule,
     HeadMarketingInternalUsecaseModule,
     AdminBICheckingUseCaseModule,
 

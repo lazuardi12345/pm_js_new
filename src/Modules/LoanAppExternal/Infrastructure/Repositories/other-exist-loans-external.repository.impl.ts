@@ -12,11 +12,12 @@ import { CicilanLainEnum } from 'src/Shared/Enums/External/Other-Exist-Loans.enu
 
 @Injectable()
 export class OtherExistLoansExternalRepositoryImpl
-  implements IOtherExistLoansExternalRepository {
+  implements IOtherExistLoansExternalRepository
+{
   constructor(
     @InjectRepository(OtherExistLoansExternal_ORM_Entity)
     private readonly orm_repository: Repository<OtherExistLoansExternal_ORM_Entity>,
-  ) { }
+  ) {}
   private to_domain(
     entity: OtherExistLoansExternal_ORM_Entity,
   ): OtherExistLoansExternal {
@@ -61,7 +62,9 @@ export class OtherExistLoansExternalRepositoryImpl
     const orm_data: Partial<OtherExistLoansExternal_ORM_Entity> = {};
 
     if (partial.nasabah?.id) {
-      orm_data.nasabah = { id: partial.nasabah.id } as ClientExternal_ORM_Entity;
+      orm_data.nasabah = {
+        id: partial.nasabah.id,
+      } as ClientExternal_ORM_Entity;
     }
 
     if (partial.cicilan_lain) {
@@ -107,29 +110,28 @@ export class OtherExistLoansExternalRepositoryImpl
     return orm_data;
   }
 
-async findById(id: number): Promise<OtherExistLoansExternal | null> {
-  const entity = await this.orm_repository.findOne({
-    where: { id },
-    relations: ['nasabah'],
-  });
-  return entity ? this.to_domain(entity) : null;
-}
+  async findById(id: number): Promise<OtherExistLoansExternal | null> {
+    const entity = await this.orm_repository.findOne({
+      where: { id },
+      relations: ['nasabah'],
+    });
+    return entity ? this.to_domain(entity) : null;
+  }
 
-async findByNasabahId(nasabahId: number): Promise<OtherExistLoansExternal[]> {
-  const entities = await this.orm_repository.find({
-    where: { nasabah: { id: nasabahId } },
-    relations: ['nasabah'],
-  });
-  return entities.map((e) => this.to_domain(e));
-}
+  async findByNasabahId(nasabahId: number): Promise<OtherExistLoansExternal[]> {
+    const entities = await this.orm_repository.find({
+      where: { nasabah: { id: nasabahId } },
+      relations: ['nasabah'],
+    });
+    return entities.map((e) => this.to_domain(e));
+  }
 
-async findAll(): Promise<OtherExistLoansExternal[]> {
-  const entities = await this.orm_repository.find({
-    relations: ['nasabah'],
-  });
-  return entities.map((e) => this.to_domain(e));
-}
-
+  async findAll(): Promise<OtherExistLoansExternal[]> {
+    const entities = await this.orm_repository.find({
+      relations: ['nasabah'],
+    });
+    return entities.map((e) => this.to_domain(e));
+  }
 
   async save(
     domain: OtherExistLoansExternal,

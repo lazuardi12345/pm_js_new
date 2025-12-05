@@ -12,12 +12,12 @@ export class AddressExternalService {
   constructor(
     @Inject(ADDRESS_EXTERNAL_REPOSITORY)
     private readonly repo: IAddressExternalRepository,
-  ) { }
+  ) {}
 
   async create(dto: CreateAddressExternalDto): Promise<AddressExternal> {
     const now = new Date();
 
-       const address = new AddressExternal(
+    const address = new AddressExternal(
       { id: dto.nasabah_id },
       dto.alamat_ktp,
       dto.rt_rw,
@@ -28,9 +28,9 @@ export class AddressExternalService {
       dto.status_rumah,
       dto.domisili,
       dto.rumah_domisili,
-      undefined,             // id
-      now,                   // created_at
-      null,                  // deleted_at
+      undefined, // id
+      now, // created_at
+      null, // deleted_at
       dto.alamat_domisili,
       dto.biaya_perbulan,
       dto.biaya_pertahun,
@@ -44,15 +44,15 @@ export class AddressExternalService {
       dto.share_loc_usaha,
       dto.share_loc_tempat_kerja,
       dto.validasi_alamat,
-      dto.catatan,
-      now,                   // updated_at
+      now, // updated_at
     );
     return this.repo.save(address);
   }
 
-
-
-  async update(id: number, dto: UpdateAddressExternalDto): Promise<AddressExternal> {
+  async update(
+    id: number,
+    dto: UpdateAddressExternalDto,
+  ): Promise<AddressExternal> {
     return this.repo.update(id, dto);
   }
 

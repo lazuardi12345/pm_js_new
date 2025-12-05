@@ -4,7 +4,6 @@ import { MKT_GetDashboardStatsUseCase } from '../../Applications/Services/MKT_Ge
 import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
 import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/roles.decorator';
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
-import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
 @Controller('mkt/ext/loan-apps')
 export class MKT_GetDashboardStatsController {

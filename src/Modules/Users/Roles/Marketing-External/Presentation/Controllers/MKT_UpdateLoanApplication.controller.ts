@@ -7,7 +7,6 @@ import {
   UseInterceptors,
   BadRequestException,
   InternalServerErrorException,
-  ValidationPipe,
 } from '@nestjs/common';
 import { MKT_UpdateLoanApplicationUseCase } from '../../Applications/Services/MKT_UpdateLoanApplication.usecase';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';

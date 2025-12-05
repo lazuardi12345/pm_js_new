@@ -1,10 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import { ApprovalInternal } from 'src/Modules/LoanAppInternal/Domain/Entities/approval-internal.entity';
 import {
@@ -100,8 +94,6 @@ export class SPV_ApproveOrRejectUseCase {
         keterangan || '',
         undefined,
       );
-
-      console.log('uhuy cukay: >>>>>>>>>>>>>>>>>>>>>.', status);
 
       // Terapkan status approval
       let newLoanStatus: StatusPengajuanEnum;

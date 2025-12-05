@@ -22,7 +22,6 @@ export class FinancialDependentsExternalRepositoryImpl
       { id: ormEntity.nasabah?.id }, // using object for nasabah like your example
       ormEntity.kondisi_tanggungan ?? undefined,
       ormEntity.validasi_tanggungan ?? undefined,
-      ormEntity.catatan ?? undefined,
       ormEntity.id ?? undefined,
       ormEntity.created_at ?? undefined,
       ormEntity.updated_at ?? undefined,
@@ -35,10 +34,11 @@ export class FinancialDependentsExternalRepositoryImpl
   ): Partial<FinancialDependentsExternal_ORM_Entity> {
     return {
       id: domainEntity.id,
-      nasabah: domainEntity.nasabah ? { id: domainEntity.nasabah.id } as ClientExternal_ORM_Entity : undefined,
+      nasabah: domainEntity.nasabah
+        ? ({ id: domainEntity.nasabah.id } as ClientExternal_ORM_Entity)
+        : undefined,
       kondisi_tanggungan: domainEntity.kondisi_tanggungan,
       validasi_tanggungan: domainEntity.validasi_tanggungan,
-      catatan: domainEntity.catatan,
       created_at: domainEntity.created_at,
       updated_at: domainEntity.updated_at,
       deleted_at: domainEntity.deleted_at,
@@ -53,12 +53,16 @@ export class FinancialDependentsExternalRepositoryImpl
     if (partial.nasabah?.id !== undefined) {
       ormData.nasabah = { id: partial.nasabah.id } as ClientExternal_ORM_Entity;
     }
-    if (partial.kondisi_tanggungan !== undefined) ormData.kondisi_tanggungan = partial.kondisi_tanggungan;
-    if (partial.validasi_tanggungan !== undefined) ormData.validasi_tanggungan = partial.validasi_tanggungan;
-    if (partial.catatan !== undefined) ormData.catatan = partial.catatan;
-    if (partial.created_at !== undefined) ormData.created_at = partial.created_at;
-    if (partial.updated_at !== undefined) ormData.updated_at = partial.updated_at;
-    if (partial.deleted_at !== undefined) ormData.deleted_at = partial.deleted_at;
+    if (partial.kondisi_tanggungan !== undefined)
+      ormData.kondisi_tanggungan = partial.kondisi_tanggungan;
+    if (partial.validasi_tanggungan !== undefined)
+      ormData.validasi_tanggungan = partial.validasi_tanggungan;
+    if (partial.created_at !== undefined)
+      ormData.created_at = partial.created_at;
+    if (partial.updated_at !== undefined)
+      ormData.updated_at = partial.updated_at;
+    if (partial.deleted_at !== undefined)
+      ormData.deleted_at = partial.deleted_at;
 
     return ormData;
   }
@@ -71,7 +75,9 @@ export class FinancialDependentsExternalRepositoryImpl
     return ormEntity ? this.toDomain(ormEntity) : null;
   }
 
-  async findByNasabahId(nasabahId: number): Promise<FinancialDependentsExternal[]> {
+  async findByNasabahId(
+    nasabahId: number,
+  ): Promise<FinancialDependentsExternal[]> {
     const ormEntities = await this.ormRepository.find({
       where: { nasabah: { id: nasabahId } },
       relations: ['nasabah'],
@@ -103,7 +109,10 @@ export class FinancialDependentsExternalRepositoryImpl
       where: { id },
       relations: ['nasabah'],
     });
-    if (!updated) throw new NotFoundException(`FinancialDependentsExternal with ID ${id} not found`);
+    if (!updated)
+      throw new NotFoundException(
+        `FinancialDependentsExternal with ID ${id} not found`,
+      );
     return this.toDomain(updated);
   }
 

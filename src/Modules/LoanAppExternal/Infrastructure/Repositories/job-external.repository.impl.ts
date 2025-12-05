@@ -33,7 +33,6 @@ export class JobExternalRepositoryImpl implements IJobExternalRepository {
       orm.lama_kontrak,
       orm.rekening_koran,
       orm.validasi_pekerjaan,
-      orm.catatan,
       orm.id,
       orm.created_at,
       orm.updated_at,
@@ -59,7 +58,6 @@ export class JobExternalRepositoryImpl implements IJobExternalRepository {
       id_card_penjamin: domain.id_card_penjamin,
       lama_kontrak: domain.lama_kontrak,
       validasi_pekerjaan: domain.validasi_pekerjaan,
-      catatan: domain.catatan,
       created_at: domain.created_at,
       updated_at: domain.updated_at,
       deleted_at: domain.deleted_at,
@@ -96,7 +94,6 @@ export class JobExternalRepositoryImpl implements IJobExternalRepository {
     if (partial.lama_kontrak) ormData.lama_kontrak = partial.lama_kontrak;
     if (partial.validasi_pekerjaan !== undefined)
       ormData.validasi_pekerjaan = partial.validasi_pekerjaan;
-    if (partial.catatan) ormData.catatan = partial.catatan;
     if (partial.created_at) ormData.created_at = partial.created_at;
     if (partial.updated_at) ormData.updated_at = partial.updated_at;
     if (partial.deleted_at) ormData.deleted_at = partial.deleted_at;

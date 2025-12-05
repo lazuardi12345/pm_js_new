@@ -49,11 +49,9 @@ export class AddressExternalRepositoryImpl
       orm.share_loc_usaha,
       orm.share_loc_tempat_kerja,
       orm.validasi_alamat,
-      orm.catatan,
       orm.updated_at,
     );
   }
-
 
   private toOrm(domain: AddressExternal): Partial<AddressExternal_ORM_Entity> {
     return {
@@ -82,13 +80,11 @@ export class AddressExternalRepositoryImpl
       share_loc_usaha: domain.share_loc_usaha,
       share_loc_tempat_kerja: domain.share_loc_tempat_kerja,
       validasi_alamat: domain.validasi_alamat,
-      catatan: domain.catatan,
       created_at: domain.created_at,
       updated_at: domain.updated_at,
       deleted_at: domain.deleted_at,
     };
   }
-
 
   private toOrmPartial(
     partial: Partial<AddressExternal>,
@@ -120,11 +116,12 @@ export class AddressExternalRepositoryImpl
     if (partial.hubungan) orm.hubungan = partial.hubungan;
     if (partial.foto_meteran_listrik)
       orm.foto_meteran_listrik = partial.foto_meteran_listrik;
-    if (partial.share_loc_domisili) orm.share_loc_domisili = partial.share_loc_domisili;
+    if (partial.share_loc_domisili)
+      orm.share_loc_domisili = partial.share_loc_domisili;
     if (partial.share_loc_usaha) orm.share_loc_usaha = partial.share_loc_usaha;
-    if (partial.share_loc_tempat_kerja) orm.share_loc_tempat_kerja = partial.share_loc_tempat_kerja;
+    if (partial.share_loc_tempat_kerja)
+      orm.share_loc_tempat_kerja = partial.share_loc_tempat_kerja;
     if (partial.validasi_alamat) orm.validasi_alamat = partial.validasi_alamat;
-    if (partial.catatan) orm.catatan = partial.catatan;
     if (partial.created_at) orm.created_at = partial.created_at;
     if (partial.updated_at) orm.updated_at = partial.updated_at;
     if (partial.deleted_at) orm.deleted_at = partial.deleted_at;

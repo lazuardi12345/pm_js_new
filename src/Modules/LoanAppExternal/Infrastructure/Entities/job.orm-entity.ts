@@ -74,9 +74,6 @@ export class JobExternal_ORM_Entity {
   @Column({ type: 'tinyint', width: 1, nullable: true })
   validasi_pekerjaan?: boolean;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  catatan?: string;
-
   @CreateDateColumn({ type: 'timestamp', nullable: true })
   created_at?: Date;
 

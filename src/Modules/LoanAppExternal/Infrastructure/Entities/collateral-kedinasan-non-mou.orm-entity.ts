@@ -17,7 +17,7 @@ export class CollateralByKedinasan_Non_MOU_ORM_Entity {
 
   @OneToOne(
     () => LoanApplicationExternal_ORM_Entity,
-    (pengajuan) => pengajuan.id,
+    (pengajuan) => pengajuan.Kedinasan_NON_MOU,
     {
       onDelete: 'CASCADE',
     },

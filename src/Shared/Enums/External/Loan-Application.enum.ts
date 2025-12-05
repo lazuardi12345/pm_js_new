@@ -14,9 +14,9 @@ export enum StatusPinjamanEnum {
 
 export enum StatusPengajuanEnum {
   PENDING = 'pending',
-  APROVED_CA = 'aproved ca',
+  APPROVED_CA = 'approved ca',
   REJECTED_CA = 'rejected ca',
-  APROVED_HM = 'aproved hm',
+  APPROVED_HM = 'approved hm',
   REJECTED_HM = 'rejected hm',
   REVISI = 'revisi',
   REVISI_SPV = 'revisi spv',

@@ -3,7 +3,6 @@ export class FinancialDependentsExternal {
     public readonly nasabah: { id: number },
     public readonly kondisi_tanggungan?: string,
     public readonly validasi_tanggungan?: boolean,
-    public readonly catatan?: string,
     public readonly id?: number,
     public readonly created_at?: Date,
     public readonly updated_at?: Date,
@@ -24,10 +23,17 @@ export class FinancialDependentsExternal {
   }
 
   public has_dependents(): boolean {
-    return !!this.kondisi_tanggungan && this.kondisi_tanggungan.trim().length > 0;
+    return (
+      !!this.kondisi_tanggungan && this.kondisi_tanggungan.trim().length > 0
+    );
   }
 
   public get_summary(): string {
-    return this.kondisi_tanggungan?.substring(0, 100) + (this.kondisi_tanggungan && this.kondisi_tanggungan.length > 100 ? '...' : '');
+    return (
+      this.kondisi_tanggungan?.substring(0, 100) +
+      (this.kondisi_tanggungan && this.kondisi_tanggungan.length > 100
+        ? '...'
+        : '')
+    );
   }
 }

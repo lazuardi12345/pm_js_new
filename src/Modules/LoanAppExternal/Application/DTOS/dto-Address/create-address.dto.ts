@@ -6,7 +6,11 @@ import {
   IsNumber,
   IsBoolean,
 } from 'class-validator';
-import { DomisiliEnum, RumahDomisiliEnum, StatusRumahEnum } from 'src/Shared/Enums/External/Address.enum';
+import {
+  DomisiliEnum,
+  RumahDomisiliEnum,
+  StatusRumahEnum,
+} from 'src/Shared/Enums/External/Address.enum';
 
 export class CreateAddressExternalDto {
   @IsNumber()
@@ -83,22 +87,17 @@ export class CreateAddressExternalDto {
 
   @IsNotEmpty()
   @IsString()
-  share_loc_domisili?: string; 
+  share_loc_domisili?: string;
 
   @IsOptional()
   @IsString()
   share_loc_usaha?: string;
-  
+
   @IsOptional()
   @IsString()
-  share_loc_tempat_kerja?: string; 
-  
+  share_loc_tempat_kerja?: string;
 
   @IsOptional()
   @IsBoolean()
   validasi_alamat?: boolean;
-
-  @IsOptional()
-  @IsString()
-  catatan?: string;
 }

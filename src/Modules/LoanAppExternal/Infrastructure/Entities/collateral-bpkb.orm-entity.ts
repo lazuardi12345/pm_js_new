@@ -17,7 +17,7 @@ export class CollateralByBPKB_ORM_Entity {
 
   @OneToOne(
     () => LoanApplicationExternal_ORM_Entity,
-    (pengajuan) => pengajuan.id,
+    (pengajuan) => pengajuan.bpkb,
     {
       onDelete: 'CASCADE',
     },

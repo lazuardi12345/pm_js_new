@@ -9,11 +9,7 @@ import {
 } from '@nestjs/common';
 import { MKT_CreateLoanApplicationUseCase } from '../../Applications/Services/MKT_CreateLoanApplication.usecase';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
-import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/roles.decorator';
-import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
-import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 import { CreateLoanApplicationExternalDto } from '../../Applications/DTOS/MKT_CreateLoanApplicationExternal.dto';
-import { AuthGuard } from '@nestjs/passport';
 
 @Controller('mkt/ext/loan-apps')
 export class MKT_CreateLoanApplicationController {

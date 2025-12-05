@@ -25,8 +25,4 @@ export class CreateEmergencyContactExternalDto {
   @IsOptional()
   @IsBoolean()
   validasi_kontak_darurat?: boolean;
-
-  @IsOptional()
-  @IsString()
-  catatan?: string;
 }

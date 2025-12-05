@@ -40,7 +40,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
       secretKey: process.env.MINIO_SECRET_KEY || 'admin123',
     });
 
-    this.encKey = new EncKey(); // <-- Tambahkan baris ini
+    this.encKey = new EncKey();
 
     // Ensure buckets exist
     this.ensureBucket(this.customer_internal);

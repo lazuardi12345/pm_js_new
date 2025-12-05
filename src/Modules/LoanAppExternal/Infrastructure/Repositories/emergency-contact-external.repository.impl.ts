@@ -8,17 +8,16 @@ import { ClientExternal_ORM_Entity } from '../Entities/client-external.orm-entit
 
 @Injectable()
 export class EmergencyContactExternalRepositoryImpl
-  implements IEmergencyContactExternalRepository {
+  implements IEmergencyContactExternalRepository
+{
   constructor(
     @InjectRepository(EmergencyContactExternal_ORM_Entity)
     private readonly orm_repository: Repository<EmergencyContactExternal_ORM_Entity>,
-  ) { }
+  ) {}
 
   // ========================== MAPPER ==========================
 
-  private to_domain(
-    orm_entity: EmergencyContactExternal_ORM_Entity,
-  ): any {
+  private to_domain(orm_entity: EmergencyContactExternal_ORM_Entity): any {
     return {
       id: orm_entity.id,
       nasabah: {
@@ -31,13 +30,11 @@ export class EmergencyContactExternalRepositoryImpl
       hubungan_kontak_darurat: orm_entity.hubungan_kontak_darurat,
       no_hp_kontak_darurat: orm_entity.no_hp_kontak_darurat,
       validasi_kontak_darurat: orm_entity.validasi_kontak_darurat,
-      catatan: orm_entity.catatan,
       created_at: orm_entity.created_at,
       updated_at: orm_entity.updated_at,
       deleted_at: orm_entity.deleted_at,
     };
   }
-
 
   private to_orm(
     domain_entity: EmergencyContactExternal,
@@ -49,7 +46,6 @@ export class EmergencyContactExternalRepositoryImpl
       hubungan_kontak_darurat: domain_entity.hubungan_kontak_darurat,
       no_hp_kontak_darurat: domain_entity.no_hp_kontak_darurat,
       validasi_kontak_darurat: domain_entity.validasi_kontak_darurat,
-      catatan: domain_entity.catatan,
       created_at: domain_entity.created_at,
       updated_at: domain_entity.updated_at,
       deleted_at: domain_entity.deleted_at,
@@ -62,7 +58,9 @@ export class EmergencyContactExternalRepositoryImpl
     const orm_data: Partial<EmergencyContactExternal_ORM_Entity> = {};
 
     if (partial.nasabah)
-      orm_data.nasabah = { id: partial.nasabah.id } as ClientExternal_ORM_Entity;
+      orm_data.nasabah = {
+        id: partial.nasabah.id,
+      } as ClientExternal_ORM_Entity;
     if (partial.nama_kontak_darurat)
       orm_data.nama_kontak_darurat = partial.nama_kontak_darurat;
     if (partial.hubungan_kontak_darurat)
@@ -71,7 +69,6 @@ export class EmergencyContactExternalRepositoryImpl
       orm_data.no_hp_kontak_darurat = partial.no_hp_kontak_darurat;
     if (partial.validasi_kontak_darurat !== undefined)
       orm_data.validasi_kontak_darurat = partial.validasi_kontak_darurat;
-    if (partial.catatan) orm_data.catatan = partial.catatan;
     if (partial.created_at) orm_data.created_at = partial.created_at;
     if (partial.updated_at) orm_data.updated_at = partial.updated_at;
     if (partial.deleted_at) orm_data.deleted_at = partial.deleted_at;
@@ -89,7 +86,9 @@ export class EmergencyContactExternalRepositoryImpl
     return orm_entity ? this.to_domain(orm_entity) : null;
   }
 
-  async findByNasabahId(nasabahId: number): Promise<EmergencyContactExternal[]> {
+  async findByNasabahId(
+    nasabahId: number,
+  ): Promise<EmergencyContactExternal[]> {
     const orm_entities = await this.orm_repository.find({
       where: { nasabah: { id: nasabahId } },
       relations: ['nasabah'],
@@ -97,12 +96,12 @@ export class EmergencyContactExternalRepositoryImpl
     return orm_entities.map(this.to_domain.bind(this));
   }
 
-  async findAll():Promise<any[]> {
-  const orm_entities = await this.orm_repository.find({
-    relations: ['nasabah', 'nasabah.marketing'],
-  });
-  return orm_entities.map(this.to_domain.bind(this));
-}
+  async findAll(): Promise<any[]> {
+    const orm_entities = await this.orm_repository.find({
+      relations: ['nasabah', 'nasabah.marketing'],
+    });
+    return orm_entities.map(this.to_domain.bind(this));
+  }
 
   async save(
     contact: EmergencyContactExternal,

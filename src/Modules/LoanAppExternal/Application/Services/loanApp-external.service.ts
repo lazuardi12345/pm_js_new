@@ -35,7 +35,6 @@ export class LoanApplicationExternalService {
       dto.status_pengajuan,
       dto.status_pengajuan_akhir,
       dto.validasi_pengajuan,
-      dto.catatan,
       dto.catatan_spv,
       dto.catatan_marketing,
       dto.is_banding,

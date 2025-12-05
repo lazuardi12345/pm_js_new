@@ -1169,11 +1169,6 @@ export class CreateLoanApplicationExternalDto {
   // @Type(() => SurveyReportsDto)
   // survey_reports: SurveyReportsDto;
 
-  // @ValidateNested()
-  // @IsOptional()
-  // @Type(() => RelativeInternalDto)
-  // relative_internal?: RelativeInternalDto;
-
   @ValidateNested()
   @IsOptional()
   @Type(() => FilesDto)
@@ -1232,16 +1227,6 @@ export interface TypeLoanApplicationDetail {
   validasi_alamat?: boolean;
   catatan_alamat?: string;
 
-  // Family
-  // family_hubungan: string;
-  // nama_keluarga: string;
-  // bekerja: string;
-  // nama_perusahaan?: string;
-  // // jabatan?: string;
-  // penghasilan?: number;
-  // alamat_kerja?: string;
-  // no_hp_keluarga?: string;
-
   // Job
   nasabah_id: number;
   perusahaan: string;
@@ -1282,29 +1267,6 @@ export interface TypeLoanApplicationDetail {
   sisa_pinjaman?: number;
   loan_is_banding?: number;
   loan_alasan_banding?: string;
-
-  // Relative (Optional)
-  // kerabat_kerja?: string;
-  // nama_kerabat_kerja?: string;
-  // alamat_kerabat_kerja?: string;
-  // no_hp_kerabat_kerja?: string;
-  // nama_perusahaan_kerabat_kerja?: string;
-  // status_hubungan_kerabat_kerja?: string;
-
-  // Collateral
-  // jaminan_hrd?: string;
-  // jaminan_cg?: string;
-  // penjamin?: string;
-  // nama_penjamin?: string;
-  // lama_kerja_penjamin?: string;
-  // bagian?: string;
-  // absensi_penjamin?: string;
-  // riwayat_pinjam_penjamin?: string;
-  // riwayat_nominal_penjamin?: number;
-  // riwayat_tenor_penjamin?: number;
-  // sisa_pinjaman_penjamin?: number;
-  // jaminan_cg_penjamin?: string;
-  // status_hubungan_penjamin?: string;
 
   // Files (Optional) - Basic
   foto_ktp_peminjam?: string;

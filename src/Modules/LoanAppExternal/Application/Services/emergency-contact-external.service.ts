@@ -20,10 +20,16 @@ export class EmergencyContactExternalService {
     private readonly repo: IEmergencyContactExternalRepository,
   ) {}
 
-  async create(dto: CreateEmergencyContactExternalDto): Promise<EmergencyContactExternal> {
+  async create(
+    dto: CreateEmergencyContactExternalDto,
+  ): Promise<EmergencyContactExternal> {
     const now = new Date();
 
-    if (!dto.nasabah_id || !dto.nama_kontak_darurat || !dto.no_hp_kontak_darurat) {
+    if (
+      !dto.nasabah_id ||
+      !dto.nama_kontak_darurat ||
+      !dto.no_hp_kontak_darurat
+    ) {
       throw new BadRequestException('Field wajib tidak boleh kosong.');
     }
 
@@ -33,11 +39,10 @@ export class EmergencyContactExternalService {
       dto.hubungan_kontak_darurat,
       dto.no_hp_kontak_darurat,
       dto.validasi_kontak_darurat,
-      dto.catatan,
       undefined, // id
-      now,       // created_at
-      now,       // updated_at
-      null,      // deleted_at
+      now, // created_at
+      now, // updated_at
+      null, // deleted_at
     );
 
     try {
@@ -48,56 +53,56 @@ export class EmergencyContactExternalService {
     }
   }
 
-async update(
-  id: number,
-  dto: UpdateEmergencyContactExternalDto,
-): Promise<EmergencyContactExternal> {
-  const existing = await this.repo.findById(id);
-  if (!existing) {
-    throw new NotFoundException(`Kontak darurat dengan ID ${id} tidak ditemukan`);
-  }
+  async update(
+    id: number,
+    dto: UpdateEmergencyContactExternalDto,
+  ): Promise<EmergencyContactExternal> {
+    const existing = await this.repo.findById(id);
+    if (!existing) {
+      throw new NotFoundException(
+        `Kontak darurat dengan ID ${id} tidak ditemukan`,
+      );
+    }
 
-  // Gunakan interface ringan tanpa properti readonly
-  const updateData: {
-    nama_kontak_darurat?: string;
-    hubungan_kontak_darurat?: string;
-    no_hp_kontak_darurat?: string;
-    validasi_kontak_darurat?: boolean;
-    catatan?: string;
-  } = {};
+    // Gunakan interface ringan tanpa properti readonly
+    const updateData: {
+      nama_kontak_darurat?: string;
+      hubungan_kontak_darurat?: string;
+      no_hp_kontak_darurat?: string;
+      validasi_kontak_darurat?: boolean;
+      catatan?: string;
+    } = {};
 
-  if (dto.nama_kontak_darurat !== undefined) {
-    updateData.nama_kontak_darurat = dto.nama_kontak_darurat;
-  }
+    if (dto.nama_kontak_darurat !== undefined) {
+      updateData.nama_kontak_darurat = dto.nama_kontak_darurat;
+    }
 
-  if (dto.hubungan_kontak_darurat !== undefined) {
-    updateData.hubungan_kontak_darurat = dto.hubungan_kontak_darurat;
-  }
+    if (dto.hubungan_kontak_darurat !== undefined) {
+      updateData.hubungan_kontak_darurat = dto.hubungan_kontak_darurat;
+    }
 
-  if (dto.no_hp_kontak_darurat !== undefined) {
-    updateData.no_hp_kontak_darurat = dto.no_hp_kontak_darurat;
-  }
+    if (dto.no_hp_kontak_darurat !== undefined) {
+      updateData.no_hp_kontak_darurat = dto.no_hp_kontak_darurat;
+    }
 
-  if (dto.validasi_kontak_darurat !== undefined) {
-    updateData.validasi_kontak_darurat = dto.validasi_kontak_darurat;
-  }
+    if (dto.validasi_kontak_darurat !== undefined) {
+      updateData.validasi_kontak_darurat = dto.validasi_kontak_darurat;
+    }
 
-  if (dto.catatan !== undefined) {
-    updateData.catatan = dto.catatan;
+    try {
+      return await this.repo.update(id, updateData);
+    } catch (error) {
+      console.error('Update Emergency Contact Error:', error);
+      throw new InternalServerErrorException('Gagal mengupdate kontak darurat');
+    }
   }
-
-  try {
-    return await this.repo.update(id, updateData);
-  } catch (error) {
-    console.error('Update Emergency Contact Error:', error);
-    throw new InternalServerErrorException('Gagal mengupdate kontak darurat');
-  }
-}
 
   async findById(id: number): Promise<EmergencyContactExternal> {
     const contact = await this.repo.findById(id);
     if (!contact) {
-      throw new NotFoundException(`Kontak darurat dengan ID ${id} tidak ditemukan`);
+      throw new NotFoundException(
+        `Kontak darurat dengan ID ${id} tidak ditemukan`,
+      );
     }
     return contact;
   }
@@ -107,14 +112,18 @@ async update(
       return await this.repo.findAll();
     } catch (error) {
       console.error('Find All Emergency Contact Error:', error);
-      throw new InternalServerErrorException('Gagal mengambil data kontak darurat');
+      throw new InternalServerErrorException(
+        'Gagal mengambil data kontak darurat',
+      );
     }
   }
 
   async delete(id: number): Promise<void> {
     const contact = await this.repo.findById(id);
     if (!contact) {
-      throw new NotFoundException(`Kontak darurat dengan ID ${id} tidak ditemukan`);
+      throw new NotFoundException(
+        `Kontak darurat dengan ID ${id} tidak ditemukan`,
+      );
     }
 
     try {

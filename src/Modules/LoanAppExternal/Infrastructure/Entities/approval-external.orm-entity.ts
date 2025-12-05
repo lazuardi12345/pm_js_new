@@ -1,6 +1,7 @@
 import { LoanApplicationExternal_ORM_Entity } from './loan-application-external.orm-entity';
 import { Users_ORM_Entity } from 'src/Modules/Users/Infrastructure/Entities/users.orm-entity';
-import { ApprovalExternalRole, ApprovalExternalStatus } from 'src/Shared/Enums/External/Approval.enum';
+import { ApprovalExternalStatus } from 'src/Shared/Enums/External/Approval.enum';
+import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -11,7 +12,6 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
 } from 'typeorm';
-
 
 @Entity('approval_external')
 export class ApprovalExternal_ORM_Entity {
@@ -25,33 +25,40 @@ export class ApprovalExternal_ORM_Entity {
       onDelete: 'CASCADE',
     },
   )
-  @JoinColumn({ name: 'pengajuan_id', foreignKeyConstraintName: 'FK_LoanApplicationExternalID_at_ApprovalExternal' })
+  @JoinColumn({
+    name: 'pengajuan_id',
+    foreignKeyConstraintName:
+      'FK_LoanApplicationExternalID_at_ApprovalExternal',
+  })
   pengajuan_luar: LoanApplicationExternal_ORM_Entity;
 
   @ManyToOne(() => Users_ORM_Entity, (user) => user.approvalExternals, {
     eager: true,
     onDelete: 'SET NULL',
   })
-  @JoinColumn({ name: 'user_id', foreignKeyConstraintName: 'FK_UserID_at_ApprovalExternal' })
+  @JoinColumn({
+    name: 'user_id',
+    foreignKeyConstraintName: 'FK_UserID_at_ApprovalExternal',
+  })
   user: Users_ORM_Entity;
 
-  @Column({ type: 'enum', enum: ApprovalExternalRole })
-  role: ApprovalExternalRole;
+  @Column({ type: 'enum', enum: USERTYPE })
+  role: USERTYPE;
 
   @Column({ type: 'text', nullable: true })
-  analisa?: string;
+  analisa?: string | null;
 
   @Column({ type: 'decimal', precision: 8, scale: 2, nullable: true })
-  nominal_pinjaman?: number;
+  nominal_persetujuan?: number;
 
   @Column({ type: 'int', nullable: true })
-  tenor?: number;
+  tenor_persetujuan?: number;
 
   @Column({ type: 'enum', enum: ApprovalExternalStatus, nullable: true })
   status?: ApprovalExternalStatus;
 
   @Column({ type: 'text', nullable: true })
-  catatan?: string;
+  kesimpulan?: string;
 
   @Column({ type: 'tinyint', default: 0 })
   is_banding: boolean;
