@@ -1,11 +1,5 @@
-export enum ApprovalExternalRole {
-  SUPERVISOR = 'spv',
-  CREDIT_ANALYST = 'ca',
-  HEAD_MANAGER = 'hm',
-}
-
 export enum ApprovalExternalStatus {
-  CHECKED = 'checked',
+  PENDING = 'pending',
   APPROVED = 'approved',
   REJECTED = 'rejected',
 }

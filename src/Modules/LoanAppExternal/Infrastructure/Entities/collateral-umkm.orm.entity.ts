@@ -2,11 +2,11 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  OneToOne,
 } from 'typeorm';
 import { LoanApplicationExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/loan-application-external.orm-entity';
 
@@ -15,10 +15,17 @@ export class CollateralByUMKM_ORM_Entity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => LoanApplicationExternal_ORM_Entity, { onDelete: 'CASCADE' })
+  @OneToOne(
+    () => LoanApplicationExternal_ORM_Entity,
+    (pengajuan) => pengajuan.umkm,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
   @JoinColumn({
     name: 'pengajuan_id',
-    foreignKeyConstraintName: 'FK_LoanApplicationExternal_at_CollateralByUMKM',
+    foreignKeyConstraintName:
+      'FK_LoanApplicationExternalID_at_CollateralByUMKM',
   })
   pengajuanLuar: LoanApplicationExternal_ORM_Entity;
 

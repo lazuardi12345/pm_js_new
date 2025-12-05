@@ -11,10 +11,67 @@ export class AdBIC_FindAllRecommendationRequestUseCase {
     private readonly approvalRecommendation: IApprovalRecommendationRepository,
   ) {}
 
-  async executeFindAllRecommendationRequest() {
+  async executeFindAllRecommendationInternalRequest() {
     try {
       const requests =
-        await this.approvalRecommendation.findAllRecommendationRequests();
+        await this.approvalRecommendation.findAllRecommendationInternalRequests();
+      return {
+        payload: {
+          error: false,
+          message: 'Success get recommendation request',
+          reference: 'APPROVAL_RECOMMENDATION_REQUEST_OK',
+          data: requests,
+        },
+      };
+    } catch (err) {
+      console.log(err);
+
+      // Mongoose validation error
+      if (err.name === 'ValidationError') {
+        throw new HttpException(
+          {
+            payload: {
+              error: 'BAD REQUEST',
+              message: Object.values(err.errors)
+                .map((e: any) => e.message)
+                .join(', '),
+              reference: 'APPROVAL_RECOMMENDATION_REQUEST_VALIDATION_ERROR',
+            },
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Duplicate key error
+      if (err.code === 11000) {
+        throw new HttpException(
+          {
+            error: 'DUPLICATE KEY',
+            message: `Duplicate field: ${Object.keys(err.keyValue).join(', ')}`,
+            reference: 'APPROVAL_RECOMMENDATION_REQUEST_DUPLICATE_KEY',
+          },
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      // fallback error
+      throw new HttpException(
+        {
+          payload: {
+            error: 'UNEXPECTED ERROR',
+            message: 'Unexpected error',
+            reference: 'APPROVAL_RECOMMENDATION_REQUEST_UNKNOWN_ERROR',
+          },
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async executeFindAllRecommendationExternalRequest() {
+    try {
+      const requests =
+        await this.approvalRecommendation.findAllRecommendationExternalRequests();
       return {
         payload: {
           error: false,

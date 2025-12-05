@@ -97,9 +97,6 @@ export class LoanApplicationExternal_ORM_Entity {
   @Column({ type: 'tinyint', width: 1, nullable: true })
   validasi_pengajuan?: boolean;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  catatan?: string;
-
   @Column({ type: 'text', nullable: true })
   catatan_spv?: string;
 
@@ -143,7 +140,7 @@ export class LoanApplicationExternal_ORM_Entity {
     () => CollateralByKedinasan_ORM_Entity,
     (kedinasan) => kedinasan.pengajuanLuar,
   )
-  kedinasan: CollateralByKedinasan_Non_MOU_ORM_Entity;
+  kedinasan_MOU: CollateralByKedinasan_Non_MOU_ORM_Entity;
   @OneToOne(
     () => CollateralByKedinasan_Non_MOU_ORM_Entity,
     (Kedinasan_NON_MOU) => Kedinasan_NON_MOU.pengajuanLuar,

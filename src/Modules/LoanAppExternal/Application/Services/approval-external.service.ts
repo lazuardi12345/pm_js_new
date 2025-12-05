@@ -18,25 +18,28 @@ export class ApprovalExternalService {
     const now = new Date();
 
     const approval = new ApprovalExternal(
-      { id: dto.pengajuan_id },  // kamu mau pakai object, ini dipertahankan
+      { id: dto.pengajuan_id },
       dto.user_id,
       dto.role,
       dto.is_banding,
       undefined,
       dto.analisa,
-      dto.nominal_pinjaman,
-      dto.tenor,
+      dto.nominal_persetujuan,
+      dto.tenor_persetujuan,
       dto.status,
-      dto.catatan,
+      dto.kesimpulan,
       now,
       now,
-      null
+      null,
     );
 
     return this.repo.save(approval);
   }
 
-  async update(id: number, dto: UpdateApprovalExternalDto): Promise<ApprovalExternal> {
+  async update(
+    id: number,
+    dto: UpdateApprovalExternalDto,
+  ): Promise<ApprovalExternal> {
     const existing = await this.repo.findById(id);
     if (!existing) {
       throw new NotFoundException(`Approval dengan ID ${id} tidak ditemukan`);

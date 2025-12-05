@@ -56,7 +56,6 @@ export class LoanApplicationExternalRepositoryImpl
       orm.status_pengajuan,
       orm.status_pengajuan_akhir,
       orm.validasi_pengajuan,
-      orm.catatan,
       orm.catatan_spv,
       orm.catatan_marketing,
       orm.is_banding,
@@ -85,7 +84,6 @@ export class LoanApplicationExternalRepositoryImpl
       cicilan_perbulan: domain.cicilan_perbulan,
       status_pengajuan: domain.status_pengajuan,
       validasi_pengajuan: domain.validasi_pengajuan,
-      catatan: domain.catatan,
       catatan_spv: domain.catatan_spv,
       catatan_marketing: domain.catatan_marketing,
       is_banding: domain.is_banding,
@@ -124,7 +122,6 @@ export class LoanApplicationExternalRepositoryImpl
       orm.status_pengajuan = partial.status_pengajuan;
     if (partial.validasi_pengajuan !== undefined)
       orm.validasi_pengajuan = partial.validasi_pengajuan;
-    if (partial.catatan) orm.catatan = partial.catatan;
     if (partial.catatan_spv) orm.catatan_spv = partial.catatan_spv;
     if (partial.catatan_marketing)
       orm.catatan_marketing = partial.catatan_marketing;

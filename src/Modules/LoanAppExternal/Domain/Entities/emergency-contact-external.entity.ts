@@ -5,7 +5,6 @@ export class EmergencyContactExternal {
     public readonly hubungan_kontak_darurat: string,
     public readonly no_hp_kontak_darurat: string,
     public readonly validasi_kontak_darurat?: boolean,
-    public readonly catatan?: string,
     public readonly id?: number,
     public readonly created_at?: Date,
     public readonly updated_at?: Date,
@@ -22,7 +21,9 @@ export class EmergencyContactExternal {
 
     const is_valid = /^[0-9]{10,}$/.test(this.no_hp_kontak_darurat);
     if (!is_valid) {
-      throw new Error('Nomor HP kontak darurat tidak valid. Minimal 10 digit angka.');
+      throw new Error(
+        'Nomor HP kontak darurat tidak valid. Minimal 10 digit angka.',
+      );
     }
   }
 

@@ -3,11 +3,8 @@ import {
   Patch,
   Param,
   Body,
-  UploadedFiles,
-  UseInterceptors,
   BadRequestException,
   InternalServerErrorException,
-  ValidationPipe,
 } from '@nestjs/common';
 import { MKT_TriggerFinalLoanStatusUseCase } from '../../Applications/Services/MKT_TriggerFinalLoan.usecase';
 

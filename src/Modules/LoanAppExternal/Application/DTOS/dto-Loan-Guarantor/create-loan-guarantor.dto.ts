@@ -6,7 +6,10 @@ import {
   IsNumber,
   IsBoolean,
 } from 'class-validator';
-import { HubunganPenjaminEnum, PersetujuanPenjaminEnum } from 'src/Shared/Enums/External/Loan-Guarantor.enum';
+import {
+  HubunganPenjaminEnum,
+  PersetujuanPenjaminEnum,
+} from 'src/Shared/Enums/External/Loan-Guarantor.enum';
 
 export class CreateLoanGuarantorExternalDto {
   @IsNumber()
@@ -40,8 +43,4 @@ export class CreateLoanGuarantorExternalDto {
   @IsOptional()
   @IsBoolean()
   validasi_penjamin?: boolean;
-
-  @IsOptional()
-  @IsString()
-  catatan?: string;
 }

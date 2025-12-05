@@ -19,7 +19,6 @@ export class JobExternal {
     public readonly rekening_koran?: string,
     public readonly lama_kontrak?: string,
     public readonly validasi_pekerjaan?: boolean,
-    public readonly catatan?: string,
     public readonly id?: number,
     public readonly created_at?: Date,
     public readonly updated_at?: Date,

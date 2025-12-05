@@ -51,7 +51,6 @@ export class CreateJobExternalDto {
   @IsOptional()
   slip_gaji_penjamin: string;
 
-
   @IsString()
   @IsOptional()
   id_card_peminjam: string;
@@ -67,8 +66,4 @@ export class CreateJobExternalDto {
   @IsOptional()
   @IsBoolean()
   validasi_pekerjaan?: boolean;
-
-  @IsOptional()
-  @IsString()
-  catatan?: string;
 }

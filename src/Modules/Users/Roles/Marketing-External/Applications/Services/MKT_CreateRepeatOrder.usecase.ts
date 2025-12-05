@@ -314,7 +314,6 @@ export class MKT_CreateRepeatOrderUseCase {
             address_external.share_loc_usaha,
             address_external.share_loc_tempat_kerja,
             address_external.validasi_alamat,
-            address_external.catatan,
             nowWIB,
           );
           await this.addressRepo.save(addressEntity);
@@ -365,7 +364,6 @@ export class MKT_CreateRepeatOrderUseCase {
             job_external.lama_kontrak,
             job_external.rekening_koran,
             job_external.validasi_pekerjaan,
-            job_external.catatan,
             undefined,
             nowWIB,
             nowWIB,
@@ -408,7 +406,6 @@ export class MKT_CreateRepeatOrderUseCase {
             loan_application_external.status_pengajuan,
             null,
             loan_application_external.validasi_pengajuan,
-            loan_application_external.catatan,
             loan_application_external.catatan_spv,
             loan_application_external.catatan_marketing,
             isBandingBoolean,

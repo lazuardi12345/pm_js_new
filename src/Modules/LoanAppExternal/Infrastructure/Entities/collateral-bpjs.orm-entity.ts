@@ -15,9 +15,13 @@ export class CollateralByBPJS_ORM_Entity {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
 
-  @OneToOne(() => LoanApplicationExternal_ORM_Entity, {
-    onDelete: 'CASCADE',
-  })
+  @OneToOne(
+    () => LoanApplicationExternal_ORM_Entity,
+    (pengajuan) => pengajuan.bpjs,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
   @JoinColumn({
     name: 'pengajuan_id',
     foreignKeyConstraintName:

@@ -5,7 +5,8 @@ import {
   IsNumber,
   IsBoolean,
 } from 'class-validator';
-import { ApprovalExternalRole, ApprovalExternalStatus } from 'src/Shared/Enums/External/Approval.enum';
+import { ApprovalExternalStatus } from 'src/Shared/Enums/External/Approval.enum';
+import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 
 export class CreateApprovalExternalDto {
   @IsNumber()
@@ -15,8 +16,8 @@ export class CreateApprovalExternalDto {
   @IsNumber()
   user_id: number;
 
-  @IsEnum(ApprovalExternalRole)
-  role: ApprovalExternalRole;
+  @IsEnum(USERTYPE)
+  role: USERTYPE;
 
   @IsOptional()
   @IsString()
@@ -24,11 +25,11 @@ export class CreateApprovalExternalDto {
 
   @IsOptional()
   @IsNumber()
-  nominal_pinjaman?: number;
+  nominal_persetujuan?: number;
 
   @IsOptional()
   @IsNumber()
-  tenor?: number;
+  tenor_persetujuan?: number;
 
   @IsOptional()
   @IsEnum(ApprovalExternalStatus)
@@ -36,7 +37,7 @@ export class CreateApprovalExternalDto {
 
   @IsOptional()
   @IsString()
-  catatan?: string;
+  kesimpulan?: string;
 
   @IsOptional()
   @IsBoolean()

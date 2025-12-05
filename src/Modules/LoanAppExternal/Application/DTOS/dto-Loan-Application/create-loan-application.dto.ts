@@ -68,10 +68,6 @@ export class CreateLoanApplicationExternalDto {
 
   @IsOptional()
   @IsString()
-  catatan?: string;
-
-  @IsOptional()
-  @IsString()
   catatan_spv?: string;
 
   @IsOptional()

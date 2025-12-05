@@ -15,7 +15,6 @@ export class LoanGuarantorExternal {
     public readonly foto_ktp_penjamin?: string,
     public readonly id?: number,
     public readonly validasi_penjamin?: boolean,
-    public readonly catatan?: string,
     public readonly created_at?: Date,
     public readonly updated_at?: Date,
     public readonly deleted_at?: Date,

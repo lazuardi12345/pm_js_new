@@ -11,8 +11,4 @@ export class CreateFinancialDependentsDto {
   @IsOptional()
   @IsBoolean()
   validasi_tanggungan?: boolean;
-
-  @IsOptional()
-  @IsString()
-  catatan?: string;
 }

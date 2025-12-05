@@ -266,7 +266,7 @@ export class ApprovalRecommendationRepositoryImpl
       // .where('rec.loanApplicationInternal IS NOT NULL')
       .getMany();
   }
-  async findAllRecommendationRequests(): Promise<any[]> {
+  async findAllRecommendationInternalRequests(): Promise<any[]> {
     // ambil data dari LoanApplication (draft)
     const draftDataInternal = await this.mongoDraftInternalRepository
       .find(
@@ -283,6 +283,58 @@ export class ApprovalRecommendationRepositoryImpl
         },
       )
       .lean();
+
+    // ambil data dari RepeatOrder
+    const repeatOrderData = await this.repeatOrderRepository
+      .find(
+        { isNeedCheck: true, isDeleted: false },
+        {
+          marketing_id: 1,
+          _id: 1,
+          'client_internal.nama_lengkap': 1,
+          'client_internal.no_ktp': 1,
+          'client_internal.no_hp': 1,
+          'client_internal.email': 1,
+          'uploaded_files.foto_ktp': 1,
+          'loan_application_internal.nominal_pinjaman': 1,
+          isRepeatOrder: 1,
+        },
+      )
+      .lean();
+
+    // ubah struktur repeat order biar match draftData (foto_ktp 1 url aja)
+    const mappedRepeatOrderData = repeatOrderData.map((item) => {
+      const fotoKtpArr = (item.uploaded_files as any)?.foto_ktp;
+      const fotoKtp =
+        Array.isArray(fotoKtpArr) && fotoKtpArr.length > 0
+          ? (fotoKtpArr[0] as any).url
+          : null;
+
+      return {
+        _id: item._id,
+        marketing_id: item.marketing_id,
+        client_internal: {
+          nama_lengkap: item.client_internal?.nama_lengkap || null,
+          no_ktp: item.client_internal?.no_ktp || null,
+          no_hp: item.client_internal?.no_hp || null,
+          email: item.client_internal?.email || null,
+          foto_ktp: fotoKtp, // di sini taro url-nya biar konsisten
+        },
+        loan_application_internal: {
+          nominal_pinjaman:
+            item.loan_application_internal?.nominal_pinjaman || null,
+        },
+      };
+    });
+
+    // gabung hasil dari dua koleksi
+    const result = [...draftDataInternal, ...mappedRepeatOrderData];
+
+    return result;
+  }
+
+  async findAllRecommendationExternalRequests(): Promise<any[]> {
+    // ambil data dari LoanApplication (draft)
 
     const draftDataExternal = await this.mongoDraftExternalRepository
       .find(
@@ -344,11 +396,7 @@ export class ApprovalRecommendationRepositoryImpl
     });
 
     // gabung hasil dari dua koleksi
-    const result = [
-      ...draftDataInternal,
-      ...draftDataExternal,
-      ...mappedRepeatOrderData,
-    ];
+    const result = [...draftDataExternal, ...mappedRepeatOrderData];
 
     return result;
   }

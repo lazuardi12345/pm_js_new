@@ -19,17 +19,16 @@ export class LoanGuarantorExternalService {
     const now = new Date();
 
     const address = new LoanGuarantorExternal(
-     {id: dto.nasabah_id},
-      dto.hubungan_penjamin, 
-      dto.nama_penjamin, 
-      dto.pekerjaan_penjamin, 
-      dto.penghasilan_penjamin, 
-      dto.no_hp_penjamin, 
+      { id: dto.nasabah_id },
+      dto.hubungan_penjamin,
+      dto.nama_penjamin,
+      dto.pekerjaan_penjamin,
+      dto.penghasilan_penjamin,
+      dto.no_hp_penjamin,
       dto.persetujuan_penjamin,
       dto.foto_ktp_penjamin,
       undefined, // id
-      dto.validasi_penjamin, 
-      dto.catatan, 
+      dto.validasi_penjamin,
       now, // createdAt
       now, // updatedAt
     );

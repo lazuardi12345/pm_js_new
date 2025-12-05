@@ -95,9 +95,6 @@ export class AddressExternal_ORM_Entity {
   @Column({ nullable: true })
   validasi_alamat?: boolean;
 
-  @Column({ nullable: true })
-  catatan?: string;
-
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;
 

@@ -36,7 +36,6 @@ export class AddressExternal {
     public share_loc_usaha?: string,
     public share_loc_tempat_kerja?: string,
     public validasi_alamat?: boolean,
-    public catatan?: string,
     public updated_at?: Date,
   ) {
     this.ensureAlamatLengkap();

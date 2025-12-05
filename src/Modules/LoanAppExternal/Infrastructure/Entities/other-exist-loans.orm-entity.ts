@@ -16,10 +16,17 @@ export class OtherExistLoansExternal_ORM_Entity {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
 
-  @ManyToOne(() => ClientExternal_ORM_Entity, (clientExternal) => clientExternal.id, {
-    onDelete: 'CASCADE',
+  @ManyToOne(
+    () => ClientExternal_ORM_Entity,
+    (clientExternal) => clientExternal.id,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
+  @JoinColumn({
+    name: 'nasabah_id',
+    foreignKeyConstraintName: 'FK_ClientExternalID_at_OtherExistLoansExternal',
   })
-  @JoinColumn({ name: 'nasabah_id', foreignKeyConstraintName: 'FK_ClientExternalID_at_OtherExistLoansExternal' })
   nasabah: ClientExternal_ORM_Entity;
 
   @Column({ type: 'enum', enum: CicilanLainEnum })

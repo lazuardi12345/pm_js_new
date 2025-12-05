@@ -34,7 +34,6 @@ export class JobExternalService {
       dto.lama_kontrak,
       dto.rekening_koran,
       dto.validasi_pekerjaan,
-      dto.catatan,
       undefined,
       now, // created_at
       now, // updated_at

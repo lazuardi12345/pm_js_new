@@ -101,6 +101,16 @@ import { DraftRepeatOrderModule } from 'src/Shared/Modules/Drafts/Modules/DraftR
       AddressExternal_ORM_Entity,
       JobExternal_ORM_Entity,
       LoanApplicationExternal_ORM_Entity,
+      EmergencyContactExternal_ORM_Entity,
+      FinancialDependentsExternal_ORM_Entity,
+      LoanGuarantorExternal_ORM_Entity,
+      OtherExistLoansExternal_ORM_Entity,
+      CollateralByBPJS_ORM_Entity,
+      CollateralByBPKB_ORM_Entity,
+      CollateralBySHM_ORM_Entity,
+      CollateralByUMKM_ORM_Entity,
+      CollateralByKedinasan_ORM_Entity,
+      CollateralByKedinasan_Non_MOU_ORM_Entity,
     ]),
 
     //? untuk API Drafts agar bisa diinject ke roles:
