@@ -46,7 +46,6 @@ export class MKT_CreateDraftLoanApplicationController {
     @Body() dto: any,
   ) {
     try {
-      // ✅ Cuma butuh map jenis pembiayaan
       const collateralToJenisPembiayaanMap = {
         t1: JenisPembiayaanEnum.BPJS,
         t2: JenisPembiayaanEnum.BPKB,
@@ -75,12 +74,10 @@ export class MKT_CreateDraftLoanApplicationController {
       if (!files || Object.values(files).length === 0) {
         throw new BadRequestException('No files uploaded');
       }
-
-      // ✅ Kirim 't6' langsung, bukan di-map lagi
       return this.MKT_CreateDraftLoanAppUseCase.executeCreateDraft(
         payload,
         files,
-        external_loan_type as ExternalCollateralType, // 't6' as is
+        external_loan_type as ExternalCollateralType,
         jenisPembiayaan,
       );
     } catch (error) {
@@ -104,8 +101,11 @@ export class MKT_CreateDraftLoanApplicationController {
   }
 
   @Get(':id')
-  async getDraftById(@Param('id') Id: string) {
-    return this.MKT_CreateDraftLoanAppUseCase.renderDraftById(Id);
+  async getDraftById(
+    @Param('id') Id: string,
+    @CurrentUser('id') marketingId: number,
+  ) {
+    return this.MKT_CreateDraftLoanAppUseCase.renderDraftById(Id, marketingId);
   }
 
   @Delete('delete/:id')
@@ -117,6 +117,7 @@ export class MKT_CreateDraftLoanApplicationController {
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'foto_ktp', maxCount: 1 },
+      { name: 'foto_ktp_penjamin', maxCount: 1 },
       { name: 'foto_kk', maxCount: 1 },
       { name: 'foto_rekening', maxCount: 1 },
       { name: 'dokumen_pendukung', maxCount: 1 },
@@ -127,6 +128,7 @@ export class MKT_CreateDraftLoanApplicationController {
   )
   async updateDraftById(
     @Param('id') Id: string,
+    @CurrentUser('id') marketingId: number,
     @Body() updateData: any = {},
     @UploadedFiles() files: Record<string, Express.Multer.File[]>,
   ) {
@@ -137,6 +139,7 @@ export class MKT_CreateDraftLoanApplicationController {
 
     return this.MKT_CreateDraftLoanAppUseCase.updateDraftById(
       Id,
+      marketingId,
       { payload: payloadParent }, // tetap ada key parent 'payload'
       files,
     );

@@ -561,6 +561,6 @@ export class LoanApplicationExt {
   @Prop({ default: false }) isNeedCheck?: boolean;
 }
 
-export type LoanApplicationDocument = HydratedDocument<LoanApplicationExt>;
+export type LoanApplicationExtDocument = HydratedDocument<LoanApplicationExt>;
 export const LoanApplicationExtSchema =
   SchemaFactory.createForClass(LoanApplicationExt);

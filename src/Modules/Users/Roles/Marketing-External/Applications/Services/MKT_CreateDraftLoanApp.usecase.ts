@@ -228,14 +228,27 @@ export class MKT_CreateDraftLoanApplicationUseCase {
 
   async updateDraftById(
     Id: string,
+    marketingId: number,
     updateData: Partial<CreateDraftLoanApplicationExtDto>,
     files?: Record<string, Express.Multer.File[]>,
     type?: ExternalCollateralType,
   ) {
     const { payload } = updateData;
+    const loanApp = await this.loanAppDraftRepo.findById(Id);
 
     if (!payload) {
       throw new BadRequestException('Payload is required');
+    } else if (loanApp!.marketing_id !== marketingId) {
+      throw new HttpException(
+        {
+          payload: {
+            error: true,
+            message: 'Access Denied',
+            reference: 'MISMATCH_MARKETING_ID',
+          },
+        },
+        HttpStatus.FORBIDDEN,
+      );
     }
 
     try {
@@ -436,7 +449,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     }
   }
 
-  async renderDraftById(Id: string) {
+  async renderDraftById(Id: string, marketingId: number) {
     try {
       const loanApp = await this.loanAppDraftRepo.findById(Id);
 
@@ -450,6 +463,17 @@ export class MKT_CreateDraftLoanApplicationUseCase {
             },
           },
           HttpStatus.NOT_FOUND,
+        );
+      } else if (loanApp.marketing_id !== marketingId) {
+        throw new HttpException(
+          {
+            payload: {
+              error: true,
+              message: 'Access Denied',
+              reference: 'MISMATCH_MARKETING_ID',
+            },
+          },
+          HttpStatus.FORBIDDEN,
         );
       }
 
@@ -516,8 +540,6 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     try {
       const loanApps =
         await this.loanAppDraftRepo.findByMarketingId(marketingId);
-
-      console.log('this loan apps: ', loanApps);
 
       if (!loanApps || loanApps.length === 0) {
         throw new HttpException(

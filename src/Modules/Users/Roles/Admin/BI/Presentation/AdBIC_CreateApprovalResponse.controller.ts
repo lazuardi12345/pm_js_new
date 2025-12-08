@@ -18,19 +18,49 @@ import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorato
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 
 @UseGuards(FileUploadAuthGuard)
-@Controller('admin-bi/int')
+@Controller('admin-bi')
 export class AdBIC_CreateApprovalResponseController {
   constructor(private readonly useCase: AdBIC_CreateApprovalResponseUseCase) {}
 
   @Roles(USERTYPE.ADMIN_BI)
-  @Post('response/add')
+  @Post('int/response/add')
   @UseInterceptors(
     FileFieldsInterceptor([{ name: 'files', maxCount: 3 }], {
       storage: multer.memoryStorage(),
       limits: { fileSize: 5 * 1024 * 1024 },
     }),
   )
-  async createApprovalResponse(
+  async createApprovalInternalResponse(
+    @UploadedFiles() files: Record<string, Express.Multer.File[]>,
+    @Body('payload') payload: any, // ⬅ cuma ambil "payload"
+  ) {
+    try {
+      if (!files || Object.values(files).length === 0) {
+        throw new BadRequestException('No files uploaded');
+      }
+
+      // auto parse kalau masih string
+      const dto: AdBIC_CreatePayloadDto =
+        typeof payload === 'string' ? JSON.parse(payload) : payload;
+
+      return this.useCase.executeCreateDraft(dto, files);
+    } catch (error) {
+      console.error('Create approval recommendation failed:', error);
+      throw new InternalServerErrorException(
+        'An error occurred while processing your request',
+      );
+    }
+  }
+
+  @Roles(USERTYPE.ADMIN_BI)
+  @Post('ext/response/add')
+  @UseInterceptors(
+    FileFieldsInterceptor([{ name: 'files', maxCount: 3 }], {
+      storage: multer.memoryStorage(),
+      limits: { fileSize: 5 * 1024 * 1024 },
+    }),
+  )
+  async createApprovalExternalResponse(
     @UploadedFiles() files: Record<string, Express.Multer.File[]>,
     @Body('payload') payload: any, // ⬅ cuma ambil "payload"
   ) {
