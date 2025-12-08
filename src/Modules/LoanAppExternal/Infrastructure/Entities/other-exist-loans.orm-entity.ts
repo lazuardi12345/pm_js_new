@@ -18,10 +18,8 @@ export class OtherExistLoansExternal_ORM_Entity {
 
   @ManyToOne(
     () => ClientExternal_ORM_Entity,
-    (clientExternal) => clientExternal.id,
-    {
-      onDelete: 'CASCADE',
-    },
+    (clientExternal) => clientExternal.otherExistLoans,
+    { onDelete: 'CASCADE' },
   )
   @JoinColumn({
     name: 'nasabah_id',
@@ -38,23 +36,47 @@ export class OtherExistLoansExternal_ORM_Entity {
   @Column({ type: 'varchar', length: 255, nullable: true })
   total_pinjaman?: string;
 
-  @Column({ type: 'decimal', precision: 15, scale: 2 })
+  @Column({
+    type: 'decimal',
+    precision: 15,
+    scale: 2,
+    transformer: {
+      to(value: number): number {
+        return value;
+      },
+      from(value: string): number {
+        return parseFloat(value);
+      },
+    },
+  })
   cicilan_perbulan: number;
 
   @Column({ type: 'int' })
   sisa_tenor: number;
 
-  @Column({ type: 'tinyint', width: 1, nullable: true })
+  @Column({
+    type: 'tinyint',
+    width: 1,
+    nullable: true,
+    transformer: {
+      to(value: boolean): number {
+        return value ? 1 : 0;
+      },
+      from(value: number): boolean {
+        return value === 1;
+      },
+    },
+  })
   validasi_pinjaman_lain?: boolean;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   catatan?: string;
 
-  @CreateDateColumn({ type: 'timestamp', nullable: true })
-  created_at?: Date;
+  @CreateDateColumn({ type: 'timestamp' })
+  created_at: Date;
 
-  @UpdateDateColumn({ type: 'timestamp', nullable: true })
-  updated_at?: Date;
+  @UpdateDateColumn({ type: 'timestamp' })
+  updated_at: Date;
 
   @DeleteDateColumn({ type: 'timestamp', nullable: true })
   deleted_at?: Date;

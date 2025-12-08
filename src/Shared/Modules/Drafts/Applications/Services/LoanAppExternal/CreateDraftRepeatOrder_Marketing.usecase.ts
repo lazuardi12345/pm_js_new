@@ -132,85 +132,96 @@ export class CreateDraftRepeatOrderExtUseCase {
     }
   }
 
-  async updateDraftById(id: string, updateData: any, files?: any) {
-    console.log('🟢 [updateDraftById] START');
-    console.log('➡️ Incoming ID:', id);
-    console.log('➡️ Incoming Raw Body:', updateData);
+ async updateDraftById(id: string, updateData: any, files?: any) {
+  console.log('🟢 [updateDraftById] START');
+  console.log('➡️ Incoming ID:', id);
+  console.log('➡️ Incoming Raw Body:', updateData);
 
-    const existingDraft = await this.loanAppDraftRepo.findById(id);
-    if (!existingDraft) throw new Error('Draft tidak ditemukan');
+  const existingDraft = await this.loanAppDraftRepo.findById(id);
+  if (!existingDraft) throw new Error('Draft tidak ditemukan');
 
-    console.log('🔍 Existing Draft:', JSON.stringify(existingDraft, null, 2));
+  console.log('🔍 Existing Draft:', JSON.stringify(existingDraft, null, 2));
 
-    // Ambil payload dari body atau dari updateData.payload
-    let payloadData: any = updateData.payload ?? updateData;
+  // Ambil payload dari body atau updateData.payload
+  let payloadData: any = updateData.payload ?? updateData;
 
-    // Jika payload berupa string (FormData JSON), parse
-    if (typeof payloadData === 'string') {
-      try {
-        payloadData = JSON.parse(payloadData);
-        console.log('✅ Payload parsed from string JSON');
-      } catch (err) {
-        console.error('⚠️ Payload JSON invalid:', err);
-        throw new BadRequestException('Payload JSON tidak valid');
+  // Jika payload berupa string (FormData JSON), parse
+  if (typeof payloadData === 'string') {
+    try {
+      payloadData = JSON.parse(payloadData);
+      console.log('✅ Payload parsed from string JSON');
+    } catch (err) {
+      console.error('⚠️ Payload JSON invalid:', err);
+      throw new BadRequestException('Payload JSON tidak valid');
+    }
+  }
+
+  // Ambil file yang dikirim
+  const uploaded_files: Record<string, any> = {};
+  if (files) {
+    for (const [field, fileArray] of Object.entries(files) as [
+      string,
+      Express.Multer.File[],
+    ][]) {
+      if (Array.isArray(fileArray) && fileArray.length > 0) {
+        uploaded_files[field] = fileArray.map((f) => f.filename);
       }
     }
+  }
 
-    // Ambil file yang dikirim
-    const uploaded_files: Record<string, any> = {};
-    if (files) {
-      for (const [field, fileArray] of Object.entries(files) as [
-        string,
-        Express.Multer.File[],
-      ][]) {
-        if (Array.isArray(fileArray) && fileArray.length > 0) {
-          uploaded_files[field] = fileArray.map((f) => f.filename);
-        }
-      }
+  // Merge object biasa
+  const mergedPayload = { ...existingDraft.payload, ...payloadData };
+
+  // Append array khusus jika ada
+  const arrayFields = ['other_exist_loan_external']; // bisa ditambahkan field array lain
+  for (const field of arrayFields) {
+    if (payloadData[field]) {
+      mergedPayload[field] = [
+        ...(existingDraft.payload[field] || []),
+        ...payloadData[field],
+      ];
     }
+  }
 
-    // Merge payload lama dengan payload baru, merge files juga
-    const mergedPayload = merge({}, existingDraft.payload || {}, payloadData);
-    const mergedFiles = merge(
-      {},
-      existingDraft.uploaded_files || {},
-      uploaded_files,
-    );
+  // Merge uploaded_files
+  const mergedFiles = merge(
+    {},
+    existingDraft.uploaded_files || {},
+    uploaded_files,
+  );
 
-    const isPayloadChanged = !isEqual(existingDraft.payload, mergedPayload);
-    const isFilesChanged = !isEqual(existingDraft.uploaded_files, mergedFiles);
+  const isPayloadChanged = !isEqual(existingDraft.payload, mergedPayload);
+  const isFilesChanged = !isEqual(existingDraft.uploaded_files, mergedFiles);
 
-    if (!isPayloadChanged && !isFilesChanged) {
-      console.log('⚠️ Tidak ada perubahan data. Update dibatalkan.');
-      return {
-        error: true,
-        message: 'Tidak ada data yang diubah',
-        reference: 'LOAN_UPDATE_NO_CHANGES',
-        data: existingDraft,
-      };
-    }
-
-    const entityUpdate: Partial<LoanApplicationEntity> = {
-      payload: mergedPayload,
-      uploaded_files: mergedFiles,
-    };
-
-    console.log(
-      '🔍 Final entityUpdate to save:',
-      JSON.stringify(entityUpdate, null, 2),
-    );
-
-    const result = await this.loanAppDraftRepo.updateDraftById(
-      id,
-      entityUpdate,
-    );
-    console.log('✅ Repository returned:', JSON.stringify(result, null, 2));
-
+  if (!isPayloadChanged && !isFilesChanged) {
+    console.log('⚠️ Tidak ada perubahan data. Update dibatalkan.');
     return {
-      error: false,
-      message: 'Draft loan applications updated',
-      reference: 'LOAN_UPDATE_OK',
-      data: result.entity,
+      error: true,
+      message: 'Tidak ada data yang diubah',
+      reference: 'LOAN_UPDATE_NO_CHANGES',
+      data: existingDraft,
     };
   }
+
+  const entityUpdate: Partial<LoanApplicationEntity> = {
+    payload: mergedPayload,
+    uploaded_files: mergedFiles,
+  };
+
+  console.log(
+    '🔍 Final entityUpdate to save:',
+    JSON.stringify(entityUpdate, null, 2),
+  );
+
+  const result = await this.loanAppDraftRepo.updateDraftById(id, entityUpdate);
+  console.log('✅ Repository returned:', JSON.stringify(result, null, 2));
+
+  return {
+    error: false,
+    message: 'Draft loan applications updated',
+    reference: 'LOAN_UPDATE_OK',
+    data: result.entity,
+  };
+}
+
 }

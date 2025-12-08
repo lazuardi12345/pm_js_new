@@ -40,6 +40,7 @@ import {
 } from 'src/Shared/Enums/External/Loan-Guarantor.enum';
 import { CicilanLainEnum } from 'src/Shared/Enums/External/Other-Exist-Loans.enum';
 import { ExternalCollateralType } from 'src/Shared/Enums/General/General.enum';
+import { IsArray } from 'class-validator';
 
 // ================= Client =================
 class ClientExternalDto {
@@ -744,17 +745,19 @@ class OtherExistLoanDto {
   @IsEnum(CicilanLainEnum)
   cicilan_lain: CicilanLainEnum;
 
-  @IsString()
   @IsOptional()
-  nama_pembiayaan: string;
+  @IsString()
+  nama_pembiayaan?: string;
 
   @IsOptional()
   @IsString()
   total_pinjaman?: string;
 
+  @Type(() => Number)
   @IsNumber()
   cicilan_perbulan: number;
 
+  @Type(() => Number)
   @IsNumber()
   sisa_tenor: number;
 
@@ -811,9 +814,10 @@ export class PayloadExternalDTO {
   loan_guarantor_external?: LoanGuarantorDto;
 
   @IsOptional()
-  @ValidateNested()
+  @IsArray()
+  @ValidateNested({ each: true })
   @Type(() => OtherExistLoanDto)
-  other_exist_loan_external?: OtherExistLoanDto;
+  other_exist_loan_external?: OtherExistLoanDto[];
 
   @IsOptional()
   @ValidateNested()
@@ -847,7 +851,7 @@ export class PayloadExternalDTO {
 
   @IsNotEmpty({ message: 'Marketing ID is required' })
   marketing_id: number;
-
+ 
   @IsNotEmpty({ message: 'Loan external type is required' })
   @IsEnum(ExternalCollateralType, {
     message:

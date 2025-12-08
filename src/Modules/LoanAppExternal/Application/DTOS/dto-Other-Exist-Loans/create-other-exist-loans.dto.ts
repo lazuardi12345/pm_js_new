@@ -1,33 +1,15 @@
-import {
-  IsEnum,
-  IsString,
-  IsNumber,
-  IsNotEmpty,
-  IsOptional,
-  IsBoolean,
-} from 'class-validator';
-import { CicilanLainEnum } from 'src/Shared/Enums/External/Other-Exist-Loans.enum';
+import { Type } from 'class-transformer';
+import { ValidateNested, IsArray, IsOptional, IsBoolean, IsNumber, IsString } from 'class-validator';
+import { CicilanItemDto } from './Create-cicilan-items.dto';
 
 export class CreateOtherExistLoansExternalDto {
   @IsNumber()
   nasabah_id: number;
 
-  @IsEnum(CicilanLainEnum)
-  cicilan_lain: CicilanLainEnum;
-
-  @IsString()
-  @IsNotEmpty()
-  nama_pembiayaan: string;
-
-  @IsOptional()
-  @IsString()
-  total_pinjaman?: string;
-
-  @IsNumber()
-  cicilan_perbulan: number;
-
-  @IsNumber()
-  sisa_tenor: number;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CicilanItemDto)
+  cicilan: CicilanItemDto[];
 
   @IsOptional()
   @IsBoolean()

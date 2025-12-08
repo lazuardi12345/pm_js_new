@@ -4,10 +4,17 @@ import { Model } from 'mongoose';
 import {
   LoanApplicationExt,
   LoanApplicationDocument,
+  InstallmentItemsExternal,
 } from '../../Schemas/LoanAppExternal/CreateLoanApplicaton_Marketing.schema';
 import { ILoanApplicationDraftExternalRepository } from '../../../Domain/Repositories/ext/LoanAppExt.repository';
 import { LoanApplicationExtEntity } from '../../../Domain/Entities/ext/LoanAppExt.entity';
 import { merge, isEqual } from 'lodash';
+
+interface OtherExistLoansExternalType {
+  cicilan: InstallmentItemsExternal[];
+  validasi_pinjaman_lain?: boolean;
+  catatan?: string;
+}
 
 @Injectable()
 export class LoanApplicationExtRepositoryImpl
@@ -77,36 +84,75 @@ export class LoanApplicationExtRepositoryImpl
     return all.map((doc) => new LoanApplicationExtEntity(doc.toObject()));
   }
 
-  async updateDraftById(
-    id: string,
-    updateData: Partial<LoanApplicationExtEntity>,
-  ): Promise<{ entity: LoanApplicationExtEntity | null; isUpdated: boolean }> {
-    const existing = await this.loanAppModel
-      .findOne({ _id: id, isDeleted: false })
-      .lean()
-      .exec();
-    if (!existing) return { entity: null, isUpdated: false };
 
-    const mergedData = merge({}, existing, updateData);
-    const hasChanged = !isEqual(existing, mergedData);
+async updateDraftById(
+  id: string,
+  updateData: Partial<LoanApplicationExtEntity>,
+): Promise<{ entity: LoanApplicationExtEntity | null; isUpdated: boolean }> {
+  
+  // Ambil existing dari DB
+  const existing = await this.loanAppModel.findById(id).exec();
+  if (!existing) return { entity: null, isUpdated: false };
 
-    if (!hasChanged) {
-      console.log('⚪ Tidak ada perubahan data — skip update');
-      return {
-        entity: new LoanApplicationExtEntity(existing),
-        isUpdated: false,
-      };
-    }
+  const existingObj = existing.toObject();
 
-    const updated = await this.loanAppModel
-      .findByIdAndUpdate(id, mergedData, { new: true })
-      .exec();
+  // Data cicilan existing dan update payload
+const existingOtherLoans = (existingObj.other_exist_loan_external ??
+  {}) as OtherExistLoansExternalType;
 
+const newOtherLoans = (updateData.other_exist_loan_external ??
+  {}) as OtherExistLoansExternalType;
+
+  // Ambil array cicilan dari masing-masing source
+  const existingCicilanArr = Array.isArray(existingOtherLoans.cicilan)
+    ? existingOtherLoans.cicilan
+    : [];
+
+  const newCicilanArr = Array.isArray(newOtherLoans.cicilan)
+    ? newOtherLoans.cicilan
+    : [];
+
+  // Merge tanpa duplikat berdasarkan nama_pembiayaan
+  const mergedCicilan = [
+    ...existingCicilanArr,
+    ...newCicilanArr.filter(
+      newItem =>
+        !existingCicilanArr.some(
+          oldItem => oldItem.nama_pembiayaan === newItem.nama_pembiayaan,
+        ),
+    ),
+  ];
+
+  // Build merged object
+  const mergedData = {
+    ...existingObj,
+    ...updateData,
+    other_exist_loan_external: {
+      ...existingOtherLoans,
+      ...newOtherLoans,
+      cicilan: mergedCicilan,
+    },
+  };
+
+  // Kalo tidak berubah, skip update
+  const hasChanged = !isEqual(existingObj, mergedData);
+  if (!hasChanged) {
     return {
-      entity: updated ? new LoanApplicationExtEntity(updated.toObject()) : null,
-      isUpdated: true,
+      entity: new LoanApplicationExtEntity(existingObj),
+      isUpdated: false,
     };
   }
+
+  // Update DB
+  const updated = await this.loanAppModel
+    .findByIdAndUpdate(id, mergedData, { new: true })
+    .exec();
+
+  return {
+    entity: updated ? new LoanApplicationExtEntity(updated.toObject()) : null,
+    isUpdated: true,
+  };
+}
 
   async triggerIsNeedCheckBeingTrue(
     draft_id: string,

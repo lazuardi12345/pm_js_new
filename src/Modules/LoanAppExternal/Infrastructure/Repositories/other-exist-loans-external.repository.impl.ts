@@ -7,7 +7,6 @@ import { IOtherExistLoansExternalRepository } from '../../Domain/Repositories/ot
 
 import { OtherExistLoansExternal_ORM_Entity } from '../Entities/other-exist-loans.orm-entity';
 import { ClientExternal_ORM_Entity } from '../Entities/client-external.orm-entity';
-
 import { CicilanLainEnum } from 'src/Shared/Enums/External/Other-Exist-Loans.enum';
 
 @Injectable()
@@ -16,17 +15,20 @@ export class OtherExistLoansExternalRepositoryImpl
 {
   constructor(
     @InjectRepository(OtherExistLoansExternal_ORM_Entity)
-    private readonly orm_repository: Repository<OtherExistLoansExternal_ORM_Entity>,
+    private readonly ormRepo: Repository<OtherExistLoansExternal_ORM_Entity>,
   ) {}
-  private to_domain(
-    entity: OtherExistLoansExternal_ORM_Entity,
-  ): OtherExistLoansExternal {
+
+  // ===============================
+  // MAPPING ORM -> DOMAIN
+  // ===============================
+  private buildDomain(entity: OtherExistLoansExternal_ORM_Entity): OtherExistLoansExternal {
     return new OtherExistLoansExternal(
       { id: entity.nasabah.id },
       entity.cicilan_lain as CicilanLainEnum,
       entity.nama_pembiayaan,
-      Number(entity.cicilan_perbulan),
+      entity.cicilan_perbulan,
       entity.sisa_tenor,
+
       entity.id,
       entity.total_pinjaman ?? undefined,
       entity.validasi_pinjaman_lain ?? undefined,
@@ -37,11 +39,12 @@ export class OtherExistLoansExternalRepositoryImpl
     );
   }
 
-  private to_orm(
-    domain: OtherExistLoansExternal,
-  ): Partial<OtherExistLoansExternal_ORM_Entity> {
+  // ===============================
+  // MAPPING DOMAIN -> ORM
+  // ===============================
+  private toOrm(domain: OtherExistLoansExternal): Partial<OtherExistLoansExternal_ORM_Entity> {
     return {
-      id: domain.id ?? undefined,
+      id: domain.id,
       nasabah: { id: domain.nasabah.id } as ClientExternal_ORM_Entity,
       cicilan_lain: domain.cicilan_lain,
       nama_pembiayaan: domain.nama_pembiayaan,
@@ -50,117 +53,72 @@ export class OtherExistLoansExternalRepositoryImpl
       total_pinjaman: domain.total_pinjaman,
       validasi_pinjaman_lain: domain.validasi_pinjaman_lain,
       catatan: domain.catatan,
-      created_at: domain.created_at,
-      updated_at: domain.updated_at,
-      deleted_at: domain.deleted_at,
     };
   }
 
-  private to_orm_partial(
-    partial: Partial<OtherExistLoansExternal>,
-  ): Partial<OtherExistLoansExternal_ORM_Entity> {
-    const orm_data: Partial<OtherExistLoansExternal_ORM_Entity> = {};
+  private toOrmPartial(data: Partial<OtherExistLoansExternal>): Partial<OtherExistLoansExternal_ORM_Entity> {
+    const partial: Partial<OtherExistLoansExternal_ORM_Entity> = {};
 
-    if (partial.nasabah?.id) {
-      orm_data.nasabah = {
-        id: partial.nasabah.id,
-      } as ClientExternal_ORM_Entity;
-    }
+    if (data.nasabah?.id) partial.nasabah = { id: data.nasabah.id } as ClientExternal_ORM_Entity;
+    if (data.cicilan_lain !== undefined) partial.cicilan_lain = data.cicilan_lain;
+    if (data.nama_pembiayaan !== undefined) partial.nama_pembiayaan = data.nama_pembiayaan;
+    if (data.cicilan_perbulan !== undefined) partial.cicilan_perbulan = data.cicilan_perbulan;
+    if (data.sisa_tenor !== undefined) partial.sisa_tenor = data.sisa_tenor;
+    if (data.total_pinjaman !== undefined) partial.total_pinjaman = data.total_pinjaman;
+    if (data.validasi_pinjaman_lain !== undefined) partial.validasi_pinjaman_lain = data.validasi_pinjaman_lain;
+    if (data.catatan !== undefined) partial.catatan = data.catatan;
 
-    if (partial.cicilan_lain) {
-      orm_data.cicilan_lain = partial.cicilan_lain as CicilanLainEnum;
-    }
+    return partial;
+  }
 
-    if (partial.nama_pembiayaan) {
-      orm_data.nama_pembiayaan = partial.nama_pembiayaan;
-    }
+  // ===============================
+  // CRUD IMPLEMENTATION
+  // ===============================
 
-    if (partial.cicilan_perbulan !== undefined) {
-      orm_data.cicilan_perbulan = partial.cicilan_perbulan;
-    }
+  async save(domain: OtherExistLoansExternal): Promise<OtherExistLoansExternal> {
+    const saved = await this.ormRepo.save(this.toOrm(domain));
+    return this.buildDomain(saved);
+  }
 
-    if (partial.sisa_tenor !== undefined) {
-      orm_data.sisa_tenor = partial.sisa_tenor;
-    }
+  async update(id: number, data: Partial<OtherExistLoansExternal>): Promise<OtherExistLoansExternal> {
+    await this.ormRepo.update(id, this.toOrmPartial(data));
 
-    if (partial.total_pinjaman !== undefined) {
-      orm_data.total_pinjaman = partial.total_pinjaman;
-    }
+    const updated = await this.ormRepo.findOne({
+      where: { id },
+      relations: ['nasabah'],
+    });
 
-    if (partial.validasi_pinjaman_lain !== undefined) {
-      orm_data.validasi_pinjaman_lain = partial.validasi_pinjaman_lain;
-    }
+    if (!updated) throw new Error('OtherExistLoansExternal not found');
 
-    if (partial.catatan) {
-      orm_data.catatan = partial.catatan;
-    }
-
-    if (partial.created_at) {
-      orm_data.created_at = partial.created_at;
-    }
-
-    if (partial.updated_at) {
-      orm_data.updated_at = partial.updated_at;
-    }
-
-    if (partial.deleted_at) {
-      orm_data.deleted_at = partial.deleted_at;
-    }
-
-    return orm_data;
+    return this.buildDomain(updated);
   }
 
   async findById(id: number): Promise<OtherExistLoansExternal | null> {
-    const entity = await this.orm_repository.findOne({
+    const entity = await this.ormRepo.findOne({
       where: { id },
       relations: ['nasabah'],
     });
-    return entity ? this.to_domain(entity) : null;
+    return entity ? this.buildDomain(entity) : null;
   }
 
   async findByNasabahId(nasabahId: number): Promise<OtherExistLoansExternal[]> {
-    const entities = await this.orm_repository.find({
+    const entities = await this.ormRepo.find({
       where: { nasabah: { id: nasabahId } },
       relations: ['nasabah'],
     });
-    return entities.map((e) => this.to_domain(e));
+
+    return entities.map((e) => this.buildDomain(e));
   }
 
   async findAll(): Promise<OtherExistLoansExternal[]> {
-    const entities = await this.orm_repository.find({
+    const entities = await this.ormRepo.find({
       relations: ['nasabah'],
     });
-    return entities.map((e) => this.to_domain(e));
-  }
-
-  async save(
-    domain: OtherExistLoansExternal,
-  ): Promise<OtherExistLoansExternal> {
-    const orm_entity = this.to_orm(domain);
-    const saved = await this.orm_repository.save(orm_entity);
-
-    return this.to_domain(saved as OtherExistLoansExternal_ORM_Entity);
-  }
-
-  async update(
-    id: number,
-    data: Partial<OtherExistLoansExternal>,
-  ): Promise<OtherExistLoansExternal> {
-    await this.orm_repository.update(id, this.to_orm_partial(data));
-
-    const updated = await this.orm_repository.findOne({
-      where: { id },
-      relations: ['nasabah'],
-    });
-
-    if (!updated) {
-      throw new Error('OtherExistLoansExternal not found');
-    }
-
-    return this.to_domain(updated);
+    return entities.map((e) => this.buildDomain(e));
   }
 
   async delete(id: number): Promise<void> {
-    await this.orm_repository.softDelete(id);
+    const result = await this.ormRepo.softDelete(id);
+    if (!result.affected) throw new Error('Record not found / already deleted');
   }
 }

@@ -254,7 +254,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
     const safeCustomerName =
       encryptedCustomerName.encrypted.toString('base64url');
 
-    // ✅ Validate: Harusnya ga ada dot
+    //Validate: Harusnya ga ada dot
     console.log('Encoded ID:', safeCustomerId);
     console.log('Has dot?', safeCustomerId.includes('.')); // Should be false!
 
