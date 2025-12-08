@@ -43,7 +43,6 @@ export class AdBIC_CreateApprovalResponseUseCase {
           }
         }
 
-        // 2️⃣ Simpan file ke storage
         filePaths = await this.fileStorage.saveApprovalRecommedationFiles(
           dto?.nik ?? dto.nik,
           dto?.nama_nasabah ?? `${dto.nama_nasabah}`,

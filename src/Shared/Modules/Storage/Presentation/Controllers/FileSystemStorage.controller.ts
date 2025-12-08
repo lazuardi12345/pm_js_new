@@ -103,6 +103,32 @@ export class FileStorageController {
   }
   //? =======================================================
 
+  //? ============== GET FILES APPROVAL RECOMMENDATION ==============
+
+  @Public()
+  @Get('bi-check/:customerId/:customerName/:filename')
+  async getFileFromApprovalRecommendation(
+    @Param('customerId') customerNIN: string,
+    @Param('customerName') customerName: string,
+    @Param('filename') filename: string,
+    @Res() res: Response,
+  ) {
+    const { buffer, mimetype, originalName } =
+      await this.fileStorageService.getFilesForApprovalRecommendations(
+        customerNIN,
+        customerName,
+        filename,
+      );
+
+    res.set({
+      'Content-Type': mimetype,
+      'Content-Disposition': `inline; filename="${originalName}"`,
+      'Content-Length': buffer.length,
+    });
+
+    res.send(buffer);
+  }
+
   //? ============== GET FILE (NON-RO) =====================
   @Public()
   @Get(':type/:encryptedPrefix/:filename')
@@ -159,142 +185,4 @@ export class FileStorageController {
 
     res.send(buffer);
   }
-  //? =======================================================
-
-  @Public()
-  @Get('bi-check/:customerId/:customerName/:filename')
-  async getFileFromApprovalRecommendation(
-    @Param('customerId') customerNIN: string,
-    @Param('customerName') customerName: string,
-    @Param('filename') filename: string,
-    @Res() res: Response,
-  ) {
-    console.log('pepek: ', customerNIN, customerName, filename);
-    const { buffer, mimetype, originalName } =
-      await this.fileStorageService.getFilesForApprovalRecommendations(
-        customerNIN,
-        customerName,
-        filename,
-      );
-
-    res.set({
-      'Content-Type': mimetype,
-      'Content-Disposition': `inline; filename="${originalName}"`,
-      'Content-Length': buffer.length,
-    });
-
-    res.send(buffer);
-  }
-
-  //   @Public()
-  //   @Get(':customerId/:customerName/repeat-order-:index/:filename')
-  //   async getFileFromRepeatOrders(
-  //     @Param('customerId', ParseIntPipe) customerId: number,
-  //     @Param('customerName') customerName: string,
-  //     @Param('index', ParseIntPipe) index: number,
-  //     @Param('filename') filename: string,
-  //     @Res() res: Response,
-  //   ) {
-  //     const { buffer, mimetype, originalName } =
-  //       await this.fileStorageService.getFilesForRepeatOrders(
-  //         customerNIN,
-  //         customerName,
-  //         filename,
-  //         index,
-  //       );
-
-  //     res.set({
-  //       'Content-Type': mimetype,
-  //       'Content-Disposition': `inline; filename="${originalName}"`,
-  //       'Content-Length': buffer.length,
-  //     });
-
-  //     res.send(buffer);
-  //   }
-
-  //   @Public()
-  //   @Get(':customerId/:customerName')
-  //   async listFiles(
-  //     @Param('customerId', ParseIntPipe) customerId: number,
-  //     @Param('customerName') customerName: string,
-  //   ) {
-  //     const files = await this.fileStorageService.listFiles(
-  //       customerNIN,
-  //       customerName,
-  //       REQUEST_TYPE.INTERNAL,
-  //     );
-  //     return { files };
-  //   }
-
-  //   // ! =====================================================================
-  //   @Public()
-  //   @Put('change-directory/:customerId/:oldCustomerName/:newCustomerName')
-  //   async updateFileDirectory(
-  //     @Param('customerId', ParseIntPipe) customerId: number,
-  //     @Param('oldCustomerName') oldCustomerName: string,
-  //     @Param('newCustomerName') newCustomerName: string,
-  //     // @Param('filename') filename: string,
-  //   ) {
-  //     const result = await this.fileStorageService.updateFileDirectory(
-  //       customerNIN,
-  //       oldCustomerName,
-  //       newCustomerName,
-  //     );
-  //     return { message: 'Folder renamed successfully', data: result };
-  //   }
-
-  //   @Put(':customerId/:customerName/:filename')
-  //   @UseInterceptors(
-  //     FileFieldsInterceptor([
-  //       { name: 'foto_ktp', maxCount: 1 },
-  //       { name: 'foto_kk', maxCount: 1 },
-  //       { name: 'foto_id_card_penjamin', maxCount: 1 },
-  //       { name: 'foto_ktp_penjamin', maxCount: 1 },
-  //       { name: 'foto_id_card', maxCount: 1 },
-  //       { name: 'bukti_absensi_file', maxCount: 1 },
-  //       { name: 'foto_rekening', maxCount: 1 },
-  //     ]),
-  //   )
-  //   async updateFile(
-  //     @Param('customerId', ParseIntPipe) customerId: number,
-  //     @Param('customerName') customerName: string,
-  //     @Param('filename') filename: string,
-  //     @UploadedFiles() files: Express.Multer.File[],
-  //   ) {
-  //     const result = await this.fileStorageService.updateFile(
-  //       customerNIN,
-  //       customerName,
-  //       filename,
-  //       files[0],
-  //       REQUEST_TYPE.EXTERNAL,
-  //     );
-  //     return { message: 'File updated successfully', data: result };
-  //   }
-
-  //   @Public()
-  //   @Delete('delete-file/:customerId/:customerName/:filename')
-  //   async deleteFile(
-  //     @Param('customerId', ParseIntPipe) customerId: number,
-  //     @Param('customerName') customerName: string,
-  //     @Param('filename') filename: string,
-  //   ) {
-  //     await this.fileStorageService.deleteFile(
-  //       customerNIN,
-  //       customerName,
-  //       filename,
-  //     );
-  //     return { message: 'File deleted successfully' };
-  //   }
-
-  //   @Delete(':customerId/:customerName')
-  //   async deleteAllFiles(
-  //     @Param('customerId', ParseIntPipe) customerId: number,
-  //     @Param('customerName') customerName: string,
-  //   ) {
-  //     await this.fileStorageService.deleteCustomerFiles(
-  //       customerNIN,
-  //       customerName,
-  //     );
-  //     return { message: 'All files deleted successfully' };
-  //   }
 }

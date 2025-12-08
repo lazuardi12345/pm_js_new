@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
   LoanApplicationExt,
-  LoanApplicationDocument,
+  LoanApplicationExtDocument,
   InstallmentItemsExternal,
 } from '../../Schemas/LoanAppExternal/CreateLoanApplicaton_Marketing.schema';
 import { ILoanApplicationDraftExternalRepository } from '../../../Domain/Repositories/ext/LoanAppExt.repository';
@@ -22,7 +22,7 @@ export class LoanApplicationExtRepositoryImpl
 {
   constructor(
     @InjectModel(LoanApplicationExt.name, 'mongoConnection')
-    private readonly loanAppModel: Model<LoanApplicationDocument>,
+    private readonly loanAppModel: Model<LoanApplicationExtDocument>,
   ) {}
 
   async create(
@@ -84,75 +84,73 @@ export class LoanApplicationExtRepositoryImpl
     return all.map((doc) => new LoanApplicationExtEntity(doc.toObject()));
   }
 
+  async updateDraftById(
+    id: string,
+    updateData: Partial<LoanApplicationExtEntity>,
+  ): Promise<{ entity: LoanApplicationExtEntity | null; isUpdated: boolean }> {
+    // Ambil existing dari DB
+    const existing = await this.loanAppModel.findById(id).exec();
+    if (!existing) return { entity: null, isUpdated: false };
 
-async updateDraftById(
-  id: string,
-  updateData: Partial<LoanApplicationExtEntity>,
-): Promise<{ entity: LoanApplicationExtEntity | null; isUpdated: boolean }> {
-  
-  // Ambil existing dari DB
-  const existing = await this.loanAppModel.findById(id).exec();
-  if (!existing) return { entity: null, isUpdated: false };
+    const existingObj = existing.toObject();
 
-  const existingObj = existing.toObject();
+    // Data cicilan existing dan update payload
+    const existingOtherLoans = (existingObj.other_exist_loan_external ??
+      {}) as OtherExistLoansExternalType;
 
-  // Data cicilan existing dan update payload
-const existingOtherLoans = (existingObj.other_exist_loan_external ??
-  {}) as OtherExistLoansExternalType;
+    const newOtherLoans = (updateData.other_exist_loan_external ??
+      {}) as OtherExistLoansExternalType;
 
-const newOtherLoans = (updateData.other_exist_loan_external ??
-  {}) as OtherExistLoansExternalType;
+    // Ambil array cicilan dari masing-masing source
+    const existingCicilanArr = Array.isArray(existingOtherLoans.cicilan)
+      ? existingOtherLoans.cicilan
+      : [];
 
-  // Ambil array cicilan dari masing-masing source
-  const existingCicilanArr = Array.isArray(existingOtherLoans.cicilan)
-    ? existingOtherLoans.cicilan
-    : [];
+    const newCicilanArr = Array.isArray(newOtherLoans.cicilan)
+      ? newOtherLoans.cicilan
+      : [];
 
-  const newCicilanArr = Array.isArray(newOtherLoans.cicilan)
-    ? newOtherLoans.cicilan
-    : [];
+    // Merge tanpa duplikat berdasarkan nama_pembiayaan
+    const mergedCicilan = [
+      ...existingCicilanArr,
+      ...newCicilanArr.filter(
+        (newItem) =>
+          !existingCicilanArr.some(
+            (oldItem) => oldItem.nama_pembiayaan === newItem.nama_pembiayaan,
+          ),
+      ),
+    ];
 
-  // Merge tanpa duplikat berdasarkan nama_pembiayaan
-  const mergedCicilan = [
-    ...existingCicilanArr,
-    ...newCicilanArr.filter(
-      newItem =>
-        !existingCicilanArr.some(
-          oldItem => oldItem.nama_pembiayaan === newItem.nama_pembiayaan,
-        ),
-    ),
-  ];
+    // Build merged object
+    const mergedData = {
+      ...existingObj,
+      ...updateData,
+      other_exist_loan_external: {
+        ...existingOtherLoans,
+        ...newOtherLoans,
+        cicilan: mergedCicilan,
+      },
+    };
 
-  // Build merged object
-  const mergedData = {
-    ...existingObj,
-    ...updateData,
-    other_exist_loan_external: {
-      ...existingOtherLoans,
-      ...newOtherLoans,
-      cicilan: mergedCicilan,
-    },
-  };
+    // Kalo tidak berubah, skip update
+    const hasChanged = !isEqual(existingObj, mergedData);
+    if (!hasChanged) {
+      return {
+        entity: new LoanApplicationExtEntity(existingObj),
+        isUpdated: false,
+      };
+    }
 
-  // Kalo tidak berubah, skip update
-  const hasChanged = !isEqual(existingObj, mergedData);
-  if (!hasChanged) {
+    // Update DB
+    const updated = await this.loanAppModel
+      .findByIdAndUpdate(id, mergedData, { new: true })
+      .exec();
+
     return {
-      entity: new LoanApplicationExtEntity(existingObj),
-      isUpdated: false,
+      entity: updated ? new LoanApplicationExtEntity(updated.toObject()) : null,
+      isUpdated: true,
     };
   }
-
-  // Update DB
-  const updated = await this.loanAppModel
-    .findByIdAndUpdate(id, mergedData, { new: true })
-    .exec();
-
-  return {
-    entity: updated ? new LoanApplicationExtEntity(updated.toObject()) : null,
-    isUpdated: true,
-  };
-}
 
   async triggerIsNeedCheckBeingTrue(
     draft_id: string,

@@ -10,14 +10,18 @@ import { LoanApplicationExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/
 import { InjectModel } from '@nestjs/mongoose';
 import {
   LoanApplicationInt,
-  LoanApplicationDocument,
+  LoanApplicationIntDocument,
 } from 'src/Shared/Modules/Drafts/Infrastructure/Schemas/LoanAppInternal/CreateLoanApplicaton_Marketing.schema';
+
 import { Model } from 'mongoose';
 import {
   RepeatOrder,
   RepeatOrderDocument,
 } from 'src/Shared/Modules/Drafts/Infrastructure/Schemas/LoanAppInternal/RepeatOrder_Marketing.schema';
-import { LoanApplicationExt } from 'src/Shared/Modules/Drafts/Infrastructure/Schemas/LoanAppExternal/CreateLoanApplicaton_Marketing.schema';
+import {
+  LoanApplicationExt,
+  LoanApplicationExtDocument,
+} from 'src/Shared/Modules/Drafts/Infrastructure/Schemas/LoanAppExternal/CreateLoanApplicaton_Marketing.schema';
 
 @Injectable()
 export class ApprovalRecommendationRepositoryImpl
@@ -27,9 +31,9 @@ export class ApprovalRecommendationRepositoryImpl
     @InjectRepository(ApprovalRecommendation_ORM_Entity)
     private readonly ormRepository: Repository<ApprovalRecommendation_ORM_Entity>,
     @InjectModel(LoanApplicationInt.name, 'mongoConnection')
-    private readonly mongoDraftInternalRepository: Model<LoanApplicationDocument>,
+    private readonly mongoDraftInternalRepository: Model<LoanApplicationIntDocument>,
     @InjectModel(LoanApplicationExt.name, 'mongoConnection')
-    private readonly mongoDraftExternalRepository: Model<LoanApplicationDocument>,
+    private readonly mongoDraftExternalRepository: Model<LoanApplicationExtDocument>,
     @InjectModel(RepeatOrder.name, 'mongoConnection')
     private readonly repeatOrderRepository: Model<RepeatOrderDocument>,
   ) {}
@@ -343,7 +347,7 @@ export class ApprovalRecommendationRepositoryImpl
           marketing_id: 1,
           _id: 1,
           'client_external.nama_lengkap': 1,
-          'client_external.no_ktp': 1,
+          'client_external.nik': 1,
           'client_external.no_hp': 1,
           'client_external.email': 1,
           'client_external.foto_ktp': 1,

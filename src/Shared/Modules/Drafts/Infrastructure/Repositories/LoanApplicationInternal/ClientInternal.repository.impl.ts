@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
   LoanApplicationInt,
-  LoanApplicationDocument,
+  LoanApplicationIntDocument,
 } from '../../Schemas/LoanAppInternal/CreateLoanApplicaton_Marketing.schema';
 import { ILoanApplicationDraftInternalRepository } from '../../../Domain/Repositories/int/LoanAppInt.repository';
 import { LoanApplicationEntity } from '../../../Domain/Entities/int/LoanAppInt.entity';
@@ -15,7 +15,7 @@ export class LoanApplicationIntRepositoryImpl
 {
   constructor(
     @InjectModel(LoanApplicationInt.name, 'mongoConnection')
-    private readonly loanAppModel: Model<LoanApplicationDocument>,
+    private readonly loanAppModel: Model<LoanApplicationIntDocument>,
   ) {}
 
   async create(
