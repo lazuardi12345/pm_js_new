@@ -11,6 +11,7 @@ import {
   IsDate,
   IsBoolean,
   isString,
+  IsArray,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
@@ -883,10 +884,7 @@ export class LoanGuarantorExternalDto {
   catatan?: string;
 }
 
-export class OtherExistLoansExternalDto {
-  @IsNumber()
-  nasabah_id: number;
-
+export class InstallmentItemsDto {
   @IsEnum(CicilanLainEnum)
   cicilan_lain: CicilanLainEnum;
 
@@ -903,6 +901,13 @@ export class OtherExistLoansExternalDto {
 
   @IsNumber()
   sisa_tenor: number;
+}
+
+export class OtherExistLoansExternalDto {
+  @ValidateNested({ each: true })
+  @Type(() => InstallmentItemsDto)
+  @IsArray()
+  cicilan: InstallmentItemsDto[];
 
   @IsOptional()
   @IsBoolean()
@@ -1177,6 +1182,10 @@ export class CreateLoanApplicationExternalDto {
   @ValidateNested()
   @IsNotEmpty()
   type: LoanType;
+
+  @ValidateNested()
+  @IsNotEmpty()
+  isHaveInstallment?: LoanType;
 }
 //#endregion
 

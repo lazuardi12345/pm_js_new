@@ -10,10 +10,9 @@ export class CreatePengajuanUmkmDto {
 
   @IsOptional()
   @IsString()
-  foto_usaha?: string; //!! AARAYYYY MASSSS 
+  foto_usaha?: string; //!! AARAYYYY MASSSS
 
   @IsOptional()
   @IsString()
   foto_pembukuan?: string;
-
 }

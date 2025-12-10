@@ -32,9 +32,11 @@ import { CollateralShmExternalController } from './Presentation/Controllers/coll
 import { EmergencyContactExternalController } from './Presentation/Controllers/emergency-contact-external.controller';
 import { FinancialDependentsExternalController } from './Presentation/Controllers/financial-dependents-external.controller';
 import { LoanGuarantorExternalController } from './Presentation/Controllers/loan-guarantor-external.controller';
-import { OtherExixtLoansExternalController } from './Presentation/Controllers/other-exixt-loan-external.controller';
+import { OtherExistLoansExternalController } from './Presentation/Controllers/other-exist-loan-external.controller';
 import { CollateralByUmkmExternalController } from './Presentation/Controllers/colleteral-umkm.controller';
 import { CollateralKedinasan_Non_MOU_ExternalController } from './Presentation/Controllers/collateral-kedinasan-non-mou-external.controller';
+import { DetailInstallmentItemsExternalModule } from './Modules/detail-installment-items-external.module';
+import { DetailInstallmentItemsExternalController } from './Presentation/Controllers/detail-installment-items-external.controller';
 
 @Module({
   imports: [
@@ -54,6 +56,7 @@ import { CollateralKedinasan_Non_MOU_ExternalController } from './Presentation/C
     LoanGuarantorExternalModule,
     LoanApplicationExternalModule,
     OtherExistLoansExternalModule,
+    DetailInstallmentItemsExternalModule,
     SurveyPhotos_External_Module,
     SurveyReports_External_Module,
   ],
@@ -73,7 +76,8 @@ import { CollateralKedinasan_Non_MOU_ExternalController } from './Presentation/C
     EmergencyContactExternalController,
     FinancialDependentsExternalController,
     LoanGuarantorExternalController,
-    OtherExixtLoansExternalController,
+    OtherExistLoansExternalController,
+    DetailInstallmentItemsExternalController,
   ],
   exports: [
     AddressExternalModule,
@@ -92,6 +96,7 @@ import { CollateralKedinasan_Non_MOU_ExternalController } from './Presentation/C
     LoanGuarantorExternalModule,
     LoanApplicationExternalModule,
     OtherExistLoansExternalModule,
+    DetailInstallmentItemsExternalModule,
     SurveyPhotos_External_Module,
     SurveyReports_External_Module,
   ],

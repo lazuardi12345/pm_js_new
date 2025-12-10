@@ -1,4 +1,8 @@
-import { Injectable, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import {
   IOtherExistLoansExternalRepository,
   OTHER_EXIST_LOANS_EXTERNAL_REPOSITORY,
@@ -16,31 +20,27 @@ export class OtherExistLoanExternalService {
 
   async create(
     dto: CreateOtherExistLoansExternalDto,
-  ): Promise<OtherExistLoansExternal[]> {
+  ): Promise<OtherExistLoansExternal> {
     const now = new Date();
-    const result: OtherExistLoansExternal[] = [];
+    const entity = new OtherExistLoansExternal(
+      { id: dto.loan_app_ext_id },
+      dto.cicilan_lain,
+      undefined,
+      dto.validasi_pinjaman_lain,
+      dto.catatan,
+      now,
+      now,
+      undefined,
+    );
 
-    for (const item of dto.cicilan) {
-      const entity = new OtherExistLoansExternal(
-        { id: dto.nasabah_id },
-        item.cicilan_lain,
-        item.nama_pembiayaan,
-        item.cicilan_perbulan,
-        item.sisa_tenor,
-        undefined,
-        item.total_pinjaman,
-        dto.validasi_pinjaman_lain,
-        dto.catatan,
-        now,
-        now,
-        undefined,
+    try {
+      return await this.repo.save(entity);
+    } catch (error) {
+      console.error('Create Emergency Contact Error:', error);
+      throw new InternalServerErrorException(
+        'Failed to create Installments Data',
       );
-
-      const savedData = await this.repo.save(entity);
-      result.push(savedData);
     }
-
-    return result;
   }
 
   async update(

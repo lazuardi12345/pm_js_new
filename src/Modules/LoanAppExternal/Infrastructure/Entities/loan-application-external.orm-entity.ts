@@ -28,6 +28,7 @@ import {
 } from 'src/Shared/Enums/External/Loan-Application.enum';
 import { CollateralByKedinasan_Non_MOU_ORM_Entity } from './collateral-kedinasan-non-mou.orm-entity';
 import { CollateralByUMKM_ORM_Entity } from './collateral-umkm.orm.entity';
+import { OtherExistLoansExternal_ORM_Entity } from './other-exist-loans.orm-entity';
 
 @Entity('loan_application_external')
 export class LoanApplicationExternal_ORM_Entity {
@@ -123,15 +124,16 @@ export class LoanApplicationExternal_ORM_Entity {
   // @OneToMany(() => Notification, (notif) => notif.pengajuan_luar)
   // notifications: Notification[];
   @OneToMany(
-    () => ApprovalRecommendation_ORM_Entity,
-    (approvalRecommendation) => approvalRecommendation.loanApplicationExternal,
-  )
-  approvalRecommendations: ApprovalRecommendation_ORM_Entity[];
-  @OneToMany(
     () => ApprovalExternal_ORM_Entity,
     (approvalExternal) => approvalExternal.pengajuan_luar,
   )
   approvalExternals: ApprovalExternal_ORM_Entity[];
+  @OneToOne(
+    () => OtherExistLoansExternal_ORM_Entity,
+    (otherExistLoan) => otherExistLoan.loanAppExternal,
+    { cascade: true },
+  )
+  otherExistLoans: OtherExistLoansExternal_ORM_Entity;
   @OneToOne(() => CollateralByBPKB_ORM_Entity, (bpkb) => bpkb.pengajuanLuar)
   bpkb: CollateralByBPKB_ORM_Entity;
   @OneToOne(() => CollateralByBPJS_ORM_Entity, (bpjs) => bpjs.pengajuanLuar)

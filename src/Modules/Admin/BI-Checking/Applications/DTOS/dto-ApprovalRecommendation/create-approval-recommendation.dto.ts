@@ -5,7 +5,10 @@ import {
   IsString,
   IsNumber,
 } from 'class-validator';
-import { RecommendationEnum } from 'src/Shared/Enums/Admins/BI/approval-recommendation.enum';
+import {
+  LoanTypeEnum,
+  RecommendationEnum,
+} from 'src/Shared/Enums/Admins/BI/approval-recommendation.enum';
 
 export class CreateApprovalRecommendationDto {
   @IsEnum(RecommendationEnum)
@@ -44,11 +47,7 @@ export class CreateApprovalRecommendationDto {
   @IsOptional()
   catatan: string;
 
-  @IsNumber()
-  @IsOptional()
-  loan_application_internal_id?: number;
-
-  @IsNumber()
-  @IsOptional()
-  loan_application_external_id?: number;
+  @IsEnum(LoanTypeEnum)
+  @IsNotEmpty()
+  type: LoanTypeEnum;
 }

@@ -5,8 +5,6 @@ import { Repository } from 'typeorm';
 import { ApprovalRecommendation } from '../../Domain/Entities/approval-recommendation.entity';
 import { IApprovalRecommendationRepository } from '../../Domain/Repositories/approval-recommendation.repository';
 import { ApprovalRecommendation_ORM_Entity } from '../Entities/approval-recommendation.orm-entity';
-import { LoanApplicationInternal_ORM_Entity } from 'src/Modules/LoanAppInternal/Infrastructure/Entities/loan-application-internal.orm-entity';
-import { LoanApplicationExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/loan-application-external.orm-entity';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   LoanApplicationInt,
@@ -22,6 +20,7 @@ import {
   LoanApplicationExt,
   LoanApplicationExtDocument,
 } from 'src/Shared/Modules/Drafts/Infrastructure/Schemas/LoanAppExternal/CreateLoanApplicaton_Marketing.schema';
+import { LoanTypeEnum } from 'src/Shared/Enums/Admins/BI/approval-recommendation.enum';
 
 @Injectable()
 export class ApprovalRecommendationRepositoryImpl
@@ -55,8 +54,7 @@ export class ApprovalRecommendationRepositoryImpl
       ormEntity.email,
       ormEntity.nama_nasabah,
       ormEntity.catatan,
-      ormEntity.loanApplicationInternal?.id ?? null,
-      ormEntity.loanApplicationExternal?.id ?? null,
+      ormEntity.type,
       ormEntity.created_at,
       ormEntity.deleted_at,
       ormEntity.updated_at,
@@ -78,12 +76,7 @@ export class ApprovalRecommendationRepositoryImpl
       email: domainEntity.email,
       nama_nasabah: domainEntity.nama_nasabah,
       catatan: domainEntity.catatan,
-      loanApplicationInternal: {
-        id: domainEntity.id,
-      } as LoanApplicationInternal_ORM_Entity,
-      loanApplicationExternal: {
-        id: domainEntity.id,
-      } as LoanApplicationExternal_ORM_Entity,
+      type: domainEntity.type,
       created_at: domainEntity.created_at,
       updated_at: domainEntity.updated_at,
       deleted_at: domainEntity.deleted_at,
@@ -108,14 +101,7 @@ export class ApprovalRecommendationRepositoryImpl
     if (partial.email) ormData.email = partial.email;
     if (partial.nama_nasabah) ormData.nama_nasabah = partial.nama_nasabah;
     if (partial.catatan) ormData.catatan = partial.catatan;
-    if (partial.loan_application_internal_id)
-      ormData.loanApplicationInternal = {
-        id: partial.loan_application_internal_id,
-      } as LoanApplicationInternal_ORM_Entity;
-    if (partial.loan_application_external_id)
-      ormData.loanApplicationExternal = {
-        id: partial.loan_application_external_id,
-      } as LoanApplicationExternal_ORM_Entity;
+    if (partial.type) ormData.type = partial.type;
     if (partial.created_at) ormData.created_at = partial.created_at;
     if (partial.updated_at) ormData.updated_at = partial.updated_at;
     if (partial.deleted_at) ormData.deleted_at = partial.deleted_at;
@@ -194,7 +180,6 @@ export class ApprovalRecommendationRepositoryImpl
   ): Promise<ApprovalRecommendation | null> {
     const ormEntity = await this.ormRepository.findOne({
       where: { draft_id },
-      relations: ['loanApplicationInternal', 'loanApplicationExternal'],
     });
 
     if (!ormEntity) {
@@ -204,15 +189,11 @@ export class ApprovalRecommendationRepositoryImpl
       return null;
     }
 
-    if (
-      !ormEntity.loanApplicationInternal ||
-      !ormEntity.loanApplicationExternal
-    ) {
+    if (!ormEntity.type) {
       console.warn(
         `[ApprovalRecommendationRepo] Missing relation(s) for draft_id=${draft_id}`,
         {
-          hasInternal: !!ormEntity.loanApplicationInternal,
-          hasExternal: !!ormEntity.loanApplicationExternal,
+          hasType: !!ormEntity.type,
         },
       );
     }
@@ -252,8 +233,8 @@ export class ApprovalRecommendationRepositoryImpl
     await this.ormRepository.softDelete(id);
   }
 
-  async findAllRecommendationHistory(): Promise<any[]> {
-    return await this.ormRepository
+  async findAllRecommendationInternalHistory() {
+    return this.ormRepository
       .createQueryBuilder('rec')
       .select([
         'rec.id',
@@ -267,9 +248,29 @@ export class ApprovalRecommendationRepositoryImpl
         'rec.catatan',
         'rec.created_at',
       ])
-      // .where('rec.loanApplicationInternal IS NOT NULL')
+      .where('rec.type = :type', { type: LoanTypeEnum.INTERNAL })
       .getMany();
   }
+
+  async findAllRecommendationExternalHistory() {
+    return this.ormRepository
+      .createQueryBuilder('rec')
+      .select([
+        'rec.id',
+        'rec.recommendation',
+        'rec.nik',
+        'rec.nama_nasabah',
+        'rec.nominal_pinjaman',
+        'rec.no_telp',
+        'rec.email',
+        'rec.filePath',
+        'rec.catatan',
+        'rec.created_at',
+      ])
+      .where('rec.type = :type', { type: LoanTypeEnum.EXTERNAL })
+      .getMany();
+  }
+
   async findAllRecommendationInternalRequests(): Promise<any[]> {
     // ambil data dari LoanApplication (draft)
     const draftDataInternal = await this.mongoDraftInternalRepository

@@ -124,6 +124,22 @@ export class MKT_CreateDraftLoanApplicationController {
       { name: 'foto_meteran_listrik', maxCount: 1 },
       { name: 'foto_id_card', maxCount: 1 },
       { name: 'slip_gaji', maxCount: 1 },
+
+      //? BPJS
+      { name: 'foto_bpjs', maxCount: 1 },
+      { name: 'dokumen_pendukung_bpjs', maxCount: 1 },
+
+      //? SHM
+      { name: 'foto_shm', maxCount: 1 },
+      { name: 'foto_kk_pemilik_shm', maxCount: 1 },
+      { name: 'foto_pbb', maxCount: 1 },
+      { name: 'foto_objek_jaminan', maxCount: 1 },
+      { name: 'foto_buku_nikah_suami_istri', maxCount: 1 },
+      { name: 'foto_npwp', maxCount: 1 },
+      { name: 'foto_imb', maxCount: 1 },
+      { name: 'foto_surat_ahli_waris', maxCount: 1 },
+      { name: 'foto_surat_akte_kematian', maxCount: 1 },
+      { name: 'foto_surat_pernyataan_kepemilikan_tanah', maxCount: 1 },
     ]),
   )
   async updateDraftById(

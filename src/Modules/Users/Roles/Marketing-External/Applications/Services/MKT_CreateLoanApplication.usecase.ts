@@ -101,6 +101,12 @@ import { CollateralByKedinasan_MOU } from 'src/Modules/LoanAppExternal/Domain/En
 import { CollateralByKedinasan_Non_MOU } from 'src/Modules/LoanAppExternal/Domain/Entities/collateral-kedinasan-non-mou-external.entity';
 import { CollateralBySHM } from 'src/Modules/LoanAppExternal/Domain/Entities/collateral-shm-external.entity';
 import { CollateralByUMKM } from 'src/Modules/LoanAppExternal/Domain/Entities/collateral-umkm.entity';
+import {
+  DETAIL_INSTALLMENT_ITEMS_EXTERNAL_REPOSITORY,
+  IDetailInstallmentItemsExternalRepository,
+} from 'src/Modules/LoanAppExternal/Domain/Repositories/detail-installment-items-external.repository';
+import { DetailInstallmentItemsExternal } from 'src/Modules/LoanAppExternal/Domain/Entities/detail-installment-items-external.entity';
+import { CicilanLainEnum } from 'src/Shared/Enums/External/Other-Exist-Loans.enum';
 
 @Injectable()
 export class MKT_CreateLoanApplicationUseCase {
@@ -115,6 +121,8 @@ export class MKT_CreateLoanApplicationUseCase {
     private readonly jobRepo: IJobExternalRepository,
     @Inject(OTHER_EXIST_LOANS_EXTERNAL_REPOSITORY)
     private readonly otherExistLoanRepo: IOtherExistLoansExternalRepository,
+    @Inject(DETAIL_INSTALLMENT_ITEMS_EXTERNAL_REPOSITORY)
+    private readonly detailInstallmentItemsRepo: IDetailInstallmentItemsExternalRepository,
     @Inject(FINANCIAL_DEPENDENTS_EXTERNAL_REPOSITORY)
     private readonly financialDependentRepo: IFinancialDependentsExternalRepository,
     @Inject(EMERGENCY_CONTACTS_EXTERNAL_REPOSITORY)
@@ -278,24 +286,6 @@ export class MKT_CreateLoanApplicationUseCase {
           ),
         );
 
-        // await this.familyRepo.save(
-        //   new FamilyInternal(
-        //     { id: customer.id! },
-        //     family_internal.hubungan as HubunganEnum,
-        //     family_internal.nama,
-        //     family_internal.bekerja as BekerjaEnum,
-        //     undefined,
-        //     undefined,
-        //     undefined,
-        //     family_internal.nama_perusahaan!,
-        //     family_internal.jabatan!,
-        //     parseNumber(family_internal.penghasilan),
-        //     family_internal.alamat_kerja!,
-        //     family_internal.no_hp,
-        //     undefined,
-        //   ),
-        // );
-
         await this.jobRepo.save(
           new JobExternal(
             { id: customer.id! },
@@ -435,22 +425,57 @@ export class MKT_CreateLoanApplicationUseCase {
           ),
         );
 
-        await this.otherExistLoanRepo.save(
-          new OtherExistLoansExternal(
-            { id: customer.id! },
-            other_exist_loan_external.cicilan_lain,
-            other_exist_loan_external.nama_pembiayaan,
-            other_exist_loan_external.cicilan_perbulan,
-            other_exist_loan_external.sisa_tenor,
+        if (dto?.isHaveInstallment && dto.other_exist_loan_external.cicilan) {
+          const otherDto = dto.other_exist_loan_external;
+
+          const cicilanLainEnum =
+            dto.isHaveInstallment && otherDto.cicilan?.length
+              ? otherDto.cicilan[0].cicilan_lain
+              : CicilanLainEnum.TIDAK;
+
+          const parent = new OtherExistLoansExternal(
+            { id: loanApp.id! },
+            cicilanLainEnum,
             undefined,
-            other_exist_loan_external.total_pinjaman,
-            other_exist_loan_external.validasi_pinjaman_lain,
-            other_exist_loan_external.catatan,
-            nowWIB,
-            nowWIB,
+            otherDto.validasi_pinjaman_lain,
+            otherDto.catatan,
+            new Date(),
+            new Date(),
             undefined,
-          ),
-        );
+          );
+
+          const savedParent = await this.otherExistLoanRepo.save(parent);
+
+          // Save children parallel
+          if (otherDto.cicilan && otherDto.cicilan.length > 0) {
+            await Promise.all(
+              otherDto.cicilan.map((loan) => {
+                const detailInstallment = new DetailInstallmentItemsExternal(
+                  { id: savedParent.id! },
+                  loan.nama_pembiayaan,
+                  Number(loan.total_pinjaman),
+                  Number(loan.cicilan_perbulan),
+                  Number(loan.sisa_tenor),
+                );
+
+                return this.detailInstallmentItemsRepo.save(detailInstallment);
+              }),
+            );
+          }
+        } else {
+          const parent = new OtherExistLoansExternal(
+            { id: loanApp.id! },
+            CicilanLainEnum.TIDAK,
+            undefined,
+            undefined,
+            undefined,
+            new Date(),
+            new Date(),
+            undefined,
+          );
+
+          await this.otherExistLoanRepo.save(parent);
+        }
 
         await this.financialDependentRepo.save(
           new FinancialDependentsExternal(
@@ -499,49 +524,6 @@ export class MKT_CreateLoanApplicationUseCase {
             undefined,
           ),
         );
-
-        // ==========================
-        // 5. CLIENT PROFILE (BARU)
-        // ==========================
-        // await this.clientProfileRepo.save(
-        //   new ClientExternalProfile(
-        //     { id: customer.id! },
-        //     { id: loanApp.id! },
-        //     client_external_profile.nama_lengkap,
-        //     client_external_profile.no_rek,
-        //     client_external_profile.jenis_kelamin,
-        //     client_external_profile.no_hp,
-        //     client_external_profile.status_nikah as MARRIAGE_STATUS,
-        //     undefined,
-        //     client_external_profile.email,
-        //     parseFileUrl(
-        //       documents_files?.foto_rekening ??
-        //         client_external_profile.foto_rekening ??
-        //         null,
-        //     ),
-        //     parseFileUrl(
-        //       documents_files?.foto_ktp_peminjam ??
-        //         client_external_profile.foto_ktp_peminjam ??
-        //         null,
-        //     ),
-        //     parseFileUrl(
-        //       documents_files?.foto_ktp_peminjam ??
-        //         client_external_profile.foto_ktp_peminjam ??
-        //         null,
-        //     ),
-        //     parseFileUrl(
-        //       documents_files?.foto_kk_peminjam ??
-        //         client_external_profile.foto_kk_peminjam ??
-        //         null,
-        //     ),
-        //     parseFileUrl(
-        //       documents_files?.foto_kk_penjamin ??
-        //         client_external_profile.foto_kk_penjamin ??
-        //         null,
-        //     ),
-        //     parseFileUrl(documents_files?.dokumen_pendukung ?? null),
-        //   ),
-        // );
 
         switch (type) {
           // ==========================
