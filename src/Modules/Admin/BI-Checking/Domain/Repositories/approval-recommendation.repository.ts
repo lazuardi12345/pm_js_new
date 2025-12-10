@@ -12,7 +12,8 @@ export interface IApprovalRecommendationRepository {
     id: number,
     entity: Partial<ApprovalRecommendation>,
   ): Promise<ApprovalRecommendation>;
-  findAllRecommendationHistory(): Promise<ApprovalRecommendation[]>;
+  findAllRecommendationInternalHistory(): Promise<ApprovalRecommendation[]>;
+  findAllRecommendationExternalHistory(): Promise<ApprovalRecommendation[]>;
   findAllRecommendationInternalRequests(): Promise<ApprovalRecommendation[]>;
   findAllRecommendationExternalRequests(): Promise<ApprovalRecommendation[]>;
   findById(id: number): Promise<ApprovalRecommendation | null>;

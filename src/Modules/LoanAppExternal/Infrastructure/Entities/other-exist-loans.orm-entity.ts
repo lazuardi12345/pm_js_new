@@ -7,28 +7,41 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  OneToOne,
+  OneToMany,
 } from 'typeorm';
 import { ClientExternal_ORM_Entity } from './client-external.orm-entity';
 import { CicilanLainEnum } from 'src/Shared/Enums/External/Other-Exist-Loans.enum';
+import { DetailInstallmentItemsExternal_ORM_Entity } from './detail-installment-items.orm-entity';
+import { LoanApplicationExternal_ORM_Entity } from './loan-application-external.orm-entity';
 
 @Entity('other_exist_loans_external')
 export class OtherExistLoansExternal_ORM_Entity {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
 
-  @ManyToOne(
-    () => ClientExternal_ORM_Entity,
-    (clientExternal) => clientExternal.otherExistLoans,
+  @Column({ type: 'enum', enum: CicilanLainEnum })
+  cicilan_lain: CicilanLainEnum;
+
+  //? Ini ke Pengajuan External ID
+  @OneToOne(
+    () => LoanApplicationExternal_ORM_Entity,
+    (loanAppExternal) => loanAppExternal.otherExistLoans,
     { onDelete: 'CASCADE' },
   )
   @JoinColumn({
     name: 'nasabah_id',
     foreignKeyConstraintName: 'FK_ClientExternalID_at_OtherExistLoansExternal',
   })
-  nasabah: ClientExternal_ORM_Entity;
+  loanAppExternal: LoanApplicationExternal_ORM_Entity;
 
-  @Column({ type: 'enum', enum: CicilanLainEnum })
-  cicilan_lain: CicilanLainEnum;
+  //? Ini ke Data Data Cicilan
+  @OneToMany(
+    () => DetailInstallmentItemsExternal_ORM_Entity,
+    (detail) => detail.otherExistLoan,
+    { cascade: true },
+  )
+  detailInstallments: DetailInstallmentItemsExternal_ORM_Entity[];
 
   @Column({ type: 'varchar', length: 255 })
   nama_pembiayaan: string;

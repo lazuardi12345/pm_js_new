@@ -75,6 +75,8 @@ import { HttpModule } from '@nestjs/axios';
 import { DraftLoanApplicationModule } from 'src/Shared/Modules/Drafts/Modules/CreateLoanAppInt.module';
 import { ApprovalRecommendationModule } from 'src/Modules/Admin/BI-Checking/Modules/approval-recommendation.module';
 import { DraftRepeatOrderModule } from 'src/Shared/Modules/Drafts/Modules/DraftRepeatOrder.module';
+import { DetailInstallmentItemsExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/detail-installment-items.orm-entity';
+import { DetailInstallmentItemsExternalModule } from 'src/Modules/LoanAppExternal/Modules/detail-installment-items-external.module';
 @Module({
   imports: [
     HttpModule,
@@ -89,6 +91,7 @@ import { DraftRepeatOrderModule } from 'src/Shared/Modules/Drafts/Modules/DraftR
     EmergencyContactExternalModule,
     FinancialDependentsExternalModule,
     OtherExistLoansExternalModule,
+    DetailInstallmentItemsExternalModule,
     CollateralByBPJS_External_Module,
     CollateralByBPKB_External_Module,
     CollateralByKedinasan_MOU_External_Module,
@@ -105,6 +108,7 @@ import { DraftRepeatOrderModule } from 'src/Shared/Modules/Drafts/Modules/DraftR
       FinancialDependentsExternal_ORM_Entity,
       LoanGuarantorExternal_ORM_Entity,
       OtherExistLoansExternal_ORM_Entity,
+      DetailInstallmentItemsExternal_ORM_Entity,
       CollateralByBPJS_ORM_Entity,
       CollateralByBPKB_ORM_Entity,
       CollateralBySHM_ORM_Entity,

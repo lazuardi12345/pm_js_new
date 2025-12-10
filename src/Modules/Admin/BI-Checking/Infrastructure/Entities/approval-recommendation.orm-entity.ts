@@ -14,15 +14,15 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm';
-import { RecommendationEnum } from 'src/Shared/Enums/Admins/BI/approval-recommendation.enum';
+import {
+  LoanTypeEnum,
+  RecommendationEnum,
+} from 'src/Shared/Enums/Admins/BI/approval-recommendation.enum';
 
 @Entity('approval_recommendation')
 export class ApprovalRecommendation_ORM_Entity {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
-
-  // @Column({ type: 'enum', enum: LoanTypeEnum })
-  // type: LoanTypeEnum;
 
   @Column({ type: 'enum', enum: RecommendationEnum })
   recommendation: RecommendationEnum;
@@ -53,38 +53,8 @@ export class ApprovalRecommendation_ORM_Entity {
   @Index('IDX_DraftID_at_ApprovalRecommendation', ['draft_id']) // <- index explicit name
   draft_id?: string;
 
-  @ManyToOne(
-    () => LoanApplicationInternal_ORM_Entity,
-    (loanApplicationInternal) =>
-      loanApplicationInternal.approvalRecommendations,
-    {
-      eager: false,
-      onDelete: 'SET NULL',
-      nullable: true,
-    },
-  )
-  @JoinColumn({
-    name: 'loan_application_internal_id',
-    foreignKeyConstraintName:
-      'FK_LoanApplicationInternal_at_ApprovalRecommendation',
-  })
-  loanApplicationInternal: LoanApplicationInternal_ORM_Entity;
-  @ManyToOne(
-    () => LoanApplicationExternal_ORM_Entity,
-    (loanApplicationExternal) =>
-      loanApplicationExternal.approvalRecommendations,
-    {
-      eager: false,
-      onDelete: 'SET NULL',
-      nullable: true,
-    },
-  )
-  @JoinColumn({
-    name: 'loan_application_external_id',
-    foreignKeyConstraintName:
-      'FK_LoanApplicationExternal_at_ApprovalRecommendation',
-  })
-  loanApplicationExternal: LoanApplicationExternal_ORM_Entity;
+  @Column({ type: 'enum', enum: LoanTypeEnum })
+  type: LoanTypeEnum;
 
   @CreateDateColumn({ type: 'timestamp', nullable: true })
   created_at?: Date;

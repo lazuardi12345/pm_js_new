@@ -1,6 +1,9 @@
 // Domain/Entities/approval-recommendation.entity.ts
 
-import { RecommendationEnum } from 'src/Shared/Enums/Admins/BI/approval-recommendation.enum';
+import {
+  LoanTypeEnum,
+  RecommendationEnum,
+} from 'src/Shared/Enums/Admins/BI/approval-recommendation.enum';
 
 export class ApprovalRecommendation {
   constructor(
@@ -15,8 +18,7 @@ export class ApprovalRecommendation {
     public readonly email?: string,
     public readonly nama_nasabah?: string,
     public readonly catatan?: string,
-    public readonly loan_application_internal_id?: number,
-    public readonly loan_application_external_id?: number,
+    public readonly type?: LoanTypeEnum,
     public readonly created_at?: Date,
     public readonly deleted_at?: Date | null,
 

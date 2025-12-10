@@ -107,10 +107,4 @@ export class LoanApplicationInternal_ORM_Entity {
     (approvalInternal) => approvalInternal.pengajuan,
   )
   approvalsInternal: ApprovalInternal_ORM_Entity[];
-
-  @OneToMany(
-    () => ApprovalRecommendation_ORM_Entity,
-    (approvalRecommendation) => approvalRecommendation.loanApplicationInternal,
-  )
-  approvalRecommendations: ApprovalRecommendation_ORM_Entity[];
 }

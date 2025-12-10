@@ -20,7 +20,6 @@ import { EmergencyContactExternal_ORM_Entity } from './emergency-contact.orm-ent
 import { JobExternal_ORM_Entity } from './job.orm-entity';
 import { LoanApplicationExternal_ORM_Entity } from './loan-application-external.orm-entity';
 import { LoanGuarantorExternal_ORM_Entity } from './loan-guarantor.orm-entity';
-import { OtherExistLoansExternal_ORM_Entity } from './other-exist-loans.orm-entity';
 import { FinancialDependentsExternal_ORM_Entity } from './financial-dependents.orm-entity';
 import { IsNumber, IsOptional } from 'class-validator';
 
@@ -94,12 +93,6 @@ export class ClientExternal_ORM_Entity {
     (loanGuarantorExternal) => loanGuarantorExternal.nasabah,
   )
   loanGuarantors: LoanGuarantorExternal_ORM_Entity[];
-
-  @OneToMany(
-    () => OtherExistLoansExternal_ORM_Entity,
-    (otherExistLoansExternal) => otherExistLoansExternal.nasabah,
-  )
-  otherExistLoans: OtherExistLoansExternal_ORM_Entity[];
 
   @OneToOne(
     () => FinancialDependentsExternal_ORM_Entity,

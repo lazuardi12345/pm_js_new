@@ -7,6 +7,7 @@ import {
   UseGuards,
   UseInterceptors,
   InternalServerErrorException,
+  Param,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import multer from 'multer';
@@ -16,6 +17,7 @@ import { AdBIC_CreateApprovalResponseUseCase } from '../Applications/AdBIC_Creat
 import { AdBIC_CreatePayloadDto } from '../Applications/DTOS/AdBIC_CreatePayload.dto';
 import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/roles.decorator';
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
+import { LoanTypeEnum } from 'src/Shared/Enums/Admins/BI/approval-recommendation.enum';
 
 @UseGuards(FileUploadAuthGuard)
 @Controller('admin-bi')
@@ -23,7 +25,7 @@ export class AdBIC_CreateApprovalResponseController {
   constructor(private readonly useCase: AdBIC_CreateApprovalResponseUseCase) {}
 
   @Roles(USERTYPE.ADMIN_BI)
-  @Post('int/response/add')
+  @Post('int/:type/response/add')
   @UseInterceptors(
     FileFieldsInterceptor([{ name: 'files', maxCount: 3 }], {
       storage: multer.memoryStorage(),
@@ -31,19 +33,24 @@ export class AdBIC_CreateApprovalResponseController {
     }),
   )
   async createApprovalInternalResponse(
+    @Param('type') type: LoanTypeEnum,
     @UploadedFiles() files: Record<string, Express.Multer.File[]>,
     @Body('payload') payload: any, // ⬅ cuma ambil "payload"
   ) {
     try {
       if (!files || Object.values(files).length === 0) {
         throw new BadRequestException('No files uploaded');
+      } else if (
+        ![LoanTypeEnum.EXTERNAL, LoanTypeEnum.INTERNAL].includes(type)
+      ) {
+        throw new BadRequestException('Invalid type');
       }
 
       // auto parse kalau masih string
       const dto: AdBIC_CreatePayloadDto =
         typeof payload === 'string' ? JSON.parse(payload) : payload;
 
-      return this.useCase.executeCreateDraft(dto, files);
+      return this.useCase.executeCreateDraft(dto, files, type);
     } catch (error) {
       console.error('Create approval recommendation failed:', error);
       throw new InternalServerErrorException(
@@ -53,7 +60,7 @@ export class AdBIC_CreateApprovalResponseController {
   }
 
   @Roles(USERTYPE.ADMIN_BI)
-  @Post('ext/response/add')
+  @Post('ext/:type/response/add')
   @UseInterceptors(
     FileFieldsInterceptor([{ name: 'files', maxCount: 3 }], {
       storage: multer.memoryStorage(),
@@ -61,7 +68,9 @@ export class AdBIC_CreateApprovalResponseController {
     }),
   )
   async createApprovalExternalResponse(
-    @UploadedFiles() files: Record<string, Express.Multer.File[]>,
+    @Param('type') type: LoanTypeEnum,
+    @UploadedFiles()
+    files: Record<string, Express.Multer.File[]>,
     @Body('payload') payload: any, // ⬅ cuma ambil "payload"
   ) {
     try {
@@ -73,7 +82,7 @@ export class AdBIC_CreateApprovalResponseController {
       const dto: AdBIC_CreatePayloadDto =
         typeof payload === 'string' ? JSON.parse(payload) : payload;
 
-      return this.useCase.executeCreateDraft(dto, files);
+      return this.useCase.executeCreateDraft(dto, files, type);
     } catch (error) {
       console.error('Create approval recommendation failed:', error);
       throw new InternalServerErrorException(

@@ -14,7 +14,7 @@ export const options = {
 };
 
 export default function () {
-  const res = http.get('http://192.182.6.69:8000/api-v1/loan-app'); // Ganti endpoint NestJS kamu
+  const res = http.get('app.local:3000'); // Ganti endpoint NestJS kamu
   check(res, {
     'status is 200': (r) => r.status === 200,
   });

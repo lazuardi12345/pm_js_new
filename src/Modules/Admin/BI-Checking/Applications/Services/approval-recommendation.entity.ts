@@ -29,8 +29,7 @@ export class ApprovalRecommendationService {
       dto.email,
       dto.nama_nasabah,
       dto.catatan,
-      dto.loan_application_internal_id,
-      dto.loan_application_external_id,
+      dto.type,
       now,
       null,
     );

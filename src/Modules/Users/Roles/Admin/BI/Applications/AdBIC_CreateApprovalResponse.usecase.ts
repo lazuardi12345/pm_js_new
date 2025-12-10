@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable, Inject } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Inject,
+  BadRequestException,
+} from '@nestjs/common';
 import {
   FILE_STORAGE_SERVICE,
   FileMetadata,
@@ -11,6 +17,7 @@ import {
 } from 'src/Modules/Admin/BI-Checking/Domain/Repositories/approval-recommendation.repository';
 import { ApprovalRecommendation } from 'src/Modules/Admin/BI-Checking/Domain/Entities/approval-recommendation.entity';
 import { AdBIC_CreatePayloadDto } from './DTOS/AdBIC_CreatePayload.dto';
+import { LoanTypeEnum } from 'src/Shared/Enums/Admins/BI/approval-recommendation.enum';
 
 @Injectable()
 export class AdBIC_CreateApprovalResponseUseCase {
@@ -25,6 +32,7 @@ export class AdBIC_CreateApprovalResponseUseCase {
   async executeCreateDraft(
     dto: AdBIC_CreatePayloadDto,
     files?: Record<string, Express.Multer.File[]>,
+    type?: LoanTypeEnum,
   ) {
     try {
       let filePaths: Record<string, FileMetadata[]> = {};
@@ -43,9 +51,15 @@ export class AdBIC_CreateApprovalResponseUseCase {
           }
         }
 
+        if (!dto?.nik && !dto?.no_ktp) {
+          throw new BadRequestException('NIK or No KTP required');
+        } else if (!dto?.nama_lengkap && !dto?.nama_nasabah) {
+          throw new BadRequestException('Customer Name required');
+        }
+
         filePaths = await this.fileStorage.saveApprovalRecommedationFiles(
-          dto?.nik ?? dto.nik,
-          dto?.nama_nasabah ?? `${dto.nama_nasabah}`,
+          String(dto?.nik ?? dto?.no_ktp),
+          String(dto?.nama_lengkap ?? dto?.nama_nasabah),
           files,
         );
 
@@ -55,21 +69,18 @@ export class AdBIC_CreateApprovalResponseUseCase {
         if (firstFile) {
           dto.filePath = firstFile.url;
         }
-
-        // 4️⃣ Buat entity
         const entity = new ApprovalRecommendation(
           dto.recommendation,
           dto.filePath,
           dto.nominal_pinjaman,
           undefined,
           dto?.draft_id,
-          dto.nik,
+          String(dto?.nik ?? dto?.no_ktp),
           dto.no_telp,
           dto?.email,
-          dto.nama_nasabah,
+          dto?.nama_nasabah ?? dto?.nama_lengkap,
           dto?.catatan,
-          Number(dto.loan_application_internal_id),
-          Number(dto.loan_application_external_id),
+          type,
           new Date(),
           null,
           new Date(),
@@ -90,9 +101,6 @@ export class AdBIC_CreateApprovalResponseUseCase {
             HttpStatus.INTERNAL_SERVER_ERROR,
           );
         }
-        // await this.approvalRecommendation.triggerIsNeedCheckBeingTrue(
-        //   dto!.draft_id,
-        // );
 
         return {
           dto: {
