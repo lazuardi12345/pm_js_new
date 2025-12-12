@@ -6,24 +6,8 @@ import { AdminContractsModule } from './Contracts/admin-contracts.module';
   imports: [
     AdminBICheckingModule,
     AdminContractsModule,
-    // ApprovalInternalModule,
-    // ClientInternalModule,
-    // CollateralInternalModule,
-    // JobInternalModule,
-    // FamilyInternalModule,
-    // LoanApplicationInternalModule,
-    // RelativeInternalModule,
     // kalau nanti ada module lain (RepeatOrderInternalModule, LoanInternalModule, dll) tinggal ditambahin sini
   ],
-  exports: [
-    AdminBICheckingModule,
-    AdminContractsModule,
-    // ApprovalInternalModule,
-    // ClientInternalModule,
-    // CollateralInternalModule,
-    // JobInternalModule,
-    // FamilyInternalModule,
-    // LoanApplicationInternalModule,
-  ],
+  exports: [AdminBICheckingModule, AdminContractsModule],
 })
 export class AllTypeAdminsModule {}

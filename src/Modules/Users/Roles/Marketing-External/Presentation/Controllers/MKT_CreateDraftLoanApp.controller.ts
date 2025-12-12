@@ -156,7 +156,7 @@ export class MKT_CreateDraftLoanApplicationController {
     return this.MKT_CreateDraftLoanAppUseCase.updateDraftById(
       Id,
       marketingId,
-      { payload: payloadParent }, // tetap ada key parent 'payload'
+      { payload: payloadParent },
       files,
     );
   }

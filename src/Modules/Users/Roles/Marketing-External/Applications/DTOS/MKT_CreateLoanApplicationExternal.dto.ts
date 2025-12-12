@@ -40,9 +40,9 @@ import {
 import { CicilanLainEnum } from 'src/Shared/Enums/External/Other-Exist-Loans.enum';
 
 export class ClientExternalDto {
-  @Type(() => Number)
-  @IsNumber()
-  marketing_id: number;
+  // @Type(() => Number)
+  // @IsNumber()
+  // marketing_id: number;
 
   @IsString()
   nama_lengkap: string;
@@ -69,11 +69,13 @@ export class ClientExternalDto {
 
   @IsEnum(MARRIAGE_STATUS)
   status_nikah: MARRIAGE_STATUS;
-}
 
-export class ClientExternalProfileDto {
-  @IsString()
-  nama_lengkap: string;
+  @IsOptional()
+  @IsNumber()
+  points?: number;
+
+  // @IsString()
+  // nama_lengkap: string;
 
   @IsString()
   no_rek: string;
@@ -85,15 +87,15 @@ export class ClientExternalProfileDto {
   @IsEnum(GENDER)
   jenis_kelamin: GENDER;
 
-  @IsString()
-  no_hp: string;
+  // @IsString()
+  // no_hp: string;
 
-  @IsEmail()
-  @IsOptional()
-  email?: string;
+  // @IsEmail()
+  // @IsOptional()
+  // email?: string;
 
-  @IsEnum(MARRIAGE_STATUS)
-  status_nikah: MARRIAGE_STATUS;
+  // @IsEnum(MARRIAGE_STATUS)
+  // status_nikah: MARRIAGE_STATUS;
 
   @IsOptional()
   @IsString()
@@ -122,22 +124,64 @@ export class ClientExternalProfileDto {
   @IsOptional()
   @IsString()
   catatan?: string;
-
-  @IsOptional()
-  @IsNumber()
-  points?: number;
-
-  @IsOptional()
-  @IsString()
-  tipe_nasabah?: number;
 }
+
+// export class ClientExternalProfileDto {
+//   @IsString()
+//   nama_lengkap: string;
+
+//   @IsString()
+//   no_rek: string;
+
+//   @IsOptional()
+//   @IsString()
+//   foto_rekening?: string;
+
+//   @IsEnum(GENDER)
+//   jenis_kelamin: GENDER;
+
+//   @IsString()
+//   no_hp: string;
+
+//   @IsEmail()
+//   @IsOptional()
+//   email?: string;
+
+//   @IsEnum(MARRIAGE_STATUS)
+//   status_nikah: MARRIAGE_STATUS;
+
+//   @IsOptional()
+//   @IsString()
+//   foto_ktp_peminjam?: string;
+
+//   @IsOptional()
+//   @IsString()
+//   foto_ktp_penjamin?: string;
+
+//   @IsOptional()
+//   @IsString()
+//   foto_kk_peminjam?: string;
+
+//   @IsOptional()
+//   @IsString()
+//   foto_kk_penjamin?: string;
+
+//   @IsOptional()
+//   @IsString()
+//   dokumen_pendukung?: string;
+
+//   @IsOptional()
+//   @IsBoolean()
+//   validasi_nasabah?: boolean;
+
+//   @IsOptional()
+//   @IsString()
+//   catatan?: string;
+// }
 //#endregion
 
 //#region Address
 export class AddressExternalDto {
-  @IsNumber()
-  nasabah_id: number;
-
   @IsString()
   @IsNotEmpty()
   alamat_ktp: string;
@@ -267,9 +311,6 @@ export class AddressExternalDto {
 
 //#region Job
 export class JobExternalDto {
-  @IsNumber()
-  nasabah_id: number;
-
   @IsString()
   @IsNotEmpty()
   perusahaan: string;
@@ -333,9 +374,6 @@ export class JobExternalDto {
 
 //#region Loan
 export class LoanApplicationExternalDto {
-  @IsNumber()
-  nasabah_id: number;
-
   @IsEnum(JenisPembiayaanEnum)
   jenis_pembiayaan: JenisPembiayaanEnum;
 
@@ -491,8 +529,8 @@ export class LoanApplicationExternalDto {
 // }
 
 export class PengajuanBPJSDto {
-  @IsNumber()
-  pengajuan_id: number;
+  // @IsNumber()
+  // pengajuan_id: number;
 
   @IsOptional()
   @IsNumber()
@@ -520,8 +558,8 @@ export class PengajuanBPJSDto {
 }
 
 export class PengajuanBPKBDto {
-  @IsNumber()
-  pengajuan_id: number;
+  // @IsNumber()
+  // pengajuan_id: number;
 
   @IsOptional()
   @IsString()
@@ -621,8 +659,8 @@ export class PengajuanBPKBDto {
 }
 
 export class PengajuanKedinasan_MOU_Dto {
-  @IsNumber()
-  pengajuan_id: number;
+  // @IsNumber()
+  // pengajuan_id: number;
 
   @IsOptional()
   @IsString()
@@ -678,8 +716,8 @@ export class PengajuanKedinasan_MOU_Dto {
 }
 
 export class PengajuanKedinasan_Non_MOU_Dto {
-  @IsNumber()
-  pengajuan_id: number;
+  // @IsNumber()
+  // pengajuan_id: number;
 
   @IsOptional()
   @IsString()
@@ -715,8 +753,8 @@ export class PengajuanKedinasan_Non_MOU_Dto {
 }
 
 export class PengajuanSHMDto {
-  @IsNumber()
-  pengajuan_id: number;
+  // @IsNumber()
+  // pengajuan_id: number;
 
   @IsOptional()
   @IsString()
@@ -788,8 +826,8 @@ export class PengajuanSHMDto {
 }
 
 export class PengajuanUmkmDto {
-  @IsNumber()
-  pengajuan_id: number;
+  // @IsNumber()
+  // pengajuan_id: number;
 
   @IsOptional()
   @IsString()
@@ -805,9 +843,6 @@ export class PengajuanUmkmDto {
 }
 
 export class EmergencyContactExternalDto {
-  @IsNumber()
-  nasabah_id: number;
-
   @IsString()
   @IsNotEmpty()
   nama_kontak_darurat: string;
@@ -830,9 +865,6 @@ export class EmergencyContactExternalDto {
 }
 
 export class FinancialDependentsDto {
-  @IsNumber()
-  nasabah_id: number;
-
   @IsOptional()
   @IsString()
   kondisi_tanggungan?: string;
@@ -847,9 +879,6 @@ export class FinancialDependentsDto {
 }
 
 export class LoanGuarantorExternalDto {
-  @IsNumber()
-  nasabah_id: number;
-
   @IsEnum(HubunganPenjaminEnum)
   hubungan_penjamin: HubunganPenjaminEnum;
 
@@ -885,9 +914,6 @@ export class LoanGuarantorExternalDto {
 }
 
 export class InstallmentItemsDto {
-  @IsEnum(CicilanLainEnum)
-  cicilan_lain: CicilanLainEnum;
-
   @IsString()
   @IsNotEmpty()
   nama_pembiayaan: string;
@@ -904,6 +930,9 @@ export class InstallmentItemsDto {
 }
 
 export class OtherExistLoansExternalDto {
+  @IsEnum(CicilanLainEnum)
+  cicilan_lain: CicilanLainEnum;
+
   @ValidateNested({ each: true })
   @Type(() => InstallmentItemsDto)
   @IsArray()
@@ -1106,17 +1135,13 @@ export class CreateLoanApplicationExternalDto {
   @Type(() => ClientExternalDto)
   client_external: ClientExternalDto;
 
-  @ValidateNested()
-  @Type(() => ClientExternalProfileDto)
-  client_external_profile: ClientExternalProfileDto;
+  // @ValidateNested()
+  // @Type(() => ClientExternalProfileDto)
+  // client_external_profile: ClientExternalProfileDto;
 
   @ValidateNested()
   @Type(() => AddressExternalDto)
   address_external: AddressExternalDto;
-
-  // @ValidateNested()
-  // @Type(() => FamilyexternalDto)
-  // family_external: FamilyexternalDto;
 
   @ValidateNested()
   @Type(() => JobExternalDto)
@@ -1128,27 +1153,27 @@ export class CreateLoanApplicationExternalDto {
 
   @ValidateNested()
   @Type(() => PengajuanBPJSDto)
-  collateral_bpjs: PengajuanBPJSDto;
+  collateral_bpjs_external: PengajuanBPJSDto;
 
   @ValidateNested()
   @Type(() => PengajuanBPKBDto)
-  collateral_bpkb: PengajuanBPKBDto;
+  collateral_bpkb_external: PengajuanBPKBDto;
 
   @ValidateNested()
   @Type(() => PengajuanKedinasan_MOU_Dto)
-  collateral_kedinasan_mou: PengajuanKedinasan_MOU_Dto;
+  collateral_kedinasan_mou_external: PengajuanKedinasan_MOU_Dto;
 
   @ValidateNested()
   @Type(() => PengajuanKedinasan_Non_MOU_Dto)
-  collateral_kedinasan_non_mou: PengajuanKedinasan_Non_MOU_Dto;
+  collateral_kedinasan_non_mou_external: PengajuanKedinasan_Non_MOU_Dto;
 
   @ValidateNested()
   @Type(() => PengajuanSHMDto)
-  collateral_shm: PengajuanSHMDto;
+  collateral_shm_external: PengajuanSHMDto;
 
   @ValidateNested()
   @Type(() => PengajuanUmkmDto)
-  collateral_umkm: PengajuanUmkmDto;
+  collateral_umkm_external: PengajuanUmkmDto;
 
   @ValidateNested()
   @Type(() => EmergencyContactExternalDto)
@@ -1156,7 +1181,7 @@ export class CreateLoanApplicationExternalDto {
 
   @ValidateNested()
   @Type(() => FinancialDependentsDto)
-  financial_dependents: FinancialDependentsDto;
+  financial_dependents_external: FinancialDependentsDto;
 
   @ValidateNested()
   @Type(() => LoanGuarantorExternalDto)
@@ -1166,24 +1191,16 @@ export class CreateLoanApplicationExternalDto {
   @Type(() => OtherExistLoansExternalDto)
   other_exist_loan_external: OtherExistLoansExternalDto;
 
-  // @ValidateNested()
-  // @Type(() => SurveyPhotosDto)
-  // survey_photos: SurveyPhotosDto;
-
-  // @ValidateNested()
-  // @Type(() => SurveyReportsDto)
-  // survey_reports: SurveyReportsDto;
-
   @ValidateNested()
   @IsOptional()
   @Type(() => FilesDto)
   documents_files?: FilesDto;
 
-  @ValidateNested()
+  @IsEnum(LoanType)
   @IsNotEmpty()
-  type: LoanType;
+  loan_external_type: LoanType;
 
-  @ValidateNested()
+  @IsBoolean()
   @IsNotEmpty()
   isHaveInstallment?: LoanType;
 }
@@ -1289,7 +1306,7 @@ export interface TypeLoanApplicationDetail {
 
   // ========== ATTACHMENT DATA - BPJS ==========
   pengajuan_bpjs?: {
-    pengajuan_id: number;
+    pengajuan_id?: number;
     saldo_bpjs?: number;
     tanggal_bayar_terakhir?: string;
     username?: string;
@@ -1300,7 +1317,7 @@ export interface TypeLoanApplicationDetail {
 
   // ========== ATTACHMENT DATA - BPKB (Kendaraan) ==========
   pengajuan_bpkb?: {
-    pengajuan_id: number;
+    pengajuan_id?: number;
     atas_nama_bpkb?: string;
     no_stnk?: string;
     alamat_pemilik_bpkb?: string;
@@ -1329,7 +1346,7 @@ export interface TypeLoanApplicationDetail {
 
   // ========== ATTACHMENT DATA - Kedinasan MOU ==========
   pengajuan_kedinasan_mou?: {
-    pengajuan_id: number;
+    pengajuan_id?: number;
     instansi?: string;
     surat_permohonan_kredit?: string;
     surat_pernyataan_penjamin?: string;
@@ -1347,7 +1364,7 @@ export interface TypeLoanApplicationDetail {
 
   // ========== ATTACHMENT DATA - Kedinasan Non-MOU ==========
   pengajuan_kedinasan_non_mou?: {
-    pengajuan_id: number;
+    pengajuan_id?: number;
     instansi?: string;
     surat_permohonan_kredit?: string;
     surat_pernyataan_penjamin?: string;
@@ -1360,7 +1377,7 @@ export interface TypeLoanApplicationDetail {
 
   // ========== ATTACHMENT DATA - SHM (Sertifikat Tanah) ==========
   pengajuan_shm?: {
-    pengajuan_id: number;
+    pengajuan_id?: number;
     atas_nama_shm?: string;
     hubungan_shm?: string;
     alamat_shm?: string;
@@ -1382,7 +1399,7 @@ export interface TypeLoanApplicationDetail {
 
   // ========== ATTACHMENT DATA - UMKM ==========
   pengajuan_umkm?: {
-    pengajuan_id: number;
+    pengajuan_id?: number;
     foto_sku?: string;
     foto_usaha?: string[];
     foto_pembukuan?: string;

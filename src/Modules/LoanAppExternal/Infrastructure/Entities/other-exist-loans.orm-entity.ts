@@ -43,30 +43,6 @@ export class OtherExistLoansExternal_ORM_Entity {
   )
   detailInstallments: DetailInstallmentItemsExternal_ORM_Entity[];
 
-  @Column({ type: 'varchar', length: 255 })
-  nama_pembiayaan: string;
-
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  total_pinjaman?: string;
-
-  @Column({
-    type: 'decimal',
-    precision: 15,
-    scale: 2,
-    transformer: {
-      to(value: number): number {
-        return value;
-      },
-      from(value: string): number {
-        return parseFloat(value);
-      },
-    },
-  })
-  cicilan_perbulan: number;
-
-  @Column({ type: 'int' })
-  sisa_tenor: number;
-
   @Column({
     type: 'tinyint',
     width: 1,
