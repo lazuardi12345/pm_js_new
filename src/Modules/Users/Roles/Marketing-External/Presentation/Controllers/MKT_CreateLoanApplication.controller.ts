@@ -23,10 +23,7 @@ export class MKT_CreateLoanApplicationController {
     @Body() body: any, // Terima apa saja dulu
   ) {
     try {
-      // Extract langsung payload dari body
       const dto = body.payload;
-
-      // Validasi manual dengan ValidationPipe
       const validatedDto = await new ValidationPipe({
         whitelist: true,
         forbidNonWhitelisted: true,

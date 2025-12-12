@@ -772,10 +772,7 @@ class OtherExistLoanDto {
 
 // ================= Uploaded Files =================
 class UploadedFilesDto {
-  @IsOptional() @IsString() foto_ktp?: string;
-  @IsOptional() @IsString() foto_kk?: string;
-  @IsOptional() @IsString() foto_id_card?: string;
-  @IsOptional() @IsString() foto_rekening?: string;
+  @IsOptional() @IsString() foto_ktp_peminjam?: string;
 }
 
 export class PayloadExternalDTO {
@@ -851,7 +848,7 @@ export class PayloadExternalDTO {
 
   @IsNotEmpty({ message: 'Marketing ID is required' })
   marketing_id: number;
- 
+
   @IsNotEmpty({ message: 'Loan external type is required' })
   @IsEnum(ExternalCollateralType, {
     message:
