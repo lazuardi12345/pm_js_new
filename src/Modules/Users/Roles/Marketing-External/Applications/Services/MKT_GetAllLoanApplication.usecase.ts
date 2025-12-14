@@ -1,4 +1,10 @@
-import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  HttpException,
+  HttpStatus,
+  BadRequestException,
+} from '@nestjs/common';
 import {
   APPROVAL_RECOMMENDATION_REPOSITORY,
   IApprovalRecommendationRepository,
@@ -7,6 +13,7 @@ import {
   ILoanApplicationExternalRepository,
   LOAN_APPLICATION_EXTERNAL_REPOSITORY,
 } from 'src/Modules/LoanAppExternal/Domain/Repositories/loanApp-external.repository';
+import { JenisPembiayaanEnum } from 'src/Shared/Enums/External/Loan-Application.enum';
 import {
   DRAFT_LOAN_APPLICATION_EXTERNAL_REPOSITORY,
   ILoanApplicationDraftExternalRepository,
@@ -23,7 +30,12 @@ export class MKT_GetAllLoanApplicationUseCase {
     private readonly approvalRecomRepo: IApprovalRecommendationRepository,
   ) {}
 
-  async execute(marketingId: number, page = 1, pageSize = 10) {
+  async execute(
+    marketingId: number,
+    page = 1,
+    pageSize = 10,
+    paymentType: JenisPembiayaanEnum,
+  ) {
     try {
       // -------------------------
       // 1) VALIDASI INPUT
@@ -45,14 +57,15 @@ export class MKT_GetAllLoanApplicationUseCase {
         );
       }
 
+      if (!Object.values(JenisPembiayaanEnum).includes(paymentType)) {
+        throw new BadRequestException('Jenis pembiayaan tidak valid');
+      }
+
       page = Number(page) || 1;
       pageSize = Number(pageSize) || 10;
       if (page < 1) page = 1;
       if (pageSize < 1) pageSize = 10;
 
-      // -------------------------
-      // 2) Ambil data dari SP / Repo
-      // -------------------------
       let spResult;
       try {
         spResult =
@@ -60,6 +73,7 @@ export class MKT_GetAllLoanApplicationUseCase {
             marketingId,
             page,
             pageSize,
+            paymentType,
           );
       } catch (repoErr) {
         console.error('Error calling Stored Procedure:', repoErr);

@@ -5,7 +5,7 @@ import { UpdateRepaymentDataDto } from '../DTOS/dto-Repayment-Data/update-repaym
 import {
   IRepaymentDataRepository,
   REPAYMENT_DATA_REPOSITORY,
-} from '../../Domain/Repositories/repayment-data-external.repository';
+} from '../../Domain/Repositories/repayment-data.repository';
 export class RepaymentDataService {
   constructor(
     @Inject(REPAYMENT_DATA_REPOSITORY)

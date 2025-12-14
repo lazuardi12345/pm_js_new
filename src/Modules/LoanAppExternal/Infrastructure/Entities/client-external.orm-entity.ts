@@ -54,10 +54,10 @@ export class ClientExternal_ORM_Entity {
   @Column({ type: 'date' })
   tanggal_lahir: Date;
 
-  @Column()
+  @Column({ default: 0 })
   @IsNumber()
   @IsOptional()
-  points: number;
+  points?: number;
 
   @CreateDateColumn({ type: 'timestamp', nullable: true })
   created_at?: Date;

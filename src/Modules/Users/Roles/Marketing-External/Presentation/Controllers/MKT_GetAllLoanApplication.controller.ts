@@ -8,6 +8,7 @@ import {
   HttpStatus,
   ParseIntPipe,
   DefaultValuePipe,
+  Param,
 } from '@nestjs/common';
 import { MKT_GetAllLoanApplicationUseCase } from '../../Applications/Services/MKT_GetAllLoanApplication.usecase';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
@@ -15,6 +16,7 @@ import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorat
 import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/roles.decorator';
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
+import { JenisPembiayaanEnum } from 'src/Shared/Enums/External/Loan-Application.enum';
 
 @Controller('mkt/ext/loan-apps')
 export class MKT_GetAllLoanApplicationController {
@@ -26,18 +28,20 @@ export class MKT_GetAllLoanApplicationController {
   // @Public()
   @UseGuards(RolesGuard)
   @Roles(USERTYPE.MARKETING)
-  @Get()
+  @Get(':paymentType')
   async getAllLoanApplications(
     @CurrentUser('id') marketingId: number,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Param('paymentType') paymentType: JenisPembiayaanEnum,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe)
+    page: number,
     @Query('pageSize', new DefaultValuePipe(10), ParseIntPipe) pageSize: number,
-    @Query('searchQuery') searchQuery = '',
   ) {
     try {
       const result = await this.getAllLoanAppUseCase.execute(
         marketingId,
         page,
         pageSize,
+        paymentType,
       );
 
       return {

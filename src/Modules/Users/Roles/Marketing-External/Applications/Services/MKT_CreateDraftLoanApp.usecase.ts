@@ -143,10 +143,10 @@ export class MKT_CreateDraftLoanApplicationUseCase {
 
             if (parentKey && dto[parentKey]) {
               dto[parentKey][fieldName] = url;
-              console.log(`✅ Assigned ${fieldName} to ${parentKey}`);
+              console.log(`### Assigned ${fieldName} to ${parentKey}`);
             } else {
               console.log(
-                `⚠️  Warning: No parent found for ${fieldName}, skipping...`,
+                `###  Warning: No parent found for ${fieldName}, skipping...`,
               );
             }
           }
@@ -276,32 +276,70 @@ export class MKT_CreateDraftLoanApplicationUseCase {
           REQUEST_TYPE.EXTERNAL,
         );
 
+        // Mapping field ke parent object
+        const fieldToParentMap: Record<string, string> = {
+          // Job external files
+          foto_id_card_peminjam: 'job_external',
+          slip_gaji: 'job_external',
+
+          // Address external files
+          foto_meteran_listrik: 'address_external',
+
+          // Guarantor external files
+          foto_ktp_penjamin: 'loan_guarantor_external',
+
+          // Client external files
+          foto_ktp: 'client_external',
+          foto_kk: 'client_external',
+          foto_rekening: 'client_external',
+
+          // Collateral BPJS
+          foto_bpjs: 'collateral_bpjs_external',
+          dokumen_pendukung_bpjs: 'collateral_bpjs_external',
+
+          // Collateral SHM
+          foto_shm: 'collateral_shm_external',
+          foto_kk_pemilik_shm: 'collateral_shm_external',
+          foto_pbb: 'collateral_shm_external',
+          foto_objek_jaminan: 'collateral_shm_external',
+          foto_buku_nikah_suami_istri: 'collateral_shm_external',
+          foto_npwp: 'collateral_shm_external',
+          foto_imb: 'collateral_shm_external',
+          foto_surat_ahli_waris: 'collateral_shm_external',
+          foto_surat_akte_kematian: 'collateral_shm_external',
+          foto_surat_pernyataan_kepemilikan_tanah: 'collateral_shm_external',
+
+          foto_no_rangka: 'collateral_bpkb_external',
+          foto_no_mesin: 'collateral_bpkb_external',
+          foto_faktur_kendaraan: 'collateral_bpkb_external',
+          foto_snikb: 'collateral_bpkb_external',
+          dokumen_bpkb: 'collateral_bpkb_external',
+          foto_stnk_depan: 'collateral_bpkb_external',
+          foto_stnk_belakang: 'collateral_bpkb_external',
+          foto_kendaraan_depan: 'collateral_bpkb_external',
+          foto_kendaraan_belakang: 'collateral_bpkb_external',
+          foto_kendaraan_samping_kanan: 'collateral_bpkb_external',
+          foto_kendaraan_samping_kiri: 'collateral_bpkb_external',
+          foto_sambara: 'collateral_bpkb_external',
+          foto_kwitansi_jual_beli: 'collateral_bpkb_external',
+          foto_ktp_tangan_pertama: 'collateral_bpkb_external',
+        };
+
+        // Assign URLs ke parent objects
         for (const [field, paths] of Object.entries(filePaths)) {
           if (paths && paths.length > 0) {
-            // Tentukan di object mana field ini berada
-            const parentKeys = [
-              'loan_guarantor_external',
-              'client_external',
-              'address_external',
-              'job_external',
-              'collateral_bpjs_external',
-              'collateral_bpkb_external',
-              'collateral_shm_external',
-              'collateral_umkm_external',
-              'collateral_kedinasan_mou_external',
-              'collateral_kedinasan_non_mou_external',
-            ];
-            let assigned = false;
+            const parentKey = fieldToParentMap[field];
 
-            for (const key of parentKeys) {
-              if (payload[key] && field in payload[key]) {
-                payload[key][field] = paths[0].url;
-                assigned = true;
-                break;
+            if (parentKey) {
+              // Initialize parent object jika belum ada
+              if (!payload[parentKey]) {
+                payload[parentKey] = {};
               }
-            }
 
-            if (!assigned) {
+              // Assign URL ke parent
+              payload[parentKey][field] = paths[0].url;
+            } else {
+              // Fallback: assign ke root level untuk dokumen pendukung dll
               payload[field] = paths[0].url;
             }
           }
@@ -320,7 +358,6 @@ export class MKT_CreateDraftLoanApplicationUseCase {
 
         const selectedCollateral = collateralFieldMap[type];
 
-        // Validasi: pastikan collateral yang dipilih ada datanya
         if (!payload[selectedCollateral]) {
           throw new HttpException(
             `Collateral data for type ${type} is required`,
@@ -328,27 +365,23 @@ export class MKT_CreateDraftLoanApplicationUseCase {
           );
         }
 
-        // Set loan_external_type
         payload.loan_external_type = type;
-
-        // Hapus semua collateral lain (set undefined biar MongoDB unset field-nya)
         Object.values(collateralFieldMap).forEach((field) => {
           if (field !== selectedCollateral) {
-            payload[field] = undefined; // ← Bakal di-unset sama MongoDB
+            payload[field] = undefined;
           }
         });
       }
-
-      console.log('File paths:', filePaths);
-      console.log('Payload (update):', payload);
 
       const existingDraft = await this.loanAppDraftRepo.findById(Id);
 
       if (!existingDraft) {
         throw new NotFoundException(`Draft with id ${Id} not found`);
       }
+
       const existingFiles = { ...(existingDraft.uploaded_files || {}) };
 
+      // Remove old files yang diganti dengan file baru
       const getBaseName = (fieldName: string): string => {
         return fieldName.split('.')[0];
       };
@@ -360,32 +393,22 @@ export class MKT_CreateDraftLoanApplicationUseCase {
           const existingBaseName = getBaseName(existingFieldName);
 
           if (existingBaseName === newBaseName) {
-            console.log(
-              `* Removing old file: ${existingFieldName} (replaced by ${newFieldName})`,
-            );
             delete existingFiles[existingFieldName];
           }
         }
       }
 
       const mergedFiles = {
-        ...existingFiles, // ← File lama yang sudah di-cleanup
-        ...filePaths, // ← File baru
+        ...existingFiles,
+        ...filePaths,
       };
-
-      console.log('Old files (after cleanup):', existingFiles);
-      console.log('New files:', filePaths);
-      console.log('Merged files:', mergedFiles);
 
       const entityUpdate: Partial<LoanApplicationEntity> = {
         ...payload,
         uploaded_files: mergedFiles,
       };
 
-      const loanApp = await this.loanAppDraftRepo.updateDraftById(
-        Id,
-        entityUpdate,
-      );
+      await this.loanAppDraftRepo.updateDraftById(Id, entityUpdate);
 
       const verifyAfterUpdate = await this.loanAppDraftRepo.findById(Id);
 
@@ -400,12 +423,10 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     } catch (err) {
       console.error('Update error:', err);
 
-      // Re-throw HttpException (termasuk NotFoundException)
       if (err instanceof HttpException) {
         throw err;
       }
 
-      // Mongoose validation error
       if (err.name === 'ValidationError') {
         throw new HttpException(
           {
@@ -421,7 +442,6 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         );
       }
 
-      // Duplicate key error
       if (err.code === 11000) {
         throw new HttpException(
           {
@@ -435,7 +455,6 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         );
       }
 
-      // Fallback error
       throw new HttpException(
         {
           payload: {

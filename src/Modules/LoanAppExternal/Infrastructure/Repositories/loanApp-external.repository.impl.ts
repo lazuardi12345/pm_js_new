@@ -6,6 +6,7 @@ import { LoanApplicationExternal_ORM_Entity } from '../Entities/loan-application
 import { ILoanApplicationExternalRepository } from '../../Domain/Repositories/loanApp-external.repository';
 import { ClientExternal_ORM_Entity } from '../Entities/client-external.orm-entity';
 import {
+  JenisPembiayaanEnum,
   StatusPengajuanAkhirEnum,
   StatusPengajuanEnum,
 } from 'src/Shared/Enums/External/Loan-Application.enum';
@@ -336,12 +337,13 @@ export class LoanApplicationExternalRepositoryImpl
     marketingId: number,
     page: number,
     pageSize: number,
+    paymentType: JenisPembiayaanEnum,
   ): Promise<{ data: any[]; total: number }> {
     const ormEntities = this.ormRepository.manager;
 
     const result = await ormEntities.query(
-      `CALL MKT_GetAllLoanApplications_External(?, ?, ?);`,
-      [marketingId, page, pageSize],
+      `CALL MKT_GetAllLoanApplicationsByPaymentType_External(?, ?, ?, ?);`,
+      [marketingId, page, pageSize, paymentType],
     );
 
     return {

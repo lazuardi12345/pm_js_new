@@ -183,7 +183,7 @@ export class MKT_CreateLoanApplicationUseCase {
               undefined,
             );
 
-            customer = await this.clientRepo.save(client);
+            customer = await this.uow.clientInternalRepo.save(client);
           } catch (e) {
             console.error('Error saving client:', e);
 
@@ -214,7 +214,7 @@ export class MKT_CreateLoanApplicationUseCase {
         // ==========================
         // 3. SIMPAN SEMUA DATA LAIN (TETEP INSERT)
         // ==========================
-        await this.addressRepo.save(
+        await this.uow.addressInternalRepo.save(
           new AddressInternal(
             { id: customer.id! },
             address_internal.alamat_ktp,
@@ -234,7 +234,7 @@ export class MKT_CreateLoanApplicationUseCase {
           ),
         );
 
-        await this.familyRepo.save(
+        await this.uow.familyInternalRepo.save(
           new FamilyInternal(
             { id: customer.id! },
             family_internal.hubungan as HubunganEnum,
@@ -252,7 +252,7 @@ export class MKT_CreateLoanApplicationUseCase {
           ),
         );
 
-        await this.jobRepo.save(
+        await this.uow.jobInternalRepo.save(
           new JobInternal(
             { id: customer.id! },
             job_internal.perusahaan as PerusahaanEnum,
@@ -282,7 +282,7 @@ export class MKT_CreateLoanApplicationUseCase {
         const isBandingBoolean =
           loan_application_internal.is_banding === 1 ? true : false;
 
-        const loanApp = await this.loanAppRepo.save(
+        const loanApp = await this.uow.loanAppInternalRepo.save(
           new LoanApplicationInternal(
             { id: customer.id! },
             loan_application_internal.status_pinjaman as StatusPinjamanEnum,
@@ -309,7 +309,7 @@ export class MKT_CreateLoanApplicationUseCase {
         // ==========================
         // 5. CLIENT PROFILE (BARU)
         // ==========================
-        await this.clientProfileRepo.save(
+        await this.uow.clientProfileInternalRepo.save(
           new ClientInternalProfile(
             { id: customer.id! },
             { id: loanApp.id! },
@@ -335,7 +335,7 @@ export class MKT_CreateLoanApplicationUseCase {
         // ==========================
         // 6. COLLATERAL
         // ==========================
-        await this.collateralRepo.save(
+        await this.uow.collateralInternalRepo.save(
           new CollateralInternal(
             { id: customer.id! },
             collateral_internal.jaminan_hrd,
@@ -364,7 +364,7 @@ export class MKT_CreateLoanApplicationUseCase {
         // 7. KERABAT (optional)
         // ==========================
         if (relative_internal) {
-          await this.relativeRepo.save(
+          await this.uow.relativeInternalRepo.save(
             new RelativesInternal(
               { id: customer.id! },
               relative_internal.kerabat_kerja as KerabatKerjaEnum,

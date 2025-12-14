@@ -95,7 +95,7 @@ class JobExternal {
 
   @Prop() slip_gaji_peminjam?: string;
   @Prop() slip_gaji_penjamin?: string;
-  @Prop() id_card_peminjam?: string;
+  @Prop() foto_id_card_peminjam: string;
   @Prop() id_card_penjamin?: string;
   @Prop() rekening_koran?: string;
 }
@@ -226,12 +226,8 @@ export const LoanGuarantorExternalSchema = SchemaFactory.createForClass(
   LoanGuarantorExternal,
 );
 
-
 @Schema({ _id: false })
 export class InstallmentItemsExternal {
-  @Prop({ type: String, enum: CicilanLainEnum, required: true })
-  cicilan_lain: CicilanLainEnum;
-
   @Prop({ type: String, required: true })
   nama_pembiayaan: string;
 
@@ -245,10 +241,14 @@ export class InstallmentItemsExternal {
   sisa_tenor: number;
 }
 
-export const InstallmentItemSchema = SchemaFactory.createForClass(InstallmentItemsExternal);
+export const InstallmentItemSchema = SchemaFactory.createForClass(
+  InstallmentItemsExternal,
+);
 
 @Schema({ _id: false })
 export class OtherExistLoansExternal {
+  @Prop({ type: String, enum: CicilanLainEnum, required: true })
+  cicilan_lain: CicilanLainEnum;
 
   @Prop({ type: [InstallmentItemSchema], default: [] })
   cicilan: InstallmentItemsExternal[];
@@ -544,9 +544,9 @@ export class LoanApplicationExt {
   collateral_kedinasan_mou_external?: CollateralByKedinasanMOUExternal;
   @Prop({ type: CollateralByKedinasanNonMOUExternalSchema })
   collateral_kedinasan_non_mou_external?: CollateralByKedinasanNonMOUExternal;
-  @Prop({ type: OtherExistLoansExternalSchema})
+  @Prop({ type: OtherExistLoansExternalSchema })
   other_exist_loan_external?: OtherExistLoansExternal;
-  @Prop({ type: InstallmentItemSchema})
+  @Prop({ type: InstallmentItemSchema })
   installment_items_external?: InstallmentItemsExternal;
   @Prop({ type: EmergencyContactExternalSchema })
   emergency_contact_external?: EmergencyContactExternal;

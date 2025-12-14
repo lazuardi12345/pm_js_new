@@ -23,6 +23,7 @@ import { ConfigModule } from '@nestjs/config';
 import { MarketingExternalUseCaseModule } from './Modules/Users/Roles/Marketing-External/marketing-external.module';
 import { SupervisorExternalUseCaseModule } from './Modules/Users/Roles/Supervisor-External/supervisor-external.module';
 import { CreditAnalystExternalUseCaseModule } from './Modules/Users/Roles/CreditAnalyst-External/credit-analyst-external.module';
+import { AdminContractUseCaseModule } from './Modules/Users/Roles/Admin/Contract/admin-contract.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -74,6 +75,7 @@ import { CreditAnalystExternalUseCaseModule } from './Modules/Users/Roles/Credit
     CreditAnalystExternalUseCaseModule,
     HeadMarketingInternalUsecaseModule,
     AdminBICheckingUseCaseModule,
+    AdminContractUseCaseModule,
 
     //? --- Persistence Config Modules ---
     PersistenceLoanAppModule,
