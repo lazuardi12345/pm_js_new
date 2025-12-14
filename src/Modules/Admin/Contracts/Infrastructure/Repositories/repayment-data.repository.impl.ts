@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RepaymentData } from '../../Domain/Entities/repayment-data.entity';
-import { IRepaymentDataRepository } from '../../Domain/Repositories/repayment-data-external.repository';
+import { IRepaymentDataRepository } from '../../Domain/Repositories/repayment-data.repository';
 import { RepaymentData_ORM_Entity } from '../Entities/repayment-data.orm-entity';
 
 @Injectable()

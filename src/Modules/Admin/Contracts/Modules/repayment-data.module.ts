@@ -3,8 +3,8 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RepaymentData_ORM_Entity } from '../Infrastructure/Entities/repayment-data.orm-entity';
 import { RepaymentDataRepositoryImpl } from '../Infrastructure/Repositories/repayment-data.repository.impl';
-import { REPAYMENT_DATA_REPOSITORY } from '../Domain/Repositories/repayment-data-external.repository';
-import { RepaymentDataService } from '../Applications/Services/repayment-data-external.service';
+import { REPAYMENT_DATA_REPOSITORY } from '../Domain/Repositories/repayment-data.repository';
+import { RepaymentDataService } from '../Applications/Services/repayment-data.service';
 import { RepaymentDataController } from '../Presentation/Controllers/repayment-data.controller';
 
 @Module({

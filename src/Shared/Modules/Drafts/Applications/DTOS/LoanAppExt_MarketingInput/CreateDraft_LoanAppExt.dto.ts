@@ -54,7 +54,7 @@ class ClientExternalDto {
   @IsString()
   no_kk?: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
   no_rek: string;
 
@@ -278,8 +278,8 @@ class JobExternalDto {
   slip_gaji_penjamin: string;
 
   @IsString()
-  @IsOptional()
-  id_card_peminjam: string;
+  @IsNotEmpty()
+  foto_id_card_peminjam: string;
 
   @IsString()
   @IsOptional()
@@ -316,7 +316,7 @@ class LoanApplicationExternalDto {
   berkas_jaminan?: string;
 
   @IsEnum(StatusPinjamanEnum)
-  @IsOptional()
+  @IsNotEmpty()
   status_pinjaman?: StatusPinjamanEnum;
 
   @IsOptional()
@@ -729,7 +729,7 @@ class LoanGuarantorDto {
   persetujuan_penjamin?: PersetujuanPenjaminEnum;
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   foto_ktp_penjamin: string;
 
   @IsOptional()

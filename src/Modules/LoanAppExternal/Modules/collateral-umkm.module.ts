@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CollateralByUMKM_ORM_Entity } from '../Infrastructure/Entities/collateral-umkm.orm.entity';
-import { CollateralUMKMRepositoryImpl } from '../Infrastructure/Repositories/collateral-umkm.repository.impl';
+import { CollateralByUMKMRepositoryImpl } from '../Infrastructure/Repositories/collateral-umkm.repository.impl';
 import { COLLATERAL_UMKM_REPOSITORY } from '../Domain/Repositories/collateral-umkm.repository';
 import { CollateralUMKMService } from '../Application/Services/collateral-umkm.service';
 
@@ -11,7 +11,7 @@ import { CollateralUMKMService } from '../Application/Services/collateral-umkm.s
     CollateralUMKMService,
     {
       provide: COLLATERAL_UMKM_REPOSITORY,
-      useClass: CollateralUMKMRepositoryImpl,
+      useClass: CollateralByUMKMRepositoryImpl,
     },
   ],
   exports: [CollateralUMKMService, COLLATERAL_UMKM_REPOSITORY],

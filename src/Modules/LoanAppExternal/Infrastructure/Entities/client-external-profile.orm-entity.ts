@@ -67,7 +67,7 @@ export class ClientExternalProfile_ORM_Entity {
   @Column({ nullable: true })
   catatan?: string;
 
-  @Column({ nullable: false })
+  @Column({ nullable: false, default: 0 })
   @IsBoolean()
   enable_edit?: boolean;
 
@@ -86,7 +86,7 @@ export class ClientExternalProfile_ORM_Entity {
     {
       onDelete: 'CASCADE',
       eager: true,
-      nullable: false,
+      nullable: true,
     },
   )
   @JoinColumn({
@@ -100,7 +100,7 @@ export class ClientExternalProfile_ORM_Entity {
     {
       onDelete: 'CASCADE',
       eager: true,
-      nullable: false,
+      nullable: true,
     },
   )
   @JoinColumn({

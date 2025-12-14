@@ -2,7 +2,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import {
   ILoanAgreementRepository,
   LOAN_AGREEMENT_REPOSITORY,
-} from '../../Domain/Repositories/loan-agreements-external.repository';
+} from '../../Domain/Repositories/loan-agreements.repository';
 import { LoanAgreement } from '../../Domain/Entities/loan-agreements.entity';
 import { CreateLoanAgreementDto } from '../DTOS/dto-Loan-Agreement/create-loan-agreement.dto';
 import { UpdateLoanAgreementDto } from '../DTOS/dto-Loan-Agreement/update-loan-agreement.dto';

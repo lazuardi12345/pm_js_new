@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LoanAgreement } from '../../Domain/Entities/loan-agreements.entity';
-import { ILoanAgreementRepository } from '../../Domain/Repositories/loan-agreements-external.repository';
+import { ILoanAgreementRepository } from '../../Domain/Repositories/loan-agreements.repository';
 import { LoanAggrement_ORM_Entity } from '../Entities/loan-agreement.orm-entity';
 
 @Injectable()

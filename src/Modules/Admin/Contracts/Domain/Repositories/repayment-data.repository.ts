@@ -1,7 +1,7 @@
 //! MODULE CONTRACTS
 import { RepaymentData } from '../Entities/repayment-data.entity';
 
-export const REPAYMENT_DATA_REPOSITORY = 'LOAN_AGREEMENT_REPOSITORY';
+export const REPAYMENT_DATA_REPOSITORY = 'REPAYMENT_DATA_REPOSITORY';
 
 export interface IRepaymentDataRepository {
   findById(id: number): Promise<RepaymentData | null>;

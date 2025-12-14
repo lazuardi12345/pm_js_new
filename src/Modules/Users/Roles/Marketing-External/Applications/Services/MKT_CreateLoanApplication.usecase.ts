@@ -31,69 +31,13 @@ import {
   IClientExternalRepository,
 } from 'src/Modules/LoanAppExternal/Domain/Repositories/client-external.repository';
 import { ClientExternal } from 'src/Modules/LoanAppExternal/Domain/Entities/client-external.entity';
-import {
-  ADDRESS_EXTERNAL_REPOSITORY,
-  IAddressExternalRepository,
-} from 'src/Modules/LoanAppExternal/Domain/Repositories/address-external.repository';
-import {
-  IJobExternalRepository,
-  JOB_EXTERNAL_REPOSITORY,
-} from 'src/Modules/LoanAppExternal/Domain/Repositories/job-external.repository';
-import {
-  ILoanApplicationExternalRepository,
-  LOAN_APPLICATION_EXTERNAL_REPOSITORY,
-} from 'src/Modules/LoanAppExternal/Domain/Repositories/loanApp-external.repository';
-import {
-  COLLATERAL_SHM_EXTERNAL_REPOSITORY,
-  ICollateralBySHMRepository,
-} from 'src/Modules/LoanAppExternal/Domain/Repositories/collateral-shm-external.repository';
-import {
-  COLLATERAL_BPJS_EXTERNAL_REPOSITORY,
-  ICollateralByBPJSRepository,
-} from 'src/Modules/LoanAppExternal/Domain/Repositories/collateral-bpjs-external.repository';
-import {
-  COLLATERAL_UMKM_REPOSITORY,
-  ICollateralByUMKMRepository,
-} from 'src/Modules/LoanAppExternal/Domain/Repositories/collateral-umkm.repository';
-import {
-  COLLATERAL_KEDINASAN_MOU_EXTERNAL_REPOSITORY,
-  ICollateralByKedinasanMOURepository,
-} from 'src/Modules/LoanAppExternal/Domain/Repositories/collateral-kedinasan-mou-external.repository';
-import {
-  COLLATERAL_KEDINASAN_NON_MOU_EXTERNAL_REPOSITORY,
-  ICollateralByKedinasan_Non_MOU_Repository,
-} from 'src/Modules/LoanAppExternal/Domain/Repositories/collateral-kedinasan-non-mou-external.repository';
-import {
-  IOtherExistLoansExternalRepository,
-  OTHER_EXIST_LOANS_EXTERNAL_REPOSITORY,
-} from 'src/Modules/LoanAppExternal/Domain/Repositories/other-exist-loans-external.repository';
-import {
-  FINANCIAL_DEPENDENTS_EXTERNAL_REPOSITORY,
-  IFinancialDependentsExternalRepository,
-} from 'src/Modules/LoanAppExternal/Domain/Repositories/financial-dependents-external.repository';
-import {
-  ILoanGuarantorExternalRepository,
-  LOAN_GUARANTOR_EXTERNAL_REPOSITORY,
-} from 'src/Modules/LoanAppExternal/Domain/Repositories/loan-guarantor-external.repository';
-import {
-  COLLATERAL_BPKB_EXTERNAL_REPOSITORY,
-  ICollateralByBPKBRepository,
-} from 'src/Modules/LoanAppExternal/Domain/Repositories/collateral-bpkb-external.repository';
 import { AddressExternal } from 'src/Modules/LoanAppExternal/Domain/Entities/address-external.entity';
 import { JobExternal } from 'src/Modules/LoanAppExternal/Domain/Entities/job-external.entity';
 import { LoanApplicationExternal } from 'src/Modules/LoanAppExternal/Domain/Entities/loanApp-external.entity';
 import { OtherExistLoansExternal } from 'src/Modules/LoanAppExternal/Domain/Entities/other-exist-loans-external.entity';
 import { FinancialDependentsExternal } from 'src/Modules/LoanAppExternal/Domain/Entities/financial-dependents-external.entity';
-import {
-  EMERGENCY_CONTACTS_EXTERNAL_REPOSITORY,
-  IEmergencyContactExternalRepository,
-} from 'src/Modules/LoanAppExternal/Domain/Repositories/emergency-contact-external.repository';
 import { EmergencyContactExternal } from 'src/Modules/LoanAppExternal/Domain/Entities/emergency-contact-external.entity';
 import { LoanGuarantorExternal } from 'src/Modules/LoanAppExternal/Domain/Entities/loan-guarantor-external.entity';
-import {
-  CLIENT_EXTERNAL_PROFILE_REPOSITORY,
-  IClientExternalProfileRepository,
-} from 'src/Modules/LoanAppExternal/Domain/Repositories/client-external-profile.repository';
 import { ClientExternalProfile } from 'src/Modules/LoanAppExternal/Domain/Entities/client-external-profile.entity';
 import { CollateralByBPJS } from 'src/Modules/LoanAppExternal/Domain/Entities/collateral-bpjs-external.entity';
 import { CollateralByBPKB } from 'src/Modules/LoanAppExternal/Domain/Entities/collateral-bpkb-external.entity';
@@ -113,36 +57,6 @@ export class MKT_CreateLoanApplicationUseCase {
   constructor(
     @Inject(CLIENT_EXTERNAL_REPOSITORY)
     private readonly clientRepo: IClientExternalRepository,
-    @Inject(CLIENT_EXTERNAL_PROFILE_REPOSITORY)
-    private readonly clientProfileRepo: IClientExternalProfileRepository,
-    @Inject(ADDRESS_EXTERNAL_REPOSITORY)
-    private readonly addressRepo: IAddressExternalRepository,
-    @Inject(JOB_EXTERNAL_REPOSITORY)
-    private readonly jobRepo: IJobExternalRepository,
-    @Inject(OTHER_EXIST_LOANS_EXTERNAL_REPOSITORY)
-    private readonly otherExistLoanRepo: IOtherExistLoansExternalRepository,
-    @Inject(DETAIL_INSTALLMENT_ITEMS_EXTERNAL_REPOSITORY)
-    private readonly detailInstallmentItemsRepo: IDetailInstallmentItemsExternalRepository,
-    @Inject(FINANCIAL_DEPENDENTS_EXTERNAL_REPOSITORY)
-    private readonly financialDependentRepo: IFinancialDependentsExternalRepository,
-    @Inject(EMERGENCY_CONTACTS_EXTERNAL_REPOSITORY)
-    private readonly emergencyContactsRepo: IEmergencyContactExternalRepository,
-    @Inject(LOAN_APPLICATION_EXTERNAL_REPOSITORY)
-    private readonly loanAppRepo: ILoanApplicationExternalRepository,
-    @Inject(LOAN_GUARANTOR_EXTERNAL_REPOSITORY)
-    private readonly loanGuarantorRepo: ILoanGuarantorExternalRepository,
-    @Inject(COLLATERAL_SHM_EXTERNAL_REPOSITORY)
-    private readonly collateralSHMRepo: ICollateralBySHMRepository,
-    @Inject(COLLATERAL_BPJS_EXTERNAL_REPOSITORY)
-    private readonly collateralBPJSRepo: ICollateralByBPJSRepository,
-    @Inject(COLLATERAL_BPKB_EXTERNAL_REPOSITORY)
-    private readonly collateralBPKBRepo: ICollateralByBPKBRepository,
-    @Inject(COLLATERAL_UMKM_REPOSITORY)
-    private readonly collateralUMKMRepo: ICollateralByUMKMRepository,
-    @Inject(COLLATERAL_KEDINASAN_MOU_EXTERNAL_REPOSITORY)
-    private readonly collateralKedinasanMOURepo: ICollateralByKedinasanMOURepository,
-    @Inject(COLLATERAL_KEDINASAN_NON_MOU_EXTERNAL_REPOSITORY)
-    private readonly collateralKedinasanNonMOURepo: ICollateralByKedinasan_Non_MOU_Repository,
     @Inject(UNIT_OF_WORK)
     private readonly uow: IUnitOfWork,
   ) {}
@@ -218,7 +132,7 @@ export class MKT_CreateLoanApplicationUseCase {
               null,
             );
 
-            customer = await this.clientRepo.save(client);
+            customer = await this.uow.clientExternalRepo.save(client);
           } catch (e) {
             console.error('Error saving client:', e);
 
@@ -249,7 +163,7 @@ export class MKT_CreateLoanApplicationUseCase {
         // ==========================
         // 3. SIMPAN SEMUA DATA LAIN (TETEP INSERT)
         // ==========================
-        await this.addressRepo.save(
+        await this.uow.addressExternalRepo.save(
           new AddressExternal(
             { id: customer.id! },
             address_external.alamat_ktp,
@@ -287,7 +201,7 @@ export class MKT_CreateLoanApplicationUseCase {
 
         console.log('kuontol: >>>>', { id: customer.id! });
 
-        await this.jobRepo.save(
+        await this.uow.jobExternalRepo.save(
           new JobExternal(
             { id: customer.id! },
             job_external.perusahaan,
@@ -309,13 +223,13 @@ export class MKT_CreateLoanApplicationUseCase {
             ),
             client_external.no_rek, //! kudu di cek lebih lanjut, gw cuma takut ini no rek PEKERJAAN bukan PRIBADI
             parseFileUrl(
-              documents_files?.id_card_peminjam ??
-                job_external.id_card_peminjam ??
+              documents_files?.foto_id_card_peminjam ??
+                job_external.foto_id_card_peminjam ??
                 null,
             ),
             parseFileUrl(
-              documents_files?.id_card_penjamin ??
-                job_external.id_card_penjamin ??
+              documents_files?.foto_id_card_peminjam ??
+                job_external.foto_id_card_peminjam ??
                 null,
             ),
             job_external.lama_kontrak,
@@ -345,17 +259,18 @@ export class MKT_CreateLoanApplicationUseCase {
         const isBandingBoolean =
           loan_application_external.is_banding === 1 ? true : false;
 
-        const loanApp = await this.loanAppRepo.save(
+        const loanApp = await this.uow.loanAppExternalRepo.save(
           new LoanApplicationExternal(
             { id: customer.id! },
             loan_application_external.jenis_pembiayaan as JenisPembiayaanEnum,
             loan_application_external.nominal_pinjaman ?? 0,
             loan_application_external.tenor ?? 0,
-            parseFileUrl(
-              documents_files?.berkas_jaminan ??
-                loan_application_external.berkas_jaminan ??
-                null,
-            ),
+            // parseFileUrl(
+            //   documents_files?.berkas_jaminan ??
+            //     loan_application_external.berkas_jaminan ??
+            //     null,
+            // ),
+            null,
             loan_application_external.status_pinjaman,
             undefined,
             loan_application_external.pinjaman_ke,
@@ -376,7 +291,7 @@ export class MKT_CreateLoanApplicationUseCase {
           ),
         );
 
-        await this.clientProfileRepo.save(
+        await this.uow.clientProfileExternalRepo.save(
           new ClientExternalProfile(
             { id: customer.id! },
             { id: loanApp.id! },
@@ -445,7 +360,8 @@ export class MKT_CreateLoanApplicationUseCase {
             undefined,
           );
 
-          const savedParent = await this.otherExistLoanRepo.save(parent);
+          const savedParent =
+            await this.uow.otherExistLoanExternalRepo.save(parent);
 
           // Save children parallel
           if (otherDto.cicilan && otherDto.cicilan.length > 0) {
@@ -459,7 +375,9 @@ export class MKT_CreateLoanApplicationUseCase {
                   Number(loan.sisa_tenor),
                 );
 
-                return this.detailInstallmentItemsRepo.save(detailInstallment);
+                return this.uow.detailInstallmentItemsExternalRepo.save(
+                  detailInstallment,
+                );
               }),
             );
           }
@@ -475,10 +393,10 @@ export class MKT_CreateLoanApplicationUseCase {
             undefined,
           );
 
-          await this.otherExistLoanRepo.save(parent);
+          await this.uow.otherExistLoanExternalRepo.save(parent);
         }
 
-        await this.financialDependentRepo.save(
+        await this.uow.financialDependentsExternalRepo.save(
           new FinancialDependentsExternal(
             { id: customer.id! },
             financial_dependents_external.kondisi_tanggungan,
@@ -490,7 +408,7 @@ export class MKT_CreateLoanApplicationUseCase {
           ),
         );
 
-        await this.emergencyContactsRepo.save(
+        await this.uow.emergencyContactExternalRepo.save(
           new EmergencyContactExternal(
             { id: customer.id! },
             emergency_contact_external.nama_kontak_darurat,
@@ -504,7 +422,7 @@ export class MKT_CreateLoanApplicationUseCase {
           ),
         );
 
-        await this.loanGuarantorRepo.save(
+        await this.uow.loanGuarantorExternalRepo.save(
           new LoanGuarantorExternal(
             { id: customer.id! },
             loan_guarantor_external.hubungan_penjamin,
@@ -531,7 +449,7 @@ export class MKT_CreateLoanApplicationUseCase {
           // 1. BPJS
           // ==========================
           case 'BPJS': {
-            await this.collateralBPJSRepo.save(
+            await this.uow.collateralByBPJSRepo.save(
               new CollateralByBPJS(
                 { id: loanApp.id! },
                 collateral_bpjs_external.saldo_bpjs,
@@ -557,7 +475,7 @@ export class MKT_CreateLoanApplicationUseCase {
           // 2. BPKB
           // ==========================
           case 'BPKB': {
-            await this.collateralBPKBRepo.save(
+            await this.uow.collateralByBPKBRepo.save(
               new CollateralByBPKB(
                 { id: loanApp.id! },
                 collateral_bpkb_external.atas_nama_bpkb,
@@ -653,7 +571,7 @@ export class MKT_CreateLoanApplicationUseCase {
           // 3. Kedinasan MOU
           // ==========================
           case 'KEDINASAN_MOU': {
-            await this.collateralKedinasanMOURepo.save(
+            await this.uow.collateralByKedinasanMOURepo.save(
               new CollateralByKedinasan_MOU(
                 { id: loanApp.id! },
                 collateral_kedinasan_mou_external.instansi,
@@ -730,7 +648,7 @@ export class MKT_CreateLoanApplicationUseCase {
           // 4. Kedinasan NON MOU
           // ==========================
           case 'KEDINASAN_NON_MOU': {
-            await this.collateralKedinasanNonMOURepo.save(
+            await this.uow.collateralByKedinasan_NON_MOURepo.save(
               new CollateralByKedinasan_Non_MOU(
                 { id: loanApp.id! },
                 collateral_kedinasan_non_mou_external.instansi,
@@ -781,7 +699,7 @@ export class MKT_CreateLoanApplicationUseCase {
           // 5. SHM
           // ==========================
           case 'SHM': {
-            await this.collateralSHMRepo.save(
+            await this.uow.collateralBySHMRepo.save(
               new CollateralBySHM(
                 { id: loanApp.id! },
                 collateral_shm_external.atas_nama_shm,
@@ -862,7 +780,7 @@ export class MKT_CreateLoanApplicationUseCase {
           // 6. UMKM
           // ==========================
           case 'UMKM': {
-            await this.collateralUMKMRepo.save(
+            await this.uow.collateralByUMKMRepo.save(
               new CollateralByUMKM(
                 { id: loanApp.id! },
                 parseFileUrl(
@@ -890,10 +808,6 @@ export class MKT_CreateLoanApplicationUseCase {
             );
             break;
           }
-
-          // ==========================
-          // Default
-          // ==========================
           default:
             throw new BadRequestException(
               `Unknown collateral type: ${loan_external_type}`,

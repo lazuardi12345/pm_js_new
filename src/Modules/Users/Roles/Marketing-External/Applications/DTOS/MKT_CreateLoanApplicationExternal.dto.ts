@@ -15,6 +15,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
+  CLIENT_TYPE,
   GENDER,
   MARRIAGE_STATUS,
 } from 'src/Shared/Enums/External/Client-External.enum';
@@ -124,6 +125,10 @@ export class ClientExternalDto {
   @IsOptional()
   @IsString()
   catatan?: string;
+
+  @IsOptional()
+  @IsEnum(CLIENT_TYPE)
+  tipe_nasabah?: string;
 }
 
 // export class ClientExternalProfileDto {
@@ -351,12 +356,12 @@ export class JobExternalDto {
   slip_gaji_penjamin: string;
 
   @IsString()
-  @IsOptional()
-  id_card_peminjam: string;
+  @IsNotEmpty()
+  foto_id_card_peminjam: string;
 
   @IsString()
   @IsOptional()
-  id_card_penjamin: string;
+  foto_id_card_penjamin: string;
 
   @IsString()
   @IsOptional()
@@ -1013,15 +1018,13 @@ export class FilesDto {
   @IsOptional()
   slip_gaji_penjamin?: string | Express.Multer.File;
   @IsOptional()
-  id_card_peminjam?: string | Express.Multer.File;
+  foto_id_card_peminjam?: string | Express.Multer.File;
   @IsOptional()
-  id_card_penjamin?: string | Express.Multer.File;
+  foto_id_card_penjamin?: string | Express.Multer.File;
   @IsOptional()
   rekening_koran?: string | Express.Multer.File;
   @IsOptional()
   berkas_jaminan?: string | Express.Multer.File;
-  @IsOptional()
-  foto_id_card_penjamin?: string | Express.Multer.File;
   @IsOptional()
   foto_bpjs?: string | Express.Multer.File;
   @IsOptional()

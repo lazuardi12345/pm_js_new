@@ -14,7 +14,7 @@ function toStringArray(
 }
 
 @Injectable()
-export class CollateralUMKMRepositoryImpl
+export class CollateralByUMKMRepositoryImpl
   implements ICollateralByUMKMRepository
 {
   constructor(

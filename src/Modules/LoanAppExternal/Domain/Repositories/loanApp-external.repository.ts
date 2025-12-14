@@ -1,5 +1,8 @@
 // Domain/Repositories/approval-external.repository.ts
-import { StatusPengajuanEnum } from 'src/Shared/Enums/External/Loan-Application.enum';
+import {
+  JenisPembiayaanEnum,
+  StatusPengajuanEnum,
+} from 'src/Shared/Enums/External/Loan-Application.enum';
 import { LoanApplicationExternal } from '../Entities/loanApp-external.entity';
 import {
   MarketingStats,
@@ -75,6 +78,7 @@ export interface ILoanApplicationExternalRepository {
     marketingId: number,
     page: number,
     pageSize: number,
+    paymentType: JenisPembiayaanEnum,
   ): Promise<{ data: any[]; total: number }>;
 
   callSP_MKT_GetAllRepeatOrderHistory_External(

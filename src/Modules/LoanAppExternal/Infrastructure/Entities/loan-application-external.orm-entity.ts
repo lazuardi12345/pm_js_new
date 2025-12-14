@@ -18,6 +18,7 @@ import {
   DeleteDateColumn,
   OneToMany,
   OneToOne,
+  Index,
 } from 'typeorm';
 
 import {
@@ -49,6 +50,7 @@ export class LoanApplicationExternal_ORM_Entity {
   nasabah: ClientExternal_ORM_Entity;
 
   @Column({ type: 'enum', enum: JenisPembiayaanEnum })
+  @Index('IDX_JENIS_PEMBIAYAAN') // ← TAMBAHIN INI
   jenis_pembiayaan: JenisPembiayaanEnum;
 
   @Column({ type: 'decimal', precision: 15, scale: 2 })
@@ -57,8 +59,8 @@ export class LoanApplicationExternal_ORM_Entity {
   @Column({ type: 'int' })
   tenor: number;
 
-  @Column({ type: 'varchar', length: 255 })
-  berkas_jaminan: string;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  berkas_jaminan?: string | null;
 
   @Column({
     type: 'enum',
@@ -92,6 +94,7 @@ export class LoanApplicationExternal_ORM_Entity {
   @Column({
     type: 'enum',
     enum: StatusPengajuanAkhirEnum,
+    nullable: true,
   })
   status_pengajuan_akhir: StatusPengajuanAkhirEnum;
 

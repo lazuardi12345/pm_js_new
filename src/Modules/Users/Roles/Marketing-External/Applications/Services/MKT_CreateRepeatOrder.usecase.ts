@@ -358,8 +358,8 @@ export class MKT_CreateRepeatOrderUseCase {
             job_external.slip_gaji_peminjam,
             job_external.slip_gaji_penjamin,
             client_external.no_rek, //! kudu di cek lebih lanjut, gw cuma takut ini no rek PEKERJAAN bukan PRIBADI
-            job_external.id_card_peminjam,
-            job_external.id_card_penjamin,
+            job_external.foto_id_card_peminjam,
+            job_external.foto_id_card_penjamin,
             job_external.lama_kontrak,
             job_external.rekening_koran,
             job_external.validasi_pekerjaan,

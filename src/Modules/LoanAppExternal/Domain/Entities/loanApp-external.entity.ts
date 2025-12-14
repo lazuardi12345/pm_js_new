@@ -11,7 +11,7 @@ export class LoanApplicationExternal {
     public readonly jenis_pembiayaan: JenisPembiayaanEnum,
     public readonly nominal_pinjaman: number,
     public readonly tenor: number,
-    public readonly berkas_jaminan?: string,
+    public readonly berkas_jaminan?: string | null,
     public readonly status_pinjaman: StatusPinjamanEnum = StatusPinjamanEnum.BARU,
     public readonly id?: number,
     public readonly pinjaman_ke?: number,
@@ -39,9 +39,6 @@ export class LoanApplicationExternal {
     }
     if (this.tenor <= 0) {
       throw new Error('Tenor harus lebih besar dari nol.');
-    }
-    if (!this.berkas_jaminan) {
-      throw new Error('Berkas jaminan wajib diisi.');
     }
     // Tambah validasi domain sesuai aturan bisnis
   }

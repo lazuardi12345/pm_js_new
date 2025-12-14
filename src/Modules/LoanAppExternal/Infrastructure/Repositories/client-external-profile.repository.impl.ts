@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { IClientExternalProfileRepository } from '../../Domain/Repositories/client-external-profile.repository';
 import { ClientExternalProfile } from '../../Domain/Entities/client-external-profile.entity';
 import { ClientExternalProfile_ORM_Entity } from '../Entities/client-external-profile.orm-entity';
+import { ClientExternal_ORM_Entity } from '../Entities/client-external.orm-entity';
+import { LoanApplicationExternal_ORM_Entity } from '../Entities/loan-application-external.orm-entity';
 
 @Injectable()
 export class ClientExternalProfileRepositoryImpl
@@ -48,6 +50,16 @@ export class ClientExternalProfileRepositoryImpl
     partial: Partial<ClientExternalProfile>,
   ): Partial<ClientExternalProfile_ORM_Entity> {
     const ormData: Partial<ClientExternalProfile_ORM_Entity> = {};
+
+    if (partial.nasabah) {
+      ormData.nasabah = { id: partial.nasabah.id } as ClientExternal_ORM_Entity;
+    }
+
+    if (partial.pengajuan) {
+      ormData.pengajuan = {
+        id: partial.pengajuan.id,
+      } as LoanApplicationExternal_ORM_Entity;
+    }
 
     if (partial.nama_lengkap) ormData.nama_lengkap = partial.nama_lengkap;
     if (partial.no_rek) ormData.no_rek = partial.no_rek;

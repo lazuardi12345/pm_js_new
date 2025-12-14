@@ -3,7 +3,6 @@ import {
   GENDER,
   MARRIAGE_STATUS,
 } from 'src/Shared/Enums/Internal/Clients.enum';
-import { FileMetadata } from 'src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository';
 
 export class ClientExternalProfile {
   public readonly nasabah: { id: number }; // ubah, biar sama dengan ORM

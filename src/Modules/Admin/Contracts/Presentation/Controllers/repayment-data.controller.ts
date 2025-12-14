@@ -8,7 +8,7 @@ import {
   Param,
   UseGuards,
 } from '@nestjs/common';
-import { RepaymentDataService } from '../../Applications/Services/repayment-data-external.service';
+import { RepaymentDataService } from '../../Applications/Services/repayment-data.service';
 import { CreateRepaymentDataDto } from '../../Applications/DTOS/dto-Repayment-Data/create-repayment-data.dto';
 import { UpdateRepaymentDataDto } from '../../Applications/DTOS/dto-Repayment-Data/update-repayment-data.dto';
 import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';

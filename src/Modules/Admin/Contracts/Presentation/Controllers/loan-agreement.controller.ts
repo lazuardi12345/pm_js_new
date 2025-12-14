@@ -8,7 +8,7 @@ import {
   Param,
   UseGuards,
 } from '@nestjs/common';
-import { LoanAgreementService } from '../../Applications/Services/loan-agreements-external.service';
+import { LoanAgreementService } from '../../Applications/Services/loan-agreements.service';
 import { CreateLoanAgreementDto } from '../../Applications/DTOS/dto-Loan-Agreement/create-loan-agreement.dto';
 import { UpdateLoanAgreementDto } from '../../Applications/DTOS/dto-Loan-Agreement/update-loan-agreement.dto';
 import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
