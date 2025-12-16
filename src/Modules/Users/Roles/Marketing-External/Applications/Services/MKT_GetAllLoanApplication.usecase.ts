@@ -132,21 +132,20 @@ export class MKT_GetAllLoanApplicationUseCase {
       const formattedData = await Promise.all(
         dataArray.map(async (item: any) => {
           try {
-            // defensive read
-            const noKtp = item?.no_ktp ?? null;
-
-            // Safely attempt to fetch draft status (may throw)
+            console.log('kntlL: >>>>>>', item);
+            const noKtp = item?.nik ?? null;
             let draftData: any = null;
+
             try {
               if (noKtp !== null) {
                 draftData = await this.loanAppDraftRepo.findStatus(noKtp);
+                console.log('puki', draftData);
               }
             } catch (draftErr) {
               console.error(
                 `Warning: failed to fetch draft status for no_ktp=${noKtp}`,
                 draftErr,
               );
-              // keep draftData = null; we don't want to abort whole response
             }
 
             let approval_recommendation: any = null;

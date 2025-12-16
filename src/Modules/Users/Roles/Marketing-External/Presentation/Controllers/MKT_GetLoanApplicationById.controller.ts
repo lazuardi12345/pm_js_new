@@ -13,13 +13,10 @@ export class MKT_GetLoanApplicationByIdController {
   // @UseGuards(JwtAuthGuard, RolesGuard)
   // @Roles(USERTYPE.MARKETING)
   @Public()
-  @Get('detail/:type/:id')
-  async getLoanApplicationById(
-    @Param('id') id: number,
-    @Param('type') type: LoanType,
-  ) {
+  @Get('detail/:id')
+  async getLoanApplicationById(@Param('id') id: number) {
     try {
-      const payload = await this.getLoanAppByIdUseCase.execute(id, type);
+      const payload = await this.getLoanAppByIdUseCase.execute(id);
 
       return {
         payload,

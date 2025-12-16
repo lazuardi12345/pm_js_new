@@ -11,7 +11,7 @@ import {
 } from 'typeorm';
 import { LoanApplicationExternal_ORM_Entity } from './loan-application-external.orm-entity';
 import { SurveyPhotos_ORM_Entity } from './survey-photos.orm-entity';
-@Entity('survey_reports')
+@Entity('survey_reports_external')
 export class SurveyReports_ORM_Entity {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
@@ -23,7 +23,10 @@ export class SurveyReports_ORM_Entity {
       onDelete: 'CASCADE',
     },
   )
-  @JoinColumn({ name: 'pengajuan_id', foreignKeyConstraintName: 'FK_LoanApplicationExternalID_at_SurveyReports' })
+  @JoinColumn({
+    name: 'pengajuan_id',
+    foreignKeyConstraintName: 'FK_LoanApplicationExternalID_at_SurveyReports',
+  })
   pengajuan_luar: LoanApplicationExternal_ORM_Entity;
 
   @Column({ type: 'varchar', length: 255 })
