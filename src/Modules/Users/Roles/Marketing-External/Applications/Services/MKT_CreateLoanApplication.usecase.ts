@@ -5,26 +5,22 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-
 import {
   IUnitOfWork,
   UNIT_OF_WORK,
 } from 'src/Modules/LoanAppInternal/Domain/Repositories/IUnitOfWork.repository';
-
 import { CreateLoanApplicationExternalDto } from '../DTOS/MKT_CreateLoanApplicationExternal.dto';
 import {
   CLIENT_TYPE,
   GENDER,
   MARRIAGE_STATUS,
 } from 'src/Shared/Enums/External/Client-External.enum';
-
 import {
   StatusRumahEnum,
   DomisiliEnum,
   RumahDomisiliEnum,
 } from 'src/Shared/Enums/External/Address.enum';
 import { StatusKaryawanEnum } from 'src/Shared/Enums/External/Job.enum';
-
 import { JenisPembiayaanEnum } from 'src/Shared/Enums/External/Loan-Application.enum';
 import {
   CLIENT_EXTERNAL_REPOSITORY,
@@ -45,10 +41,6 @@ import { CollateralByKedinasan_MOU } from 'src/Modules/LoanAppExternal/Domain/En
 import { CollateralByKedinasan_Non_MOU } from 'src/Modules/LoanAppExternal/Domain/Entities/collateral-kedinasan-non-mou-external.entity';
 import { CollateralBySHM } from 'src/Modules/LoanAppExternal/Domain/Entities/collateral-shm-external.entity';
 import { CollateralByUMKM } from 'src/Modules/LoanAppExternal/Domain/Entities/collateral-umkm.entity';
-import {
-  DETAIL_INSTALLMENT_ITEMS_EXTERNAL_REPOSITORY,
-  IDetailInstallmentItemsExternalRepository,
-} from 'src/Modules/LoanAppExternal/Domain/Repositories/detail-installment-items-external.repository';
 import { DetailInstallmentItemsExternal } from 'src/Modules/LoanAppExternal/Domain/Entities/detail-installment-items-external.entity';
 import { CicilanLainEnum } from 'src/Shared/Enums/External/Other-Exist-Loans.enum';
 

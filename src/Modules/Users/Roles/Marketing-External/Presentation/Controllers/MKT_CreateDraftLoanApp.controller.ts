@@ -165,8 +165,6 @@ export class MKT_CreateDraftLoanApplicationController {
     @Body() updateData: any = {},
     @UploadedFiles() files: Record<string, Express.Multer.File[]>,
   ) {
-    console.log('Kontol', files);
-
     const payloadParent =
       typeof updateData.payload === 'string'
         ? JSON.parse(updateData.payload)
