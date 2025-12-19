@@ -62,7 +62,6 @@ export class ClientExternalRepositoryImpl implements IClientExternalRepository {
 
     return ormEntity ? this.toDomain(ormEntity) : null;
   }
-
   async findByKtp(noKtp: number): Promise<ClientExternal | null> {
     const ormEntity = await this.ormRepository.findOne({
       where: { nik: noKtp },

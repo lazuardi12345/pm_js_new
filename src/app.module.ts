@@ -24,6 +24,7 @@ import { MarketingExternalUseCaseModule } from './Modules/Users/Roles/Marketing-
 import { SupervisorExternalUseCaseModule } from './Modules/Users/Roles/Supervisor-External/supervisor-external.module';
 import { CreditAnalystExternalUseCaseModule } from './Modules/Users/Roles/CreditAnalyst-External/credit-analyst-external.module';
 import { AdminContractUseCaseModule } from './Modules/Users/Roles/Admin/Contract/admin-contract.module';
+import { SurveyorExternalUseCaseModule } from './Modules/Users/Roles/Surveyor-External/surveyor-external.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -73,6 +74,7 @@ import { AdminContractUseCaseModule } from './Modules/Users/Roles/Admin/Contract
     SupervisorExternalUseCaseModule,
     CreditAnalystInternalUseCaseModule,
     CreditAnalystExternalUseCaseModule,
+    SurveyorExternalUseCaseModule,
     HeadMarketingInternalUsecaseModule,
     AdminBICheckingUseCaseModule,
     AdminContractUseCaseModule,

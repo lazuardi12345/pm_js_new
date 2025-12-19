@@ -113,6 +113,9 @@ export class LoanApplicationExternal_ORM_Entity {
   @Column({ type: 'varchar', length: 255, nullable: true })
   alasan_banding?: string;
 
+  @Column({ type: 'date', nullable: true })
+  survey_schedule?: Date;
+
   @CreateDateColumn({ type: 'timestamp', nullable: true })
   created_at?: Date;
 

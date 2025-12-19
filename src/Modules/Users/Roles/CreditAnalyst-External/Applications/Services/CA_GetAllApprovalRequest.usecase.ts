@@ -64,7 +64,8 @@ export class CA_GetAllApprovalRequest_UseCase {
         return {
           id_pengajuan: Number(item.loan_id),
           nama_nasabah: item.nama_nasabah,
-          tipe_nasabah: item.tipe_nasabah,
+          tipe_nasabah: 'reguler',
+          jenis_pembiayaan: item.jenis_pembiayaan,
           nominal_pinjaman: formattedNominal,
           nama_marketing: item.nama_marketing,
           nama_supervisor: item.nama_supervisor,

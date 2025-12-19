@@ -75,7 +75,7 @@ export class CA_ApproveOrRejectUseCase {
       }
 
       // Validasi role
-      if (role !== USERTYPE.CA) {
+      if (user.usertype !== USERTYPE.CA) {
         throw new HttpException(
           {
             error: true,

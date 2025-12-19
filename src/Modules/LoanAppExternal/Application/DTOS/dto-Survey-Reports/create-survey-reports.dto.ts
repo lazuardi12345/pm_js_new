@@ -1,35 +1,49 @@
-import { IsString, IsNotEmpty, IsNumber } from 'class-validator';
+// src/Modules/LoanAppExternal/Application/DTOS/dto-Survey-Reports/create-survey-reports.dto.ts
+import {
+  IsNotEmpty,
+  IsString,
+  IsNumber,
+  IsArray,
+  IsOptional,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateSurveyReportsDto {
+  @IsNotEmpty()
   @IsNumber()
-  @IsNotEmpty()
-  pengajuan_luar_id: number; // <- wajib
+  @Type(() => Number)
+  pengajuan_luar_id: number;
 
-  @IsString()
   @IsNotEmpty()
+  @IsString()
   berjumpa_siapa: string;
 
-  @IsString()
   @IsNotEmpty()
+  @IsString()
   hubungan: string;
 
-  @IsString()
   @IsNotEmpty()
+  @IsString()
   status_rumah: string;
 
-  @IsString()
   @IsNotEmpty()
+  @IsString()
   hasil_cekling1: string;
 
-  @IsString()
   @IsNotEmpty()
+  @IsString()
   hasil_cekling2: string;
 
-  @IsString()
   @IsNotEmpty()
+  @IsString()
   kesimpulan: string;
 
-  @IsString()
   @IsNotEmpty()
+  @IsString()
   rekomendasi: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  survey_photos?: string[];
 }

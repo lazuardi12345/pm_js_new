@@ -26,6 +26,9 @@ import {
   TypeApprovalDetail,
   TypeLoanApplicationDetail,
 } from 'src/Modules/Users/Roles/Marketing-External/Applications/DTOS/MKT_CreateLoanApplicationExternal.dto';
+import { SurveyListResult } from 'src/Shared/Interface/SVY_SurveyList/SurveyList.interface';
+import { Client } from 'minio';
+import { ClientDetailForSurveyData } from 'src/Shared/Interface/SVY_ClientDetails/ClientDetails.interface';
 
 @Injectable()
 export class LoanApplicationExternalRepositoryImpl
@@ -61,6 +64,7 @@ export class LoanApplicationExternalRepositoryImpl
       orm.catatan_marketing,
       orm.is_banding,
       orm.alasan_banding,
+      orm.survey_schedule,
       orm.created_at,
       orm.updated_at,
       orm.deleted_at,
@@ -89,6 +93,7 @@ export class LoanApplicationExternalRepositoryImpl
       catatan_marketing: domain.catatan_marketing,
       is_banding: domain.is_banding,
       alasan_banding: domain.alasan_banding,
+      survey_schedule: domain.survey_schedule,
       created_at: domain.created_at,
       updated_at: domain.updated_at,
       deleted_at: domain.deleted_at,
@@ -128,6 +133,7 @@ export class LoanApplicationExternalRepositoryImpl
       orm.catatan_marketing = partial.catatan_marketing;
     if (partial.is_banding !== undefined) orm.is_banding = partial.is_banding;
     if (partial.alasan_banding) orm.alasan_banding = partial.alasan_banding;
+    if (partial.survey_schedule) orm.survey_schedule = partial.survey_schedule;
     if (partial.created_at) orm.created_at = partial.created_at;
     if (partial.updated_at) orm.updated_at = partial.updated_at;
     if (partial.deleted_at) orm.deleted_at = partial.deleted_at;
@@ -534,7 +540,6 @@ export class LoanApplicationExternalRepositoryImpl
 
     return results;
   }
-
   async callSP_CA_GetDashboard_External(
     creditAnalystId: number,
   ): Promise<SupervisorStats> {
@@ -545,6 +550,56 @@ export class LoanApplicationExternalRepositoryImpl
 
     console.log(results[0][0]);
     return results[0][0];
+  }
+
+  //! ========== SVY ==========
+
+  async callSP_SVY_GetAllUnscheduledSurveyList_External(
+    page: number,
+    pageSize: number,
+  ): Promise<{ data: any[]; total: number }> {
+    const manager = this.ormRepository.manager;
+    const result = await manager.query(
+      'CALL SVY_GetAllUnscheduledSurveyList_External(?, ?)',
+      [page, pageSize],
+    );
+
+    return {
+      data: result?.[0] ?? [],
+      total: result?.[1]?.[0]?.total ?? 0,
+    };
+  }
+
+  async callSP_SVY_GetAllScheduledSurveyList_External(
+    page: number,
+    pageSize: number,
+  ): Promise<{ data: any[]; total: number }> {
+    const manager = this.ormRepository.manager;
+    const result = await manager.query(
+      'CALL SVY_GetAllScheduledSurveyList_External(?, ?)',
+      [page, pageSize],
+    );
+
+    return {
+      data: result?.[0] ?? [],
+      total: result?.[1]?.[0]?.total ?? 0,
+    };
+  }
+
+  async callSP_SVY_GetClientDetailForSurveyPurpose_External(
+    loan_app_id: number,
+  ): Promise<ClientDetailForSurveyData> {
+    try {
+      const manager = this.ormRepository.manager;
+      const result = await manager.query(
+        'CALL SVY_GetClientDetailForSurveyPurpose(?)',
+        [loan_app_id],
+      );
+
+      return result;
+    } catch (error) {
+      throw new Error(error.message || 'Failed to execute stored procedure');
+    }
   }
 
   //! ========== HM ==========

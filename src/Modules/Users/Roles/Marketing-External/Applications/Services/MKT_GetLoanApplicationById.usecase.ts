@@ -8,11 +8,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import {
-  TypeLoanApplicationDetail,
-  TypeApprovalDetail,
-  TypeStatusApproval,
-} from '../DTOS/MKT_CreateLoanApplicationExternal.dto';
+// import {
+//   TypeLoanApplicationDetail,
+//   TypeApprovalDetail,
+//   TypeStatusApproval,
+// } from '../DTOS/MKT_CreateLoanApplicationExternal.dto';
 import {
   APPROVAL_RECOMMENDATION_REPOSITORY,
   IApprovalRecommendationRepository,

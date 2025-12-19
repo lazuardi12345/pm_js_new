@@ -27,6 +27,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
   private readonly customer_external = 'customer-external';
   private readonly approvalRecommendationBucket =
     'approval-recommendation-files';
+  private readonly surveyPhotosBucket = 'survey-photos';
 
   constructor() {
     // Initialize MinIO Client
@@ -75,7 +76,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
     return `${customerNIN}-${customerName}/`;
   }
 
-  // ============== CREATE/UPLOAD ==============
+  //TODO ============== CREATE/UPLOAD ==============
 
   //? ADMIN BI =====================================!
 
@@ -224,6 +225,134 @@ export class MinioFileStorageService implements IFileStorageRepository {
       this.logger.error(`Error getting file: ${error.message}`);
       if (error.code === 'NoSuchKey') {
         throw new NotFoundException(`File not found: ${filename}`);
+      }
+      throw error;
+    }
+  }
+
+  //? ==============================================!
+
+  //? SURVEY PHOTOS  ================================!
+
+  async saveSurveyPhotos(
+    customerId: string,
+    customerName: string,
+    files: Record<string, Express.Multer.File[] | undefined>,
+  ): Promise<Record<string, FileMetadata[]>> {
+    const bucket = this.surveyPhotosBucket;
+    const prefix = this.getCustomerPrefix(customerId, customerName);
+    const savedFiles: Record<string, FileMetadata[]> = {};
+
+    for (const [field, fileList] of Object.entries(files)) {
+      if (!fileList || fileList.length === 0) continue;
+
+      savedFiles[field] = [];
+
+      for (const file of fileList) {
+        const ext = file.originalname.split('.').pop();
+        const newFileName = `${customerName}-${field}.${ext}`;
+        const metadata = await this.uploadSurveyPhoto(
+          bucket,
+          prefix,
+          file,
+          newFileName,
+        );
+        savedFiles[field].push(metadata);
+      }
+    }
+
+    return savedFiles;
+  }
+
+  private async uploadSurveyPhoto(
+    bucket: string,
+    prefix: string,
+    file: Express.Multer.File,
+    customFileName?: string,
+  ): Promise<FileMetadata> {
+    try {
+      const { encrypted, iv } = this.encKey.encrypt(file.buffer);
+
+      const filenameToUse = customFileName || file.originalname;
+      const encryptedName = `${prefix}${filenameToUse}.enc`;
+
+      await this.minioClient.putObject(
+        bucket,
+        encryptedName,
+        encrypted,
+        encrypted.length,
+        {
+          'Content-Type': 'application/octet-stream',
+          'X-Original-Mimetype': file.mimetype,
+          'X-Encryption-IV': iv,
+          'X-Original-Filename': file.originalname,
+          'X-Original-Size': file.size.toString(),
+        },
+      );
+
+      const [id, name] = prefix.endsWith('/')
+        ? prefix.slice(0, -1).split('-')
+        : prefix.split('-');
+
+      this.logger.log(`Survey photo uploaded: ${encryptedName}`);
+
+      return {
+        originalName: file.originalname,
+        mimetype: file.mimetype,
+        encryptedName: encryptedName,
+        size: file.size,
+        url: `${process.env.BACKEND_URI}/storage/survey-photos/${id}/${name}/${filenameToUse}`,
+      };
+    } catch (error: any) {
+      this.logger.error(`Error uploading survey photo: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async getSurveyPhoto(
+    customerNIN: string,
+    customerName: string,
+    filename: string,
+  ): Promise<{ buffer: Buffer; mimetype: string; originalName: string }> {
+    try {
+      const bucket = this.surveyPhotosBucket;
+      const prefix = this.getCustomerPrefix(customerNIN, customerName);
+      const encryptedName = filename.endsWith('.enc')
+        ? `${prefix}${filename}`
+        : `${prefix}${filename}.enc`;
+
+      const stat = await this.minioClient.statObject(bucket, encryptedName);
+      const iv = stat.metaData['x-encryption-iv'];
+      const mimetype =
+        stat.metaData['x-original-mimetype'] || 'application/octet-stream';
+      const originalName = stat.metaData['x-original-filename'] || filename;
+
+      if (!iv) {
+        throw new Error('Encryption IV not found in metadata');
+      }
+
+      const dataStream = await this.minioClient.getObject(
+        bucket,
+        encryptedName,
+      );
+      const chunks: Buffer[] = [];
+
+      for await (const chunk of dataStream) {
+        chunks.push(chunk);
+      }
+
+      const encryptedBuffer = Buffer.concat(chunks);
+      const decryptedBuffer = this.encKey.decrypt(encryptedBuffer, iv);
+
+      return {
+        buffer: decryptedBuffer,
+        mimetype,
+        originalName,
+      };
+    } catch (error) {
+      this.logger.error(`Error getting survey photo: ${error.message}`);
+      if (error.code === 'NoSuchKey') {
+        throw new NotFoundException(`Survey photo not found: ${filename}`);
       }
       throw error;
     }

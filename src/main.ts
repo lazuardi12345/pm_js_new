@@ -11,6 +11,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 // somewhere in your initialization file
 
 async function bootstrap() {
+  process.env.TZ = 'Asia/Jakarta';
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log', 'debug'], // atur level log
   });
