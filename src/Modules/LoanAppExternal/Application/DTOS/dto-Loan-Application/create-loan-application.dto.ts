@@ -5,6 +5,7 @@ import {
   IsString,
   IsNumber,
   IsBoolean,
+  IsDate,
 } from 'class-validator';
 import {
   JenisPembiayaanEnum,
@@ -81,4 +82,8 @@ export class CreateLoanApplicationExternalDto {
   @IsOptional()
   @IsString()
   alasan_banding?: string;
+
+  @IsOptional()
+  @IsDate()
+  survey_schedule?: Date;
 }

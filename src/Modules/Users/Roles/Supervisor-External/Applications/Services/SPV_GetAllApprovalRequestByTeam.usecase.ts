@@ -66,7 +66,7 @@ export class SPV_GetAllApprovalRequestByTeam_UseCase {
           id_pengajuan: Number(item.loan_id),
           id_nasabah: Number(item.nasabah_id),
           nama_nasabah: item.nasabah_nama,
-          tipe_nasabah: item.tipe_nasabah,
+          tipe_nasabah: 'reguler',
           nominal_pinjaman: formattedNominal,
           id_marketing: item.user_id ? Number(item.user_id) : null,
           nama_marketing: item.marketing_nama || null,

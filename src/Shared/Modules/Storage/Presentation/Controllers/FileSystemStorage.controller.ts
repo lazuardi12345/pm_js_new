@@ -128,6 +128,31 @@ export class FileStorageController {
 
     res.send(buffer);
   }
+  //? ============== GET FILES APPROVAL RECOMMENDATION ==============
+
+  @Public()
+  @Get('survey-photos/:customerId/:customerName/:filename')
+  async getSurveyPhoto(
+    @Param('customerId') customerNIN: string,
+    @Param('customerName') customerName: string,
+    @Param('filename') filename: string,
+    @Res() res: Response,
+  ) {
+    const { buffer, mimetype, originalName } =
+      await this.fileStorageService.getSurveyPhoto(
+        customerNIN,
+        customerName,
+        filename,
+      );
+
+    res.set({
+      'Content-Type': mimetype,
+      'Content-Disposition': `inline; filename="${originalName}"`,
+      'Content-Length': buffer.length,
+    });
+
+    return res.send(buffer);
+  }
 
   //? ============== GET FILE (NON-RO) =====================
   @Public()

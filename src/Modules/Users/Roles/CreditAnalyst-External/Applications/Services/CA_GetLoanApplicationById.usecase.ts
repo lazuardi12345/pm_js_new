@@ -3,18 +3,13 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import {
   ILoanApplicationExternalRepository,
   LOAN_APPLICATION_EXTERNAL_REPOSITORY,
 } from 'src/Modules/LoanAppExternal/Domain/Repositories/loanApp-external.repository';
-
-import {
-  TypeLoanApplicationDetail,
-  TypeApprovalDetail,
-  TypeStatusApproval,
-} from '../../../Marketing-External/Applications/DTOS/MKT_CreateLoanApplicationExternal.dto';
 import {
   APPROVAL_RECOMMENDATION_REPOSITORY,
   IApprovalRecommendationRepository,
@@ -35,27 +30,29 @@ export class CA_GetLoanApplicationByIdUseCase {
     private readonly loanAppDraftRepo: ILoanApplicationDraftExternalRepository,
   ) {}
 
-  async execute(id: number, type: LoanType) {
-    // pastikan repository return shape: [TypeLoanApplicationDetail[], TypeApprovalDetail[]]
+  async execute(id: number) {
     const result =
       await this.loanAppRepo.callSP_CA_GetDetail_LoanApplicationsExternal_ById(
         id,
       );
 
-    console.log('SP Result:', result);
-    // tulis explicit typing supaya TS gak bingung
-    const [loanDataRows, approvals]: [
-      TypeLoanApplicationDetail[] | undefined,
-      TypeApprovalDetail[] | undefined,
-    ] = result as any;
+    if (!result || !Array.isArray(result)) {
+      throw new InternalServerErrorException(
+        'Stored Procedure returned invalid result format',
+      );
+    }
 
-    const loanData = loanDataRows?.[0];
-    console.log(
-      'Loan Data:',
-      loanData?.loan_alasan_banding,
-      loanData?.loan_is_banding,
-      loanData?.status_pengajuan,
-    );
+    const [
+      coreDataRows, // Result Set 1: Core Data
+      attachmentRows, // Result Set 2: Attachment (conditional)
+      otherLoansRows, // Result Set 3: Other Loans (parent)
+      installmentDetailsRows, // Result Set 4: Installment Details (child)
+      surveyReportRows, // Result Set 5: Survey Report
+      surveyPhotosRows, // Result Set 6: Survey Photos
+      approvalsRows, // Result Set 7: Approvals
+    ] = result as any[];
+
+    const loanData = coreDataRows?.[0];
 
     if (!loanData) {
       throw new NotFoundException(`Loan Application with id ${id} not found`);
@@ -138,12 +135,10 @@ export class CA_GetLoanApplicationByIdUseCase {
         `Warning: failed to fetch draft status for no_ktp=${noKtp}`,
         draftErr,
       );
-      // Biarkan approval_recommendation = null jika gagal ambil draft, tapi tidak abort
     }
 
-    const loanAppStatus: Record<string, TypeStatusApproval | null> = {};
-    const appealStatus: Record<string, TypeStatusApproval | null> = {};
-
+    const loanAppStatus: Record<string, any> = {};
+    const appealStatus: Record<string, any> = {};
     // mapping role ke key yang konsisten
     const roleMap: Record<string | number, string> = {
       SPV: 'spv',
@@ -157,17 +152,18 @@ export class CA_GetLoanApplicationByIdUseCase {
       3: 'hm',
     };
 
-    // === IMPORTANT: approvals is TypeApprovalDetail[] ===
-    (approvals ?? []).forEach((approval: TypeApprovalDetail) => {
+    (approvalsRows ?? []).forEach((approval: any) => {
+      if (!approval) return;
+
       const roleKey = roleMap[approval.role] ?? approval.role;
 
-      const data: TypeStatusApproval = {
+      const data = {
         id_user: approval.user_id,
         name: approval.user_nama,
         data: {
           id_approval: approval.approval_id,
           status: approval.status,
-          keterangan: approval.keterangan,
+          analisa: approval.analisa,
           kesimpulan: approval.kesimpulan,
           approved_tenor: approval.tenor_persetujuan,
           approved_amount: approval.nominal_persetujuan,
@@ -186,187 +182,29 @@ export class CA_GetLoanApplicationByIdUseCase {
       }
     });
 
-    let collateralData = {};
+    const collateralData = this.mapCollateralData(
+      loanData.jenis_pembiayaan,
+      attachmentRows?.[0],
+    );
 
-    switch (type) {
-      case 'BPJS':
-        collateralData = {
-          collateral_bpjs: {
-            pengajuan_id: loanData.pengajuan_bpjs?.pengajuan_id,
+    // ============================================================
+    // 7. MAP OTHER LOANS WITH DETAILS
+    // ============================================================
+    const otherLoans = this.mapOtherLoans(
+      otherLoansRows || [],
+      installmentDetailsRows || [],
+    );
 
-            saldo_bpjs: loanData.pengajuan_bpjs?.saldo_bpjs,
-            tanggal_bayar_terakhir:
-              loanData.pengajuan_bpjs?.tanggal_bayar_terakhir,
-            username: loanData.pengajuan_bpjs?.username,
-            password: loanData.pengajuan_bpjs?.password,
-
-            foto_bpjs: loanData.pengajuan_bpjs?.foto_bpjs,
-            jaminan_tambahan: loanData.pengajuan_bpjs?.jaminan_tambahan,
-          },
-        };
-        break;
-
-      case 'BPKB':
-        collateralData = {
-          collateral_bpkb: {
-            atas_nama_bpkb: loanData.pengajuan_bpkb?.atas_nama_bpkb,
-            no_stnk: loanData.pengajuan_bpkb?.no_stnk,
-            alamat_pemilik_bpkb: loanData.pengajuan_bpkb?.alamat_pemilik_bpkb,
-            type_kendaraan: loanData.pengajuan_bpkb?.type_kendaraan,
-            tahun_perakitan: loanData.pengajuan_bpkb?.tahun_perakitan,
-            warna_kendaraan: loanData.pengajuan_bpkb?.warna_kendaraan,
-            stransmisi: loanData.pengajuan_bpkb?.stransmisi,
-
-            no_rangka: loanData.pengajuan_bpkb?.no_rangka,
-            foto_no_rangka: loanData.pengajuan_bpkb?.foto_no_rangka,
-            no_mesin: loanData.pengajuan_bpkb?.no_mesin,
-            foto_no_mesin: loanData.pengajuan_bpkb?.foto_no_mesin,
-            foto_faktur_kendaraan:
-              loanData.pengajuan_bpkb?.foto_faktur_kendaraan,
-            foto_snikb: loanData.pengajuan_bpkb?.foto_snikb,
-
-            no_bpkb: loanData.pengajuan_bpkb?.no_bpkb,
-            dokumen_bpkb: loanData.pengajuan_bpkb?.dokumen_bpkb,
-
-            foto_stnk_depan: loanData.pengajuan_bpkb?.foto_stnk_depan,
-            foto_stnk_belakang: loanData.pengajuan_bpkb?.foto_stnk_belakang,
-
-            foto_kendaraan_depan: loanData.pengajuan_bpkb?.foto_kendaraan_depan,
-            foto_kendaraan_belakang:
-              loanData.pengajuan_bpkb?.foto_kendaraan_belakang,
-            foto_kendaraan_samping_kanan:
-              loanData.pengajuan_bpkb?.foto_kendaraan_samping_kanan,
-            foto_kendaraan_samping_kiri:
-              loanData.pengajuan_bpkb?.foto_kendaraan_samping_kiri,
-
-            foto_sambara: loanData.pengajuan_bpkb?.foto_sambara,
-            foto_kwitansi_jual_beli:
-              loanData.pengajuan_bpkb?.foto_kwitansi_jual_beli,
-            foto_ktp_tangan_pertama:
-              loanData.pengajuan_bpkb?.foto_ktp_tangan_pertama,
-          },
-        };
-        break;
-
-      case 'KEDINASAN_MOU':
-        collateralData = {
-          collateral_kedinasan_mou: {
-            instansi: loanData.pengajuan_kedinasan_mou?.instansi,
-
-            surat_permohonan_kredit:
-              loanData.pengajuan_kedinasan_mou?.surat_permohonan_kredit,
-            surat_pernyataan_penjamin:
-              loanData.pengajuan_kedinasan_mou?.surat_pernyataan_penjamin,
-            surat_persetujuan_pimpinan:
-              loanData.pengajuan_kedinasan_mou?.surat_persetujuan_pimpinan,
-            surat_keterangan_gaji:
-              loanData.pengajuan_kedinasan_mou?.surat_keterangan_gaji,
-
-            foto_form_pengajuan:
-              loanData.pengajuan_kedinasan_mou?.foto_form_pengajuan,
-            foto_surat_kuasa_pemotongan:
-              loanData.pengajuan_kedinasan_mou?.foto_surat_kuasa_pemotongan,
-            foto_surat_pernyataan_peminjam:
-              loanData.pengajuan_kedinasan_mou?.foto_surat_pernyataan_peminjam,
-
-            foto_sk_golongan_terbaru:
-              loanData.pengajuan_kedinasan_mou?.foto_sk_golongan_terbaru,
-            foto_keterangan_tpp:
-              loanData.pengajuan_kedinasan_mou?.foto_keterangan_tpp,
-            foto_biaya_operasional:
-              loanData.pengajuan_kedinasan_mou?.foto_biaya_operasional,
-
-            foto_surat_kontrak:
-              loanData.pengajuan_kedinasan_mou?.foto_surat_kontrak, // sesuai DTO lo
-
-            foto_rekomendasi_bendahara:
-              loanData.pengajuan_kedinasan_mou?.foto_rekomendasi_bendahara,
-          },
-        };
-        break;
-
-      case 'KEDINASAN_NON_MOU':
-        collateralData = {
-          collateral_kedinasan_non_mou: {
-            instansi: loanData.pengajuan_kedinasan_non_mou?.instansi,
-            surat_permohonan_kredit:
-              loanData.pengajuan_kedinasan_non_mou?.surat_permohonan_kredit,
-            surat_pernyataan_penjamin:
-              loanData.pengajuan_kedinasan_non_mou?.surat_pernyataan_penjamin,
-            surat_persetujuan_pimpinan:
-              loanData.pengajuan_kedinasan_non_mou?.surat_persetujuan_pimpinan,
-            surat_keterangan_gaji:
-              loanData.pengajuan_kedinasan_non_mou?.surat_keterangan_gaji,
-
-            foto_surat_kontrak:
-              loanData.pengajuan_kedinasan_non_mou?.foto_surat_kontrak,
-            foto_keterangan_tpp:
-              loanData.pengajuan_kedinasan_non_mou?.foto_keterangan_tpp,
-            foto_biaya_operasional:
-              loanData.pengajuan_kedinasan_non_mou?.foto_biaya_operasional,
-          },
-        };
-        break;
-
-      case 'SHM':
-        collateralData = {
-          collateral_shm: {
-            atas_nama_shm: loanData.pengajuan_shm?.atas_nama_shm,
-            hubungan_shm: loanData.pengajuan_shm?.hubungan_shm,
-            alamat_shm: loanData.pengajuan_shm?.alamat_shm,
-            luas_shm: loanData.pengajuan_shm?.luas_shm,
-            njop_shm: loanData.pengajuan_shm?.njop_shm,
-
-            foto_shm: loanData.pengajuan_shm?.foto_shm,
-            foto_kk_pemilik_shm: loanData.pengajuan_shm?.foto_kk_pemilik_shm,
-            foto_pbb: loanData.pengajuan_shm?.foto_pbb,
-
-            foto_objek_jaminan: loanData.pengajuan_shm?.foto_objek_jaminan, // kalau array → confirm, gue sesuaikan
-
-            foto_buku_nikah_suami:
-              loanData.pengajuan_shm?.foto_buku_nikah_suami,
-            foto_buku_nikah_istri:
-              loanData.pengajuan_shm?.foto_buku_nikah_istri,
-
-            foto_npwp: loanData.pengajuan_shm?.foto_npwp,
-            foto_imb: loanData.pengajuan_shm?.foto_imb,
-
-            foto_surat_ahli_waris:
-              loanData.pengajuan_shm?.foto_surat_ahli_waris,
-            foto_surat_akte_kematian:
-              loanData.pengajuan_shm?.foto_surat_akte_kematian,
-
-            foto_surat_pernyataan_kepemilikan_tanah:
-              loanData.pengajuan_shm?.foto_surat_pernyataan_kepemilikan_tanah,
-            foto_surat_pernyataan_tidak_dalam_sengketa:
-              loanData.pengajuan_shm
-                ?.foto_surat_pernyataan_tidak_dalam_sengketa,
-          },
-        };
-        break;
-
-      case 'UMKM':
-        collateralData = {
-          collateral_umkm: {
-            foto_sku: loanData.pengajuan_umkm?.foto_sku,
-
-            foto_usaha: loanData.pengajuan_umkm?.foto_usaha, // kalau array → confirm, gue ubah ke string[]
-            foto_pembukuan: loanData.pengajuan_umkm?.foto_pembukuan,
-          },
-        };
-        break;
-
-      default:
-        throw new BadRequestException('Invalid collateral type');
-    }
-
+    // ============================================================
+    // 8. BUILD FINAL RESPONSE
+    // ============================================================
     return {
       error: false,
       message: 'Loan Application Detail by ID retrieved successfully',
       reference: 'LOAN_RETRIEVE_OK',
       data: {
         client_and_loan_detail: {
-          clients_external: {
+          client_external: {
             client_id: loanData.client_id,
             nama_lengkap: loanData.nama_lengkap,
             nik: loanData.no_ktp,
@@ -375,9 +213,9 @@ export class CA_GetLoanApplicationByIdUseCase {
             foto_rekening: loanData.foto_rekening,
             jenis_kelamin: loanData.jenis_kelamin,
             tempat_lahir: loanData.tempat_lahir,
-            tanggal_lahir: new Date(loanData.tanggal_lahir)
-              .toISOString()
-              .split('T')[0],
+            tanggal_lahir: loanData.tanggal_lahir
+              ? new Date(loanData.tanggal_lahir).toISOString().split('T')[0]
+              : null,
             no_hp: loanData.no_hp,
             email: loanData.email,
             status_nikah: loanData.status_nikah,
@@ -386,9 +224,11 @@ export class CA_GetLoanApplicationByIdUseCase {
             foto_kk_peminjam: loanData.foto_kk_peminjam,
             foto_kk_penjamin: loanData.foto_kk_penjamin,
             dokumen_pendukung: loanData.dokumen_pendukung,
+            tipe_nasabah: 'reguler',
             validasi_nasabah: loanData.validasi_nasabah,
             catatan: loanData.catatan,
           },
+
           address_external: {
             alamat_ktp: loanData.alamat_ktp,
             rt_rw: loanData.rt_rw,
@@ -396,23 +236,23 @@ export class CA_GetLoanApplicationByIdUseCase {
             kecamatan: loanData.kecamatan,
             kota: loanData.kota,
             provinsi: loanData.provinsi,
-            status_rumah: loanData.status_rumah, // enum
-            biaya_perbulan: loanData.biaya_perbulan, // optional
-            biaya_pertahun: loanData.biaya_pertahun, // optional
-            domisili: loanData.domisili, // enum
-            alamat_domisili: loanData.alamat_domisili, // optional
-            rumah_domisili: loanData.rumah_domisili, // enum
-            biaya_perbulan_domisili: loanData.biaya_perbulan_domisili, // optional
-            biaya_pertahun_domisili: loanData.biaya_pertahun_domisili, // optional
-            lama_tinggal: loanData.lama_tinggal, // optional
+            status_rumah: loanData.status_rumah,
+            biaya_perbulan: loanData.biaya_perbulan,
+            biaya_pertahun: loanData.biaya_pertahun,
+            domisili: loanData.domisili,
+            alamat_domisili: loanData.alamat_domisili,
+            rumah_domisili: loanData.rumah_domisili,
+            biaya_perbulan_domisili: loanData.biaya_perbulan_domisili,
+            biaya_pertahun_domisili: loanData.biaya_pertahun_domisili,
+            lama_tinggal: loanData.lama_tinggal,
             atas_nama_listrik: loanData.atas_nama_listrik,
             hubungan: loanData.hubungan,
-            foto_meteran_listrik: loanData.foto_meteran_listrik, // optional
-            share_loc_domisili: loanData.share_loc_domisili, // @IsNotEmpty but optional type
-            share_loc_usaha: loanData.share_loc_usaha, // optional
-            share_loc_tempat_kerja: loanData.share_loc_tempat_kerja, // optional
-            validasi_alamat: loanData.validasi_alamat, // optional boolean
-            catatan: loanData.catatan, // optional
+            foto_meteran_listrik: loanData.foto_meteran_listrik,
+            share_loc_domisili: loanData.share_loc_domisili,
+            share_loc_usaha: loanData.share_loc_usaha,
+            share_loc_tempat_kerja: loanData.share_loc_tempat_kerja,
+            validasi_alamat: loanData.validasi_alamat,
+            catatan: loanData.catatan_alamat,
           },
 
           job_external: {
@@ -421,78 +261,266 @@ export class CA_GetLoanApplicationByIdUseCase {
             kontak_perusahaan: loanData.kontak_perusahaan,
             jabatan: loanData.jabatan,
             lama_kerja: loanData.lama_kerja,
-            status_karyawan: loanData.status_karyawan, // enum
-            lama_kontrak: loanData.lama_kontrak, // optional
-            pendapatan_perbulan: loanData.pendapatan_perbulan, // optional number
-            slip_gaji_peminjam: loanData.slip_gaji_peminjam, // optional
-            slip_gaji_penjamin: loanData.slip_gaji_penjamin, // optional
-            id_card_peminjam: loanData.id_card_peminjam, // optional
-            id_card_penjamin: loanData.id_card_penjamin, // optional
-            rekening_koran: loanData.rekening_koran, // optional
-            validasi_pekerjaan: loanData.validasi_pekerjaan, // optional boolean
-            catatan: loanData.catatan, // optional
+            status_karyawan: loanData.status_karyawan,
+            lama_kontrak: loanData.lama_kontrak,
+            pendapatan_perbulan: loanData.pendapatan_perbulan,
+            slip_gaji_peminjam: loanData.slip_gaji_peminjam,
+            slip_gaji_penjamin: loanData.slip_gaji_penjamin,
+            id_card_peminjam: loanData.id_card_peminjam,
+            id_card_penjamin: loanData.id_card_penjamin,
+            rekening_koran: loanData.rekening_koran,
+            validasi_pekerjaan: loanData.validasi_pekerjaan,
+            catatan: loanData.catatan_pekerjaan,
           },
-          emergency_contact: {
-            nama_kontak_darurat:
-              loanData.emergency_contacts.nama_kontak_darurat,
-            hubungan_kontak_darurat:
-              loanData.emergency_contacts.hubungan_kontak_darurat,
-            no_hp_kontak_darurat:
-              loanData.emergency_contacts.no_hp_kontak_darurat,
 
-            validasi_kontak_darurat:
-              loanData.emergency_contacts.validasi_kontak_darurat, // optional boolean
-            catatan: loanData.emergency_contacts.catatan, // optional string
+          loan_application_external: {
+            jenis_pembiayaan: loanData.jenis_pembiayaan,
+            nominal_pinjaman: loanData.nominal_pinjaman,
+            tenor: loanData.tenor,
+            berkas_jaminan: loanData.berkas_jaminan,
+            status_pinjaman: loanData.status_pinjaman,
+            pinjaman_ke: loanData.pinjaman_ke,
+            pinjaman_terakhir: loanData.pinjaman_terakhir,
+            sisa_pinjaman: loanData.sisa_pinjaman,
+            realisasi_pinjaman: loanData.realisasi_pinjaman,
+            cicilan_perbulan: loanData.cicilan_perbulan,
+            status_pengajuan: loanData.status_pengajuan,
+            validasi_pengajuan: loanData.validasi_pengajuan,
+            catatan: loanData.catatan_pengajuan,
+            catatan_spv: loanData.catatan_spv,
+            catatan_marketing: loanData.catatan_marketing,
+            is_banding: loanData.is_banding,
+            alasan_banding: loanData.alasan_banding,
           },
-          financial_dependents: {
-            kondisi_tanggungan:
-              loanData.financial_dependents.kondisi_tanggungan, // optional string
-            validasi_tanggungan:
-              loanData.financial_dependents.validasi_tanggungan, // optional boolean
-            catatan: loanData.financial_dependents.catatan_tanggungan, // optional string
+
+          emergency_contact_external: {
+            nama_kontak_darurat: loanData.nama_kontak_darurat || null,
+            hubungan_kontak_darurat: loanData.hubungan_kontak_darurat || null,
+            no_hp_kontak_darurat: loanData.no_hp_kontak_darurat || null,
+            validasi_kontak_darurat: loanData.validasi_kontak_darurat || null,
+            catatan: loanData.catatan_kontak_darurat || null,
           },
-          loan_guarantor: {
-            hubungan_penjamin: loanData.loan_guarantors.hubungan_penjamin, // enum
 
-            nama_penjamin: loanData.loan_guarantors.nama_penjamin,
-            pekerjaan_penjamin: loanData.loan_guarantors.pekerjaan_penjamin,
-
-            penghasilan_penjamin: loanData.loan_guarantors.penghasilan_penjamin,
-            no_hp_penjamin: loanData.loan_guarantors.no_hp_penjamin,
-
-            persetujuan_penjamin: loanData.loan_guarantors.persetujuan_penjamin, // enum
-            foto_ktp_penjamin: loanData.loan_guarantors.foto_ktp_penjamin,
-
-            validasi_penjamin: loanData.loan_guarantors.validasi_penjamin, // optional boolean
-            catatan: loanData.loan_guarantors.catatan_penjamin, // optional string
+          financial_dependents_external: {
+            kondisi_tanggungan: loanData.kondisi_tanggungan || null,
+            validasi_tanggungan: loanData.validasi_tanggungan || null,
+            catatan: loanData.catatan_tanggungan || null,
           },
-          other_exist_loan: {
-            cicilan_lain: loanData.other_loans.cicilan_lain, // enum
 
-            nama_pembiayaan: loanData.other_loans.nama_pembiayaan,
-            total_pinjaman: loanData.other_loans.total_pinjaman, // optional string
-
-            cicilan_perbulan: loanData.other_loans.cicilan_perbulan,
-            sisa_tenor: loanData.other_loans.sisa_tenor,
-
-            validasi_pinjaman_lain: loanData.other_loans.validasi_pinjaman_lain, // optional boolean
-            catatan: loanData.other_loans.catatan_pinjaman_lain, // optional string
+          loan_guarantor_external: {
+            hubungan_penjamin: loanData.hubungan_penjamin || null,
+            nama_penjamin: loanData.nama_penjamin || null,
+            pekerjaan_penjamin: loanData.pekerjaan_penjamin || null,
+            penghasilan_penjamin: loanData.penghasilan_penjamin || null,
+            no_hp_penjamin: loanData.no_hp_penjamin || null,
+            persetujuan_penjamin: loanData.persetujuan_penjamin || null,
+            foto_ktp_penjamin: loanData.foto_ktp_penjamin_guarantor || null,
+            validasi_penjamin: loanData.validasi_penjamin || null,
+            catatan: loanData.catatan_penjamin || null,
           },
+          other_exist_loan_external:
+            otherLoans.length > 0
+              ? otherLoans[0]
+              : {
+                  cicilan_lain: null,
+                  cicilan: [],
+                },
           collateral: collateralData,
-          // documents_files: {
-          //   foto_ktp: loanData.foto_ktp,
-          //   foto_kk: loanData.foto_kk,
-          //   foto_id_card: loanData.foto_id_card,
-          //   foto_rekening: loanData.foto_rekening,
-          //   bukti_absensi_file: loanData.bukti_absensi_file,
-          //   foto_ktp_penjamin: loanData.foto_ktp_penjamin,
-          //   foto_id_card_penjamin: loanData.foto_id_card_penjamin,
-          // },
+          documents_files: {
+            foto_rekening: loanData.foto_rekening,
+            foto_ktp_peminjam: loanData.foto_ktp_peminjam,
+            foto_ktp_penjamin: loanData.foto_ktp_penjamin,
+            foto_kk_peminjam: loanData.foto_kk_peminjam,
+            foto_kk_penjamin: loanData.foto_kk_penjamin,
+            dokumen_pendukung: loanData.dokumen_pendukung,
+            foto_meteran_listrik: loanData.foto_meteran_listrik,
+            slip_gaji_peminjam: loanData.slip_gaji_peminjam,
+            slip_gaji_penjamin: loanData.slip_gaji_penjamin,
+            foto_id_card_peminjam: loanData.id_card_peminjam,
+            foto_id_card_penjamin: loanData.id_card_penjamin,
+            rekening_koran: loanData.rekening_koran,
+            berkas_jaminan: loanData.berkas_jaminan,
+          },
+          survey_report: surveyReportRows?.[0] || null,
+          survey_photos: surveyPhotosRows || [],
           approval_recommendation,
         },
+        loan_latest_status: loanData.status_pengajuan,
+        // Status data
         loan_app_status: loanAppStatus,
         appeal_status: appealStatus,
       },
     };
+  }
+  catch(error) {
+    console.error('Unexpected error:', error);
+    throw error;
+  }
+
+  // ============================================================
+  // HELPER: Map Collateral Data
+  // ============================================================
+  private mapCollateralData(jenis_pembiayaan: string, attachmentData: any) {
+    if (!attachmentData || !attachmentData.attachment_type) {
+      return {};
+    }
+
+    switch (jenis_pembiayaan) {
+      case 'BPJS':
+        return {
+          bpjs: {
+            pengajuan_id: attachmentData.pengajuan_id,
+            saldo_bpjs: attachmentData.saldo_bpjs,
+            tanggal_bayar_terakhir: attachmentData.tanggal_bayar_terakhir,
+            username: attachmentData.username,
+            password: attachmentData.password,
+            foto_bpjs: attachmentData.foto_bpjs,
+            jaminan_tambahan: attachmentData.jaminan_tambahan,
+          },
+        };
+
+      case 'BPKB':
+        return {
+          bpkb: {
+            pengajuan_id: attachmentData.pengajuan_id,
+            atas_nama_bpkb: attachmentData.atas_nama_bpkb,
+            no_stnk: attachmentData.no_stnk,
+            alamat_pemilik_bpkb: attachmentData.alamat_pemilik_bpkb,
+            type_kendaraan: attachmentData.type_kendaraan,
+            tahun_perakitan: attachmentData.tahun_perakitan,
+            warna_kendaraan: attachmentData.warna_kendaraan,
+            stransmisi: attachmentData.stransmisi,
+            no_rangka: attachmentData.no_rangka,
+            foto_no_rangka: attachmentData.foto_no_rangka,
+            no_mesin: attachmentData.no_mesin,
+            foto_no_mesin: attachmentData.foto_no_mesin,
+            foto_faktur_kendaraan: attachmentData.foto_faktur_kendaraan,
+            foto_snikb: attachmentData.foto_snikb,
+            no_bpkb: attachmentData.no_bpkb,
+            dokumen_bpkb: attachmentData.dokumen_bpkb,
+            foto_stnk_depan: attachmentData.foto_stnk_depan,
+            foto_stnk_belakang: attachmentData.foto_stnk_belakang,
+            foto_kendaraan_depan: attachmentData.foto_kendaraan_depan,
+            foto_kendaraan_belakang: attachmentData.foto_kendaraan_belakang,
+            foto_kendaraan_samping_kanan:
+              attachmentData.foto_kendaraan_samping_kanan,
+            foto_kendaraan_samping_kiri:
+              attachmentData.foto_kendaraan_samping_kiri,
+            foto_sambara: attachmentData.foto_sambara,
+            foto_kwitansi_jual_beli: attachmentData.foto_kwitansi_jual_beli,
+            foto_ktp_tangan_pertama: attachmentData.foto_ktp_tangan_pertama,
+          },
+        };
+
+      case 'KEDINASAN_MOU':
+        return {
+          kedinasan_mou: {
+            pengajuan_id: attachmentData.pengajuan_id,
+            instansi: attachmentData.instansi,
+            surat_permohonan_kredit: attachmentData.surat_permohonan_kredit,
+            surat_pernyataan_penjamin: attachmentData.surat_pernyataan_penjamin,
+            surat_persetujuan_pimpinan:
+              attachmentData.surat_persetujuan_pimpinan,
+            surat_keterangan_gaji: attachmentData.surat_keterangan_gaji,
+            foto_form_pengajuan: attachmentData.foto_form_pengajuan,
+            foto_surat_kuasa_pemotongan:
+              attachmentData.foto_surat_kuasa_pemotongan,
+            foto_surat_pernyataan_peminjam:
+              attachmentData.foto_surat_pernyataan_peminjam,
+            foto_sk_golongan_terbaru: attachmentData.foto_sk_golongan_terbaru,
+            foto_keterangan_tpp: attachmentData.foto_keterangan_tpp,
+            foto_biaya_operasional: attachmentData.foto_biaya_operasional,
+            foto_surat_kontrak: attachmentData.foto_surat_kontrak,
+            foto_rekomendasi_bendahara:
+              attachmentData.foto_rekomendasi_bendahara,
+          },
+        };
+
+      case 'KEDINASAN_NON_MOU':
+        return {
+          kedinasan_non_mou: {
+            pengajuan_id: attachmentData.pengajuan_id,
+            instansi: attachmentData.instansi,
+            surat_permohonan_kredit: attachmentData.surat_permohonan_kredit,
+            surat_pernyataan_penjamin: attachmentData.surat_pernyataan_penjamin,
+            surat_persetujuan_pimpinan:
+              attachmentData.surat_persetujuan_pimpinan,
+            surat_keterangan_gaji: attachmentData.surat_keterangan_gaji,
+            foto_surat_kontrak: attachmentData.foto_surat_kontrak,
+            foto_keterangan_tpp: attachmentData.foto_keterangan_tpp,
+            foto_biaya_operasional: attachmentData.foto_biaya_operasional,
+          },
+        };
+
+      case 'SHM':
+        return {
+          shm: {
+            pengajuan_id: attachmentData.pengajuan_id,
+            atas_nama_shm: attachmentData.atas_nama_shm,
+            hubungan_shm: attachmentData.hubungan_shm,
+            alamat_shm: attachmentData.alamat_shm,
+            luas_shm: attachmentData.luas_shm,
+            njop_shm: attachmentData.njop_shm,
+            foto_shm: attachmentData.foto_shm,
+            foto_kk_pemilik_shm: attachmentData.foto_kk_pemilik_shm,
+            foto_pbb: attachmentData.foto_pbb,
+            foto_objek_jaminan: attachmentData.foto_objek_jaminan,
+            foto_buku_nikah_suami: attachmentData.foto_buku_nikah_suami,
+            foto_buku_nikah_istri: attachmentData.foto_buku_nikah_istri,
+            foto_npwp: attachmentData.foto_npwp,
+            foto_imb: attachmentData.foto_imb,
+            foto_surat_ahli_waris: attachmentData.foto_surat_ahli_waris,
+            foto_surat_akte_kematian: attachmentData.foto_surat_akte_kematian,
+            foto_surat_pernyataan_kepemilikan_tanah:
+              attachmentData.foto_surat_pernyataan_kepemilikan_tanah,
+            foto_surat_pernyataan_tidak_dalam_sengketa:
+              attachmentData.foto_surat_pernyataan_tidak_dalam_sengketa,
+          },
+        };
+
+      case 'UMKM':
+        return {
+          umkm: {
+            pengajuan_id: attachmentData.pengajuan_id,
+            foto_sku: attachmentData.foto_sku,
+            foto_usaha: attachmentData.foto_usaha
+              ? typeof attachmentData.foto_usaha === 'string'
+                ? JSON.parse(attachmentData.foto_usaha)
+                : attachmentData.foto_usaha
+              : [],
+            foto_pembukuan: attachmentData.foto_pembukuan,
+          },
+        };
+
+      default:
+        return {};
+    }
+  }
+
+  // ============================================================
+  // HELPER: Map Other Loans with Details
+  // ============================================================
+  private mapOtherLoans(parentRows: any[], detailRows: any[]) {
+    if (!parentRows || parentRows.length === 0) {
+      return [];
+    }
+
+    return parentRows.map((parent) => ({
+      other_loan_id: parent.other_loan_id,
+      nasabah_id: parent.nasabah_id,
+      cicilan_lain: parent.cicilan_lain,
+      validasi_pinjaman_lain: parent.validasi_pinjaman_lain,
+      catatan: parent.catatan_pinjaman_lain,
+
+      cicilan: detailRows
+        .filter((detail) => detail.otherExistLoan_id === parent.other_loan_id)
+        .map((detail) => ({
+          detail_item_id: detail.detail_item_id,
+          nama_pembiayaan: detail.nama_pembiayaan,
+          total_pinjaman: detail.total_pinjaman,
+          cicilan_perbulan: detail.cicilan_perbulan,
+          sisa_tenor: detail.sisa_tenor,
+        })),
+    }));
   }
 }

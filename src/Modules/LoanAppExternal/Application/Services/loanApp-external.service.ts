@@ -39,6 +39,7 @@ export class LoanApplicationExternalService {
       dto.catatan_marketing,
       dto.is_banding,
       dto.alasan_banding,
+      dto.survey_schedule,
       now,
       now,
       null,

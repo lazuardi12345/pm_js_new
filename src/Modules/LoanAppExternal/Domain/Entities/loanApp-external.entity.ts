@@ -26,6 +26,7 @@ export class LoanApplicationExternal {
     public readonly catatan_marketing?: string,
     public readonly is_banding: boolean = false,
     public readonly alasan_banding?: string,
+    public survey_schedule?: Date,
     public readonly created_at?: Date,
     public readonly updated_at?: Date,
     public readonly deleted_at?: Date | null,

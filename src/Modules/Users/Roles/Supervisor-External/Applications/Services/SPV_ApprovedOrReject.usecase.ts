@@ -69,7 +69,7 @@ export class SPV_ApproveOrRejectUseCase {
       }
 
       // Validasi role
-      if (role !== USERTYPE.SPV) {
+      if (user.usertype !== USERTYPE.SPV) {
         throw new HttpException(
           {
             error: true,
@@ -94,8 +94,6 @@ export class SPV_ApproveOrRejectUseCase {
         status,
         catatan,
       );
-
-      console.log('uhuy cukay: >>>>>>>>>>>>>>>>>>>>>.', status);
 
       // Terapkan status approval
       let newLoanStatus: StatusPengajuanEnum;

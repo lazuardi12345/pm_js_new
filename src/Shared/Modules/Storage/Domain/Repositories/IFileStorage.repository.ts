@@ -43,6 +43,12 @@ export interface IFileStorageRepository {
     files: Record<string, Express.Multer.File[] | undefined>,
   ): Promise<Record<string, FileMetadata[]>>;
 
+  saveSurveyPhotos(
+    customerNIN: string,
+    customerName: string,
+    files: Record<string, Express.Multer.File[] | undefined>,
+  ): Promise<Record<string, FileMetadata[]>>;
+
   // Read/Get
   getFile(
     encryptedPrefix: string,
@@ -52,6 +58,12 @@ export interface IFileStorageRepository {
   ): Promise<{ buffer: Buffer; mimetype: string; originalName: string }>;
 
   getFilesForApprovalRecommendations(
+    customerNIN: string,
+    customerName: string,
+    filename: string,
+  ): Promise<{ buffer: Buffer; mimetype: string; originalName: string }>;
+
+  getSurveyPhoto(
     customerNIN: string,
     customerName: string,
     filename: string,

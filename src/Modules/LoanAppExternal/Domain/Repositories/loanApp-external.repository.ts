@@ -20,6 +20,11 @@ import {
   TypeApprovalDetail,
   TypeLoanApplicationDetail,
 } from 'src/Modules/Users/Roles/Marketing-External/Applications/DTOS/MKT_CreateLoanApplicationExternal.dto';
+import {
+  SurveyListItem,
+  SurveyListResult,
+} from 'src/Shared/Interface/SVY_SurveyList/SurveyList.interface';
+import { ClientDetailForSurveyData } from 'src/Shared/Interface/SVY_ClientDetails/ClientDetails.interface';
 
 export const LOAN_APPLICATION_EXTERNAL_REPOSITORY =
   ' LOAN_APPLICATION_EXTERNAL_REPOSITORY';
@@ -28,10 +33,12 @@ export interface ILoanApplicationExternalRepository {
   findById(id: number): Promise<LoanApplicationExternal | null>;
   findByNasabahId(nasabahId: number): Promise<LoanApplicationExternal[]>;
   findAll(): Promise<LoanApplicationExternal[]>;
-  save(address: LoanApplicationExternal): Promise<LoanApplicationExternal>;
+  save(
+    loanAppExternal: LoanApplicationExternal,
+  ): Promise<LoanApplicationExternal>;
   update(
     id: number,
-    address: Partial<LoanApplicationExternal>,
+    loanAppExternal: Partial<LoanApplicationExternal>,
   ): Promise<LoanApplicationExternal>;
   delete(id: number): Promise<void>;
   updateLoanAppExternalStatus(
@@ -155,4 +162,19 @@ export interface ILoanApplicationExternalRepository {
   callSP_CA_GetDashboard_External(
     creditAnalystId: number,
   ): Promise<SupervisorStats>;
+
+  //! ========== SURVEYOR (SVY) ==========
+  callSP_SVY_GetAllUnscheduledSurveyList_External(
+    page: number,
+    pageSize: number,
+  ): Promise<SurveyListResult>;
+
+  callSP_SVY_GetAllScheduledSurveyList_External(
+    page: number,
+    pageSize: number,
+  ): Promise<SurveyListResult>;
+
+  callSP_SVY_GetClientDetailForSurveyPurpose_External(
+    loan_app_id: number,
+  ): Promise<ClientDetailForSurveyData>;
 }

@@ -5,7 +5,7 @@ import { SPV_ApproveOrRejectUseCase } from '../../Applications/Services/SPV_Appr
 import { ApprovalExternalStatus } from 'src/Shared/Enums/External/Approval.enum';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
 
-@Controller('spv/ext/loan-app')
+@Controller('spv/ext/loan-apps')
 export class SPV_ApprovedOrRejectController {
   constructor(
     private readonly approveOrRejectUseCase: SPV_ApproveOrRejectUseCase,
