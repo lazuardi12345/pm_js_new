@@ -607,4 +607,20 @@ export class LoanApplicationInternalRepositoryImpl
 
     return { data, total };
   }
+
+  //! ========== AC ==========
+
+  async callSP_AdCont_GetAllLoanData_Internal(
+    p_page: number,
+    p_page_size: number,
+  ): Promise<any[]> {
+    const manager = this.ormRepository.manager;
+
+    const result = await manager.query(
+      'CALL AdCont_GetAllLoanData_Internal(?, ?)',
+      [p_page, p_page_size],
+    );
+
+    return result;
+  }
 }

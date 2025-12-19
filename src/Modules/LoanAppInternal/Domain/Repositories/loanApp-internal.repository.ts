@@ -159,4 +159,10 @@ export interface ILoanApplicationInternalRepository {
   callSP_CA_GetDashboard_Internal(
     creditAnalystId: number,
   ): Promise<SupervisorStats>;
+
+  //! ========== AdminContract (AC) ==========
+  callSP_AdCont_GetAllLoanData_Internal(
+    page: number,
+    pageSize: number,
+  ): Promise<any[]>;
 }
