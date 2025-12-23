@@ -98,11 +98,11 @@ export class SVY_CreateSurveyReportUseCase {
         // 4. Create Survey Report
         const surveyReportEntity = new SurveyReports(
           dto.pengajuan_luar_id,
-          dto.berjumpa_siapa,
-          dto.hubungan,
+          dto.berjumpa_dengan,
+          dto.hubungan_dengan_nasabah,
           dto.status_rumah,
-          dto.hasil_cekling1,
-          dto.hasil_cekling2,
+          dto.hasil_cekling_1,
+          dto.hasil_cekling_2,
           dto.kesimpulan,
           dto.rekomendasi,
         );

@@ -18,7 +18,7 @@ export class SVY_GetAllScheduledSurveyListUseCase {
       const offset = (page - 1) * pageSize;
 
       const result =
-        await this.loanAppRepo.callSP_SVY_GetAllUnscheduledSurveyList_External(
+        await this.loanAppRepo.callSP_SVY_GetAllScheduledSurveyList_External(
           page,
           pageSize,
         );
@@ -32,6 +32,7 @@ export class SVY_GetAllScheduledSurveyListUseCase {
           tenor: item.tenor ? `${item.tenor} Bulan` : '-',
           marketing: item.marketing ?? '-',
           tanggal_pengajuan: item.created_at,
+          jadwal_survey: item.schedule_time,
           pembiayaan: item.jenis_pembiayaan ?? '-',
           pengajuan_id: Number(item.id),
           nasabah_id: item.nasabah_id,

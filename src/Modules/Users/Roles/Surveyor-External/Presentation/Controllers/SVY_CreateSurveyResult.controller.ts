@@ -52,9 +52,11 @@ export class SVY_CreateSurveyReportController {
       }
 
       if (
-        !payload.berjumpa_siapa ||
-        !payload.hubungan ||
-        !payload.status_rumah
+        !payload.berjumpa_dengan ||
+        !payload.hubungan_dengan_nasabah ||
+        !payload.status_rumah ||
+        !payload.hasil_cekling_1 ||
+        !payload.hasil_cekling_2
       ) {
         throw new BadRequestException('Required fields are missing');
       }
