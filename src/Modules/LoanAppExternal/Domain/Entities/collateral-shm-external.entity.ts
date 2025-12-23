@@ -13,8 +13,7 @@ export class CollateralBySHM {
     public readonly foto_pbb?: string,
     public readonly foto_objek_jaminan?: string,
 
-    public readonly foto_buku_nikah_suami?: string,
-    public readonly foto_buku_nikah_istri?: string,
+    public readonly foto_buku_nikah_suami_istri?: string,
     public readonly foto_npwp?: string,
     public readonly foto_imb?: string,
     public readonly foto_surat_ahli_waris?: string,

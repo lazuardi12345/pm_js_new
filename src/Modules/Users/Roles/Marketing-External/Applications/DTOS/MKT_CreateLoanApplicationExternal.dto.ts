@@ -799,11 +799,7 @@ export class PengajuanSHMDto {
 
   @IsOptional()
   @IsString()
-  foto_buku_nikah_suami?: string;
-
-  @IsOptional()
-  @IsString()
-  foto_buku_nikah_istri?: string;
+  foto_buku_nikah_suami_istri?: string;
 
   @IsOptional()
   @IsString()
@@ -1104,9 +1100,7 @@ export class FilesDto {
   @IsOptional()
   foto_objek_jaminan?: string | Express.Multer.File;
   @IsOptional()
-  foto_buku_nikah_suami?: string | Express.Multer.File;
-  @IsOptional()
-  foto_buku_nikah_istri?: string | Express.Multer.File;
+  foto_buku_nikah_suami_istri?: string | Express.Multer.File;
   @IsOptional()
   foto_npwp?: string | Express.Multer.File;
   @IsOptional()

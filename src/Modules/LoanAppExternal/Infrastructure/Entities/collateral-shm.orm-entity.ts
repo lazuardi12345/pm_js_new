@@ -56,10 +56,7 @@ export class CollateralBySHM_ORM_Entity {
   foto_objek_jaminan?: string; // bisa simpan array JSON string
 
   @Column({ nullable: true })
-  foto_buku_nikah_suami?: string;
-
-  @Column({ nullable: true })
-  foto_buku_nikah_istri?: string;
+  foto_buku_nikah_suami_istri?: string;
 
   @Column({ nullable: true })
   foto_npwp?: string;

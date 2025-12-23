@@ -44,11 +44,7 @@ export class CreatePengajuanSHMDto {
 
   @IsOptional()
   @IsString()
-  foto_buku_nikah_suami?: string;
-
-  @IsOptional()
-  @IsString()
-  foto_buku_nikah_istri?: string;
+  foto_buku_nikah_suami_istri?: string;
 
   @IsOptional()
   @IsString()

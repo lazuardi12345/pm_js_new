@@ -616,7 +616,7 @@ class CollateralBySHMDto {
 
   @IsOptional()
   @IsString()
-  foto_objek_jaminan?: string; //array
+  foto_objek_jaminan?: string;
 
   @IsOptional()
   @IsString()

@@ -38,8 +38,7 @@ export class CollateralSHMService {
       dto.foto_kk_pemilik_shm,
       dto.foto_pbb,
       dto.foto_objek_jaminan,
-      dto.foto_buku_nikah_suami,
-      dto.foto_buku_nikah_istri,
+      dto.foto_buku_nikah_suami_istri,
       dto.foto_npwp,
       dto.foto_imb,
       dto.foto_surat_ahli_waris,
@@ -60,10 +59,15 @@ export class CollateralSHMService {
     }
   }
 
-  async update(id: number, dto: UpdatePengajuanSHMDto): Promise<CollateralBySHM> {
+  async update(
+    id: number,
+    dto: UpdatePengajuanSHMDto,
+  ): Promise<CollateralBySHM> {
     const existing = await this.repo.findById(id);
     if (!existing) {
-      throw new NotFoundException(`Collateral SHM dengan ID ${id} tidak ditemukan`);
+      throw new NotFoundException(
+        `Collateral SHM dengan ID ${id} tidak ditemukan`,
+      );
     }
 
     const updatedData = new CollateralBySHM(
@@ -77,8 +81,7 @@ export class CollateralSHMService {
       dto.foto_kk_pemilik_shm ?? existing.foto_kk_pemilik_shm,
       dto.foto_pbb ?? existing.foto_pbb,
       dto.foto_objek_jaminan ?? existing.foto_objek_jaminan,
-      dto.foto_buku_nikah_suami ?? existing.foto_buku_nikah_suami,
-      dto.foto_buku_nikah_istri ?? existing.foto_buku_nikah_istri,
+      dto.foto_buku_nikah_suami_istri ?? existing.foto_buku_nikah_suami_istri,
       dto.foto_npwp ?? existing.foto_npwp,
       dto.foto_imb ?? existing.foto_imb,
       dto.foto_surat_ahli_waris ?? existing.foto_surat_ahli_waris,
@@ -104,7 +107,9 @@ export class CollateralSHMService {
   async findById(id: number): Promise<CollateralBySHM> {
     const collateral = await this.repo.findById(id);
     if (!collateral) {
-      throw new NotFoundException(`Collateral SHM dengan ID ${id} tidak ditemukan`);
+      throw new NotFoundException(
+        `Collateral SHM dengan ID ${id} tidak ditemukan`,
+      );
     }
     return collateral;
   }
@@ -114,14 +119,18 @@ export class CollateralSHMService {
       return await this.repo.findAll();
     } catch (error) {
       console.error('Find All Collateral SHM Error:', error);
-      throw new InternalServerErrorException('Gagal mengambil data collateral SHM');
+      throw new InternalServerErrorException(
+        'Gagal mengambil data collateral SHM',
+      );
     }
   }
 
   async delete(id: number): Promise<void> {
     const collateral = await this.repo.findById(id);
     if (!collateral) {
-      throw new NotFoundException(`Collateral SHM dengan ID ${id} tidak ditemukan`);
+      throw new NotFoundException(
+        `Collateral SHM dengan ID ${id} tidak ditemukan`,
+      );
     }
 
     try {

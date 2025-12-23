@@ -33,6 +33,7 @@ import {
   ILoanApplicationDraftExternalRepository,
 } from 'src/Shared/Modules/Drafts/Domain/Repositories/ext/LoanAppExt.repository';
 import { JenisPembiayaanEnum } from 'src/Shared/Enums/External/Loan-Application.enum';
+import { LoanApplicationExtEntity } from 'src/Shared/Modules/Drafts/Domain/Entities/ext/LoanAppExt.entity';
 
 @Injectable()
 export class MKT_CreateDraftLoanApplicationUseCase {
@@ -97,7 +98,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
 
         if (jenis_pembiayaan && dto.loan_application_external) {
           dto.loan_application_external.jenis_pembiayaan = jenis_pembiayaan;
-          console.log(`✅ Assigned jenis_pembiayaan: ${jenis_pembiayaan}`);
+          console.log(`Assigned jenis_pembiayaan: ${jenis_pembiayaan}`);
         }
 
         Object.values(collateralFieldMap).forEach((field) => {
@@ -106,7 +107,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
           }
         });
         console.log(
-          `✅ Cleaned collateral. Only keeping: ${targetCollateralField}`,
+          `Cleaned collateral. Only keeping: ${targetCollateralField}`,
         );
       }
 
@@ -403,8 +404,22 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         ...filePaths,
       };
 
-      const entityUpdate: Partial<LoanApplicationEntity> = {
-        ...payload,
+      const entityUpdate: Partial<LoanApplicationExtEntity> = {
+        collateral_shm: {
+          ...(existingDraft.collateral_shm ?? {}),
+          ...(payload.collateral_shm ?? {}),
+        },
+
+        collateral_bpkb: {
+          ...(existingDraft.collateral_bpkb ?? {}),
+          ...(payload.collateral_bpkb ?? {}),
+        },
+
+        collateral_bpjs: {
+          ...(existingDraft.collateral_bpjs ?? {}),
+          ...(payload.collateral_bpjs ?? {}),
+        },
+
         uploaded_files: mergedFiles,
       };
 

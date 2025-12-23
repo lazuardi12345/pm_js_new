@@ -30,7 +30,7 @@ export class SVY_GetAllUnscheduledSurveyListUseCase {
           no: offset + index + 1,
           nama_nasabah: item.nama_nasabah ?? '-',
           nominal_pinjaman: item.nominal_pinjaman,
-          tenor: item.tenor ? `${item.tenor} Bulan` : '-',
+          tenor: item.tenor ?? '-',
           marketing: item.marketing ?? '-',
           tanggal_pengajuan: item.created_at,
           pembiayaan: item.jenis_pembiayaan ?? '-',
