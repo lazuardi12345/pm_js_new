@@ -30,7 +30,7 @@ export class SVY_GetAllScheduledSurveyListUseCase {
           no: offset + index + 1,
           nama_nasabah: item.nama_nasabah ?? '-',
           nominal_pinjaman: item.nominal_pinjaman,
-          tenor: item.tenor ? `${item.tenor} Bulan` : '-',
+          tenor: item.tenor ?? '-',
           marketing: item.marketing ?? '-',
           tanggal_pengajuan: item.created_at,
           jadwal_survey: item.schedule_time,

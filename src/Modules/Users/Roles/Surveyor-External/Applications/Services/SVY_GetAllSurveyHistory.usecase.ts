@@ -26,17 +26,16 @@ export class SVY_GetAllSurveyHistoryUseCase {
 
       const formattedData = data.map((item: any, index: number) => ({
         no: offset + index + 1,
-        berjumpa_siapa: item.berjumpa_siapa ?? '-',
-        hubungan: item.hubungan ?? '-',
-        status_rumah: item.status_rumah ?? '-',
-        hasil_cekling1: item.hasil_cekling1 ?? '-',
-        hasil_cekling2: item.hasil_cekling2 ?? '-',
-        kesimpulan: item.kesimpulan ?? '-',
-        rekomendasi: item.rekomendasi ?? '-',
-        created_at: item.created_at,
-        updated_at: item.updated_at,
+        nama_nasabah: item.nama_nasabah ?? '-',
+        nominal_pinjaman: item.nominal_pinjaman,
+        tenor: item.tenor,
+        nama_marketing: item.marketing ?? '-',
+        tanggal_pengajuan: item.tanggal_pengajuan,
+        tanggal_survey: item.tanggal_survey,
+        pembiayaan: item.pembiayaan ?? '-',
+        pengajuan_id: Number(item.pengajuan_id),
+        nasabah_id: Number(item.nasabah_id),
       }));
-
       return {
         payload: {
           success: true,

@@ -28,8 +28,7 @@ export class CollateralBySHMRepositoryImpl
       orm.foto_kk_pemilik_shm,
       orm.foto_pbb,
       orm.foto_objek_jaminan,
-      orm.foto_buku_nikah_suami,
-      orm.foto_buku_nikah_istri,
+      orm.foto_buku_nikah_suami_istri,
       orm.foto_npwp,
       orm.foto_imb,
       orm.foto_surat_ahli_waris,
@@ -58,8 +57,7 @@ export class CollateralBySHMRepositoryImpl
     orm.foto_kk_pemilik_shm = domain.foto_kk_pemilik_shm;
     orm.foto_pbb = domain.foto_pbb;
     orm.foto_objek_jaminan = domain.foto_objek_jaminan;
-    orm.foto_buku_nikah_suami = domain.foto_buku_nikah_suami;
-    orm.foto_buku_nikah_istri = domain.foto_buku_nikah_istri;
+    orm.foto_buku_nikah_suami_istri = domain.foto_buku_nikah_suami_istri;
     orm.foto_npwp = domain.foto_npwp;
     orm.foto_imb = domain.foto_imb;
     orm.foto_surat_ahli_waris = domain.foto_surat_ahli_waris;
@@ -96,10 +94,8 @@ export class CollateralBySHMRepositoryImpl
     if (partial.foto_pbb) orm.foto_pbb = partial.foto_pbb;
     if (partial.foto_objek_jaminan)
       orm.foto_objek_jaminan = partial.foto_objek_jaminan;
-    if (partial.foto_buku_nikah_suami)
-      orm.foto_buku_nikah_suami = partial.foto_buku_nikah_suami;
-    if (partial.foto_buku_nikah_istri)
-      orm.foto_buku_nikah_istri = partial.foto_buku_nikah_istri;
+    if (partial.foto_buku_nikah_suami_istri)
+      orm.foto_buku_nikah_suami_istri = partial.foto_buku_nikah_suami_istri;
     if (partial.foto_npwp) orm.foto_npwp = partial.foto_npwp;
     if (partial.foto_imb) orm.foto_imb = partial.foto_imb;
     if (partial.foto_surat_ahli_waris)
