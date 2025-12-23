@@ -167,31 +167,17 @@ export type CollateralData =
   | CollateralKedinasanMOU
   | CollateralKedinasanNonMOU;
 
-// Guarantor
-// export interface GuarantorData {
-//   guarantor_id: number;
-//   guarantor_name: string;
-//   guarantor_nik: string;
-//   guarantor_phone: string;
-//   guarantor_relation: string;
-//   guarantor_address: string;
-// }
-
-// // Emergency Contact
-// export interface EmergencyContactData {
-//   emergency_id: number;
-//   emergency_name: string;
-//   emergency_phone: string;
-//   emergency_relation: string;
-// }
-
 // Main Interface - Complete Client Detail
+
+export type CollateralDataMap = {
+  [collateralType: string]: CollateralData;
+};
 export interface ClientDetailForSurveyData {
   client_profile: ClientProfileData;
   loan_application: LoanApplicationData;
   address_external: AddressData[];
   job_external: JobData | null;
-  collateral: CollateralData | null;
+  collateral: CollateralDataMap | null;
   // guarantors: GuarantorData[];
   // emergency_contacts: EmergencyContactData[];
 }

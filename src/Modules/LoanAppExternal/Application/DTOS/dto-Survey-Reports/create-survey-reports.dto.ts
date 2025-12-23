@@ -16,11 +16,11 @@ export class CreateSurveyReportsDto {
 
   @IsNotEmpty()
   @IsString()
-  berjumpa_siapa: string;
+  berjumpa_dengan: string;
 
   @IsNotEmpty()
   @IsString()
-  hubungan: string;
+  hubungan_dengan_nasabah: string;
 
   @IsNotEmpty()
   @IsString()
@@ -28,11 +28,11 @@ export class CreateSurveyReportsDto {
 
   @IsNotEmpty()
   @IsString()
-  hasil_cekling1: string;
+  hasil_cekling_1: string;
 
   @IsNotEmpty()
   @IsString()
-  hasil_cekling2: string;
+  hasil_cekling_2: string;
 
   @IsNotEmpty()
   @IsString()

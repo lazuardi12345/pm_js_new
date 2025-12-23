@@ -34,10 +34,12 @@ export class SVY_GetClientDetailForSurveyPurposeController {
 
     return {
       payload: {
-        success: true,
+        error: false,
         message: `Client Details for survey purpose was rendered successfully`,
         reference: 'SVY_CLIENT_DETAILS_SURVEY_OK',
-        data: res,
+        data: {
+          client_and_loan_detail: res,
+        },
       },
     };
   }

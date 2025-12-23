@@ -28,6 +28,8 @@ import { CA_LoanAppealResponseController } from './Presentation/Controllers/CA_L
 import { DraftLoanApplicationModule } from 'src/Shared/Modules/Drafts/Modules/CreateLoanAppInt.module';
 import { DraftRepeatOrderModule } from 'src/Shared/Modules/Drafts/Modules/DraftRepeatOrder.module';
 import { ApprovalRecommendationModule } from 'src/Modules/Admin/BI-Checking/Modules/approval-recommendation.module';
+import { CA_TriggerSurvey_UseCase } from './Applications/Services/CA_TriggerSurvey.usecase';
+import { CA_TriggerSurveyController } from './Presentation/Controllers/CA_TriggerSurvey.controller';
 
 @Module({
   imports: [
@@ -50,6 +52,7 @@ import { ApprovalRecommendationModule } from 'src/Modules/Admin/BI-Checking/Modu
     CA_GetAllApprovalRequest_Controller,
     CA_GetLoanApplicationByIdController,
     CA_LoanAppealResponseController,
+    CA_TriggerSurveyController,
   ],
   providers: [
     CA_ApproveOrRejectUseCase,
@@ -58,6 +61,7 @@ import { ApprovalRecommendationModule } from 'src/Modules/Admin/BI-Checking/Modu
     CA_GetApprovalHistory_UseCase,
     CA_GetLoanApplicationByIdUseCase,
     CA_LoanAppealResponseUseCase,
+    CA_TriggerSurvey_UseCase,
   ],
 })
 export class CreditAnalystExternalUseCaseModule {}

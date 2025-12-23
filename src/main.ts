@@ -29,6 +29,7 @@ async function bootstrap() {
         // 'http://localhost:5000',
         // 'http://127.0.0.1:5500',
         'http://192.182.6.100:3000',
+        'http://192.182.6.100:5173',
         'http://app.local:3000',
         'http://app.local:5000',
         'https://cash-gampang-ui.vercel.app',
@@ -44,13 +45,13 @@ async function bootstrap() {
     allowedHeaders: 'Content-Type, Authorization',
   });
 
-  app.use((req, res, next) => {
-    console.log('aku mah--------------------->');
-    console.log('Request Origin:', req.headers.origin);
-    console.log('Request Cookie:', req.headers);
-    console.log('Response Headers:', res.getHeaders());
-    next();
-  });
+  // app.use((req, res, next) => {
+  //   console.log('aku mah--------------------->');
+  //   console.log('Request Origin:', req.headers.origin);
+  //   console.log('Request Cookie:', req.headers);
+  //   console.log('Response Headers:', res.getHeaders());
+  //   next();
+  // });
 
   app.useGlobalPipes(
     new ValidationPipe({

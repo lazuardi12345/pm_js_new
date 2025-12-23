@@ -177,4 +177,10 @@ export interface ILoanApplicationExternalRepository {
   callSP_SVY_GetClientDetailForSurveyPurpose_External(
     loan_app_id: number,
   ): Promise<ClientDetailForSurveyData>;
+
+  //! ========== AdminContract (AC) ==========
+  callSP_AdCont_GetAllLoanData_External(
+    page: number,
+    pageSize: number,
+  ): Promise<any[]>;
 }

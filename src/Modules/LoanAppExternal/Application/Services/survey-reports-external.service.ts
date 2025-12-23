@@ -16,23 +16,26 @@ export class EmergencyContactExternalService {
     const now = new Date();
 
     const address = new SurveyReports(
-    dto.pengajuan_luar_id,                // pengajuanLuarId
-    dto.berjumpa_siapa,                  // berjumpaSiapa
-    dto.hubungan,                       // hubungan
-    dto.status_rumah,                    // statusRumah
-    dto.hasil_cekling1,                  // hasilCekling1
-    dto.hasil_cekling2,                  // hasilCekling2
-    dto.kesimpulan,                     // kesimpulan
-    dto.rekomendasi,                    // rekomendasi                   // fotoSurveys (array of SurveyPhotos)
-    undefined,                     // id (optional, null if not provided)
-    now,                                // createdAt
-    now,                                 // updatedAt
-    undefined
+      dto.pengajuan_luar_id, // pengajuanLuarId
+      dto.berjumpa_dengan, // berjumpaSiapa
+      dto.hubungan_dengan_nasabah, // hubungan
+      dto.status_rumah, // statusRumah
+      dto.hasil_cekling_1, // hasilCekling1
+      dto.hasil_cekling_2, // hasilCekling2
+      dto.kesimpulan, // kesimpulan
+      dto.rekomendasi, // rekomendasi                   // fotoSurveys (array of SurveyPhotos)
+      undefined, // id (optional, null if not provided)
+      now, // createdAt
+      now, // updatedAt
+      undefined,
     );
     return this.repo.save(address);
   }
 
-  async update(id: number, dto: UpdateSurveyReportsDto): Promise<SurveyReports> {
+  async update(
+    id: number,
+    dto: UpdateSurveyReportsDto,
+  ): Promise<SurveyReports> {
     return this.repo.update(id, dto);
   }
 

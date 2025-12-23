@@ -27,13 +27,24 @@ export class SVY_GetClientDetailForSurveyPurposeUseCase {
         );
       }
 
+      const rawCollateral = result[4]?.[0];
+
+      let collateral: Record<string, any> | null = null;
+
+      if (rawCollateral?.collateral_type) {
+        const { collateral_type, ...collateralData } = rawCollateral;
+
+        collateral = {
+          [collateral_type.toLowerCase()]: collateralData,
+        };
+      }
       // Map result sets ke interface
       const clientDetail: ClientDetailForSurveyData = {
         client_profile: result[0]?.[0] || null,
         loan_application: result[1]?.[0] || null,
         address_external: result[2]?.[0] || [],
         job_external: result[3]?.[0] || null,
-        collateral: result[4]?.[0] || null,
+        collateral,
       };
 
       // Validasi data minimal yang diperlukan
