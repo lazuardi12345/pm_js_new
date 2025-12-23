@@ -29,6 +29,7 @@ import {
 import { SurveyListResult } from 'src/Shared/Interface/SVY_SurveyList/SurveyList.interface';
 import { Client } from 'minio';
 import { ClientDetailForSurveyData } from 'src/Shared/Interface/SVY_ClientDetails/ClientDetails.interface';
+import { HistorySurveyExternalData } from 'src/Shared/Interface/SVY_SurveyHistory/SVY_SurveyHistory.interface';
 
 @Injectable()
 export class LoanApplicationExternalRepositoryImpl
@@ -597,6 +598,70 @@ export class LoanApplicationExternalRepositoryImpl
       );
 
       return result;
+    } catch (error) {
+      throw new Error(error.message || 'Failed to execute stored procedure');
+    }
+  }
+
+  async callSP_SVY_GetSurveyHistoryByLoanAppId_External(
+    loan_app_id: number,
+  ): Promise<HistorySurveyExternalData> {
+    try {
+      console.log(loan_app_id);
+      const manager = this.ormRepository.manager;
+      const result = await manager.query(
+        'CALL SVY_GetSurveyHistoryByLoanAppId_External(?)',
+        [loan_app_id],
+      );
+
+      const reportData = result[0] || [];
+      const photosData = result[1] || [];
+
+      const report = reportData.length > 0 ? reportData[0] : null;
+
+      // Remove id from report
+      let reportWithoutId = null;
+      if (report) {
+        const { id, ...rest } = report;
+        reportWithoutId = rest;
+      }
+
+      // Remove id and hasil_survey_id from photos
+      const photosWithoutId = photosData.map(
+        ({ id, hasil_survey_id, ...photo }) => photo,
+      );
+
+      return {
+        survey_report: reportWithoutId,
+        survey_photos: photosWithoutId,
+      };
+    } catch (error) {
+      throw new Error(error.message || 'Failed to execute stored procedure');
+    }
+  }
+
+  async callSP_SVY_GetAllSurveyHistory_External(
+    page: number,
+    pageSize: number,
+  ): Promise<{ data: any[]; total: number }> {
+    try {
+      const manager = this.ormRepository.manager;
+      const result = await manager.query(
+        'CALL SVY_GetAllSurveyHistory_External(?, ?)',
+        [page, pageSize],
+      );
+
+      console.log('RAW RESULT:', result);
+
+      // result[0] = [{total: X}]
+      // result[1] = array of survey reports
+      const total = result[0] && result[0].length > 0 ? result[0][0].total : 0;
+      const data = result[1] || [];
+
+      return {
+        data,
+        total,
+      };
     } catch (error) {
       throw new Error(error.message || 'Failed to execute stored procedure');
     }
