@@ -1,14 +1,12 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
-import { error } from 'console';
 import {
   ILoanApplicationExternalRepository,
   LOAN_APPLICATION_EXTERNAL_REPOSITORY,
 } from 'src/Modules/LoanAppExternal/Domain/Repositories/loanApp-external.repository';
-import { SurveyListItem } from 'src/Shared/Interface/SVY_SurveyList/SurveyList.interface';
 
 @Injectable()
-export class SVY_GetAllScheduledSurveyListUseCase {
+export class SVY_GetAllSurveyHistoryUseCase {
   constructor(
     @Inject(LOAN_APPLICATION_EXTERNAL_REPOSITORY)
     private readonly loanAppRepo: ILoanApplicationExternalRepository,
@@ -19,34 +17,32 @@ export class SVY_GetAllScheduledSurveyListUseCase {
       const offset = (page - 1) * pageSize;
 
       const result =
-        await this.loanAppRepo.callSP_SVY_GetAllScheduledSurveyList_External(
+        await this.loanAppRepo.callSP_SVY_GetAllSurveyHistory_External(
           page,
           pageSize,
         );
 
       const { data, total } = result;
-      const formattedData: SurveyListItem[] = data.map(
-        (item: any, index: number) => ({
-          no: offset + index + 1,
-          nama_nasabah: item.nama_nasabah ?? '-',
-          nominal_pinjaman: item.nominal_pinjaman,
-          tenor: item.tenor ? `${item.tenor} Bulan` : '-',
-          marketing: item.marketing ?? '-',
-          tanggal_pengajuan: item.created_at,
-          jadwal_survey: item.schedule_time,
-          pembiayaan: item.jenis_pembiayaan ?? '-',
-          pengajuan_id: Number(item.id),
-          nasabah_id: item.nasabah_id,
-        }),
-      );
+
+      const formattedData = data.map((item: any, index: number) => ({
+        no: offset + index + 1,
+        berjumpa_siapa: item.berjumpa_siapa ?? '-',
+        hubungan: item.hubungan ?? '-',
+        status_rumah: item.status_rumah ?? '-',
+        hasil_cekling1: item.hasil_cekling1 ?? '-',
+        hasil_cekling2: item.hasil_cekling2 ?? '-',
+        kesimpulan: item.kesimpulan ?? '-',
+        rekomendasi: item.rekomendasi ?? '-',
+        created_at: item.created_at,
+        updated_at: item.updated_at,
+      }));
 
       return {
         payload: {
-          error: false,
-          message: `Survey List rendered successfully`,
-          reference: 'SVY_SURVEY_LIST_OK',
+          success: true,
+          message: 'Survey reports rendered successfully',
+          reference: 'SVY_SURVEY_REPORTS_OK',
           data: { result: formattedData },
-          total,
           page,
           pageSize,
         },
@@ -55,7 +51,7 @@ export class SVY_GetAllScheduledSurveyListUseCase {
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: 'Failed to fetch survey list',
+          error: 'Failed to fetch survey reports',
           message: error?.message ?? 'Unknown error',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,

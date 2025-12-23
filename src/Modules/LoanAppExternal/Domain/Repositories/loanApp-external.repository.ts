@@ -25,6 +25,7 @@ import {
   SurveyListResult,
 } from 'src/Shared/Interface/SVY_SurveyList/SurveyList.interface';
 import { ClientDetailForSurveyData } from 'src/Shared/Interface/SVY_ClientDetails/ClientDetails.interface';
+import { HistorySurveyExternalData } from 'src/Shared/Interface/SVY_SurveyHistory/SVY_SurveyHistory.interface';
 
 export const LOAN_APPLICATION_EXTERNAL_REPOSITORY =
   ' LOAN_APPLICATION_EXTERNAL_REPOSITORY';
@@ -177,6 +178,15 @@ export interface ILoanApplicationExternalRepository {
   callSP_SVY_GetClientDetailForSurveyPurpose_External(
     loan_app_id: number,
   ): Promise<ClientDetailForSurveyData>;
+
+  callSP_SVY_GetSurveyHistoryByLoanAppId_External(
+    loan_app_id: number,
+  ): Promise<HistorySurveyExternalData>;
+
+  callSP_SVY_GetAllSurveyHistory_External(
+    page: number,
+    pageSize: number,
+  ): Promise<{ data: any[]; total: number }>;
 
   //! ========== AdminContract (AC) ==========
   callSP_AdCont_GetAllLoanData_External(

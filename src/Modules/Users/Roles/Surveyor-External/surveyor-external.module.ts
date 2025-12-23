@@ -11,12 +11,19 @@ import { SVY_GetAllUnscheduledSurveyListUseCase } from './Applications/Services/
 import { SVY_GetAllScheduledSurveyListUseCase } from './Applications/Services/SVY_GetAllScheduledSurveyList.usecase';
 import { SVY_SetSurveySchedule_UseCase } from './Applications/Services/SVY_SetSurveySchedule.usecase';
 import { SVY_CreateSurveyReportUseCase } from './Applications/Services/SVY_CreateSurveyResult.usecase';
+import { SVY_GetClientDetailForSurveyPurposeUseCase } from './Applications/Services/SVY_GetClientDetailForSurveyPurpose.usecase';
+import { SVY_GetSurveyHistoryByLoanAppIdExtUseCase } from './Applications/Services/SVY_GetSurveyHistoryByLoanAppIdExt.usecase';
+import { SVY_GetAllSurveyHistoryUseCase } from './Applications/Services/SVY_GetAllSurveyHistory.usecase';
 
 //? CONTROLLER
 import { SVY_GetAllUnscheduledSurveyListController } from './Presentation/Controllers/SVY_GetAllUnscheduledSurveyList.controller';
 import { SVY_GetAllScheduledSurveyListController } from './Presentation/Controllers/SVY_GetAllScheduledSurveyList.controller';
 import { SVY_SetSurveyScheduleController } from './Presentation/Controllers/SVY_SetSurveyList.controller';
 import { SVY_CreateSurveyReportController } from './Presentation/Controllers/SVY_CreateSurveyResult.controller';
+import { SVY_GetClientDetailForSurveyPurposeController } from './Presentation/Controllers/SVY_GetClientDetailForSurveyPurpose.controller';
+import { SVY_GetSurveyHistoryByLoanAppIdExtController } from './Presentation/Controllers/SVY_GetSurveyHistoryByLoanAppIdExt.controller';
+import { SVY_GetAllSurveyHistoryController } from './Presentation/Controllers/SVY_GetAllSurveyHistory.controller';
+
 import { UNIT_OF_WORK } from 'src/Modules/LoanAppInternal/Domain/Repositories/IUnitOfWork.repository';
 import { DataSource } from 'typeorm';
 import { TypeOrmUnitOfWork } from 'src/Modules/LoanAppInternal/Infrastructure/Repositories/UnitOfWork.repository.impl';
@@ -24,8 +31,6 @@ import { FILE_STORAGE_SERVICE } from 'src/Shared/Modules/Storage/Domain/Reposito
 import { MinioFileStorageService } from 'src/Shared/Modules/Storage/Infrastructure/Service/ObjectStorageServer.service';
 import { ClientExternalModule } from 'src/Modules/LoanAppExternal/Modules/client-external.module';
 import { ClientExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/client-external.orm-entity';
-import { SVY_GetClientDetailForSurveyPurposeController } from './Presentation/Controllers/SVY_GetClientDetailForSurveyPurpose.controller';
-import { SVY_GetClientDetailForSurveyPurposeUseCase } from './Applications/Services/SVY_GetClientDetailForSurveyPurpose.usecase';
 @Module({
   imports: [
     LoanApplicationExternalModule,
@@ -41,6 +46,8 @@ import { SVY_GetClientDetailForSurveyPurposeUseCase } from './Applications/Servi
     SVY_GetAllScheduledSurveyListController,
     SVY_CreateSurveyReportController,
     SVY_GetClientDetailForSurveyPurposeController,
+    SVY_GetSurveyHistoryByLoanAppIdExtController,
+    SVY_GetAllSurveyHistoryController,
   ],
   providers: [
     {
@@ -57,6 +64,8 @@ import { SVY_GetClientDetailForSurveyPurposeUseCase } from './Applications/Servi
     SVY_GetAllScheduledSurveyListUseCase,
     SVY_CreateSurveyReportUseCase,
     SVY_GetClientDetailForSurveyPurposeUseCase,
+    SVY_GetSurveyHistoryByLoanAppIdExtUseCase,
+    SVY_GetAllSurveyHistoryUseCase,
   ],
 })
 export class SurveyorExternalUseCaseModule {}
