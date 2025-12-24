@@ -11,8 +11,8 @@ export interface ILoanApplicationDraftExternalRepository {
   findStatus(
     nik: string,
   ): Promise<{ draft_id: string; isNeedCheck: boolean } | null>;
-  findById(id: string): Promise<LoanApplicationExtEntity | null>;
   findByMarketingId(marketingId: number): Promise<LoanApplicationExtEntity[]>;
+  findById(id: string): Promise<LoanApplicationExtEntity | null>;
   updateDraftById(
     id: string,
     updateData: Partial<LoanApplicationExtEntity>,

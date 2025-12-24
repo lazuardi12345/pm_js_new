@@ -395,8 +395,8 @@ export class CollateralBySHMExternal {
   @Prop({ type: String })
   foto_pbb?: string;
 
-  @Prop({ type: [String] })
-  foto_objek_jaminan?: string[]; // ARRAY
+  @Prop({ type: String })
+  foto_objek_jaminan?: string;
 
   @Prop({ type: String })
   foto_buku_nikah_suami?: string;

@@ -720,13 +720,8 @@ export class MKT_CreateLoanApplicationUseCase {
                     null,
                 ),
                 parseFileUrl(
-                  documents_files?.foto_buku_nikah_suami ??
-                    collateral_shm_external.foto_buku_nikah_suami ??
-                    null,
-                ),
-                parseFileUrl(
-                  documents_files?.foto_buku_nikah_istri ??
-                    collateral_shm_external.foto_buku_nikah_istri ??
+                  documents_files?.foto_buku_nikah_suami_istri ??
+                    collateral_shm_external.foto_buku_nikah_suami_istri ??
                     null,
                 ),
                 parseFileUrl(
