@@ -1384,8 +1384,7 @@ export interface TypeLoanApplicationDetail {
     foto_kk_pemilik_shm?: string;
     foto_pbb?: string;
     foto_objek_jaminan?: string;
-    foto_buku_nikah_suami?: string;
-    foto_buku_nikah_istri?: string;
+    foto_buku_nikah_suami_istri?: string;
     foto_npwp?: string;
     foto_imb?: string;
     foto_surat_ahli_waris?: string;

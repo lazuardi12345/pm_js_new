@@ -6,7 +6,7 @@ import { ApprovalExternalStatus } from 'src/Shared/Enums/External/Approval.enum'
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
 import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/roles.decorator';
 
-@Controller('ca/ext/loan-app')
+@Controller('ca/ext/loan-apps')
 export class CA_ApprovedOrRejectController {
   constructor(
     private readonly approveOrRejectUseCase: CA_ApproveOrRejectUseCase,

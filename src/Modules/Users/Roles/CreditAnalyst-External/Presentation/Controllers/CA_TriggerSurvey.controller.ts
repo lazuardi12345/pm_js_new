@@ -15,7 +15,7 @@ import { CA_TriggerSurvey_UseCase } from '../../Applications/Services/CA_Trigger
 
 @Controller('ca/ext/loan-apps')
 @UseGuards(RolesGuard)
-@Roles(USERTYPE.SVY)
+@Roles(USERTYPE.CA)
 export class CA_TriggerSurveyController {
   constructor(
     @Inject(CA_TriggerSurvey_UseCase)

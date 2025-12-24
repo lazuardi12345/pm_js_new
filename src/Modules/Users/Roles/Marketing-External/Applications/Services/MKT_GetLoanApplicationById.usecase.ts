@@ -471,8 +471,8 @@ export class MKT_GetLoanApplicationByIdUseCase {
             foto_kk_pemilik_shm: attachmentData.foto_kk_pemilik_shm,
             foto_pbb: attachmentData.foto_pbb,
             foto_objek_jaminan: attachmentData.foto_objek_jaminan,
-            foto_buku_nikah_suami: attachmentData.foto_buku_nikah_suami,
-            foto_buku_nikah_istri: attachmentData.foto_buku_nikah_istri,
+            foto_buku_nikah_suami_istri:
+              attachmentData.foto_buku_nikah_suami_istri,
             foto_npwp: attachmentData.foto_npwp,
             foto_imb: attachmentData.foto_imb,
             foto_surat_ahli_waris: attachmentData.foto_surat_ahli_waris,
