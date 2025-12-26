@@ -94,14 +94,12 @@ export class LoanApplicationExtRepositoryImpl
 
     const existingObj = existing.toObject();
 
-    // Data cicilan existing dan update payload
     const existingOtherLoans = (existingObj.other_exist_loan_external ??
       {}) as OtherExistLoansExternalType;
 
     const newOtherLoans = (updateData.other_exist_loan_external ??
       {}) as OtherExistLoansExternalType;
 
-    // Ambil array cicilan dari masing-masing source
     const existingCicilanArr = Array.isArray(existingOtherLoans.cicilan)
       ? existingOtherLoans.cicilan
       : [];
@@ -110,7 +108,6 @@ export class LoanApplicationExtRepositoryImpl
       ? newOtherLoans.cicilan
       : [];
 
-    // Merge tanpa duplikat berdasarkan nama_pembiayaan
     const mergedCicilan = [
       ...existingCicilanArr,
       ...newCicilanArr.filter(

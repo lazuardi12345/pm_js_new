@@ -133,19 +133,18 @@ export class MKT_GetAllLoanApplicationUseCase {
         dataArray.map(async (item: any) => {
           try {
             console.log('kntlL: >>>>>>', item);
-            const noKtp = item?.nik ?? null;
+            const draftId = item?.draft_id ?? null;
             let draftData: any = null;
 
             try {
-              if (noKtp !== null) {
-                draftData = await this.loanAppDraftRepo.findStatus(noKtp);
-                console.log('puki', draftData);
+              if (draftId) {
+                draftData = {
+                  draft_id: draftId,
+                  isNeedCheck: !!item?.isNeedCheck,
+                };
               }
             } catch (draftErr) {
-              console.error(
-                `Warning: failed to fetch draft status for no_ktp=${noKtp}`,
-                draftErr,
-              );
+              console.error(`Warning: failed to fetch draft status`, draftErr);
             }
 
             let approval_recommendation: any = null;

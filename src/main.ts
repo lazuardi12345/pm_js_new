@@ -13,7 +13,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   process.env.TZ = 'Asia/Jakarta';
   const app = await NestFactory.create(AppModule, {
-    logger: ['error', 'warn', 'log', 'debug'], // atur level log
+    logger: ['error', 'warn', 'log', 'debug'],
   });
   app.setGlobalPrefix('', {
     exclude: ['storage/(.*)'],
@@ -24,18 +24,20 @@ async function bootstrap() {
   app.enableCors({
     origin: (origin, callback) => {
       const allowedOrigins = [
-        // 'http://localhost:5173',
-        // 'http://localhost:3000',
-        // 'http://localhost:5000',
-        // 'http://127.0.0.1:5500',
-        'http://192.182.6.100:3000',
-        'http://192.182.6.100:5173',
         'http://app.local:3000',
-        'http://app.local:5000',
-        'https://cash-gampang-ui.vercel.app',
+        'http://app.local:3002',
+        'http://app.local:3001',
+        'http://app.local:3004',
+        'http://192.182.6.100:3000',
+        'http://192.182.6.100:3001',
+        'http://192.182.6.100:3002',
+        'http://192.182.6.100:3003',
+        'http://192.182.6.100:3004',
+        'http://admin-portal.local',
+        'http://loan-apps.local',
       ];
       if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, origin);
+        callback(null, true);
       } else {
         callback(new Error('Not allowed by CORS'));
       }
@@ -44,14 +46,6 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type, Authorization',
   });
-
-  // app.use((req, res, next) => {
-  //   console.log('aku mah--------------------->');
-  //   console.log('Request Origin:', req.headers.origin);
-  //   console.log('Request Cookie:', req.headers);
-  //   console.log('Response Headers:', res.getHeaders());
-  //   next();
-  // });
 
   app.useGlobalPipes(
     new ValidationPipe({

@@ -65,4 +65,8 @@ export class CreateLoanApplicationInternalDto {
   @IsOptional()
   @IsString()
   alasan_banding?: string;
+
+  @IsOptional()
+  @IsString()
+  draft_id?: string;
 }

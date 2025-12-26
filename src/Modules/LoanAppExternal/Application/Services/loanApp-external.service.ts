@@ -40,6 +40,7 @@ export class LoanApplicationExternalService {
       dto.is_banding,
       dto.alasan_banding,
       dto.survey_schedule,
+      dto.draft_id,
       now,
       now,
       null,

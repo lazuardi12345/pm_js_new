@@ -46,6 +46,7 @@ export class LoanApplicationInternalService {
       dto.notes,
       dto.is_banding,
       dto.alasan_banding,
+      dto.draft_id,
       now,
     );
     return this.repo.save(loanApplication);

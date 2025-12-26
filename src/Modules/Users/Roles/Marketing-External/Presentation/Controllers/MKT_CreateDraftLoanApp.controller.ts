@@ -170,6 +170,8 @@ export class MKT_CreateDraftLoanApplicationController {
         ? JSON.parse(updateData.payload)
         : (updateData.payload ?? {});
 
+    console.log('payloadParentPatchDraft', { payloadParent });
+
     return this.MKT_CreateDraftLoanAppUseCase.updateDraftById(
       Id,
       marketingId,

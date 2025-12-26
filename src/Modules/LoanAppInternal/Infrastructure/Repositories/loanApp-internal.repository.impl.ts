@@ -62,6 +62,7 @@ export class LoanApplicationInternalRepositoryImpl
       orm.notes,
       orm.is_banding,
       orm.alasan_banding,
+      orm.draft_id,
       orm.updated_at,
     );
   }
@@ -86,6 +87,7 @@ export class LoanApplicationInternalRepositoryImpl
       notes: domainEntity.notes,
       is_banding: domainEntity.is_banding,
       alasan_banding: domainEntity.alasan_banding,
+      draft_id: domainEntity.draft_id,
       created_at: domainEntity.created_at,
       updated_at: domainEntity.updated_at,
       deleted_at: domainEntity.deleted_at,
@@ -118,6 +120,7 @@ export class LoanApplicationInternalRepositoryImpl
     if (partial.notes) ormData.notes = partial.notes;
     if (partial.is_banding) ormData.is_banding = partial.is_banding;
     if (partial.alasan_banding) ormData.alasan_banding = partial.alasan_banding;
+    if (partial.draft_id) ormData.draft_id = partial.draft_id;
     if (partial.created_at) ormData.created_at = partial.created_at;
     if (partial.updated_at) ormData.updated_at = partial.updated_at;
     if (partial.deleted_at) ormData.deleted_at = partial.deleted_at;
@@ -140,12 +143,10 @@ export class LoanApplicationInternalRepositoryImpl
     const ormEntities = await this.ormRepository.find({
       where: { nasabah: { id: nasabahId } },
     });
-    console.log(
-      'REMEMBER SUMMER DAAYYYSSSS >>>>>>>>>>>>>>>> > : ',
-      ormEntities,
-    );
     return ormEntities.map(this.toDomain);
   }
+
+  // async findLatestApprovalRecommendation(nik): Promise<> {}
 
   async save(
     loanApp: LoanApplicationInternal,

@@ -43,19 +43,56 @@ import { CollateralBySHM } from 'src/Modules/LoanAppExternal/Domain/Entities/col
 import { CollateralByUMKM } from 'src/Modules/LoanAppExternal/Domain/Entities/collateral-umkm.entity';
 import { DetailInstallmentItemsExternal } from 'src/Modules/LoanAppExternal/Domain/Entities/detail-installment-items-external.entity';
 import { CicilanLainEnum } from 'src/Shared/Enums/External/Other-Exist-Loans.enum';
+import {
+  APPROVAL_RECOMMENDATION_REPOSITORY,
+  IApprovalRecommendationRepository,
+} from 'src/Modules/Admin/BI-Checking/Domain/Repositories/approval-recommendation.repository';
 
 @Injectable()
 export class MKT_CreateLoanApplicationUseCase {
   constructor(
     @Inject(CLIENT_EXTERNAL_REPOSITORY)
     private readonly clientRepo: IClientExternalRepository,
+    @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
+    private readonly approvalRecommendationRepo: IApprovalRecommendationRepository,
     @Inject(UNIT_OF_WORK)
     private readonly uow: IUnitOfWork,
   ) {}
 
-  async execute(dto: CreateLoanApplicationExternalDto, marketing_id: number) {
+  async execute(
+    dto: CreateLoanApplicationExternalDto,
+    marketing_id: number,
+    draftId: string,
+  ) {
     const now = new Date();
     const nowWIB = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+
+    if (!draftId) {
+      throw new BadRequestException({
+        payload: {
+          error: true,
+          message: 'DraftId must be filled',
+          reference: 'VALIDATION_ERROR',
+        },
+      });
+    }
+
+    const approvalRecommendationCheck =
+      await this.approvalRecommendationRepo.findByDraftId(draftId);
+
+    const nominal = Number(
+      dto.loan_application_external?.nominal_pinjaman ?? 0,
+    );
+
+    if (!approvalRecommendationCheck && nominal >= 7000000) {
+      throw new BadRequestException({
+        payload: {
+          error: true,
+          message: 'Approval Recommendation has no exist',
+          reference: 'VALIDATION_ERROR',
+        },
+      });
+    }
 
     try {
       return await this.uow.start(async () => {
@@ -191,8 +228,6 @@ export class MKT_CreateLoanApplicationUseCase {
           ),
         );
 
-        console.log('kuontol: >>>>', { id: customer.id! });
-
         await this.uow.jobExternalRepo.save(
           new JobExternal(
             { id: customer.id! },
@@ -277,6 +312,8 @@ export class MKT_CreateLoanApplicationUseCase {
             loan_application_external.catatan_marketing,
             isBandingBoolean,
             loan_application_external.alasan_banding,
+            loan_application_external?.survey_schedule,
+            approvalRecommendationCheck?.draft_id,
             nowWIB,
             nowWIB,
             undefined,
@@ -333,8 +370,8 @@ export class MKT_CreateLoanApplicationUseCase {
           ),
         );
 
-        if (dto?.isHaveInstallment && dto.other_exist_loan_external.cicilan) {
-          const otherDto = dto.other_exist_loan_external;
+        if (dto?.isHaveInstallment && other_exist_loan_external.cicilan) {
+          const otherDto = other_exist_loan_external;
 
           const cicilanLainEnum =
             dto.isHaveInstallment && otherDto.cicilan?.length

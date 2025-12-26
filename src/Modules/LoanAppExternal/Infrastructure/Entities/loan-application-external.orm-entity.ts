@@ -116,6 +116,10 @@ export class LoanApplicationExternal_ORM_Entity {
   @Column({ type: 'date', nullable: true })
   survey_schedule?: Date;
 
+  @Column({ type: 'char', length: 24, nullable: true })
+  @Index('IDX_DraftID_at_LoanApplicationExternal', ['draft_id']) // <- index explicit name
+  draft_id?: string;
+
   @CreateDateColumn({ type: 'timestamp', nullable: true })
   created_at?: Date;
 
