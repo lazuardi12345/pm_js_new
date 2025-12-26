@@ -86,4 +86,8 @@ export class CreateLoanApplicationExternalDto {
   @IsOptional()
   @IsDate()
   survey_schedule?: Date;
+
+  @IsOptional()
+  @IsString()
+  draft_id?: string;
 }

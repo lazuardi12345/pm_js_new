@@ -28,6 +28,7 @@ export class LoanApplicationInternal {
     public notes?: string,
     public is_banding: boolean = false,
     public alasan_banding?: string,
+    public draft_id?: string,
     public updated_at?: Date,
   ) {}
 

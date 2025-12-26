@@ -6,6 +6,7 @@ import {
   InternalServerErrorException,
   UseGuards,
   ValidationPipe,
+  Param,
 } from '@nestjs/common';
 import { MKT_CreateLoanApplicationUseCase } from '../../Applications/Services/MKT_CreateLoanApplication.usecase';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
@@ -17,9 +18,10 @@ export class MKT_CreateLoanApplicationController {
     private readonly createLoanApplication: MKT_CreateLoanApplicationUseCase,
   ) {}
 
-  @Post('create')
+  @Post('create/:draft_id')
   async submitLoanApp(
     @CurrentUser('id') marketingId: number,
+    @Param('draft_id') draftId: string,
     @Body() body: any, // Terima apa saja dulu
   ) {
     try {
@@ -35,6 +37,7 @@ export class MKT_CreateLoanApplicationController {
       return await this.createLoanApplication.execute(
         validatedDto,
         marketingId,
+        draftId,
       );
     } catch (error) {
       console.error('Error occurred:', error);

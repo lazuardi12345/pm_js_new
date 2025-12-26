@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   OneToMany,
+  Index,
 } from 'typeorm';
 import { ClientInternal_ORM_Entity } from './client-internal.orm-entity';
 // import { Notification } from 'src/Shared/Modules/Notifications/entities/notification.entity';
@@ -98,6 +99,10 @@ export class LoanApplicationInternal_ORM_Entity {
 
   @DeleteDateColumn({ type: 'timestamp', nullable: true })
   deleted_at?: Date | null;
+
+  @Column({ type: 'char', length: 24, nullable: true })
+  @Index('IDX_DraftID_at_LoanApplicationInternal', ['draft_id']) // <- index explicit name
+  draft_id?: string;
 
   // // * Internal Loan Application (Pengajuans) RELATIONSHIPS TO ANOTHER ENTITIES
   // @OneToMany(() => Notification, (notif) => notif.pengajuan_dalam)

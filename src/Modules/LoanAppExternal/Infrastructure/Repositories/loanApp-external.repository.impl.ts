@@ -26,8 +26,6 @@ import {
   TypeApprovalDetail,
   TypeLoanApplicationDetail,
 } from 'src/Modules/Users/Roles/Marketing-External/Applications/DTOS/MKT_CreateLoanApplicationExternal.dto';
-import { SurveyListResult } from 'src/Shared/Interface/SVY_SurveyList/SurveyList.interface';
-import { Client } from 'minio';
 import { ClientDetailForSurveyData } from 'src/Shared/Interface/SVY_ClientDetails/ClientDetails.interface';
 import { HistorySurveyExternalData } from 'src/Shared/Interface/SVY_SurveyHistory/SVY_SurveyHistory.interface';
 
@@ -66,6 +64,7 @@ export class LoanApplicationExternalRepositoryImpl
       orm.is_banding,
       orm.alasan_banding,
       orm.survey_schedule,
+      orm.draft_id,
       orm.created_at,
       orm.updated_at,
       orm.deleted_at,
@@ -95,6 +94,7 @@ export class LoanApplicationExternalRepositoryImpl
       is_banding: domain.is_banding,
       alasan_banding: domain.alasan_banding,
       survey_schedule: domain.survey_schedule,
+      draft_id: domain.draft_id,
       created_at: domain.created_at,
       updated_at: domain.updated_at,
       deleted_at: domain.deleted_at,
@@ -135,6 +135,7 @@ export class LoanApplicationExternalRepositoryImpl
     if (partial.is_banding !== undefined) orm.is_banding = partial.is_banding;
     if (partial.alasan_banding) orm.alasan_banding = partial.alasan_banding;
     if (partial.survey_schedule) orm.survey_schedule = partial.survey_schedule;
+    if (partial.draft_id) orm.draft_id = partial.draft_id;
     if (partial.created_at) orm.created_at = partial.created_at;
     if (partial.updated_at) orm.updated_at = partial.updated_at;
     if (partial.deleted_at) orm.deleted_at = partial.deleted_at;

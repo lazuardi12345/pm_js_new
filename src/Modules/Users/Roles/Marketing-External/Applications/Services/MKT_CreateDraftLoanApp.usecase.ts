@@ -235,6 +235,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     type?: ExternalCollateralType,
   ) {
     const { payload } = updateData;
+    console.log('PUKEY', payload);
     const loanApp = await this.loanAppDraftRepo.findById(Id);
 
     if (!payload) {
