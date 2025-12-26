@@ -18,10 +18,10 @@ export class SPV_ApprovedOrRejectController {
     @Body()
     body: {
       status: ApprovalExternalStatus;
-      tenor_persetujuan?: number;
-      nominal_persetujuan?: number;
+      approved_tenor?: number;
+      approved_amount?: number;
       analisa?: string;
-      catatan?: string;
+      kesimpulan?: string;
     },
     @CurrentUser('id') supervisorId: number,
   ) {
@@ -36,9 +36,9 @@ export class SPV_ApprovedOrRejectController {
       supervisorId,
       USERTYPE.SPV,
       body.status,
-      body.tenor_persetujuan,
-      body.nominal_persetujuan,
-      body.catatan,
+      body.approved_tenor,
+      body.approved_amount,
+      body.kesimpulan,
     );
 
     // Return response

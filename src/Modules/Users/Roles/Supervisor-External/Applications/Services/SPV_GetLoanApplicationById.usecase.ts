@@ -19,7 +19,7 @@ import {
   DRAFT_LOAN_APPLICATION_EXTERNAL_REPOSITORY,
   ILoanApplicationDraftExternalRepository,
 } from 'src/Shared/Modules/Drafts/Domain/Repositories/ext/LoanAppExt.repository';
-import { LoanType } from 'src/Shared/Enums/External/Loan-Application.enum';
+// import { LoanType } from 'src/Shared/Enums/External/Loan-Application.enum';
 
 @Injectable()
 export class SPV_GetLoanApplicationByIdUseCase {
@@ -467,8 +467,8 @@ export class SPV_GetLoanApplicationByIdUseCase {
             foto_kk_pemilik_shm: attachmentData.foto_kk_pemilik_shm,
             foto_pbb: attachmentData.foto_pbb,
             foto_objek_jaminan: attachmentData.foto_objek_jaminan,
-            foto_buku_nikah_suami: attachmentData.foto_buku_nikah_suami,
-            foto_buku_nikah_istri: attachmentData.foto_buku_nikah_istri,
+            foto_buku_nikah_suami_istri:
+              attachmentData.foto_buku_nikah_suami_istri,
             foto_npwp: attachmentData.foto_npwp,
             foto_imb: attachmentData.foto_imb,
             foto_surat_ahli_waris: attachmentData.foto_surat_ahli_waris,

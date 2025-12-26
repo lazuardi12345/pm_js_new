@@ -48,7 +48,7 @@ export class ApprovalExternal_ORM_Entity {
   @Column({ type: 'text', nullable: true })
   analisa?: string | null;
 
-  @Column({ type: 'decimal', precision: 8, scale: 2, nullable: true })
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
   nominal_persetujuan?: number;
 
   @Column({ type: 'int', nullable: true })
