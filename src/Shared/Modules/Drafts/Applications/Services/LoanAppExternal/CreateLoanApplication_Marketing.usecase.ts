@@ -11,7 +11,6 @@ import {
 } from '../../../Domain/Repositories/ext/LoanAppExt.repository';
 import { CreateDraftLoanApplicationExtDto } from '../../DTOS/LoanAppExt_MarketingInput/CreateDraft_LoanAppExt.dto';
 import { LoanApplicationExtEntity } from '../../../Domain/Entities/ext/LoanAppExt.entity';
-import { UpdateDraftLoanApplicationDto } from '../../DTOS/LoanAppInt_MarketingInput/UpdateDraft_LoanAppInt.dto';
 import { isEqual, merge } from 'lodash';
 
 @Injectable()
@@ -26,7 +25,6 @@ export class CreateDraftLoanApplicationExtUseCase {
     dto: CreateDraftLoanApplicationExtDto,
   ) {
     try {
-      console.log('LU GUA CALL DISNI MEK', dto);
       const loanApp = await this.loanAppDraftRepo.create({
         marketing_id: marketingId,
         client_external: dto.payload.client_external,
@@ -135,10 +133,6 @@ export class CreateDraftLoanApplicationExtUseCase {
   }
 
   async updateDraftById(id: string, updateData: any, files?: any) {
-    console.log('🟢 [updateDraftById] START');
-    console.log('➡️ Incoming ID:', id);
-    console.log('➡️ Incoming Raw Body:', updateData);
-
     const existingDraft = await this.loanAppDraftRepo.findById(id);
     if (!existingDraft) throw new Error('Draft tidak ditemukan');
 
@@ -151,9 +145,7 @@ export class CreateDraftLoanApplicationExtUseCase {
     if (typeof payloadData === 'string') {
       try {
         payloadData = JSON.parse(payloadData);
-        console.log('✅ Payload parsed from string JSON');
       } catch (err) {
-        console.error('⚠️ Payload JSON invalid:', err);
         throw new BadRequestException('Payload JSON tidak valid');
       }
     }

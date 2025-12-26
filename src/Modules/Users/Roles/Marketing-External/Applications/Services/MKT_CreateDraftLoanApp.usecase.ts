@@ -98,7 +98,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
 
         if (jenis_pembiayaan && dto.loan_application_external) {
           dto.loan_application_external.jenis_pembiayaan = jenis_pembiayaan;
-          console.log(`✅ Assigned jenis_pembiayaan: ${jenis_pembiayaan}`);
+          console.log(`Assigned jenis_pembiayaan: ${jenis_pembiayaan}`);
         }
 
         Object.values(collateralFieldMap).forEach((field) => {
@@ -107,7 +107,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
           }
         });
         console.log(
-          `✅ Cleaned collateral. Only keeping: ${targetCollateralField}`,
+          `Cleaned collateral. Only keeping: ${targetCollateralField}`,
         );
       }
 
@@ -405,15 +405,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         ...filePaths,
       };
 
-      const parseBool = (v: any) =>
-        v === true || v === 'true'
-          ? true
-          : v === false || v === 'false'
-            ? false
-            : undefined;
-
       const entityUpdate: Partial<LoanApplicationExtEntity> = {
-        ...payload,
         collateral_shm: {
           ...(existingDraft.collateral_shm ?? {}),
           ...(payload.collateral_shm ?? {}),

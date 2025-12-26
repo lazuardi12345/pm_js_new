@@ -53,7 +53,7 @@ export class ApprovalRecommendationService {
     return this.approvalRecommendationRepository.findByDraftId(draft_id);
   }
 
-  async findByNIK(nik: string): Promise<ApprovalRecommendation | null> {
+  async findByNIK(nik: string): Promise<ApprovalRecommendation[] | null> {
     return this.approvalRecommendationRepository.findByNIK(nik);
   }
 
