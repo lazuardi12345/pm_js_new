@@ -18,6 +18,6 @@ export interface IApprovalRecommendationRepository {
   findAllRecommendationExternalRequests(): Promise<ApprovalRecommendation[]>;
   findById(id: number): Promise<ApprovalRecommendation | null>;
   findByDraftId(draft_id: string): Promise<ApprovalRecommendation | null>;
-  findByNIK(nik: string): Promise<ApprovalRecommendation | null>;
+  findByNIK(nik: string): Promise<ApprovalRecommendation[] | null>;
   delete(id: number): Promise<void>;
 }

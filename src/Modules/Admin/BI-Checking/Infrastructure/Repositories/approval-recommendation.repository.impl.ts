@@ -1,7 +1,7 @@
 // infrastructure/repositories/address-internal.repository.impl.ts
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { ApprovalRecommendation } from '../../Domain/Entities/approval-recommendation.entity';
 import { IApprovalRecommendationRepository } from '../../Domain/Repositories/approval-recommendation.repository';
 import { ApprovalRecommendation_ORM_Entity } from '../Entities/approval-recommendation.orm-entity';
@@ -201,9 +201,16 @@ export class ApprovalRecommendationRepositoryImpl
     return this.toDomain(ormEntity);
   }
 
-  async findByNIK(nik: string): Promise<ApprovalRecommendation | null> {
-    const ormEntity = await this.ormRepository.findOne({ where: { nik } });
-    return ormEntity ? this.toDomain(ormEntity) : null;
+  async findByNIK(nik: string): Promise<ApprovalRecommendation[]> {
+    return this.ormRepository.find({
+      where: {
+        nik,
+        deleted_at: IsNull(),
+      },
+      order: {
+        created_at: 'ASC',
+      },
+    });
   }
 
   async save(
