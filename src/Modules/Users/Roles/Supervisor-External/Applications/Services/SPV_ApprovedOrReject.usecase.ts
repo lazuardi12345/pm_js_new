@@ -33,13 +33,13 @@ export class SPV_ApproveOrRejectUseCase {
     user_id: number,
     role: USERTYPE,
     status: ApprovalExternalStatus,
-    tenor_persetujuan?: number,
-    nominal_persetujuan?: number,
-    catatan?: string,
+    approved_tenor?: number,
+    approved_amount?: number,
+    kesimpulan?: string,
   ) {
     try {
       console.log(
-        `SPV_ApproveOrRejectUseCase.execute(loan_id: ${loan_id}, user_id: ${user_id}, role: ${role}, status: ${status}, catatan: ${catatan})`,
+        `SPV_ApproveOrRejectUseCase.execute(loan_id: ${loan_id}, user_id: ${user_id}, role: ${role}, status: ${status}, kesimpulan: ${kesimpulan})`,
       );
 
       // Validasi loan
@@ -89,10 +89,10 @@ export class SPV_ApproveOrRejectUseCase {
         false,
         undefined,
         null,
-        nominal_persetujuan,
-        tenor_persetujuan,
+        approved_amount,
+        approved_tenor,
         status,
-        catatan,
+        kesimpulan,
       );
 
       // Terapkan status approval
