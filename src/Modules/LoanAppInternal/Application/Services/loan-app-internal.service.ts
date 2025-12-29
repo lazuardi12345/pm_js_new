@@ -317,10 +317,11 @@ export class LoanApplicationInternalService {
     const sanitizedPage = page && page > 0 ? page : 1;
     const sanitizedPageSize = pageSize && pageSize > 0 ? pageSize : 10;
 
-    const result = await this.repo.callSP_GENERAL_GetLoanApplicationDatabase(
-      sanitizedPage,
-      sanitizedPageSize,
-    );
+    const result =
+      await this.repo.callSP_GENERAL_GetLoanApplicationDatabase_Internal(
+        sanitizedPage,
+        sanitizedPageSize,
+      );
 
     const mappedData = (result.LoanApplicationData || []).map((item) => ({
       ...item,

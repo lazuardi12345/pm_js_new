@@ -139,7 +139,6 @@ export class LoanApplicationInternalRepositoryImpl
   }
 
   async findByNasabahId(nasabahId: number): Promise<LoanApplicationInternal[]> {
-    console.log('REMEMBER SUMMER DAAYYYSSSS >>>>>>>>>>>>>>>> > : ', nasabahId);
     const ormEntities = await this.ormRepository.find({
       where: { nasabah: { id: nasabahId } },
     });
@@ -275,7 +274,7 @@ export class LoanApplicationInternalRepositoryImpl
 
     // result sets: [pagination, client data, loan data]
     const [paginationResult, clientResult, loanResult] =
-      await ormEntities.query(`CALL GENERAL_ClientDatabase(?, ?)`, [
+      await ormEntities.query(`CALL GENERAL_ClientDatabase_Internal(?, ?)`, [
         page,
         page_size,
       ]);
@@ -295,7 +294,7 @@ export class LoanApplicationInternalRepositoryImpl
     };
   }
 
-  async callSP_GENERAL_GetLoanApplicationDatabase(
+  async callSP_GENERAL_GetLoanApplicationDatabase_Internal(
     page: number,
     page_size: number,
   ): Promise<{
@@ -306,7 +305,7 @@ export class LoanApplicationInternalRepositoryImpl
 
     // result sets: [pagination, client data, loan data]
     const [loanResult, paginationResult] = await ormEntities.query(
-      `CALL GENERAL_GetLoanApplicationDatabase(?, ?)`,
+      `CALL GENERAL_GetLoanApplicationDatabase_Internal(?, ?)`,
       [page, page_size],
     );
 
