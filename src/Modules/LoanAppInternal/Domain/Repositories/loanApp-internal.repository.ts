@@ -66,7 +66,7 @@ export interface ILoanApplicationInternalRepository {
     ClientHistoryLoanApplicationsData?: General_LoanApplicationDataInterface[];
   }>;
 
-  callSP_GENERAL_GetLoanApplicationDatabase(
+  callSP_GENERAL_GetLoanApplicationDatabase_Internal(
     page: number,
     page_size: number,
   ): Promise<{

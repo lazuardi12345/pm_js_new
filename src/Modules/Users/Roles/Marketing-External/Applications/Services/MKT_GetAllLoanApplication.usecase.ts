@@ -132,7 +132,6 @@ export class MKT_GetAllLoanApplicationUseCase {
       const formattedData = await Promise.all(
         dataArray.map(async (item: any) => {
           try {
-            console.log('kntlL: >>>>>>', item);
             const draftId = item?.draft_id ?? null;
             let draftData: any = null;
 

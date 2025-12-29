@@ -125,6 +125,7 @@ import { DetailInstallmentItemsExternalModule } from 'src/Modules/LoanAppExterna
   controllers: [
     // controllers
     MKT_GetDashboardStatsController,
+    MKT_GetClientDatabaseController,
     MKT_CreateDraftLoanApplicationController,
     MKT_CreateLoanApplicationController,
     MKT_GetAllLoanApplicationController,
@@ -132,7 +133,6 @@ import { DetailInstallmentItemsExternalModule } from 'src/Modules/LoanAppExterna
     MKT_UpdateLoanApplicationController,
     MKT_TriggerAppealController,
     MKT_TriggerFinalLoanStatusController,
-    MKT_GetClientDatabaseController,
     MKT_CreateRepeatOrderController,
     MKT_GetAllRepeatOrderHistoryController,
   ],
