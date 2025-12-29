@@ -18,7 +18,7 @@ import { StatusPengajuanEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 
 @Injectable()
-export class HM_ApproveOrRejectUseCase {
+export class HM_ApproveOrRejectInternalUseCase {
   constructor(
     @Inject(APPROVAL_INTERNAL_REPOSITORY)
     private readonly approvalRepo: IApprovalInternalRepository,

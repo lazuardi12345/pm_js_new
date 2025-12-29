@@ -1,20 +1,20 @@
 import { Injectable, Inject } from '@nestjs/common';
 import {
-  ILoanApplicationInternalRepository,
-  LOAN_APPLICATION_INTERNAL_REPOSITORY,
-} from 'src/Modules/LoanAppInternal/Domain/Repositories/loanApp-internal.repository';
+  ILoanApplicationExternalRepository,
+  LOAN_APPLICATION_EXTERNAL_REPOSITORY,
+} from 'src/Modules/LoanAppExternal/Domain/Repositories/loanApp-external.repository';
 
 @Injectable()
-export class HM_GetAllApprovalHistoryUseCase {
+export class HM_GetAllApprovalHistoryExternalUseCase {
   constructor(
-    @Inject(LOAN_APPLICATION_INTERNAL_REPOSITORY)
-    private readonly loanAppRepo: ILoanApplicationInternalRepository,
+    @Inject(LOAN_APPLICATION_EXTERNAL_REPOSITORY)
+    private readonly loanAppRepo: ILoanApplicationExternalRepository,
   ) {}
 
   async execute(hmId: number, page = 1, pageSize = 10, searchQuery = '') {
     try {
       const { data, total } =
-        await this.loanAppRepo.callSP_HM_GetAllApprovalHistory_Internal(
+        await this.loanAppRepo.callSP_HM_GetAllApprovalHistory_External(
           hmId,
           page,
           pageSize,
