@@ -34,13 +34,47 @@ export class MKT_CreateRepeatOrderController {
   @UseInterceptors(
     FileFieldsInterceptor(
       [
-        { name: 'foto_ktp', maxCount: 1 },
-        { name: 'foto_kk', maxCount: 1 },
-        { name: 'foto_id_card', maxCount: 1 },
-        { name: 'bukti_absensi', maxCount: 1 },
-        { name: 'foto_rekening', maxCount: 1 },
+        //? GENERAL
+        { name: 'foto_ktp_peminjam', maxCount: 1 },
         { name: 'foto_ktp_penjamin', maxCount: 1 },
-        { name: 'foto_id_card_penjamin', maxCount: 1 },
+        { name: 'foto_kk_peminjam', maxCount: 1 },
+        { name: 'foto_rekening', maxCount: 1 },
+        { name: 'dokumen_pendukung', maxCount: 1 },
+        { name: 'foto_meteran_listrik', maxCount: 1 },
+        { name: 'foto_id_card_peminjam', maxCount: 1 },
+        { name: 'slip_gaji_peminjam', maxCount: 1 },
+
+        //? BPJS
+        { name: 'foto_bpjs', maxCount: 1 },
+        { name: 'dokumen_pendukung_bpjs', maxCount: 1 },
+
+        //? SHM
+        { name: 'foto_shm', maxCount: 1 },
+        { name: 'foto_kk_pemilik_shm', maxCount: 1 },
+        { name: 'foto_pbb', maxCount: 1 },
+        { name: 'foto_objek_jaminan', maxCount: 1 },
+        { name: 'foto_buku_nikah_suami_istri', maxCount: 1 },
+        { name: 'foto_npwp', maxCount: 1 },
+        { name: 'foto_imb', maxCount: 1 },
+        { name: 'foto_surat_ahli_waris', maxCount: 1 },
+        { name: 'foto_surat_akte_kematian', maxCount: 1 },
+        { name: 'foto_surat_pernyataan_kepemilikan_tanah', maxCount: 1 },
+
+        //? BPKB
+        { name: 'foto_no_rangka', maxCount: 1 },
+        { name: 'foto_no_mesin', maxCount: 1 },
+        { name: 'foto_faktur_kendaraan', maxCount: 1 },
+        { name: 'foto_snikb', maxCount: 1 },
+        { name: 'dokumen_bpkb', maxCount: 1 },
+        { name: 'foto_stnk_depan', maxCount: 1 },
+        { name: 'foto_stnk_belakang', maxCount: 1 },
+        { name: 'foto_kendaraan_depan', maxCount: 1 },
+        { name: 'foto_kendaraan_belakang', maxCount: 1 },
+        { name: 'foto_kendaraan_samping_kanan', maxCount: 1 },
+        { name: 'foto_kendaraan_samping_kiri', maxCount: 1 },
+        { name: 'foto_sambara', maxCount: 1 },
+        { name: 'foto_kwitansi_jual_beli', maxCount: 1 },
+        { name: 'foto_ktp_tangan_pertama', maxCount: 1 },
       ],
       {
         storage: multer.memoryStorage(),
@@ -134,16 +168,55 @@ export class MKT_CreateRepeatOrderController {
 
   @Patch('update/repeat-order/:id')
   @UseInterceptors(
-    FileFieldsInterceptor([
-      { name: 'foto_ktp', maxCount: 1 },
-      { name: 'foto_kk', maxCount: 1 },
-      { name: 'foto_rekening', maxCount: 1 },
-      { name: 'foto_id_card', maxCount: 1 },
-      { name: 'foto_jaminan', maxCount: 3 },
-      { name: 'bukti_absensi', maxCount: 1 },
-      { name: 'foto_ktp_penjamin', maxCount: 1 },
-      { name: 'foto_id_card_penjamin', maxCount: 1 },
-    ]),
+    FileFieldsInterceptor(
+      [
+        //? GENERAL
+        { name: 'foto_ktp_peminjam', maxCount: 1 },
+        { name: 'foto_ktp_penjamin', maxCount: 1 },
+        { name: 'foto_kk_peminjam', maxCount: 1 },
+        { name: 'foto_rekening', maxCount: 1 },
+        { name: 'dokumen_pendukung', maxCount: 1 },
+        { name: 'foto_meteran_listrik', maxCount: 1 },
+        { name: 'foto_id_card_peminjam', maxCount: 1 },
+        { name: 'slip_gaji_peminjam', maxCount: 1 },
+
+        //? BPJS
+        { name: 'foto_bpjs', maxCount: 1 },
+        { name: 'dokumen_pendukung_bpjs', maxCount: 1 },
+
+        //? SHM
+        { name: 'foto_shm', maxCount: 1 },
+        { name: 'foto_kk_pemilik_shm', maxCount: 1 },
+        { name: 'foto_pbb', maxCount: 1 },
+        { name: 'foto_objek_jaminan', maxCount: 1 },
+        { name: 'foto_buku_nikah_suami_istri', maxCount: 1 },
+        { name: 'foto_npwp', maxCount: 1 },
+        { name: 'foto_imb', maxCount: 1 },
+        { name: 'foto_surat_ahli_waris', maxCount: 1 },
+        { name: 'foto_surat_akte_kematian', maxCount: 1 },
+        { name: 'foto_surat_pernyataan_kepemilikan_tanah', maxCount: 1 },
+
+        //? BPKB
+        { name: 'foto_no_rangka', maxCount: 1 },
+        { name: 'foto_no_mesin', maxCount: 1 },
+        { name: 'foto_faktur_kendaraan', maxCount: 1 },
+        { name: 'foto_snikb', maxCount: 1 },
+        { name: 'dokumen_bpkb', maxCount: 1 },
+        { name: 'foto_stnk_depan', maxCount: 1 },
+        { name: 'foto_stnk_belakang', maxCount: 1 },
+        { name: 'foto_kendaraan_depan', maxCount: 1 },
+        { name: 'foto_kendaraan_belakang', maxCount: 1 },
+        { name: 'foto_kendaraan_samping_kanan', maxCount: 1 },
+        { name: 'foto_kendaraan_samping_kiri', maxCount: 1 },
+        { name: 'foto_sambara', maxCount: 1 },
+        { name: 'foto_kwitansi_jual_beli', maxCount: 1 },
+        { name: 'foto_ktp_tangan_pertama', maxCount: 1 },
+      ],
+      {
+        storage: multer.memoryStorage(),
+        limits: { fileSize: 5 * 1024 * 1024 },
+      },
+    ),
   )
   async updateRepeatOrderById(
     @Param('id') Id: string,
@@ -161,6 +234,7 @@ export class MKT_CreateRepeatOrderController {
       files,
     );
   }
+
   @Get('repeat-order/:id')
   async getRepeatOrderById(@Param('id') Id: string) {
     return this.createRepeatOrder.renderRepeatOrderById(Id);

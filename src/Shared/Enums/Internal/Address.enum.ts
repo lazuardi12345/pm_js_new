@@ -6,6 +6,6 @@ export enum StatusRumahEnum {
 }
 
 export enum DomisiliEnum {
-  SESUAI_KTP = 'sesuai KTP',
-  TIDAK_SESUAI_KTP = 'tidak sesuai KTP',
+  SESUAI_KTP = 'sesuai ktp',
+  TIDAK_SESUAI_KTP = 'tidak sesuai ktp',
 }
