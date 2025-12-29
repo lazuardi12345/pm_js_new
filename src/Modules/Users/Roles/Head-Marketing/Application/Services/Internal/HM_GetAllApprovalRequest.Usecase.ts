@@ -5,7 +5,7 @@ import {
 } from 'src/Modules/LoanAppInternal/Domain/Repositories/loanApp-internal.repository';
 
 @Injectable()
-export class HM_GetAllApprovalRequestUseCase {
+export class HM_GetAllApprovalRequestInternalUseCase {
   constructor(
     @Inject(LOAN_APPLICATION_INTERNAL_REPOSITORY)
     private readonly loanAppRepo: ILoanApplicationInternalRepository,

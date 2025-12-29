@@ -1,14 +1,14 @@
 import { Body, Controller, Param, Post, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
-import { HM_ApproveOrRejectUseCase } from '../../Application/Services/HM_ApprovedOrReject.usecase';
+import { HM_ApproveOrRejectInternalUseCase } from '../../../Application/Services/Internal/HM_ApprovedOrReject.usecase';
 import { ApprovalInternalStatusEnum } from 'src/Shared/Enums/Internal/Approval.enum';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
 
 @Controller('hm/int/loan-apps')
-export class HM_ApprovedOrRejectController {
+export class HM_ApprovedOrRejectInternalController {
   constructor(
-    private readonly approveOrRejectUseCase: HM_ApproveOrRejectUseCase,
+    private readonly approveOrRejectUseCase: HM_ApproveOrRejectInternalUseCase,
   ) {}
 
   @Post('approve-or-reject/:id')

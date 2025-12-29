@@ -7,18 +7,17 @@ import {
   Body,
   Post,
 } from '@nestjs/common';
-import { HM_LoanAppealResponseUseCase } from '../../Application/Services/HM_LoanAppealResponse.usecase';
 import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
 import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/roles.decorator';
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
-import { ApprovalInternalStatusEnum } from 'src/Shared/Enums/Internal/Approval.enum';
-@Controller('hm/int/loan-apps')
-export class HM_LoanAppealResponseController {
+import { HM_LoanAppealResponseExternalUseCase } from '../../../Application/Services/External/HM_LoanAppealResponse.usecase';
+import { ApprovalExternalStatus } from 'src/Shared/Enums/External/Approval.enum';
+@Controller('hm/ext/loan-apps')
+export class HM_LoanAppealResponseExternalController {
   constructor(
-    @Inject(HM_LoanAppealResponseUseCase)
-    private readonly postAppealResponseUseCase: HM_LoanAppealResponseUseCase,
+    private readonly postAppealResponseUseCase: HM_LoanAppealResponseExternalUseCase,
   ) {}
 
   @UseGuards(RolesGuard)
@@ -29,8 +28,8 @@ export class HM_LoanAppealResponseController {
     @Body('payload')
     payload: {
       appeal_response:
-        | ApprovalInternalStatusEnum.APPROVED
-        | ApprovalInternalStatusEnum.REJECTED;
+        | ApprovalExternalStatus.APPROVED
+        | ApprovalExternalStatus.REJECTED;
       appeal_consideration?: string;
       appeal_conclusion?: string;
     },

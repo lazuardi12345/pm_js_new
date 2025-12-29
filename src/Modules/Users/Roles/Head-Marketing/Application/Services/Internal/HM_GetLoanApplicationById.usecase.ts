@@ -8,7 +8,7 @@ import {
   TypeLoanApplicationDetail,
   TypeApprovalDetail,
   TypeStatusApproval,
-} from '../../../Marketing-Internal/Applications/DTOS/MKT_CreateLoanApplication.dto';
+} from '../../../../Marketing-Internal/Applications/DTOS/MKT_CreateLoanApplication.dto';
 import {
   APPROVAL_RECOMMENDATION_REPOSITORY,
   IApprovalRecommendationRepository,
@@ -19,7 +19,7 @@ import {
 } from 'src/Shared/Modules/Drafts/Domain/Repositories/int/LoanAppInt.repository';
 
 @Injectable()
-export class HM_GetLoanApplicationByIdUseCase {
+export class HM_GetLoanApplicationByIdInternalUseCase {
   constructor(
     @Inject(LOAN_APPLICATION_INTERNAL_REPOSITORY)
     private readonly loanAppRepo: ILoanApplicationInternalRepository,
