@@ -92,6 +92,10 @@ export class MKT_UpdateLoanApplicationUseCase {
   ) {
     const now = this.sanitizeDate(new Date());
 
+    if (!marketingId) {
+      throw new BadRequestException('Marketing ID is required');
+    }
+
     try {
       return await this.uow.start(async () => {
         const {
