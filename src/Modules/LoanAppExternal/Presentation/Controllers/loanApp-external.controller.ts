@@ -89,7 +89,6 @@ export class LoanApplicationExternalController {
     );
   }
 
-  // @Public()
   @Get('all/loan-apps')
   @Roles(USERTYPE.HM, USERTYPE.SPV, USERTYPE.MARKETING, USERTYPE.CA)
   async getLoanApplicationHistory(

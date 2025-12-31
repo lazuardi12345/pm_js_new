@@ -72,6 +72,9 @@ export class AdBIC_FindAllRecommendationRequestUseCase {
     try {
       const requests =
         await this.approvalRecommendation.findAllRecommendationExternalRequests();
+
+      console.log(requests);
+
       return {
         payload: {
           error: false,

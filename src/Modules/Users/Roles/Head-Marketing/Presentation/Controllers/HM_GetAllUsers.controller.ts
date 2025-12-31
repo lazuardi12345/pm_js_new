@@ -14,7 +14,7 @@ import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Gua
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 import { HM_GetAllUsers_UseCase } from '../../Application/Services/HM_GetAllUsers.usecase';
 
-@Controller('hm/int/loan-apps/users')
+@Controller('hm/loan-apps/users')
 export class HM_GetAllUsers_Controller {
   private readonly logger = new Logger(HM_GetAllUsers_Controller.name);
 

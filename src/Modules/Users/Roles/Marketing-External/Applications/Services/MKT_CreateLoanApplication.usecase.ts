@@ -89,7 +89,7 @@ export class MKT_CreateLoanApplicationUseCase {
         payload: {
           error: true,
           message: 'Approval Recommendation has no exist',
-          reference: 'VALIDATION_ERROR',
+          reference: 'REF_TO_APPROVAL_RECOMMENDATION_NOT_FOUND',
         },
       });
     }
