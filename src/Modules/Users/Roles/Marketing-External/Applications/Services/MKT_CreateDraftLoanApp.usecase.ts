@@ -333,19 +333,20 @@ export class MKT_CreateDraftLoanApplicationUseCase {
             const parentKey = fieldToParentMap[field];
 
             if (parentKey) {
-              // Initialize parent object jika belum ada
-              if (!payload[parentKey]) {
-                payload[parentKey] = {};
-              }
-
-              // Assign URL ke parent
-              payload[parentKey][field] = paths[0].url;
+              payload[parentKey] = {
+                ...(payload[parentKey] ?? {}),
+                [field]: paths[0].url,
+              };
             } else {
-              // Fallback: assign ke root level untuk dokumen pendukung dll
+              // Fallback: assign ke root level
               payload[field] = paths[0].url;
             }
           }
         }
+        console.log(
+          'Payload after file assignment:',
+          JSON.stringify(payload, null, 2),
+        );
       }
 
       if (type) {
@@ -405,25 +406,54 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         ...filePaths,
       };
 
+      // Build entityUpdate secara dinamis
       const entityUpdate: Partial<LoanApplicationExtEntity> = {
-        collateral_shm: {
-          ...(existingDraft.collateral_shm ?? {}),
-          ...(payload.collateral_shm ?? {}),
-        },
-
-        collateral_bpkb: {
-          ...(existingDraft.collateral_bpkb ?? {}),
-          ...(payload.collateral_bpkb ?? {}),
-        },
-
-        collateral_bpjs: {
-          ...(existingDraft.collateral_bpjs ?? {}),
-          ...(payload.collateral_bpjs ?? {}),
-        },
-
         uploaded_files: mergedFiles,
       };
 
+      // List field yang perlu di-merge (nested objects)
+      const nestedFields = [
+        'client_external',
+        'address_external',
+        'job_external',
+        'loan_application_external',
+        'loan_guarantor_external',
+        'financial_dependents_external',
+        'other_exist_loan_external',
+        'emergency_contact_external',
+        'collateral_shm_external',
+        'collateral_bpkb_external',
+        'collateral_bpjs_external',
+        'collateral_umkm_external',
+        'collateral_kedinasan_mou_external',
+        'collateral_kedinasan_non_mou_external',
+      ];
+
+      // Merge nested objects
+      for (const field of nestedFields) {
+        if (payload[field]) {
+          entityUpdate[field] = {
+            ...(existingDraft[field] ?? {}),
+            ...payload[field],
+          };
+        }
+      }
+
+      // Primitive fields - langsung assign
+      const primitiveFields = [
+        'loan_external_type',
+        'marketing_id',
+        'isCompleted',
+        'isNeedCheck',
+      ];
+
+      for (const field of primitiveFields) {
+        if (payload[field] !== undefined) {
+          entityUpdate[field] = payload[field];
+        }
+      }
+
+      // Update ke database (ini tetap sama)
       await this.loanAppDraftRepo.updateDraftById(Id, entityUpdate);
 
       const verifyAfterUpdate = await this.loanAppDraftRepo.findById(Id);
@@ -577,16 +607,13 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         await this.loanAppDraftRepo.findByMarketingId(marketingId);
 
       if (!loanApps || loanApps.length === 0) {
-        throw new HttpException(
-          {
-            payload: {
-              error: 'NOT FOUND',
-              message: 'No draft loan applications found for this marketing ID',
-              reference: 'LOAN_NOT_FOUND',
-            },
+        return {
+          payload: {
+            error: false,
+            message: 'Draft loan applications retrieved but not found',
+            reference: 'LOAN_RETRIEVE_OK_BUT_NOT_FOUND',
           },
-          HttpStatus.NOT_FOUND,
-        );
+        };
       }
 
       const processedLoans: Array<

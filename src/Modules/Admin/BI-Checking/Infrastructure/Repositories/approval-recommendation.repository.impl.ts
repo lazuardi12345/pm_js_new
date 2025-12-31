@@ -358,7 +358,7 @@ export class ApprovalRecommendationRepositoryImpl
           'client_external.nik': 1,
           'client_external.no_hp': 1,
           'client_external.email': 1,
-          'client_external.foto_ktp': 1,
+          'uploaded_files.foto_ktp_peminjam': 1,
           'loan_application_external.nominal_pinjaman': 1,
         },
       )
@@ -371,20 +371,44 @@ export class ApprovalRecommendationRepositoryImpl
         {
           marketing_id: 1,
           _id: 1,
-          'client_internal.nama_lengkap': 1,
-          'client_internal.no_ktp': 1,
-          'client_internal.no_hp': 1,
-          'client_internal.email': 1,
+          'client_external.nama_lengkap': 1,
+          'client_external.no_ktp': 1,
+          'client_external.no_hp': 1,
+          'client_external.email': 1,
           'uploaded_files.foto_ktp': 1,
-          'loan_application_internal.nominal_pinjaman': 1,
+          'loan_application_external.nominal_pinjaman': 1,
           isRepeatOrder: 1,
         },
       )
       .lean();
 
+    const mappedDraftData = draftDataExternal.map((item) => {
+      const fotoKtpArr = (item.uploaded_files as any)?.foto_ktp_peminjam;
+      const fotoKtp =
+        Array.isArray(fotoKtpArr) && fotoKtpArr.length > 0
+          ? (fotoKtpArr[0] as any).url
+          : null;
+
+      return {
+        _id: item._id,
+        marketing_id: item.marketing_id,
+        client_external: {
+          nama_lengkap: item.client_external?.nama_lengkap || null,
+          no_ktp: item.client_external?.nik || null,
+          no_hp: item.client_external?.no_hp || null,
+          email: item.client_external?.email || null,
+          foto_ktp: fotoKtp, // di sini taro url-nya biar konsisten
+        },
+        loan_application_external: {
+          nominal_pinjaman:
+            item.loan_application_external?.nominal_pinjaman || null,
+        },
+      };
+    });
+
     // ubah struktur repeat order biar match draftData (foto_ktp 1 url aja)
     const mappedRepeatOrderData = repeatOrderData.map((item) => {
-      const fotoKtpArr = (item.uploaded_files as any)?.foto_ktp;
+      const fotoKtpArr = (item.uploaded_files as any)?.foto_ktp_peminjam;
       const fotoKtp =
         Array.isArray(fotoKtpArr) && fotoKtpArr.length > 0
           ? (fotoKtpArr[0] as any).url
@@ -408,7 +432,7 @@ export class ApprovalRecommendationRepositoryImpl
     });
 
     // gabung hasil dari dua koleksi
-    const result = [...draftDataExternal, ...mappedRepeatOrderData];
+    const result = [...mappedDraftData, ...mappedRepeatOrderData];
 
     return result;
   }
