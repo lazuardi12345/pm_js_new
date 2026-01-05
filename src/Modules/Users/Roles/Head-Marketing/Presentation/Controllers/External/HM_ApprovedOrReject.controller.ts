@@ -19,7 +19,7 @@ export class HM_ApprovedOrRejectExternalController {
     payload: {
       isBanding: boolean;
       status: ApprovalExternalStatus;
-      keterangan?: string;
+      kesimpulan?: string;
       tenor_persetujuan?: number;
       nominal_persetujuan?: number;
     },
@@ -43,11 +43,10 @@ export class HM_ApprovedOrRejectExternalController {
         loan_id,
         headMarketingId,
         USERTYPE.HM,
-        payload.isBanding,
         payload.status,
         payload.tenor_persetujuan,
         payload.nominal_persetujuan,
-        payload.keterangan,
+        payload.kesimpulan,
       );
 
       console.log('Approval berhasil disimpan:', savedApproval);
@@ -58,7 +57,7 @@ export class HM_ApprovedOrRejectExternalController {
         data: {
           id: savedApproval.data.id,
           status: savedApproval.data.status,
-          keterangan: savedApproval.data.keterangan,
+          kesimpulan: savedApproval.data.kesimpulan,
           createdAt: savedApproval.data.created,
           updatedAt: savedApproval.data.updated,
         },

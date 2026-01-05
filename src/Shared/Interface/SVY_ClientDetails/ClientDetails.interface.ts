@@ -50,6 +50,17 @@ export interface JobData {
   bidang_usaha?: string;
 }
 
+export interface GeneralDocumentData {
+  foto_ktp_peminjam: string;
+  foto_kk_peminjam: string;
+  dokumen_pendukung: string;
+  foto_meteran_listrik: string;
+  slip_gaji_peminjam?: string;
+  foto_rekening_koran?: string;
+  foto_id_card: string;
+  foto_ktp_penjamin: string;
+}
+
 // Collateral Base
 export interface CollateralBase {
   collateral_type: string;
@@ -177,6 +188,7 @@ export interface ClientDetailForSurveyData {
   loan_application: LoanApplicationData;
   address_external: AddressData[];
   job_external: JobData | null;
+  document_files: GeneralDocumentData;
   collateral: CollateralDataMap | null;
   // guarantors: GuarantorData[];
   // emergency_contacts: EmergencyContactData[];

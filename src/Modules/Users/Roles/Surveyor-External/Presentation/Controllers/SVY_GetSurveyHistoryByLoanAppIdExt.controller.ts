@@ -15,7 +15,7 @@ import { SVY_GetSurveyHistoryByLoanAppIdExtUseCase } from '../../Applications/Se
 
 @Controller('svy/ext/loan-apps')
 @UseGuards(RolesGuard)
-@Roles(USERTYPE.SVY)
+@Roles(USERTYPE.SVY, USERTYPE.CA, USERTYPE.HM, USERTYPE.SPV, USERTYPE.MARKETING)
 export class SVY_GetSurveyHistoryByLoanAppIdExtController {
   constructor(
     @Inject(SVY_GetSurveyHistoryByLoanAppIdExtUseCase)

@@ -42,7 +42,7 @@ export class CA_LoanAppealResponseController {
       const {
         appeal_response,
         appeal_analyze,
-        appeal_notes,
+        appeal_conclusion,
         nominal_persetujuan,
         tenor_persetujuan,
       } = payload;
@@ -52,7 +52,7 @@ export class CA_LoanAppealResponseController {
         loan_id,
         appeal_response,
         appeal_analyze,
-        appeal_notes,
+        appeal_conclusion,
         nominal_persetujuan,
         tenor_persetujuan,
       );

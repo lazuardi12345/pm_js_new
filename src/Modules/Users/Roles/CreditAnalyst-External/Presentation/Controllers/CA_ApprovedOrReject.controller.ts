@@ -21,10 +21,10 @@ export class CA_ApprovedOrRejectController {
     body: {
       payload: {
         status: ApprovalExternalStatus;
-        catatan?: string;
-        analisa?: string;
-        tenor_persetujuan?: number;
-        nominal_persetujuan?: number;
+        kesimpulan: string;
+        analisa: string;
+        tenor_persetujuan: number;
+        nominal_persetujuan: number;
       };
     },
     @CurrentUser('id') creditAnalystId: number,
@@ -41,11 +41,11 @@ export class CA_ApprovedOrRejectController {
       loan_id,
       creditAnalystId,
       USERTYPE.CA,
-      body.payload.status,
-      body.payload.tenor_persetujuan,
-      body.payload.nominal_persetujuan,
-      body.payload.analisa,
-      body.payload.catatan,
+      body.payload.status!,
+      body.payload.tenor_persetujuan!,
+      body.payload.nominal_persetujuan!,
+      body.payload.analisa!,
+      body.payload.kesimpulan!,
     );
 
     // Return response

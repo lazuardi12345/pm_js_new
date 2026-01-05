@@ -19,7 +19,6 @@ export class SPV_GetDraftByMarketingIdUseCase {
       nominal_pinjaman: number;
       tenor: string | number;
       createdAt: Date | string;
-      updatedAt: Date | string;
     }[]
   > {
     const drafts = await this.createDraftRepo.findByMarketingId(marketingId);
@@ -30,6 +29,8 @@ export class SPV_GetDraftByMarketingIdUseCase {
       );
     }
 
+    console.log('Bothering Me Bothering You!', drafts);
+
     // Ambil hanya yang belum selesai
     const filteredDrafts = drafts.filter((d) => !d.isCompleted);
 
@@ -39,16 +40,17 @@ export class SPV_GetDraftByMarketingIdUseCase {
       );
     }
 
+    console.log('Bothering Me Bothering You!', filteredDrafts);
+
     // Map hasil yang diformat
     const formattedDrafts = filteredDrafts.map((d: any) => ({
       id: d._id,
-      nama_lengkap: d.client_internal?.nama_lengkap || '-',
-      no_ktp: d.client_internal?.no_ktp || '-',
-      no_hp: d.client_internal?.no_hp || '-',
-      nominal_pinjaman: d.loan_application_internal?.nominal_pinjaman || 0,
-      tenor: d.loan_application_internal?.tenor ?? 'Belum diset Marketing',
+      nama_lengkap: d.client_external?.nama_lengkap || '-',
+      no_ktp: d.client_external?.nik || '-',
+      no_hp: d.client_external?.no_hp || '-',
+      nominal_pinjaman: d.loan_application_external?.nominal_pinjaman || 0,
+      tenor: d.loan_application_external?.tenor ?? 'Belum diset Marketing',
       createdAt: d.createdAt ?? '-',
-      updatedAt: d.updatedAt ?? '-',
     }));
 
     return formattedDrafts;

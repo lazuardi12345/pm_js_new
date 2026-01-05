@@ -32,15 +32,14 @@ export class HM_ApproveOrRejectExternalUseCase {
     loan_id: number,
     user_id: number,
     role: USERTYPE,
-    isBanding: boolean,
     status: ApprovalExternalStatus,
     tenor_persetujuan?: number,
     nominal_persetujuan?: number,
-    keterangan?: string,
+    kesimpulan?: string,
   ) {
     try {
       console.log(
-        `HM_ApproveOrRejectUseCase.execute(loan_id: ${loan_id}, user_id: ${user_id}, role: ${role}, status: ${status}, keterangan: ${keterangan})`,
+        `HM_ApproveOrRejectUseCase.execute(loan_id: ${loan_id}, user_id: ${user_id}, role: ${role}, status: ${status}, keterangan: ${kesimpulan})`,
       );
 
       const loan = await this.loanAppRepo.findById(loan_id);
@@ -79,27 +78,28 @@ export class HM_ApproveOrRejectExternalUseCase {
         );
       }
 
+      // Create approval dengan status PENDING dulu
       const approval = new ApprovalExternal(
         { id: loan.id! },
         user.id!,
         role,
-        isBanding,
+        false,
         undefined,
         null,
         nominal_persetujuan,
         tenor_persetujuan,
         ApprovalExternalStatus.PENDING,
-        keterangan || '',
+        kesimpulan || '',
         undefined,
       );
 
-      // Terapkan status approval
+      // ✅ Terapkan status approval menggunakan SETTER
       let newLoanStatus: StatusPengajuanEnum;
       if (status === ApprovalExternalStatus.APPROVED) {
-        approval.isApproved();
+        approval.approve(); // ← Panggil method setter
         newLoanStatus = StatusPengajuanEnum.APPROVED_HM;
       } else if (status === ApprovalExternalStatus.REJECTED) {
-        approval.isRejected();
+        approval.reject(); // ← Panggil method setter
         newLoanStatus = StatusPengajuanEnum.REJECTED_HM;
       } else {
         throw new HttpException(
@@ -128,7 +128,7 @@ export class HM_ApproveOrRejectExternalUseCase {
         data: {
           id: savedApproval.id,
           status: savedApproval.status,
-          keterangan: savedApproval.kesimpulan,
+          kesimpulan: savedApproval.kesimpulan,
           created: savedApproval.created_at,
           updated: savedApproval.updated_at,
         },
