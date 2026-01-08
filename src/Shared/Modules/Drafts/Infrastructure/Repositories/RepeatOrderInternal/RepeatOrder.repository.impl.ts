@@ -4,8 +4,8 @@ import { Model } from 'mongoose';
 import { merge, isEqual } from 'lodash';
 import { IDraftRepeatOrderInternalRepository } from '../../../Domain/Repositories/int/DraftRepeatOrder.repository';
 import {
-  RepeatOrder,
-  RepeatOrderDocument,
+  RepeatOrderInternal,
+  RepeatOrderIntDocument,
 } from '../../Schemas/LoanAppInternal/RepeatOrder_Marketing.schema';
 import { RepeatOrderEntity } from '../../../Domain/Entities/int/DraftRepeatOrder.entity';
 
@@ -14,8 +14,8 @@ export class DraftRepeatOrderInternalRepositoryImpl
   implements IDraftRepeatOrderInternalRepository
 {
   constructor(
-    @InjectModel(RepeatOrder.name, 'mongoConnection')
-    private readonly repeatOrderModel: Model<RepeatOrderDocument>,
+    @InjectModel(RepeatOrderInternal.name, 'mongoConnection')
+    private readonly repeatOrderModel: Model<RepeatOrderIntDocument>,
   ) {}
 
   async create(data: Partial<RepeatOrderEntity>): Promise<RepeatOrderEntity> {

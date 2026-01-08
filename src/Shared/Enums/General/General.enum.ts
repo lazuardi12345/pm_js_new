@@ -11,10 +11,10 @@ export enum RoleSearchEnum {
 }
 
 export enum ExternalCollateralType {
-  t1 = 'bpjs',
-  t2 = 'bpkb',
-  t3 = 'shm',
-  t4 = 'umkm',
-  t5 = 'kedinasan_mou',
-  t6 = 'kedinasan_non_mou',
+  t1 = 'BPJS',
+  t2 = 'BPKB',
+  t3 = 'SHM',
+  t4 = 'UMKM',
+  t5 = 'KEDINASAN_MOU',
+  t6 = 'KEDINASAN_NON_MOU',
 }

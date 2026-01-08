@@ -11,8 +11,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  Index,
 } from 'typeorm';
 
+@Index('IDX_LOAN_APPLICATION_ROLE', ['pengajuan', 'role'])
 @Entity('approval_internal')
 export class ApprovalInternal_ORM_Entity {
   @PrimaryGeneratedColumn('increment')

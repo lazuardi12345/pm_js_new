@@ -4,9 +4,9 @@ import { Model } from 'mongoose';
 import { merge, isEqual } from 'lodash';
 import { IDraftRepeatOrderExternalRepository } from '../../../Domain/Repositories/ext/DraftRepeatOrder.repository';
 import {
-  RepeatOrder,
-  RepeatOrderDocument,
-} from '../../Schemas/LoanAppInternal/RepeatOrder_Marketing.schema';
+  RepeatOrderExternal,
+  RepeatOrderExtDocument,
+} from '../../Schemas/LoanAppExternal/RepeatOrder_Marketing.schema';
 import { RepeatOrderExternalEntity } from '../../../Domain/Entities/ext/DraftRepeatOrder.entity';
 
 @Injectable()
@@ -14,8 +14,8 @@ export class DraftRepeatOrderExternalRepositoryImpl
   implements IDraftRepeatOrderExternalRepository
 {
   constructor(
-    @InjectModel(RepeatOrder.name, 'mongoConnection')
-    private readonly repeatOrderModel: Model<RepeatOrderDocument>,
+    @InjectModel(RepeatOrderExternal.name, 'mongoConnection')
+    private readonly repeatOrderModel: Model<RepeatOrderExtDocument>,
   ) {}
 
   async create(
@@ -57,10 +57,10 @@ export class DraftRepeatOrderExternalRepositoryImpl
         {
           _id: 1,
           'client_external.nama_lengkap': 1,
-          'client_external.no_ktp': 1,
+          'client_external.nik': 1,
           'client_external.no_hp': 1,
           'loan_application_external.nominal_pinjaman': 1,
-          'loan_application_internal.tenor': 1,
+          'loan_application_external.tenor': 1,
           isDeleted: 1,
           isNeedCheck: 1,
           isCompleted: 1,

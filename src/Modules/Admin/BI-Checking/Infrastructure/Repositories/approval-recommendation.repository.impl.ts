@@ -13,14 +13,18 @@ import {
 
 import { Model } from 'mongoose';
 import {
-  RepeatOrder,
-  RepeatOrderDocument,
+  RepeatOrderInternal,
+  RepeatOrderIntDocument,
 } from 'src/Shared/Modules/Drafts/Infrastructure/Schemas/LoanAppInternal/RepeatOrder_Marketing.schema';
 import {
   LoanApplicationExt,
   LoanApplicationExtDocument,
 } from 'src/Shared/Modules/Drafts/Infrastructure/Schemas/LoanAppExternal/CreateLoanApplicaton_Marketing.schema';
 import { LoanTypeEnum } from 'src/Shared/Enums/Admins/BI/approval-recommendation.enum';
+import {
+  RepeatOrderExtDocument,
+  RepeatOrderExternal,
+} from 'src/Shared/Modules/Drafts/Infrastructure/Schemas/LoanAppExternal/RepeatOrder_Marketing.schema';
 
 @Injectable()
 export class ApprovalRecommendationRepositoryImpl
@@ -33,8 +37,10 @@ export class ApprovalRecommendationRepositoryImpl
     private readonly mongoDraftInternalRepository: Model<LoanApplicationIntDocument>,
     @InjectModel(LoanApplicationExt.name, 'mongoConnection')
     private readonly mongoDraftExternalRepository: Model<LoanApplicationExtDocument>,
-    @InjectModel(RepeatOrder.name, 'mongoConnection')
-    private readonly repeatOrderRepository: Model<RepeatOrderDocument>,
+    @InjectModel(RepeatOrderInternal.name, 'mongoConnection')
+    private readonly repeatOrderIntRepository: Model<RepeatOrderIntDocument>,
+    @InjectModel(RepeatOrderExternal.name, 'mongoConnection')
+    private readonly repeatOrderExtRepository: Model<RepeatOrderExtDocument>,
   ) {}
 
   //? MAPPER >==========================================================================
@@ -138,15 +144,20 @@ export class ApprovalRecommendationRepositoryImpl
           this.mongoDraftExternalRepository,
           savedOrm,
         );
-        const repeatUpdatePromise = makeUpdatePromise(
-          this.repeatOrderRepository,
+        const repeatUpdateInternalPromise = makeUpdatePromise(
+          this.repeatOrderIntRepository,
+          savedOrm,
+        );
+        const repeatUpdateExternalPromise = makeUpdatePromise(
+          this.repeatOrderExtRepository,
           savedOrm,
         );
 
         return Promise.allSettled([
           mongoUpdateInternalPromise,
           mongoUpdateExternalPromise,
-          repeatUpdatePromise,
+          repeatUpdateInternalPromise,
+          repeatUpdateExternalPromise,
         ]).then((results) => {
           const [mongoResult, repeatResult] = results;
 
@@ -297,7 +308,7 @@ export class ApprovalRecommendationRepositoryImpl
       .lean();
 
     // ambil data dari RepeatOrder
-    const repeatOrderData = await this.repeatOrderRepository
+    const repeatOrderData = await this.repeatOrderIntRepository
       .find(
         { isNeedCheck: true, isDeleted: false },
         {
@@ -365,17 +376,17 @@ export class ApprovalRecommendationRepositoryImpl
       .lean();
 
     // ambil data dari RepeatOrder
-    const repeatOrderData = await this.repeatOrderRepository
+    const repeatOrderData = await this.repeatOrderExtRepository
       .find(
         { isNeedCheck: true, isDeleted: false },
         {
           marketing_id: 1,
           _id: 1,
           'client_external.nama_lengkap': 1,
-          'client_external.no_ktp': 1,
+          'client_external.nik': 1,
           'client_external.no_hp': 1,
           'client_external.email': 1,
-          'uploaded_files.foto_ktp': 1,
+          'uploaded_files.foto_ktp_peminjam': 1,
           'loan_application_external.nominal_pinjaman': 1,
           isRepeatOrder: 1,
         },
@@ -417,16 +428,16 @@ export class ApprovalRecommendationRepositoryImpl
       return {
         _id: item._id,
         marketing_id: item.marketing_id,
-        client_internal: {
-          nama_lengkap: item.client_internal?.nama_lengkap || null,
-          no_ktp: item.client_internal?.no_ktp || null,
-          no_hp: item.client_internal?.no_hp || null,
-          email: item.client_internal?.email || null,
+        client_external: {
+          nama_lengkap: item.client_external?.nama_lengkap || null,
+          no_ktp: item.client_external?.nik || null,
+          no_hp: item.client_external?.no_hp || null,
+          email: item.client_external?.email || null,
           foto_ktp: fotoKtp, // di sini taro url-nya biar konsisten
         },
-        loan_application_internal: {
+        loan_application_external: {
           nominal_pinjaman:
-            item.loan_application_internal?.nominal_pinjaman || null,
+            item.loan_application_external?.nominal_pinjaman || null,
         },
       };
     });

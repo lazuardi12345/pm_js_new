@@ -30,7 +30,7 @@ export class OtherExistLoansExternal_ORM_Entity {
     { onDelete: 'CASCADE' },
   )
   @JoinColumn({
-    name: 'nasabah_id',
+    name: 'loan_application_external_id',
     foreignKeyConstraintName: 'FK_ClientExternalID_at_OtherExistLoansExternal',
   })
   loanAppExternal: LoanApplicationExternal_ORM_Entity;

@@ -12,7 +12,6 @@ import {
   CLIENT_EXTERNAL_REPOSITORY,
   IClientExternalRepository,
 } from 'src/Modules/LoanAppExternal/Domain/Repositories/client-external.repository';
-import { ClientExternal } from 'src/Modules/LoanAppExternal/Domain/Entities/client-external.entity';
 import {
   ADDRESS_EXTERNAL_REPOSITORY,
   IAddressExternalRepository,
@@ -68,45 +67,19 @@ import {
 } from 'src/Modules/LoanAppInternal/Domain/Repositories/IUnitOfWork.repository';
 
 import { CreateLoanApplicationExternalDto } from '../DTOS/MKT_CreateLoanApplicationExternal.dto';
-import {
-  CLIENT_TYPE,
-  GENDER,
-  MARRIAGE_STATUS,
-} from 'src/Shared/Enums/Internal/Clients.enum';
+import { GENDER } from 'src/Shared/Enums/Internal/Clients.enum';
 
 import {
   StatusRumahEnum,
   DomisiliEnum,
   RumahDomisiliEnum,
 } from 'src/Shared/Enums/External/Address.enum';
-
-import {
-  HubunganEnum,
-  BekerjaEnum,
-} from 'src/Shared/Enums/Internal/Family.enum';
-import {
-  GolonganEnum,
-  PerusahaanEnum,
-} from 'src/Shared/Enums/Internal/Job.enum';
-
-import {
-  StatusPinjamanEnum,
-  StatusPengajuanEnum,
-  StatusPengajuanAkhirEnum,
-} from 'src/Shared/Enums/Internal/LoanApp.enum';
-
-import { KerabatKerjaEnum } from 'src/Shared/Enums/Internal/Relative.enum';
-import {
-  PenjaminEnum,
-  RiwayatPinjamPenjaminEnum,
-} from 'src/Shared/Enums/Internal/Collateral.enum';
 import {
   FILE_STORAGE_SERVICE,
   FileMetadata,
   IFileStorageRepository,
 } from 'src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository';
 import sharp from 'sharp';
-import { DRAFT_REPEAT_ORDER_INTERNAL_REPOSITORY } from 'src/Shared/Modules/Drafts/Domain/Repositories/int/DraftRepeatOrder.repository';
 import {
   CreateDraftRepeatOrderExtDto,
   PayloadExternalDTO,
@@ -142,6 +115,8 @@ import {
   IDraftRepeatOrderExternalRepository,
 } from 'src/Shared/Modules/Drafts/Domain/Repositories/ext/DraftRepeatOrder.repository';
 import { REQUEST_TYPE } from 'src/Shared/Modules/Storage/Infrastructure/Service/Interface/RequestType.interface';
+import { ExternalCollateralType } from 'src/Shared/Enums/General/General.enum';
+import { instanceToPlain } from 'class-transformer';
 
 @Injectable()
 export class MKT_CreateRepeatOrderUseCase {
@@ -149,7 +124,7 @@ export class MKT_CreateRepeatOrderUseCase {
   constructor(
     @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
     private readonly approvalRecommendationRepo: IApprovalRecommendationRepository,
-    @Inject(DRAFT_REPEAT_ORDER_INTERNAL_REPOSITORY)
+    @Inject(DRAFT_REPEAT_ORDER_EXTERNAL_REPOSITORY)
     private readonly repeatOrderRepo: IDraftRepeatOrderExternalRepository,
     @Inject(CLIENT_EXTERNAL_REPOSITORY)
     private readonly clientRepo: IClientExternalRepository,
@@ -595,48 +570,6 @@ export class MKT_CreateRepeatOrderUseCase {
           // jangan abort seluruh proses kalau update bukti gagal — log saja
         }
 
-        // ====================== COLLATERAL ======================
-
-        // try {
-        //   const collEntity = new CollateralInternal(
-        //     { id: client_id! },
-        //     collateral_internal.jaminan_hrd,
-        //     collateral_internal.jaminan_cg,
-        //     collateral_internal.penjamin as PenjaminEnum,
-        //     undefined,
-        //     undefined,
-        //     undefined,
-        //     collateral_internal.nama_penjamin,
-        //     collateral_internal.lama_kerja_penjamin!,
-        //     collateral_internal.bagian!,
-        //     collateral_internal.absensi_penjamin!,
-        //     collateral_internal.riwayat_pinjam_penjamin as RiwayatPinjamPenjaminEnum,
-        //     collateral_internal.riwayat_nominal_penjamin!,
-        //     collateral_internal.riwayat_tenor_penjamin!,
-        //     collateral_internal.sisa_pinjaman_penjamin!,
-        //     collateral_internal.jaminan_cg_penjamin!,
-        //     collateral_internal.status_hubungan_penjamin!,
-        //     minioUploadResult?.savedFiles?.foto_ktp_penjamin?.[0]?.url ??
-        //       parseFileUrl(documents_files?.foto_ktp_penjamin ?? null),
-        //     minioUploadResult?.savedFiles?.foto_id_card_penjamin?.[0]?.url ??
-        //       parseFileUrl(documents_files?.foto_id_card_penjamin ?? null),
-        //     undefined,
-        //   );
-        //   await this.collateralRepo.save(collEntity);
-        // } catch (e) {
-        //   console.error('Error saving collateral:', e);
-        //   throw new HttpException(
-        //     {
-        //       payload: {
-        //         error: true,
-        //         message: 'Gagal menyimpan data jaminan',
-        //         reference: 'COLLATERAL_SAVE_ERROR',
-        //       },
-        //     },
-        //     HttpStatus.BAD_REQUEST,
-        //   );
-        // }
-
         switch (loan_external_type) {
           case 'BPJS': {
             try {
@@ -858,28 +791,6 @@ export class MKT_CreateRepeatOrderUseCase {
             }
           }
         }
-        // ====================== RELATIVES (optional) ======================
-        // try {
-        //   if (relative_internal) {
-        //     const relEntity = new RelativesInternal(
-        //       { id: client_id! },
-        //       relative_internal.kerabat_kerja as KerabatKerjaEnum,
-        //       undefined,
-        //       relative_internal.nama,
-        //       relative_internal.alamat,
-        //       relative_internal.no_hp,
-        //       relative_internal.status_hubungan!,
-        //       relative_internal.nama_perusahaan!,
-        //       undefined,
-        //       undefined,
-        //       undefined,
-        //     );
-        //     await this.relativeRepo.save(relEntity);
-        //   }
-        // } catch (e) {
-        //   console.error('Error saving relatives:', e);
-        //   // optional — tidak fatal
-        // }
 
         // --- Done: build response ---
         return {
@@ -956,192 +867,208 @@ export class MKT_CreateRepeatOrderUseCase {
   }
 
   async executeCreateRepeatOrder(
+    external_loan_type: ExternalCollateralType,
+    jenis_pembiayaan: JenisPembiayaanEnum,
     dto: PayloadExternalDTO,
     client_id: number,
-    marketingId: number, // ← Tambah parameter marketing_id
+    marketingId: number,
     files?: Record<string, Express.Multer.File[]>,
     repeatFromLoanId?: number,
   ) {
     try {
       let minioUploadResult;
+      let previousUploadedFiles: Record<string, any> = {};
 
-      // ============== ASSIGN marketing_id ke DTO ==============
+      // ================= ASSIGN MARKETING =================
       dto.marketing_id = marketingId;
 
-      // ============== LOG REQUEST INFO ==============
-      console.log('=== Create Draft Repeat Order ===');
-      console.log('Marketing ID:', marketingId);
-      console.log('Client ID:', client_id);
-      console.log('Repeat From Loan ID:', repeatFromLoanId);
-      console.log('Files received:', files ? Object.keys(files) : 'No files');
-      console.log('Payload preview:', {
-        nama: dto.client_external?.nama_lengkap,
-        nik: dto.client_external?.nik,
-        nominal: dto.loan_application_external?.nominal_pinjaman,
-      });
+      // ================= LOAD PREV FILES IF REPEAT =================
+      if (repeatFromLoanId) {
+        const prevLoan = await this.repeatOrderRepo.findById(
+          String(repeatFromLoanId),
+        );
+        if (prevLoan?.uploaded_files) {
+          previousUploadedFiles = structuredClone(prevLoan.uploaded_files);
+        }
+      }
 
-      // ============== PROSES FILE KALAU ADA ==============
+      // ================= COLLATERAL MAPPING MASSAL (KE SCHEMA) =================
+      if (external_loan_type) {
+        // Mapping dari payload/DTO ke nama schema
+        const collateralSchemaMap: Record<
+          string,
+          { from: string; to: string }
+        > = {
+          t1: { from: 'collateral_bpjs', to: 'collateral_bpjs_external' },
+          t2: { from: 'collateral_bpkb', to: 'collateral_bpkb_external' },
+          t3: { from: 'collateral_shm', to: 'collateral_shm_external' },
+          t4: { from: 'collateral_umkm', to: 'collateral_umkm_external' },
+          t5: {
+            from: 'collateral_kedinasan_mou',
+            to: 'collateral_kedinasan_mou_external',
+          },
+          t6: {
+            from: 'collateral_kedinasan_non_mou',
+            to: 'collateral_kedinasan_non_mou_external',
+          },
+        };
+
+        // Lakukan rename untuk semua collateral yang ada di dto (massal, bisa multi)
+        Object.entries(collateralSchemaMap).forEach(([type, { from, to }]) => {
+          if (dto[from]) {
+            dto[to] = structuredClone(dto[from]);
+            delete dto[from];
+            console.log(
+              `DEBUG: Mapped collateral ${from} → ${to} (schema match)`,
+            );
+          }
+        });
+
+        // Validasi minimal: minimal satu collateral harus ada
+        const hasAnyCollateral = Object.values(collateralSchemaMap).some(
+          ({ to }) => !!dto[to],
+        );
+
+        if (!hasAnyCollateral) {
+          if (!repeatFromLoanId) {
+            throw new HttpException(
+              'Minimal satu collateral data diperlukan',
+              HttpStatus.BAD_REQUEST,
+            );
+          }
+
+          // Load dari previous loan kalau repeat
+          const prevLoan = await this.repeatOrderRepo.findById(
+            String(repeatFromLoanId),
+          );
+          if (prevLoan) {
+            Object.values(collateralSchemaMap).forEach(({ to }) => {
+              if (prevLoan[to] && !dto[to]) {
+                dto[to] = structuredClone(prevLoan[to]);
+                console.log(`DEBUG: Loaded ${to} from previous loan`);
+              }
+            });
+          }
+        }
+
+        // Set loan_external_type di root
+        dto.loan_external_type = external_loan_type;
+
+        if (jenis_pembiayaan && dto.loan_application_external) {
+          dto.loan_application_external.jenis_pembiayaan = jenis_pembiayaan;
+        }
+      }
+
+      // ================= FILE PROCESS =================
       if (files && Object.keys(files).length > 0) {
-        // ============== CONVERT IMAGES TO JPEG USING SHARP ==============
-        for (const [field, fileArray] of Object.entries(files)) {
-          if (!fileArray) continue;
+        for (const fileList of Object.values(files)) {
+          if (!fileList) continue;
 
-          for (const file of fileArray) {
-            // Convert gambar ke JPEG tanpa resize
-            if (file.mimetype.startsWith('image/')) {
+          for (const file of fileList) {
+            if (file.mimetype?.startsWith('image/')) {
               try {
-                const outputBuffer = await sharp(file.buffer)
+                const buffer = await sharp(file.buffer)
                   .jpeg({ quality: 100 })
                   .toBuffer();
-
-                // Update file buffer dan filename
-                file.buffer = outputBuffer;
+                file.buffer = buffer;
                 file.originalname = file.originalname.replace(
                   /\.\w+$/,
                   '.jpeg',
                 );
                 file.mimetype = 'image/jpeg';
-
-                console.log(
-                  `✓ Converted ${field} to JPEG: ${file.originalname}`,
-                );
-              } catch (error) {
-                console.error(`✗ Error converting ${field} to JPEG:`, error);
-                // Skip conversion kalau error, tetep pake file original
-              }
+              } catch {}
             }
           }
         }
 
-        // ============== SAVE FILES PAKAI saveRepeatOrderFiles ==============
         minioUploadResult = await this.fileStorage.saveRepeatOrderFiles(
           Number(dto.client_external.nik),
           dto.client_external.nama_lengkap,
           files,
           REQUEST_TYPE.EXTERNAL,
         );
-
-        console.log('MinIO upload success:', {
-          folder: minioUploadResult?.pengajuanFolder,
-          filesCount: minioUploadResult?.savedFiles
-            ? Object.keys(minioUploadResult.savedFiles).length
-            : 0,
-        });
       }
 
-      // ============== BUILD UPLOADED FILES OBJECT ==============
-      const uploadedFiles: Record<string, any> = {
-        ...(minioUploadResult?.savedFiles ?? {}),
+      // ================= BUILD DRAFT =================
+      const plainDto = instanceToPlain(dto);
+
+      const mergedUploadedFiles: Record<string, any> = {
+        ...previousUploadedFiles,
       };
 
-      // ============== ASSIGN URL FILE KE DTO ==============
-      if (minioUploadResult?.savedFiles) {
-        const savedFiles = minioUploadResult.savedFiles;
-
-        // Bukti absensi ke job_internal (kalau ada)
-        // if (savedFiles.bukti_absensi?.[0]?.url && dto.job_internal) {
-        //   dto.job_internal.bukti_absensi = savedFiles.bukti_absensi[0].url;
-        //   console.log('✓ Assigned bukti_absensi URL to job_internal');
-        // }
-
-        // // File penjamin ke collateral_internal (kalau ada)
-        // if (savedFiles.foto_ktp_penjamin?.[0]?.url && dto.collateral_internal) {
-        //   dto.collateral_internal.foto_ktp_penjamin =
-        //     savedFiles.foto_ktp_penjamin[0].url;
-        //   console.log(
-        //     '✓ Assigned foto_ktp_penjamin URL to collateral_internal',
-        //   );
-        // }
-        // if (
-        //   savedFiles.foto_id_card_penjamin?.[0]?.url &&
-        //   dto.collateral_internal
-        // ) {
-        //   dto.collateral_internal.foto_id_card_penjamin =
-        //     savedFiles.foto_id_card_penjamin[0].url;
-        //   console.log(
-        //     '✓ Assigned foto_id_card_penjamin URL to collateral_internal',
-        //   );
-        // }
+      if (minioUploadResult) {
+        for (const [field, files] of Object.entries(minioUploadResult)) {
+          mergedUploadedFiles[field] = files;
+        }
       }
 
-      // ============== SIMPAN DRAFT KE MONGODB ==============
       const draftData: any = {
-        ...dto,
-        uploaded_files: uploadedFiles,
+        ...plainDto,
+        uploaded_files: mergedUploadedFiles,
       };
 
-      // Tambahkan minio_metadata kalau ada upload file
       if (minioUploadResult) {
         draftData.minio_metadata = {
           pengajuanFolder: minioUploadResult.pengajuanFolder,
-          isUpdate: minioUploadResult.isUpdate ?? false,
-          originalLoanId: minioUploadResult.originalLoanId,
-          isRepeatOrder: !!repeatFromLoanId,
+          isUpdate: true,
+          originalLoanId: repeatFromLoanId,
+          isRepeatOrder: Boolean(repeatFromLoanId),
           nextPengajuanIndex: minioUploadResult.nextPengajuanIndex,
         };
       }
 
-      console.log('Saving draft to MongoDB...');
+      // DEBUG FINAL
+      console.log('DEBUG - draftData keys:', Object.keys(draftData));
+      console.log('DEBUG - loan_external_type:', draftData.loan_external_type);
+      console.log(
+        'DEBUG - collateral_bpjs_external:',
+        draftData.collateral_bpjs_external,
+      );
+      console.log(
+        'DEBUG - other_exist_loan_external:',
+        draftData.other_exist_loan_external,
+      );
+
       const loanApp = await this.repeatOrderRepo.create(draftData);
+      if (!loanApp) throw new Error('Failed to create draft');
 
-      if (!loanApp) {
-        throw new Error('Failed to Create Draft');
-      }
-
-      console.log('✓ Draft saved with ID:', loanApp._id);
-
-      // ============== TRIGGER BI CHECKING ==============
-      const nominalPinjaman = Number(
+      const nominal = Number(
         dto.loan_application_external?.nominal_pinjaman ?? 0,
       );
-      if (nominalPinjaman >= 7000000) {
-        console.log(' Nominal >= 7jt, triggering BI Checking...');
+      if (nominal >= 7_000_000) {
         await this.repeatOrderRepo.triggerIsNeedCheckBeingTrue(
-          loanApp._id?.toString(),
-          nominalPinjaman,
+          loanApp._id!.toString(),
+          nominal,
         );
-        console.log('✓ BI Checking flag set');
       }
 
-      // ============== RETURN SUCCESS ==============
-      const response = {
+      return {
         dto: {
           error: false,
-          message: minioUploadResult?.isUpdate
-            ? `Draft Repeat Order ke-${minioUploadResult.originalLoanId} berhasil dibuat`
-            : 'Draft pengajuan baru berhasil dibuat',
+          message: 'Draft pengajuan baru berhasil dibuat',
           reference: 'LOAN_CREATE_OK',
           data: {
             _id: loanApp._id,
             client_external: loanApp.client_external,
             loan_application_external: loanApp.loan_application_external,
-            filesUploaded: minioUploadResult?.savedFiles
-              ? Object.keys(minioUploadResult.savedFiles).length
-              : 0,
+            filesUploaded: Object.keys(minioUploadResult?.savedFiles ?? {})
+              .length,
             pengajuanFolder: minioUploadResult?.pengajuanFolder,
-            isRepeatOrder: !!repeatFromLoanId,
-            requiresBICheck: nominalPinjaman >= 7000000,
+            isRepeatOrder: Boolean(repeatFromLoanId),
+            requiresBICheck: nominal >= 7_000_000,
           },
         },
       };
-
-      console.log('=== Draft Created Successfully ===\n');
-      return response;
     } catch (err) {
-      console.error('=== Error Creating Draft ===');
-      console.error(err);
-
-      // =================== HANDLE MONGOOSE VALIDATION ERROR ===================
+      console.log(err);
       if (err?.name === 'ValidationError') {
-        const message = Object.values(err.errors)
-          .map((e: any) => e.message)
-          .join(', ');
-
         throw new HttpException(
           {
             payload: {
               error: true,
-              message,
+              message: Object.values(err.errors)
+                .map((e: any) => e.message)
+                .join(', '),
               reference: 'LOAN_VALIDATION_ERROR',
             },
           },
@@ -1149,7 +1076,6 @@ export class MKT_CreateRepeatOrderUseCase {
         );
       }
 
-      // =================== HANDLE DUPLICATE KEY ERROR ===================
       if (err?.code === 11000) {
         throw new HttpException(
           {
@@ -1164,35 +1090,6 @@ export class MKT_CreateRepeatOrderUseCase {
         );
       }
 
-      // =================== HANDLE MINIO / FILE SYSTEM ERRORS ===================
-      if (err?.isMinioError) {
-        throw new HttpException(
-          {
-            payload: {
-              error: true,
-              message: err.message || 'File storage error',
-              reference: 'MINIO_FILE_ERROR',
-            },
-          },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-
-      // =================== HANDLE SHARP IMAGE PROCESSING ERRORS ===================
-      if (err?.message?.includes('Sharp')) {
-        throw new HttpException(
-          {
-            payload: {
-              error: true,
-              message: 'Image processing failed',
-              reference: 'IMAGE_PROCESSING_ERROR',
-            },
-          },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-
-      // =================== GENERIC ERROR (FALLBACK) ===================
       throw new HttpException(
         {
           payload: {
@@ -1269,7 +1166,7 @@ export class MKT_CreateRepeatOrderUseCase {
           let approvalRecommendation: any;
 
           // ================= BI CHECKING NEEDED =================
-          if (nominalPinjaman >= 7000000) {
+          if (nominalPinjaman >= 0) {
             const draftId = loanApp._id?.toString();
 
             if (!draftId) {
@@ -1436,9 +1333,9 @@ export class MKT_CreateRepeatOrderUseCase {
             // Tentukan di object mana field ini berada
             const parentKeys = [
               'client_external',
-              'job_internal',
-              'collateral_internal',
-              'relative_internal',
+              'job_external',
+              'collateral_external',
+              'relative_external',
             ];
             let assigned = false;
 

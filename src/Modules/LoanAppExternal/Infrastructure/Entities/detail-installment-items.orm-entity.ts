@@ -55,7 +55,7 @@ export class DetailInstallmentItemsExternal_ORM_Entity {
     { onDelete: 'CASCADE' },
   )
   @JoinColumn({
-    name: 'otherExistLoan_id',
+    name: 'other_exist_loan_id',
   })
   otherExistLoan: OtherExistLoansExternal_ORM_Entity;
 }

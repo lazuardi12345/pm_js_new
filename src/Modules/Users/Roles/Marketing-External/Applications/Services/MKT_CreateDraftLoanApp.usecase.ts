@@ -235,7 +235,6 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     type?: ExternalCollateralType,
   ) {
     const { payload } = updateData;
-    console.log('PUKEY', payload);
     const loanApp = await this.loanAppDraftRepo.findById(Id);
 
     if (!payload) {
@@ -640,7 +639,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
               reference: string;
             };
 
-        if (nominalPinjaman >= 7000000) {
+        if (nominalPinjaman >= 0) {
           try {
             const draftId = loanApp._id?.toString();
             if (!draftId) {

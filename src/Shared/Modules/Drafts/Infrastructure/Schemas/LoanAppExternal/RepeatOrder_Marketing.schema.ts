@@ -83,8 +83,8 @@ export const AddressExternalSchema =
 class JobExternal {
   @Prop() perusahaan?: string;
   @Prop() alamat_perusahaan?: string;
-  @Prop() kontak_perusahaan?: number;
-  @Prop() jabatan?: number;
+  @Prop() kontak_perusahaan?: string;
+  @Prop() jabatan?: string;
   @Prop() lama_kerja?: string;
   @Prop() status_karyawan?: StatusKaryawanEnum;
   @Prop() lama_kontrak?: string;
@@ -185,8 +185,8 @@ export class LoanGuarantorExternal {
   @Prop({ type: String, enum: PersetujuanPenjaminEnum, required: true })
   persetujuan_penjamin: PersetujuanPenjaminEnum;
 
-  @Prop({ type: String, required: true })
-  foto_ktp_penjamin: string;
+  @Prop({ type: String })
+  foto_ktp_penjamin?: string = ''; // default kosong
 
   @Prop({ type: Boolean, default: false })
   validasi_penjamin?: boolean;
@@ -200,9 +200,9 @@ export const LoanGuarantorExternalSchema = SchemaFactory.createForClass(
 );
 
 @Schema({ _id: false })
-export class OtherExistLoansExternal {
-  @Prop({ type: String, enum: CicilanLainEnum, required: true })
-  cicilan_lain: CicilanLainEnum;
+export class InstallmentItemsExternal {
+  @Prop({ type: String })
+  detail_item_id?: string;
 
   @Prop({ type: String, required: true })
   nama_pembiayaan: string;
@@ -215,16 +215,25 @@ export class OtherExistLoansExternal {
 
   @Prop({ type: Number, required: true })
   sisa_tenor: number;
+}
+
+@Schema({ _id: false })
+export class OtherExistLoanExternal {
+  @Prop({ type: String, enum: CicilanLainEnum, required: true })
+  cicilan_lain: CicilanLainEnum;
+
+  @Prop({ type: [InstallmentItemsExternal], default: [] })
+  cicilan: InstallmentItemsExternal[];
 
   @Prop({ type: Boolean, default: false })
   validasi_pinjaman_lain?: boolean;
 
-  @Prop({ type: String })
+  @Prop({ type: String, default: '' })
   catatan?: string;
 }
 
 export const OtherExistLoansExternalSchema = SchemaFactory.createForClass(
-  OtherExistLoansExternal,
+  OtherExistLoanExternal,
 );
 
 // ================= Collateral =================
@@ -484,7 +493,7 @@ export const CollateralByKedinasanNonMOUExternalSchema =
 // ================= Root LoanApplication =================
 
 @Schema({ timestamps: true })
-export class RepeatOrder {
+export class RepeatOrderExternal {
   @Prop({ required: true }) marketing_id: number;
 
   @Prop({ type: ClientExternalSchema, required: true })
@@ -496,19 +505,19 @@ export class RepeatOrder {
   @Prop({ type: LoanGuarantorExternalSchema })
   loan_guarantor_external?: LoanGuarantorExternal;
   @Prop({ type: CollateralByBPJSExternalSchema })
-  collateral_by_bpjs?: CollateralByBPJSExternal;
+  collateral_bpjs_external?: CollateralByBPJSExternal;
   @Prop({ type: CollateralByBPKBExternalSchema })
-  collateral_by_bpkb?: CollateralByBPKBExternal;
+  collateral_bpkb_external?: CollateralByBPKBExternal;
   @Prop({ type: CollateralBySHMExternalSchema })
-  collateral_by_shm?: CollateralBySHMExternal;
+  collateral_shm_external?: CollateralBySHMExternal;
   @Prop({ type: CollateralByUMKMExternalSchema })
-  collateral_by_umkm?: CollateralByUMKMExternal;
+  collateral_umkm_external?: CollateralByUMKMExternal;
   @Prop({ type: CollateralByKedinasanMOUExternalSchema })
-  collateral_by_kedinasan_mou?: CollateralByKedinasanMOUExternal;
+  collateral_kedinasan_mou_external?: CollateralByKedinasanMOUExternal;
   @Prop({ type: CollateralByKedinasanNonMOUExternalSchema })
-  collateral_by_kedinasan_non_mou?: CollateralByKedinasanNonMOUExternal;
+  collateral_kedinasan_non_mou_external?: CollateralByKedinasanNonMOUExternal;
   @Prop({ type: OtherExistLoansExternalSchema })
-  other_exist_loans_external?: OtherExistLoansExternal;
+  other_exist_loan_external?: OtherExistLoanExternal;
   @Prop({ type: EmergencyContactExternalSchema })
   emergency_contact_external?: EmergencyContactExternal;
   @Prop({ type: FinancialDependentsExternalSchema })
@@ -521,5 +530,6 @@ export class RepeatOrder {
   @Prop({ default: false }) isNeedCheck?: boolean;
 }
 
-export type RepeatOrderDocument = HydratedDocument<RepeatOrder>;
-export const RepeatOrderExtSchema = SchemaFactory.createForClass(RepeatOrder);
+export type RepeatOrderExtDocument = HydratedDocument<RepeatOrderExternal>;
+export const RepeatOrderExtSchema =
+  SchemaFactory.createForClass(RepeatOrderExternal);
