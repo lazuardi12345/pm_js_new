@@ -11,13 +11,22 @@ export class ApprovalExternal {
     public readonly analisa?: string | null,
     public readonly nominal_persetujuan?: number,
     public readonly tenor_persetujuan?: number,
-    public readonly status?: ApprovalExternalStatus,
+    public status?: ApprovalExternalStatus, // ← HAPUS readonly di sini!
     public readonly kesimpulan?: string,
     public readonly created_at?: Date,
     public readonly updated_at?: Date,
     public readonly deleted_at?: Date | null,
   ) {}
 
+  public approve(): void {
+    this.status = ApprovalExternalStatus.APPROVED;
+  }
+
+  public reject(): void {
+    this.status = ApprovalExternalStatus.REJECTED;
+  }
+
+  // Checker methods (tetap ada)
   public isApproved(): boolean {
     return this.status === ApprovalExternalStatus.APPROVED;
   }

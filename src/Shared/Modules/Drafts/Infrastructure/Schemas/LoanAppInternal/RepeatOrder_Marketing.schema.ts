@@ -143,7 +143,7 @@ export const RelativeInternalSchema =
 // ================= Root LoanApplication =================
 
 @Schema({ timestamps: true })
-export class RepeatOrder {
+export class RepeatOrderInternal {
   @Prop({ required: true }) marketing_id: number;
 
   @Prop({ type: ClientInternalSchema, required: true })
@@ -164,5 +164,6 @@ export class RepeatOrder {
   @Prop({ default: true }) isRepeatOrder?: boolean;
 }
 
-export type RepeatOrderDocument = HydratedDocument<RepeatOrder>;
-export const RepeatOrderIntSchema = SchemaFactory.createForClass(RepeatOrder);
+export type RepeatOrderIntDocument = HydratedDocument<RepeatOrderInternal>;
+export const RepeatOrderIntSchema =
+  SchemaFactory.createForClass(RepeatOrderInternal);

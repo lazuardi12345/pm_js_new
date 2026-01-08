@@ -145,41 +145,42 @@ export class SPV_GetLoanApplicationByIdUseCase {
     const appealStatus: Record<string, any> = {};
 
     const roleMap: Record<string | number, string> = {
+      // SPV
       SPV: 'spv',
       Supervisor: 'spv',
+      supervisor: 'spv',
       1: 'spv',
+
+      // HM
       HM: 'hm',
       'Head Marketing': 'hm',
+      head_marketing: 'hm',
       3: 'hm',
     };
 
     (approvalsRows ?? []).forEach((approval: any) => {
       if (!approval) return;
 
-      const roleKey = roleMap[approval.role] ?? approval.role;
+      const rawRole = String(approval.role).trim();
+      const roleKey = roleMap[rawRole] ?? rawRole.toLowerCase();
 
-      const data = {
+      const payload = {
         id_user: approval.user_id,
         name: approval.user_nama,
         data: {
           id_approval: approval.approval_id,
           status: approval.status,
-          keterangan: approval.keterangan,
+          analisa: approval.analisa,
           kesimpulan: approval.kesimpulan,
-          approved_tenor: approval.tenor_persetujuan,
-          approved_amount: approval.nominal_persetujuan,
+          approved_tenor: approval.approved_tenor,
+          approved_amount: approval.approved_amount,
           created_at: approval.created_at,
           updated_at: approval.updated_at,
         },
       };
 
-      const isBanding = approval.is_banding === 1;
-
-      if (isBanding) {
-        appealStatus[roleKey] = data;
-      } else {
-        loanAppStatus[roleKey] = data;
-      }
+      const target = approval.is_banding === 1 ? appealStatus : loanAppStatus;
+      target[roleKey] = payload;
     });
 
     // ============================================================

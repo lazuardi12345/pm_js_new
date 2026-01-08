@@ -14,11 +14,10 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 // import { CreateDraftLoanApplicationDto } from 'src/Shared/Modules/Drafts/Applications/DTOS/LoanAppInt_MarketingInput/CreateDraft_LoanAppInt.dto';
+import multer from 'multer';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
 import { MKT_CreateDraftLoanApplicationUseCase } from '../../Applications/Services/MKT_CreateDraftLoanApp.usecase';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
-import multer from 'multer';
 import { FileUploadAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/file-upload.decorator';
 import { PayloadExternalDTO } from 'src/Shared/Modules/Drafts/Applications/DTOS/LoanAppExt_MarketingInput/CreateDraft_LoanAppExt.dto';
 import { ExternalCollateralType } from 'src/Shared/Enums/General/General.enum';

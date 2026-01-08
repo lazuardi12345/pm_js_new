@@ -49,6 +49,8 @@ export class HM_GetLoanApplicationByIdExternalUseCase {
       approvalsRows, // Result Set 7: Approvals
     ] = result as any[];
 
+    console.log('puki kuda', approvalsRows);
+
     const loanData = coreDataRows?.[0];
 
     if (!loanData) {
@@ -134,46 +136,52 @@ export class HM_GetLoanApplicationByIdExternalUseCase {
       );
     }
 
-    const loanAppStatus: Record<string, TypeStatusApproval | null> = {};
-    const appealStatus: Record<string, TypeStatusApproval | null> = {};
+    const loanAppStatus: Record<string, any> = {};
+    const appealStatus: Record<string, any> = {};
 
-    // Mapping role dengan tambahan HM context
     const roleMap: Record<string | number, string> = {
+      // SPV
       SPV: 'spv',
-      CA: 'ca',
-      HM: 'hm',
       Supervisor: 'spv',
-      'Credit Analyst': 'ca',
-      'Head Manager': 'hm',
+      supervisor: 'spv',
       1: 'spv',
+
+      // CA
+      CA: 'ca',
+      'Credit Analyst': 'ca',
+      credit_analyst: 'ca',
       2: 'ca',
+
+      // HM
+      HM: 'hm',
+      'Head Marketing': 'hm',
+      head_marketing: 'hm',
       3: 'hm',
     };
 
-    (approvalsRows ?? []).forEach((approval: TypeApprovalDetail) => {
-      const roleKey = roleMap[approval.role] ?? approval.role;
+    (approvalsRows ?? []).forEach((approval: any) => {
+      if (!approval) return;
 
-      const data: TypeStatusApproval = {
+      const rawRole = String(approval.role).trim();
+      const roleKey = roleMap[rawRole] ?? rawRole.toLowerCase();
+
+      const payload = {
         id_user: approval.user_id,
         name: approval.user_nama,
         data: {
           id_approval: approval.approval_id,
           status: approval.status,
-          keterangan: approval.keterangan,
+          analisa: approval.keterangan,
           kesimpulan: approval.kesimpulan,
-          approved_tenor: approval.tenor_persetujuan,
-          approved_amount: approval.nominal_persetujuan,
+          approved_tenor: approval.approved_tenor,
+          approved_amount: approval.approved_amount,
           created_at: approval.created_at,
           updated_at: approval.updated_at,
         },
       };
 
-      const isBanding = approval.is_banding === 1;
-      if (isBanding) {
-        appealStatus[roleKey] = data;
-      } else {
-        loanAppStatus[roleKey] = data;
-      }
+      const target = approval.is_banding === 1 ? appealStatus : loanAppStatus;
+      target[roleKey] = payload;
     });
 
     const collateralData = this.mapCollateralData(
@@ -336,6 +344,7 @@ export class HM_GetLoanApplicationByIdExternalUseCase {
           survey_photos: surveyPhotosRows || [],
           approval_recommendation,
         },
+        appeal_notes: loanData.loan_alasan_banding,
         loan_latest_status: loanData.status_pengajuan,
         // Status data
         loan_app_status: loanAppStatus,

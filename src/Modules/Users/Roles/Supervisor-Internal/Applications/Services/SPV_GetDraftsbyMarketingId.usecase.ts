@@ -30,6 +30,8 @@ export class SPV_GetDraftByMarketingIdUseCase {
       );
     }
 
+    console.log('Bothering Me Bothering You!', drafts);
+
     // Ambil hanya yang belum selesai
     const filteredDrafts = drafts.filter((d) => !d.isCompleted);
 
@@ -38,6 +40,8 @@ export class SPV_GetDraftByMarketingIdUseCase {
         `Tidak ada draft aktif untuk marketing ID ${marketingId}`,
       );
     }
+
+    console.log('Bothering Me Bothering You!', filteredDrafts);
 
     // Map hasil yang diformat
     const formattedDrafts = filteredDrafts.map((d: any) => ({

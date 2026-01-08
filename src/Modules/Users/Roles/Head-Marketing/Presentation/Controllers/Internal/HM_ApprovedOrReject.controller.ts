@@ -18,7 +18,7 @@ export class HM_ApprovedOrRejectInternalController {
     @Body('payload')
     payload: {
       status: ApprovalInternalStatusEnum;
-      keterangan?: string;
+      kesimpulan?: string;
       tenor_persetujuan?: number;
       nominal_persetujuan?: number;
     },
@@ -45,7 +45,7 @@ export class HM_ApprovedOrRejectInternalController {
         payload.status,
         payload.tenor_persetujuan,
         payload.nominal_persetujuan,
-        payload.keterangan,
+        payload.kesimpulan,
       );
 
       console.log('Approval berhasil disimpan:', savedApproval);

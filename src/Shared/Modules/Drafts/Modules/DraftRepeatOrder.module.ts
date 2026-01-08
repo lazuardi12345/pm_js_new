@@ -6,16 +6,23 @@ import { DraftRepeatOrderInternalRepositoryImpl } from '../Infrastructure/Reposi
 import { CreateDraftRepeatOrderController } from '../Presentations/Controllers/DraftsRepeatOrder.controller';
 import { CreateDraftRepeatOrderIntUseCase } from '../Applications/Services/LoanAppInternal/CreateDraftRepeatOrder_Marketing.usecase';
 import {
-  RepeatOrder,
+  RepeatOrderInternal,
   RepeatOrderIntSchema,
 } from '../Infrastructure/Schemas/LoanAppInternal/RepeatOrder_Marketing.schema';
 import { DRAFT_REPEAT_ORDER_EXTERNAL_REPOSITORY } from '../Domain/Repositories/ext/DraftRepeatOrder.repository';
 import { CreateDraftRepeatOrderExtUseCase } from '../Applications/Services/LoanAppExternal/CreateDraftRepeatOrder_Marketing.usecase';
+import {
+  RepeatOrderExternal,
+  RepeatOrderExtSchema,
+} from '../Infrastructure/Schemas/LoanAppExternal/RepeatOrder_Marketing.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature(
-      [{ name: RepeatOrder.name, schema: RepeatOrderIntSchema }],
+      [
+        { name: RepeatOrderInternal.name, schema: RepeatOrderIntSchema },
+        { name: RepeatOrderExternal.name, schema: RepeatOrderExtSchema },
+      ],
       'mongoConnection',
     ),
   ],
@@ -31,7 +38,6 @@ import { CreateDraftRepeatOrderExtUseCase } from '../Applications/Services/LoanA
     },
     CreateDraftRepeatOrderExtUseCase,
   ],
-  controllers: [CreateDraftRepeatOrderController],
   exports: [
     CreateDraftRepeatOrderIntUseCase,
     DRAFT_REPEAT_ORDER_INTERNAL_REPOSITORY,

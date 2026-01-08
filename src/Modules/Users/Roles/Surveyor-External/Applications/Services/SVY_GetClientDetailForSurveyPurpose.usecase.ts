@@ -21,6 +21,8 @@ export class SVY_GetClientDetailForSurveyPurposeUseCase {
           loan_app_id,
         );
 
+      console.log('Mi vida, por favor, ven conmigo', result);
+
       if (!result) {
         throw new NotFoundException(
           'Client detail not found for this loan application',
@@ -45,6 +47,7 @@ export class SVY_GetClientDetailForSurveyPurposeUseCase {
         address_external: result[2]?.[0] || [],
         job_external: result[3]?.[0] || null,
         collateral,
+        document_files: result[5]?.[0] || null,
       };
 
       // Validasi data minimal yang diperlukan
