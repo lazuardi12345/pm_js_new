@@ -196,6 +196,7 @@ export class MKT_CreateRepeatOrderController {
         repeatFromLoanId,
       );
     } catch (error) {
+      console.log(error);
       if (error instanceof BadRequestException) throw error;
       console.error('Submit repeat order error:', error);
       throw new InternalServerErrorException(

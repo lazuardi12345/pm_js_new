@@ -143,6 +143,7 @@ export class CollateralByKedinasanMouRepositoryImpl
   async save(
     collateral: CollateralByKedinasan_MOU,
   ): Promise<CollateralByKedinasan_MOU> {
+    console.log('kontl', collateral);
     const ormEntity = this.toOrm(collateral);
     const saved = await this.ormRepository.save(ormEntity);
     return this.toDomain(saved as CollateralByKedinasan_ORM_Entity);

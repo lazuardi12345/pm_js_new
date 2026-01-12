@@ -11,6 +11,8 @@ import {
   IsBoolean,
   isNumber,
   IsDateString,
+  Length,
+  Matches,
 } from 'class-validator';
 
 import {
@@ -48,6 +50,12 @@ class ClientExternalDto {
   nama_lengkap: string;
 
   @IsString()
+  @IsNotEmpty()
+  @Length(16, 16, { message: 'NIK harus tepat 16 digit' })
+  @Matches(/^\d{16}$/, {
+    message:
+      'NIK harus berupa 16 digit angka (tanpa spasi, huruf, atau karakter lain)',
+  })
   nik: string;
 
   @IsOptional()
@@ -75,8 +83,12 @@ class ClientExternalDto {
   @IsDate()
   tanggal_lahir: Date;
 
-  @IsOptional()
   @IsString()
+  @IsNotEmpty()
+  @Length(10, 14, { message: 'Nomor HP harus 10-15 karakter' })
+  @Matches(/^[0-9\s\-]+$/, {
+    message: 'Nomor HP hanya boleh angka, spasi, dan tanda hubung',
+  })
   no_hp: string;
 
   @IsOptional()

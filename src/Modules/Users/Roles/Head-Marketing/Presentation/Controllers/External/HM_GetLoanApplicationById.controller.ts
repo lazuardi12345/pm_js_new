@@ -14,6 +14,10 @@ export class HM_GetLoanApplicationByIdExternalController {
   @Public()
   @Get('detail/:id')
   async getLoanApplicationById(@Param('id') id: number) {
+    if (isNaN(Number(id))) {
+      // bukan angka
+    }
+
     try {
       const payload = await this.getLoanAppByIdUseCase.execute(id);
 

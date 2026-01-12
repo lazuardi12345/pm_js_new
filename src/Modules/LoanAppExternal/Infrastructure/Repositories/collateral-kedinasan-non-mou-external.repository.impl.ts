@@ -23,7 +23,6 @@ export class CollateralByKedinasan_Non_MOU_RepositoryImpl
       orm.instansi ?? undefined,
       orm.surat_permohonan_kredit ?? undefined,
       orm.surat_pernyataan_penjamin ?? undefined,
-      orm.surat_persetujuan_pimpinan ?? undefined,
       orm.surat_keterangan_gaji ?? undefined,
       orm.foto_keterangan_tpp ?? undefined,
       orm.foto_biaya_operasional ?? undefined,
@@ -46,7 +45,6 @@ export class CollateralByKedinasan_Non_MOU_RepositoryImpl
       instansi: domain.instansi,
       surat_permohonan_kredit: domain.surat_permohonan_kredit,
       surat_pernyataan_penjamin: domain.surat_pernyataan_penjamin,
-      surat_persetujuan_pimpinan: domain.surat_persetujuan_pimpinan,
       surat_keterangan_gaji: domain.surat_keterangan_gaji,
       foto_keterangan_tpp: domain.foto_keterangan_tpp,
       foto_biaya_operasional: domain.foto_biaya_operasional,
@@ -72,8 +70,6 @@ export class CollateralByKedinasan_Non_MOU_RepositoryImpl
       ormData.surat_permohonan_kredit = partial.surat_permohonan_kredit;
     if (partial.surat_pernyataan_penjamin !== undefined)
       ormData.surat_pernyataan_penjamin = partial.surat_pernyataan_penjamin;
-    if (partial.surat_persetujuan_pimpinan !== undefined)
-      ormData.surat_persetujuan_pimpinan = partial.surat_persetujuan_pimpinan;
     if (partial.surat_keterangan_gaji !== undefined)
       ormData.surat_keterangan_gaji = partial.surat_keterangan_gaji;
     if (partial.foto_keterangan_tpp !== undefined)
@@ -121,6 +117,7 @@ export class CollateralByKedinasan_Non_MOU_RepositoryImpl
   async save(
     collateral: CollateralByKedinasan_Non_MOU,
   ): Promise<CollateralByKedinasan_Non_MOU> {
+    console.log('another kntlllllll', collateral);
     const ormEntity = this.toOrm(collateral);
     const saved = await this.ormRepository.save(ormEntity);
     return this.toDomain(saved as CollateralByKedinasan_Non_MOU_ORM_Entity);

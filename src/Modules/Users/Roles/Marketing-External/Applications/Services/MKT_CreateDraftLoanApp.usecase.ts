@@ -34,6 +34,7 @@ import {
 } from 'src/Shared/Modules/Drafts/Domain/Repositories/ext/LoanAppExt.repository';
 import { JenisPembiayaanEnum } from 'src/Shared/Enums/External/Loan-Application.enum';
 import { LoanApplicationExtEntity } from 'src/Shared/Modules/Drafts/Domain/Entities/ext/LoanAppExt.entity';
+import { contains } from 'class-validator';
 
 @Injectable()
 export class MKT_CreateDraftLoanApplicationUseCase {
@@ -55,6 +56,20 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     jenis_pembiayaan?: JenisPembiayaanEnum,
   ) {
     console.log(external_loan_type);
+
+    if (
+      dto.client_external.no_hp.length >= 14 &&
+      /[\(\)\+]/.test(dto.client_external.no_hp)
+    ) {
+      throw new BadRequestException(
+        'Nomor HP tidak boleh mengandung tanda kurung () atau + jika panjangnya 14 karakter atau lebih',
+      );
+    } else if (
+      !dto.client_external?.nik ||
+      !/^\d{16}$/.test(dto.client_external.nik)
+    ) {
+      throw new BadRequestException('NIK wajib berupa 16 digit angka');
+    }
 
     const duplicateChecker = await this.clientRepo.findByKtp(
       Number(dto.client_external.nik),

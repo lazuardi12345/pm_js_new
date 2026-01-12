@@ -6,7 +6,10 @@ import {
 import { LoanApplicationExternal } from '../../Domain/Entities/loanApp-external.entity';
 import { CreateLoanApplicationExternalDto } from '../DTOS/dto-Loan-Application/create-loan-application.dto';
 import { UpdateLoanApplicationExternalDto } from '../DTOS/dto-Loan-Application/update-loan-application.dto';
-import { LoanApplicationSummary } from 'src/Shared/Interface/General_ClientsDatabase/BankDataLoanApplication.interface';
+import {
+  ApprovalDetail,
+  LoanApplicationSummary,
+} from 'src/Shared/Interface/General_ClientsDatabase/BankDataLoanApplication.interface';
 import {
   RoleSearchEnum,
   TypeSearchEnum,
@@ -320,7 +323,7 @@ export class LoanApplicationExternalService {
     };
   }
 
-  async getLoanApplicationInternalDatabase(
+  async getLoanApplicationExternalDatabase(
     page?: number | null,
     pageSize?: number | null,
   ): Promise<{
@@ -337,9 +340,53 @@ export class LoanApplicationExternalService {
       sanitizedPageSize,
     );
 
+    const mapApprovalDetail = (item: any, prefix: string): ApprovalDetail => ({
+      name: item[`${prefix}_name`] || null,
+      status: item[`${prefix}_status`] || null,
+      approval_status: item[`${prefix}_approval_status`] || '',
+      response_at: item[`${prefix}_response_at`]
+        ? new Date(item[`${prefix}_response_at`])
+        : null,
+      approved_amount: item[`${prefix}_approved_amount`]
+        ? Number(item[`${prefix}_approved_amount`])
+        : null,
+      approved_tenor: item[`${prefix}_approved_tenor`]
+        ? Number(item[`${prefix}_approved_tenor`])
+        : null,
+      keterangan: item[`${prefix}_keterangan`] || '',
+    });
+
     const mappedData = (result.LoanApplicationData || []).map((item) => ({
-      ...item,
+      // ===================================
+      // DATA LOAN APPLICATION
+      // ===================================
+      loan_id: Number(item.loan_id),
       id_pengajuan: Number(item.id_pengajuan),
+      customer_id: Number(item.customer_id),
+      customer_name: item.customer_name,
+      nama_nasabah: item.nama_nasabah,
+      loan_amount: Number(item.loan_amount),
+      nominal_pinjaman: Number(item.nominal_pinjaman),
+      pinjaman_ke: Number(item.pinjaman_ke),
+      tenor: Number(item.tenor),
+      jenis_pembiayaan: item.jenis_pembiayaan,
+      approval_request_submitted_at: item.approval_request_submitted_at,
+      created_at: item.created_at,
+      approval_request_responded_at: item.approval_request_responded_at,
+      latest_loan_app_status: item.latest_loan_app_status,
+      status_pengajuan: item.status_pengajuan,
+      final_status: item.final_status,
+      marketing_name: item.marketing_name,
+
+      loan_application_status: {
+        ca: mapApprovalDetail(item, 'ca_app'),
+        spv: mapApprovalDetail(item, 'spv_app'),
+        hm: mapApprovalDetail(item, 'hm_app'),
+      },
+      loan_appeal_status: {
+        ca: mapApprovalDetail(item, 'ca_appeal'),
+        hm: mapApprovalDetail(item, 'hm_appeal'),
+      },
     }));
 
     return {

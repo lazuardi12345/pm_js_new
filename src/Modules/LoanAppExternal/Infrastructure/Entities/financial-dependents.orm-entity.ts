@@ -7,6 +7,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  OneToMany,
+  ManyToOne,
 } from 'typeorm';
 import { ClientExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/client-external.orm-entity';
 
@@ -15,7 +17,7 @@ export class FinancialDependentsExternal_ORM_Entity {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
 
-  @OneToOne(
+  @ManyToOne(
     () => ClientExternal_ORM_Entity,
     (clientExternal) => clientExternal.id,
     {

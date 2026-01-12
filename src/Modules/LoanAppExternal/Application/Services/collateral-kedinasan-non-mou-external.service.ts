@@ -35,7 +35,6 @@ export class CollateralKedinasan_NonMOU_ExternalService {
 
       dto.surat_permohonan_kredit,
       dto.surat_pernyataan_penjamin,
-      dto.surat_persetujuan_pimpinan,
       dto.surat_keterangan_gaji,
 
       dto.foto_keterangan_tpp,
@@ -76,7 +75,6 @@ export class CollateralKedinasan_NonMOU_ExternalService {
 
       dto.surat_permohonan_kredit ?? existing.surat_permohonan_kredit,
       dto.surat_pernyataan_penjamin ?? existing.surat_pernyataan_penjamin,
-      dto.surat_persetujuan_pimpinan ?? existing.surat_persetujuan_pimpinan,
       dto.surat_keterangan_gaji ?? existing.surat_keterangan_gaji,
       dto.foto_keterangan_tpp ?? existing.foto_keterangan_tpp,
       dto.foto_biaya_operasional ?? existing.foto_biaya_operasional,

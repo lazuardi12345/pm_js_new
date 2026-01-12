@@ -696,7 +696,6 @@ export class MKT_CreateRepeatOrderUseCase {
                   collateral_kedinasan_non_mou_external.instansi,
                   collateral_kedinasan_non_mou_external.surat_permohonan_kredit,
                   collateral_kedinasan_non_mou_external.surat_pernyataan_penjamin,
-                  collateral_kedinasan_non_mou_external.surat_persetujuan_pimpinan,
                   collateral_kedinasan_non_mou_external.surat_keterangan_gaji,
                   collateral_kedinasan_non_mou_external.foto_surat_kontrak,
                   collateral_kedinasan_non_mou_external.foto_keterangan_tpp,

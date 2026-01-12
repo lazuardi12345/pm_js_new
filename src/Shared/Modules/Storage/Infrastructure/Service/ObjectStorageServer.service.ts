@@ -76,7 +76,19 @@ export class MinioFileStorageService implements IFileStorageRepository {
     return `${customerNIN}-${customerName}/`;
   }
 
-  //TODO ============== CREATE/UPLOAD ==============
+  private generateRandomString(length = 6): string {
+    return Math.random()
+      .toString(36)
+      .substring(2, 2 + length);
+  }
+
+  private getTodayString(): string {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}${mm}${dd}`; // contoh: 20260109
+  }
 
   //? ADMIN BI =====================================!
 
@@ -89,6 +101,8 @@ export class MinioFileStorageService implements IFileStorageRepository {
     const prefix = this.getCustomerPrefix(customerId, customerName);
     const savedFiles: Record<string, FileMetadata[]> = {};
 
+    const today = this.getTodayString();
+
     for (const [field, fileList] of Object.entries(files)) {
       if (!fileList || fileList.length === 0) continue;
 
@@ -96,13 +110,17 @@ export class MinioFileStorageService implements IFileStorageRepository {
 
       for (const file of fileList) {
         const ext = file.originalname.split('.').pop();
-        const newFileName = `${customerName}-${field}.${ext}`;
+        const random = this.generateRandomString(6);
+
+        const newFileName = `${customerName}-${field}-${today}-${random}.${ext}`;
+
         const metadata = await this.uploadApprovalRecommendationFile(
           bucket,
           prefix,
           file,
           newFileName,
         );
+
         savedFiles[field].push(metadata);
       }
     }
