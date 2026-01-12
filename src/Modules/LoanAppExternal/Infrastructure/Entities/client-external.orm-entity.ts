@@ -94,7 +94,7 @@ export class ClientExternal_ORM_Entity {
   )
   loanGuarantors: LoanGuarantorExternal_ORM_Entity[];
 
-  @OneToOne(
+  @OneToMany(
     () => FinancialDependentsExternal_ORM_Entity,
     (financialDependentsExternal) => financialDependentsExternal.nasabah,
   )

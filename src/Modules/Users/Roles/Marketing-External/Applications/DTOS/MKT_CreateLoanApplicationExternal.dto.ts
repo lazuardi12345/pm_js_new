@@ -1453,7 +1453,7 @@ export interface TypeLoanApplicationDetail {
     catatan_pinjaman_lain?: string;
   };
 
-  // ========== ATTACHMENT DATA - Survey Reports ==========
+  // ========== ATTACHMENT DATA - Survey Reports =======id_card_peminjam===
   survey_report?: {
     pengajuan_luar_id: number;
     berjumpa_siapa: string;

@@ -37,7 +37,7 @@ import { LoginUseCase } from './Applications/Services/Login.usecase';
       signOptions: { expiresIn: '1h' },
     }),
     TypeOrmModule.forFeature([Users_ORM_Entity]), // <== ini wajib biar UserForAuthRepositoryImpl bisa jalan
-    UsersModule
+    UsersModule,
   ],
   controllers: [AuthController],
   providers: [

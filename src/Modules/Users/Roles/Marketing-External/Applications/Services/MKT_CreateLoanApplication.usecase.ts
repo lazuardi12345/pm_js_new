@@ -677,42 +677,38 @@ export class MKT_CreateLoanApplicationUseCase {
           // 4. Kedinasan NON MOU
           // ==========================
           case 'KEDINASAN_NON_MOU': {
+            console.log('OOO PUKIIII', collateral_kedinasan_non_mou_external);
             await this.uow.collateralByKedinasan_NON_MOURepo.save(
               new CollateralByKedinasan_Non_MOU(
                 { id: loanApp.id! },
                 collateral_kedinasan_non_mou_external.instansi,
                 parseFileUrl(
-                  documents_files?.surat_permohonan_kredit_mou ??
+                  documents_files?.surat_permohonan_kredit_non_mou ??
                     collateral_kedinasan_non_mou_external.surat_permohonan_kredit ??
                     null,
                 ),
                 parseFileUrl(
-                  documents_files?.surat_pernyataan_penjamin_mou ??
+                  documents_files?.surat_pernyataan_penjamin_non_mou ??
                     collateral_kedinasan_non_mou_external.surat_pernyataan_penjamin ??
                     null,
                 ),
                 parseFileUrl(
-                  documents_files?.surat_persetujuan_pimpinan_mou ??
-                    collateral_kedinasan_non_mou_external.surat_persetujuan_pimpinan ??
-                    null,
-                ),
-                parseFileUrl(
-                  documents_files?.surat_keterangan_gaji_mou ??
+                  documents_files?.surat_keterangan_gaji_non_mou ??
                     collateral_kedinasan_non_mou_external.surat_keterangan_gaji ??
                     null,
                 ),
                 parseFileUrl(
-                  documents_files?.foto_surat_kontrak_mou ??
+                  documents_files?.foto_surat_kontrak_non_mou ??
                     collateral_kedinasan_non_mou_external.foto_surat_kontrak ??
                     null,
                 ),
                 parseFileUrl(
-                  documents_files?.foto_keterangan_tpp_mou ??
+                  documents_files?.foto_keterangan_tpp_non_mou ??
                     collateral_kedinasan_non_mou_external.foto_keterangan_tpp ??
                     null,
                 ),
                 parseFileUrl(
-                  documents_files?.foto_biaya_operasional_mou ??
+                  documents_files?.foto_biaya_operasional_non_mou ??
                     collateral_kedinasan_non_mou_external.foto_biaya_operasional ??
                     null,
                 ),

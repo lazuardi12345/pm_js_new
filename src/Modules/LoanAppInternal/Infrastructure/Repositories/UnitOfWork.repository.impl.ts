@@ -89,6 +89,7 @@ import { SurveyPhotos_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastruct
 import { ISurveyReportsRepository } from 'src/Modules/LoanAppExternal/Domain/Repositories/survey-reports-external.repository';
 import { SurveyReportsRepositoryImpl } from 'src/Modules/LoanAppExternal/Infrastructure/Repositories/survey-reports-external.repository.impl';
 import { SurveyReports_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/survey-reports.orm-entity';
+import { CollateralByKedinasan_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/collateral-kedinasan-mou.orm-entity';
 
 export class TypeOrmUnitOfWork implements IUnitOfWork {
   private queryRunner: QueryRunner | null = null;
@@ -298,9 +299,7 @@ export class TypeOrmUnitOfWork implements IUnitOfWork {
   get collateralByKedinasanMOURepo(): ICollateralByKedinasanMOURepository {
     if (!this.queryRunner) throw new Error('Transaction not started');
     return new CollateralByKedinasanMouRepositoryImpl(
-      this.queryRunner.manager.getRepository(
-        CollateralByKedinasan_Non_MOU_ORM_Entity,
-      ),
+      this.queryRunner.manager.getRepository(CollateralByKedinasan_ORM_Entity),
     );
   }
 

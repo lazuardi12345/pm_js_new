@@ -18,10 +18,6 @@ export class CreatePengajuanKedinasan_Non_MOU_Dto {
 
   @IsOptional()
   @IsString()
-  surat_persetujuan_pimpinan?: string;
-
-  @IsOptional()
-  @IsString()
   surat_keterangan_gaji?: string;
 
   @IsOptional()

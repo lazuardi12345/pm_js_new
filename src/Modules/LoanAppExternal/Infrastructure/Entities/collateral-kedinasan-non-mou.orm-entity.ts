@@ -42,9 +42,6 @@ export class CollateralByKedinasan_Non_MOU_ORM_Entity {
   surat_pernyataan_penjamin?: string;
 
   @Column({ nullable: true })
-  surat_persetujuan_pimpinan?: string;
-
-  @Column({ nullable: true })
   surat_keterangan_gaji?: string;
 
   // ==========================

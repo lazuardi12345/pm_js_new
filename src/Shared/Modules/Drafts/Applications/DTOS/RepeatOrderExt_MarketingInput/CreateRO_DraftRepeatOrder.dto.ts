@@ -292,7 +292,15 @@ class JobExternalDto {
 
   @IsString()
   @IsOptional()
-  id_card_penjamin: string;
+  foto_id_card_penjamin: string;
+
+  @IsString()
+  @IsOptional()
+  id_card_penjamin?: string;
+
+  @IsString()
+  @IsOptional()
+  id_card_peminjam?: string;
 
   @IsString()
   @IsOptional()

@@ -100,7 +100,7 @@ export class LoanApplicationExternalController {
     if (!usertype) throw new UnauthorizedException('Invalid User Session');
 
     const res =
-      await this.loanApplicationService.getLoanApplicationInternalDatabase(
+      await this.loanApplicationService.getLoanApplicationExternalDatabase(
         page,
         pageSize,
       );

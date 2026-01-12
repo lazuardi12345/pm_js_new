@@ -321,7 +321,7 @@ export class LoanApplicationExternalRepositoryImpl
     const ormEntities = this.ormRepository.manager;
 
     // result sets: [pagination, client data, loan data]
-    const [loanResult, paginationResult] = await ormEntities.query(
+    const [paginationResult, loanResult] = await ormEntities.query(
       `CALL GENERAL_GetLoanApplicationDatabase_External(?, ?)`,
       [page, page_size],
     );
