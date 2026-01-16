@@ -18,7 +18,6 @@ import {
   DRAFT_LOAN_APPLICATION_EXTERNAL_REPOSITORY,
   ILoanApplicationDraftExternalRepository,
 } from 'src/Shared/Modules/Drafts/Domain/Repositories/ext/LoanAppExt.repository';
-import { LoanType } from 'src/Shared/Enums/External/Loan-Application.enum';
 @Injectable()
 export class CA_GetLoanApplicationByIdUseCase {
   constructor(
@@ -35,6 +34,8 @@ export class CA_GetLoanApplicationByIdUseCase {
       await this.loanAppRepo.callSP_CA_GetDetail_LoanApplicationsExternal_ById(
         id,
       );
+
+    console.log(result);
 
     if (!result || !Array.isArray(result)) {
       throw new InternalServerErrorException(
@@ -349,6 +350,7 @@ export class CA_GetLoanApplicationByIdUseCase {
           approval_recommendation,
         },
         loan_latest_status: loanData.status_pengajuan,
+        appeal_notes: loanData.loan_alasan_banding,
         // Status data
         loan_app_status: loanAppStatus,
         appeal_status: appealStatus,
@@ -356,6 +358,7 @@ export class CA_GetLoanApplicationByIdUseCase {
     };
   }
   catch(error) {
+    console.log(error);
     console.error('Unexpected error:', error);
     throw error;
   }

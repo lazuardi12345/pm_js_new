@@ -31,6 +31,8 @@ import { FILE_STORAGE_SERVICE } from 'src/Shared/Modules/Storage/Domain/Reposito
 import { MinioFileStorageService } from 'src/Shared/Modules/Storage/Infrastructure/Service/ObjectStorageServer.service';
 import { ClientExternalModule } from 'src/Modules/LoanAppExternal/Modules/client-external.module';
 import { ClientExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/client-external.orm-entity';
+import { SVY_RescheduleSurvey_UseCase } from './Applications/Services/SVY_RescheduleSurvey.usecase';
+import { SVY_RescheduleSurveyController } from './Presentation/Controllers/SVY_RescheduleSurvey.controller';
 @Module({
   imports: [
     LoanApplicationExternalModule,
@@ -43,6 +45,7 @@ import { ClientExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastru
   controllers: [
     SVY_GetAllUnscheduledSurveyListController,
     SVY_SetSurveyScheduleController,
+    SVY_RescheduleSurveyController,
     SVY_GetAllScheduledSurveyListController,
     SVY_CreateSurveyReportController,
     SVY_GetClientDetailForSurveyPurposeController,
@@ -61,6 +64,7 @@ import { ClientExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastru
     },
     SVY_GetAllUnscheduledSurveyListUseCase,
     SVY_SetSurveySchedule_UseCase,
+    SVY_RescheduleSurvey_UseCase,
     SVY_GetAllScheduledSurveyListUseCase,
     SVY_CreateSurveyReportUseCase,
     SVY_GetClientDetailForSurveyPurposeUseCase,

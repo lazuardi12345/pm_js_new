@@ -69,6 +69,7 @@ export class CA_GetAllApprovalRequest_UseCase {
           nominal_pinjaman: formattedNominal,
           nama_marketing: item.nama_marketing,
           nama_supervisor: item.nama_supervisor,
+          is_has_survey: Number(item.is_has_survey!),
           status: item.status_pengajuan,
         };
       });

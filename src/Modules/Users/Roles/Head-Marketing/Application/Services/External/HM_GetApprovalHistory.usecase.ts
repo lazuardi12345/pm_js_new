@@ -51,6 +51,7 @@ export class HM_GetAllApprovalHistoryExternalUseCase {
         latest_loan_app_status: item.latest_loan_app_status || '-',
         loan_submitted_at: item.approval_request_submitted_at || '-',
         marketing_name: item.marketing_name || '-',
+        is_need_survey: Number(item.is_need_survey!),
 
         loan_application_status: {
           spv: {
@@ -60,6 +61,12 @@ export class HM_GetAllApprovalHistoryExternalUseCase {
               spv_approved_amount: item.spv_app_approved_amount || '-',
               spv_approved_tenor: item.spv_app_approved_tenor || '-',
               spv_response_at: item.spv_app_response_at || '-',
+            },
+          },
+          svy: {
+            data: {
+              svy_visited_person: item?.survey_berjumpa_siapa ?? '-',
+              svy_visited_time: item?.survey_created_at ?? '-',
             },
           },
           ca: {

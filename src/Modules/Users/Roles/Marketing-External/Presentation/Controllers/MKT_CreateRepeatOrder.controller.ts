@@ -24,6 +24,10 @@ import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Gua
 import { PayloadExternalDTO } from 'src/Shared/Modules/Drafts/Applications/DTOS/RepeatOrderExt_MarketingInput/CreateRO_DraftRepeatOrder.dto';
 import { JenisPembiayaanEnum } from 'src/Shared/Enums/External/Loan-Application.enum';
 import { ExternalCollateralType } from 'src/Shared/Enums/General/General.enum';
+import {
+  secureFileFilter,
+  uploadLimits,
+} from 'src/Shared/Modules/Authentication/Infrastructure/Helpers/FileFilter.help';
 
 @Controller('mkt/ext/loan-apps')
 @UseGuards(RolesGuard)
@@ -44,17 +48,11 @@ export class MKT_CreateRepeatOrderController {
         { name: 'dokumen_pendukung', maxCount: 1 },
         { name: 'foto_meteran_listrik', maxCount: 1 },
         { name: 'foto_id_card_peminjam', maxCount: 1 },
-        { name: 'id_card_peminjam', maxCount: 1 },
         { name: 'slip_gaji_peminjam', maxCount: 1 },
-
-        //? UMKM
-        { name: 'foto_sku', maxCount: 1 },
-        { name: 'foto_usaha', maxCount: 1 },
-        { name: 'foto_pembukuan', maxCount: 1 },
 
         //? BPJS
         { name: 'foto_bpjs', maxCount: 1 },
-        { name: 'kelengkapan_dokumen', maxCount: 1 },
+        { name: 'dokumen_pendukung_bpjs', maxCount: 1 },
 
         //? SHM
         { name: 'foto_shm', maxCount: 1 },
@@ -83,10 +81,30 @@ export class MKT_CreateRepeatOrderController {
         { name: 'foto_sambara', maxCount: 1 },
         { name: 'foto_kwitansi_jual_beli', maxCount: 1 },
         { name: 'foto_ktp_tangan_pertama', maxCount: 1 },
+
+        //? UMKM
+        { name: 'foto_sku', maxCount: 1 },
+        { name: 'foto_usaha', maxCount: 1 },
+        { name: 'foto_pembukuan', maxCount: 1 },
+
+        //? KEDINASAN_MOU_AND_NON_MOU
+        { name: 'surat_permohonan_kredit', maxCount: 1 },
+        { name: 'surat_pernyataan_penjamin', maxCount: 1 },
+        { name: 'surat_persetujuan_pimpinan', maxCount: 1 },
+        { name: 'surat_keterangan_gaji', maxCount: 1 },
+        { name: 'foto_form_pengajuan', maxCount: 1 },
+        { name: 'foto_surat_kuasa_pemotongan', maxCount: 1 },
+        { name: 'foto_surat_pernyataan_peminjam', maxCount: 1 },
+        { name: 'foto_sk_golongan_terbaru', maxCount: 1 },
+        { name: 'foto_keterangan_tpp', maxCount: 1 },
+        { name: 'foto_biaya_operasional', maxCount: 1 },
+        { name: 'foto_surat_kontrak', maxCount: 1 },
+        { name: 'foto_rekomendasi_bendahara', maxCount: 1 },
       ],
       {
         storage: multer.memoryStorage(),
-        limits: { fileSize: 5 * 1024 * 1024 },
+        limits: uploadLimits,
+        fileFilter: secureFileFilter,
       },
     ),
   )
@@ -132,15 +150,15 @@ export class MKT_CreateRepeatOrderController {
         t6: 'KEDINASAN_NON_MOU',
       };
 
-      // ================== SAMAKAN NAMA FIELD DENGAN DTO & PAYLOAD ==================
-      const collateralFieldMap = {
-        t1: 'collateral_bpjs', // ← tanpa _external
-        t2: 'collateral_bpkb',
-        t3: 'collateral_shm',
-        t4: 'collateral_umkm',
-        t5: 'collateral_kedinasan_mou',
-        t6: 'collateral_kedinasan_non_mou',
-      };
+      // // ================== SAMAKAN NAMA FIELD DENGAN DTO & PAYLOAD ==================
+      // const collateralFieldMap = {
+      //   t1: 'collateral_bpjs', // ← tanpa _external
+      //   t2: 'collateral_bpkb',
+      //   t3: 'collateral_shm',
+      //   t4: 'collateral_umkm',
+      //   t5: 'collateral_kedinasan_mou',
+      //   t6: 'collateral_kedinasan_non_mou',
+      // };
 
       const jenisPembiayaan =
         collateralToJenisPembiayaanMap[external_loan_type];
@@ -157,12 +175,12 @@ export class MKT_CreateRepeatOrderController {
           jenisPembiayaan;
       }
 
-      // ================== FIX JOB EXTERNAL (rename field kalau ada) ==================
-      if (parsedPayload.job_external?.id_card_peminjam) {
-        parsedPayload.job_external.foto_id_card_peminjam =
-          parsedPayload.job_external.id_card_peminjam;
-        delete parsedPayload.job_external.id_card_peminjam; // optional: bersihkan field lama
-      }
+      // // ================== FIX JOB EXTERNAL (rename field kalau ada) ==================
+      // if (parsedPayload.job_external?.id_card_peminjam) {
+      //   parsedPayload.job_external.foto_id_card_peminjam =
+      //     parsedPayload.job_external.id_card_peminjam;
+      //   delete parsedPayload.job_external.id_card_peminjam; // optional: bersihkan field lama
+      // }
 
       // ================== FIX other_exist_loan_external ==================
       if (!parsedPayload.other_exist_loan_external) {
@@ -250,10 +268,30 @@ export class MKT_CreateRepeatOrderController {
         { name: 'foto_sambara', maxCount: 1 },
         { name: 'foto_kwitansi_jual_beli', maxCount: 1 },
         { name: 'foto_ktp_tangan_pertama', maxCount: 1 },
+
+        //? UMKM
+        { name: 'foto_sku', maxCount: 1 },
+        { name: 'foto_usaha', maxCount: 1 },
+        { name: 'foto_pembukuan', maxCount: 1 },
+
+        //? KEDINASAN_MOU_AND_NON_MOU
+        { name: 'surat_permohonan_kredit', maxCount: 1 },
+        { name: 'surat_pernyataan_penjamin', maxCount: 1 },
+        { name: 'surat_persetujuan_pimpinan', maxCount: 1 },
+        { name: 'surat_keterangan_gaji', maxCount: 1 },
+        { name: 'foto_form_pengajuan', maxCount: 1 },
+        { name: 'foto_surat_kuasa_pemotongan', maxCount: 1 },
+        { name: 'foto_surat_pernyataan_peminjam', maxCount: 1 },
+        { name: 'foto_sk_golongan_terbaru', maxCount: 1 },
+        { name: 'foto_keterangan_tpp', maxCount: 1 },
+        { name: 'foto_biaya_operasional', maxCount: 1 },
+        { name: 'foto_surat_kontrak', maxCount: 1 },
+        { name: 'foto_rekomendasi_bendahara', maxCount: 1 },
       ],
       {
         storage: multer.memoryStorage(),
-        limits: { fileSize: 5 * 1024 * 1024 },
+        limits: uploadLimits,
+        fileFilter: secureFileFilter,
       },
     ),
   )

@@ -9,17 +9,25 @@ import { UpdateLoanApplicationExternalDto } from '../DTOS/dto-Loan-Application/u
 import {
   ApprovalDetail,
   LoanApplicationSummary,
+  SurveyorResult,
 } from 'src/Shared/Interface/General_ClientsDatabase/BankDataLoanApplication.interface';
 import {
   RoleSearchEnum,
   TypeSearchEnum,
 } from 'src/Shared/Enums/General/General.enum';
+import { JenisPembiayaanEnum } from 'src/Shared/Enums/External/Loan-Application.enum';
+import {
+  APPROVAL_RECOMMENDATION_REPOSITORY,
+  IApprovalRecommendationRepository,
+} from 'src/Modules/Admin/BI-Checking/Domain/Repositories/approval-recommendation.repository';
 
 @Injectable()
 export class LoanApplicationExternalService {
   constructor(
     @Inject(LOAN_APPLICATION_EXTERNAL_REPOSITORY)
     private readonly repo: ILoanApplicationExternalRepository,
+    @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
+    private readonly approvalRecommendationRepo: IApprovalRecommendationRepository,
   ) {}
 
   async create(
@@ -92,14 +100,22 @@ export class LoanApplicationExternalService {
   async searchLoans(
     role: RoleSearchEnum,
     type: TypeSearchEnum,
+    paymentType: JenisPembiayaanEnum | null,
     keyword: string,
     page?: number | null,
     pageSize?: number | null,
   ): Promise<{
-    results: any[];
-    page: number;
-    pageSize: number;
-    total: number;
+    payload: {
+      error: boolean;
+      message?: string;
+      reference: string;
+      data: {
+        results: any[];
+      };
+      page: number;
+      pageSize: number;
+      total: number;
+    };
   }> {
     const sanitizedPage = page && page > 0 ? page : 1;
     const sanitizedPageSize = pageSize && pageSize > 0 ? pageSize : 10;
@@ -108,6 +124,7 @@ export class LoanApplicationExternalService {
       await this.repo.callSP_GENERAL_GetAllPreviewDataLoanBySearch_External(
         role,
         type,
+        paymentType,
         keyword,
         sanitizedPage,
         sanitizedPageSize,
@@ -122,22 +139,102 @@ export class LoanApplicationExternalService {
       minimumFractionDigits: 0,
     });
 
+    const draftIds = result.data
+      .map((item: any) => item?.draft_id)
+      .filter((draftId): draftId is string => !!draftId);
+
+    // Ambil semua recommendations parallel
+    const recMap = new Map<string, any>();
+    if (draftIds.length > 0) {
+      const recs = await Promise.all(
+        draftIds.map((draftId) =>
+          this.approvalRecommendationRepo.findByDraftId(draftId),
+        ),
+      );
+      recs.forEach((rec, i) => {
+        if (rec) recMap.set(draftIds[i], rec);
+      });
+    }
+
     switch (role) {
       case RoleSearchEnum.MARKETING:
         switch (type) {
           case TypeSearchEnum.HISTORY:
-            mappedData = result.data.map((row: any) => ({
-              clientId: row.clientId,
-              loanAppId: Number(row.loanAppId),
-              nominal_pinjaman: Number(row.nominal_pinjaman),
-              tenor: row.tenor,
-              nama_lengkap: row.nama_lengkap,
-              status: row.status,
-            }));
-            break;
+            mappedData = result.data.map((item: any) => {
+              const loanAmountFormatted = item?.nominal_pinjaman
+                ? rupiahFormatter.format(Number(item.nominal_pinjaman))
+                : '-';
+              const lastApprovedAmountFormatted = item?.last_approval_nominal
+                ? rupiahFormatter.format(Number(item.last_approval_nominal))
+                : '-';
+              const approvalRecommendation = item?.draft_id
+                ? recMap.get(item.draft_id) || null
+                : null;
 
-          default:
-            mappedData = result.data;
+              return {
+                loan_id: Number(item?.loan_id ?? 0),
+                customer_id: Number(item?.customer_id ?? 0),
+                customer_name: item?.nama_lengkap ?? '-',
+                customer_type: item?.customer_type ?? '-',
+                loan_amount: loanAmountFormatted,
+                loan_sequence: item?.pinjaman_ke ?? '-',
+                tenor: item?.tenor ?? '-',
+                loan_submitted_at: item?.created_at ?? '-',
+                latest_loan_status: item?.status_pengajuan ?? '-',
+                final_loan_status: item?.status_pengajuan_akhir ?? '-',
+                marketing_name: item?.marketing_name ?? '-',
+                approval_recommendation: approvalRecommendation,
+                loan_application_status: {
+                  spv: {
+                    data: {
+                      spv_name: item?.spv_app_name ?? '-',
+                      spv_response: item?.spv_app_status ?? '-',
+                      spv_approved_amount: item?.spv_app_amount ?? '-',
+                      spv_approved_tenor: item?.spv_app_tenor ?? '-',
+                      spv_response_at: item?.spv_app_response_at ?? '-',
+                    },
+                  },
+                  svy: {
+                    data: {
+                      svy_visited_person: item?.survey_berjumpa_siapa ?? '-',
+                      svy_visited_time: item?.survey_created_at ?? '-',
+                    },
+                  },
+                  ca: {
+                    data: {
+                      ca_name: item?.ca_app_name ?? '-',
+                      ca_response: item?.ca_app_status ?? '-',
+                      ca_approved_amount: item?.ca_app_amount ?? '-',
+                      ca_approved_tenor: item?.ca_app_tenor ?? '-',
+                      ca_response_at: item?.ca_app_response_at ?? '-',
+                    },
+                  },
+                  hm: {
+                    data: {
+                      hm_name: item?.hm_app_name ?? '-',
+                      hm_response: item?.hm_app_status ?? '-',
+                      hm_approved_amount: item?.hm_app_amount ?? '-',
+                      hm_approved_tenor: item?.hm_app_tenor ?? '-',
+                      hm_response_at: item?.hm_app_response_at ?? '-',
+                    },
+                  },
+                },
+                loan_appeal_status: {
+                  hm: {
+                    data: {
+                      hm_name: item?.hm_appeal_name ?? '-',
+                      hm_response: item?.hm_appeal_status ?? '-',
+                      hm_approved_amount: item?.hm_appeal_amount ?? '-',
+                      hm_approved_tenor: item?.hm_appeal_tenor ?? '-',
+                      hm_response_at: item?.hm_appeal_response_at ?? '-',
+                    },
+                  },
+                },
+                last_approved_amount: lastApprovedAmountFormatted,
+                last_approved_tenor: Number(item?.last_approval_tenor ?? 0),
+              };
+            });
+            break;
         }
         break;
 
@@ -159,8 +256,15 @@ export class LoanApplicationExternalService {
 
           case TypeSearchEnum.REQUEST:
             mappedData = result.data.map((row: any) => ({
-              loanAppId: row.loanAppId,
-              status: row.status,
+              id_pengajuan: row.loan_id,
+              nama_nasabah: row.nama_nasabah,
+              tipe_nasabah: 'reguler',
+              nominal_pinjaman: rupiahFormatter.format(
+                Number(row.nominal_pinjaman),
+              ),
+              jenis_pembiayaan: row.jenis_pembiayaan,
+              nama_marketing: row.marketing_nama,
+              status: row.loan_app_status,
             }));
             break;
 
@@ -191,8 +295,17 @@ export class LoanApplicationExternalService {
 
           case TypeSearchEnum.REQUEST:
             mappedData = result.data.map((row: any) => ({
-              loanAppId: row.loanAppId,
-              status: row.status,
+              id_pengajuan: row.loan_id,
+              nama_nasabah: row.nama_nasabah,
+              tipe_nasabah: 'reguler',
+              jenis_pembiayaan: row.jenis_pembiayaan,
+              nominal_pinjaman: rupiahFormatter.format(
+                Number(row.nominal_pinjaman),
+              ),
+              nama_marketing: row.marketing_nama,
+              nama_supervisor: row.supervisor_nama,
+              is_has_survey: row.is_has_survey,
+              status: row.loan_app_status,
             }));
             break;
 
@@ -301,8 +414,21 @@ export class LoanApplicationExternalService {
 
           case TypeSearchEnum.REQUEST:
             mappedData = result.data.map((row: any) => ({
-              loanAppId: row.loanAppId,
-              status: row.status,
+              pengajuan_id: row.pengajuan_id,
+              id_nasabah: row.id_nasabah,
+              nama_nasabah: row.nama_nasabah,
+              tipe_nasabah: 'reguler',
+              pinjaman_ke: row.pinjaman_ke,
+              nominal_pinjaman: row.nominal_pinjaman,
+              tenor: row.tenor,
+              id_marketing: row.id_marketing,
+              nama_marketing: row.nama_marketing,
+              nama_supervisor: row.nama_supervisor,
+              waktu_pengajuan: row.waktu_pengajuan,
+              status_loan: row.status_loan,
+              perusahaan: row.perusahaan,
+              is_banding: row.is_banding,
+              is_has_survey: row.is_has_survey,
             }));
             break;
 
@@ -316,10 +442,17 @@ export class LoanApplicationExternalService {
     }
 
     return {
-      results: mappedData,
-      page: sanitizedPage,
-      pageSize: sanitizedPageSize,
-      total: result.totalData,
+      payload: {
+        error: false,
+        message: 'Search was successfully retrieved',
+        reference: 'SEARCH_RETRIEVE_OK',
+        data: {
+          results: mappedData,
+        },
+        page: sanitizedPage,
+        pageSize: sanitizedPageSize,
+        total: Number(result.totalData),
+      },
     };
   }
 
@@ -356,6 +489,11 @@ export class LoanApplicationExternalService {
       keterangan: item[`${prefix}_keterangan`] || '',
     });
 
+    const mapSurveyResult = (item: any, prefix: string): SurveyorResult => ({
+      visited_person: item[`${prefix}_visited_person`] || null,
+      visited_time: item[`${prefix}_visited_time`] || null,
+    });
+
     const mappedData = (result.LoanApplicationData || []).map((item) => ({
       // ===================================
       // DATA LOAN APPLICATION
@@ -379,8 +517,9 @@ export class LoanApplicationExternalService {
       marketing_name: item.marketing_name,
 
       loan_application_status: {
-        ca: mapApprovalDetail(item, 'ca_app'),
         spv: mapApprovalDetail(item, 'spv_app'),
+        svy: mapSurveyResult(item, 'svy_app'),
+        ca: mapApprovalDetail(item, 'ca_app'),
         hm: mapApprovalDetail(item, 'hm_app'),
       },
       loan_appeal_status: {

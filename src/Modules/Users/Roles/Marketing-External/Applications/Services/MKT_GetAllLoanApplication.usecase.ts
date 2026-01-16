@@ -75,6 +75,8 @@ export class MKT_GetAllLoanApplicationUseCase {
             pageSize,
             paymentType,
           );
+
+        console.log(spResult);
       } catch (repoErr) {
         console.error('Error calling Stored Procedure:', repoErr);
 
@@ -253,6 +255,12 @@ export class MKT_GetAllLoanApplicationUseCase {
                     spv_response_at: item?.spv_app_response_at ?? '-',
                   },
                 },
+                svy: {
+                  data: {
+                    svy_visited_person: item?.survey_berjumpa_siapa ?? '-',
+                    svy_visited_time: item?.survey_created_at ?? '-',
+                  },
+                },
                 ca: {
                   data: {
                     ca_name: item?.ca_app_name ?? '-',
@@ -273,15 +281,15 @@ export class MKT_GetAllLoanApplicationUseCase {
                 },
               },
               loan_appeal_status: {
-                ca: {
-                  data: {
-                    ca_name: item?.ca_appeal_name ?? '-',
-                    ca_response: item?.ca_appeal_status ?? '-',
-                    ca_approved_amount: item?.ca_appeal_amount ?? '-',
-                    ca_approved_tenor: item?.ca_appeal_tenor ?? '-',
-                    ca_response_at: item?.ca_appeal_response_at ?? '-',
-                  },
-                },
+                // ca: {
+                //   data: {
+                //     ca_name: item?.ca_appeal_name ?? '-',
+                //     ca_response: item?.ca_appeal_status ?? '-',
+                //     ca_approved_amount: item?.ca_appeal_amount ?? '-',
+                //     ca_approved_tenor: item?.ca_appeal_tenor ?? '-',
+                //     ca_response_at: item?.ca_appeal_response_at ?? '-',
+                //   },
+                // },
                 hm: {
                   data: {
                     hm_name: item?.hm_appeal_name ?? '-',

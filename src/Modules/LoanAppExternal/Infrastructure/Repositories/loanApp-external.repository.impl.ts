@@ -240,22 +240,14 @@ export class LoanApplicationExternalRepositoryImpl
   async callSP_GENERAL_GetAllPreviewDataLoanBySearch_External(
     role: RoleSearchEnum,
     type: TypeSearchEnum,
+    paymentType: JenisPembiayaanEnum,
     keyword: string,
     page?: number,
     pageSize?: number,
   ): Promise<{ data: any[]; totalData: any; approvals?: any[] }> {
-    console.log(
-      'CALL SP with params > : ',
-      keyword,
-      role,
-      type,
-      page,
-      pageSize,
-    );
-
     const result = await this.ormRepository.manager.query(
-      'CALL GENERAL_GetAllPreviewDataLoanBySearch_External(?, ?, ?, ?, ?)',
-      [keyword, role, type, page, pageSize],
+      'CALL GENERAL_GetAllPreviewDataLoanBySearch_External(?, ?, ?, ?, ?, ?)',
+      [keyword, role, type, page, pageSize, paymentType],
     );
     const totalData = result[0][0].total;
     const data = result[1] || [];

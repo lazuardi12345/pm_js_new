@@ -65,6 +65,7 @@ export class HM_GetAllApprovalRequestExternalUseCase {
           status_loan: item.status_loan || '-',
           perusahaan: item.perusahaan || '-',
           is_banding: !!item.is_banding,
+          is_need_survey: Number(item.is_need_survey!),
         };
       });
 

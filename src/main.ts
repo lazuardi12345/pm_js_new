@@ -8,7 +8,7 @@ import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/G
 import cookieParser from 'cookie-parser';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-// somewhere in your initialization file
+import { MulterExceptionFilter } from './Shared/Modules/Authentication/Infrastructure/Helpers/MulterError.help';
 
 async function bootstrap() {
   process.env.TZ = 'Asia/Jakarta';
@@ -19,6 +19,7 @@ async function bootstrap() {
     exclude: ['storage/(.*)'],
   });
   app.useGlobalGuards(new JwtAuthGuard(app.get(Reflector)));
+  // app.useGlobalFilters(new MulterExceptionFilter());
   app.use(cookieParser());
 
   app.enableCors({

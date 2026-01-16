@@ -260,22 +260,39 @@ export class MinioFileStorageService implements IFileStorageRepository {
     const bucket = this.surveyPhotosBucket;
     const prefix = this.getCustomerPrefix(customerId, customerName);
     const savedFiles: Record<string, FileMetadata[]> = {};
+    const timestamp = Date.now();
 
     for (const [field, fileList] of Object.entries(files)) {
       if (!fileList || fileList.length === 0) continue;
 
       savedFiles[field] = [];
 
-      for (const file of fileList) {
-        const ext = file.originalname.split('.').pop();
-        const newFileName = `${customerName}-${field}.${ext}`;
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
+
+        const ext = file.originalname.split('.').pop() || 'jpg';
+
+        const uniquePart = `${timestamp}-${i + 1}-${Math.random().toString(36).slice(2, 8)}`;
+        const newFileName = `${field}-${uniquePart}.${ext}`;
+
+        // Opsi 2 - Lebih sederhana (hanya index, cukup kalau tidak ada upload concurrent)
+        // const newFileName = `${field}-${i + 1}.${ext}`;
+
+        // Opsi 3 - Pakai original name + sanitasi + index (kalau mau tetap pakai nama asli)
+        // const safeOriginal = file.originalname.replace(/[^a-zA-Z0-9-.]/g, '_');
+        // const newFileName = `${field}-${i + 1}-${safeOriginal}`;
+
+        const fullKey = `${prefix}/${newFileName}`;
+
         const metadata = await this.uploadSurveyPhoto(
           bucket,
           prefix,
           file,
           newFileName,
         );
+
         savedFiles[field].push(metadata);
+        console.log(`Uploaded survey photo: ${fullKey}`);
       }
     }
 
@@ -308,18 +325,23 @@ export class MinioFileStorageService implements IFileStorageRepository {
         },
       );
 
-      const [id, name] = prefix.endsWith('/')
-        ? prefix.slice(0, -1).split('-')
-        : prefix.split('-');
+      const cleanPrefix = prefix.endsWith('/') ? prefix.slice(0, -1) : prefix;
+
+      const [nin, ...folderParts] = cleanPrefix.split('-');
+      const folderName = folderParts.join('-');
+
+      const objectPath = `${nin}/${folderName}/${filenameToUse}.enc`;
 
       this.logger.log(`Survey photo uploaded: ${encryptedName}`);
 
       return {
         originalName: file.originalname,
         mimetype: file.mimetype,
-        encryptedName: encryptedName,
+        encryptedName: objectPath,
         size: file.size,
-        url: `${process.env.BACKEND_URI}/storage/survey-photos/${id}/${name}/${filenameToUse}`,
+        url: `${process.env.BACKEND_URI}/storage/survey-photos/${encodeURIComponent(
+          nin,
+        )}/${encodeURIComponent(folderName)}/${encodeURIComponent(filenameToUse)}`,
       };
     } catch (error: any) {
       this.logger.error(`Error uploading survey photo: ${error.message}`);
@@ -368,6 +390,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
         originalName,
       };
     } catch (error) {
+      console.log(error);
       this.logger.error(`Error getting survey photo: ${error.message}`);
       if (error.code === 'NoSuchKey') {
         throw new NotFoundException(`Survey photo not found: ${filename}`);

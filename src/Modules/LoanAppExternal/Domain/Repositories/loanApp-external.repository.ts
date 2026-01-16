@@ -71,6 +71,7 @@ export interface ILoanApplicationExternalRepository {
   callSP_GENERAL_GetAllPreviewDataLoanBySearch_External(
     role: RoleSearchEnum,
     type: TypeSearchEnum,
+    paymentType: JenisPembiayaanEnum | null,
     keyword: string,
     page?: number,
     pageSize?: number,

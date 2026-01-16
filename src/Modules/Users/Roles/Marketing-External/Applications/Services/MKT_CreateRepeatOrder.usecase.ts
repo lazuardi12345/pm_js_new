@@ -580,7 +580,7 @@ export class MKT_CreateRepeatOrderUseCase {
                 collateral_bpjs_external.username,
                 collateral_bpjs_external.password,
                 collateral_bpjs_external.foto_bpjs,
-                collateral_bpjs_external.jaminan_tambahan,
+                collateral_bpjs_external.dokumen_pendukung_bpjs,
                 undefined,
                 nowWIB,
                 nowWIB,
@@ -944,7 +944,6 @@ export class MKT_CreateRepeatOrderUseCase {
             Object.values(collateralSchemaMap).forEach(({ to }) => {
               if (prevLoan[to] && !dto[to]) {
                 dto[to] = structuredClone(prevLoan[to]);
-                console.log(`DEBUG: Loaded ${to} from previous loan`);
               }
             });
           }
@@ -1015,18 +1014,6 @@ export class MKT_CreateRepeatOrderUseCase {
           nextPengajuanIndex: minioUploadResult.nextPengajuanIndex,
         };
       }
-
-      // DEBUG FINAL
-      console.log('DEBUG - draftData keys:', Object.keys(draftData));
-      console.log('DEBUG - loan_external_type:', draftData.loan_external_type);
-      console.log(
-        'DEBUG - collateral_bpjs_external:',
-        draftData.collateral_bpjs_external,
-      );
-      console.log(
-        'DEBUG - other_exist_loan_external:',
-        draftData.other_exist_loan_external,
-      );
 
       const loanApp = await this.repeatOrderRepo.create(draftData);
       if (!loanApp) throw new Error('Failed to create draft');
@@ -1325,6 +1312,7 @@ export class MKT_CreateRepeatOrderUseCase {
           Number(payload?.client_external?.nik) ?? Id,
           payload?.client_external?.nama_lengkap ?? `draft-${Id}`,
           files,
+          REQUEST_TYPE.EXTERNAL,
         );
 
         for (const [field, paths] of Object.entries(filePaths)) {
@@ -1372,31 +1360,21 @@ export class MKT_CreateRepeatOrderUseCase {
         return fieldName.split('.')[0];
       };
 
-      // Hapus file lama yang field name-nya sama dengan file baru
       for (const newFieldName of Object.keys(filePaths)) {
         const newBaseName = getBaseName(newFieldName);
-
-        // Cari dan hapus semua file lama dengan base name yang sama
         for (const existingFieldName of Object.keys(existingFiles)) {
           const existingBaseName = getBaseName(existingFieldName);
 
           if (existingBaseName === newBaseName) {
-            console.log(
-              `* Removing old file: ${existingFieldName} (replaced by ${newFieldName})`,
-            );
             delete existingFiles[existingFieldName];
           }
         }
       }
 
       const mergedFiles = {
-        ...existingFiles, // ← File lama yang sudah di-cleanup
-        ...filePaths, // ← File baru
+        ...existingFiles,
+        ...filePaths,
       };
-
-      console.log('Old files (after cleanup):', existingFiles);
-      console.log('New files:', filePaths);
-      console.log('Merged files:', mergedFiles);
 
       const entityUpdate: Partial<RepeatOrderEntity> = {
         ...payload,
@@ -1472,7 +1450,6 @@ export class MKT_CreateRepeatOrderUseCase {
 
   async renderRepeatOrderById(Id: string) {
     try {
-      // ========== 1. VALIDASI INPUT ==========
       if (Id === null || Id === undefined || String(Id).trim() === '') {
         throw new HttpException(
           {
@@ -1486,7 +1463,6 @@ export class MKT_CreateRepeatOrderUseCase {
         );
       }
 
-      // ========== 2. AMBIL DARI REPO ==========
       let loanApp;
       try {
         loanApp = await this.repeatOrderRepo.findById(Id);

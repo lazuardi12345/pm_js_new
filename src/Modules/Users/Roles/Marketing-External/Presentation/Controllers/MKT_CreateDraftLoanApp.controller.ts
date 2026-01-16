@@ -4,6 +4,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
+  HttpStatus,
   InternalServerErrorException,
   Logger,
   Param,
@@ -22,7 +24,10 @@ import { FileUploadAuthGuard } from 'src/Shared/Modules/Authentication/Infrastru
 import { PayloadExternalDTO } from 'src/Shared/Modules/Drafts/Applications/DTOS/LoanAppExt_MarketingInput/CreateDraft_LoanAppExt.dto';
 import { ExternalCollateralType } from 'src/Shared/Enums/General/General.enum';
 import { JenisPembiayaanEnum } from 'src/Shared/Enums/External/Loan-Application.enum';
-import { secureFileFilter } from 'src/Shared/Modules/Authentication/Infrastructure/Helpers/FileFilter.help';
+import {
+  secureFileFilter,
+  uploadLimits,
+} from 'src/Shared/Modules/Authentication/Infrastructure/Helpers/FileFilter.help';
 
 @UseGuards(FileUploadAuthGuard)
 @Controller('mkt/ext/drafts')
@@ -71,6 +76,28 @@ export class MKT_CreateDraftLoanApplicationController {
 
       payload.marketing_id = marketingId;
 
+      if (
+        payload.client_external.no_hp.length >= 14 &&
+        /[\(\)\+]/.test(payload.client_external.no_hp)
+      ) {
+        throw new BadRequestException(
+          'Nomor HP tidak boleh mengandung tanda kurung () atau + jika panjangnya 14 karakter atau lebih',
+        );
+      } else if (
+        !payload.client_external?.nik ||
+        !/^\d{16}$/.test(payload.client_external.nik)
+      ) {
+        throw new BadRequestException('NIK wajib berupa 16 digit angka');
+      } else if (
+        !payload.loan_application_external ||
+        payload.loan_application_external.nominal_pinjaman === undefined ||
+        payload.loan_application_external.nominal_pinjaman <= 0 ||
+        typeof payload.loan_application_external.nominal_pinjaman !== 'number'
+      ) {
+        throw new BadRequestException(
+          'Nominal wajib diisi dengan angka bernilai > 0',
+        );
+      }
       if (!files || Object.values(files).length === 0) {
         throw new BadRequestException('No files uploaded');
       }
@@ -159,7 +186,12 @@ export class MKT_CreateDraftLoanApplicationController {
         { name: 'foto_kwitansi_jual_beli', maxCount: 1 },
         { name: 'foto_ktp_tangan_pertama', maxCount: 1 },
 
-        //? KEDINASAN_MOU
+        //? UMKM
+        { name: 'foto_sku', maxCount: 1 },
+        { name: 'foto_usaha', maxCount: 1 },
+        { name: 'foto_pembukuan', maxCount: 1 },
+
+        //? KEDINASAN_MOU_AND_NON_MOU
         { name: 'surat_permohonan_kredit', maxCount: 1 },
         { name: 'surat_pernyataan_penjamin', maxCount: 1 },
         { name: 'surat_persetujuan_pimpinan', maxCount: 1 },
@@ -175,7 +207,7 @@ export class MKT_CreateDraftLoanApplicationController {
       ],
       {
         storage: multer.memoryStorage(),
-        limits: { fileSize: 5 * 1024 * 1024 },
+        limits: uploadLimits,
         fileFilter: secureFileFilter,
       },
     ),

@@ -349,6 +349,7 @@ export class SPV_GetLoanApplicationByIdUseCase {
           survey_photos: surveyPhotosRows || [],
           approval_recommendation,
         },
+        appeal_notes: loanData.loan_alasan_banding,
         // Status data
         loan_app_status: loanAppStatus,
         appeal_status: appealStatus,

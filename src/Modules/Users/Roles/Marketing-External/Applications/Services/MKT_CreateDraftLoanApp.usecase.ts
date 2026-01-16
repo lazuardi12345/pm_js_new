@@ -55,22 +55,6 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     external_loan_type?: ExternalCollateralType,
     jenis_pembiayaan?: JenisPembiayaanEnum,
   ) {
-    console.log(external_loan_type);
-
-    if (
-      dto.client_external.no_hp.length >= 14 &&
-      /[\(\)\+]/.test(dto.client_external.no_hp)
-    ) {
-      throw new BadRequestException(
-        'Nomor HP tidak boleh mengandung tanda kurung () atau + jika panjangnya 14 karakter atau lebih',
-      );
-    } else if (
-      !dto.client_external?.nik ||
-      !/^\d{16}$/.test(dto.client_external.nik)
-    ) {
-      throw new BadRequestException('NIK wajib berupa 16 digit angka');
-    }
-
     const duplicateChecker = await this.clientRepo.findByKtp(
       Number(dto.client_external.nik),
     );
@@ -311,7 +295,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
 
           // Collateral BPJS
           foto_bpjs: 'collateral_bpjs_external',
-          dokumen_pendukung_bpjs: 'collateral_bpjs_external',
+          kelengkapan_dokumen_bpjs: 'collateral_bpjs_external',
 
           // Collateral SHM
           foto_shm: 'collateral_shm_external',

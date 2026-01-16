@@ -490,7 +490,11 @@ export class MKT_CreateLoanApplicationUseCase {
                     collateral_bpjs_external.foto_bpjs ??
                     null,
                 ),
-                collateral_bpjs_external.jaminan_tambahan,
+                parseFileUrl(
+                  documents_files?.dokumen_pendukung_bpjs ??
+                    collateral_bpjs_external.dokumen_pendukung_bpjs ??
+                    null,
+                ),
                 undefined,
                 nowWIB,
                 nowWIB,
@@ -650,7 +654,7 @@ export class MKT_CreateLoanApplicationUseCase {
                     null,
                 ),
                 parseFileUrl(
-                  documents_files?.foto_shm ??
+                  documents_files?.foto_biaya_operasional_mou ??
                     collateral_kedinasan_mou_external.foto_biaya_operasional ??
                     null,
                 ),

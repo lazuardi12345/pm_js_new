@@ -39,6 +39,7 @@ import { SurveyorExternalUseCaseModule } from './Modules/Users/Roles/Surveyor-Ex
       username: process.env.MYSQL_USN,
       password: process.env.MYSQL_PWD,
       database: process.env.DB_DEV || 'pm_js_test',
+      charset: 'utf8mb4',
       autoLoadEntities: true,
       synchronize: true,
       timezone: '+07:00',
