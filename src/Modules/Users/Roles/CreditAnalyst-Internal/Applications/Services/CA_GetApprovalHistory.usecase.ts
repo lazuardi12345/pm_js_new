@@ -1,5 +1,9 @@
 import { Injectable, Inject } from '@nestjs/common';
 import {
+  APPROVAL_RECOMMENDATION_REPOSITORY,
+  IApprovalRecommendationRepository,
+} from 'src/Modules/Admin/BI-Checking/Domain/Repositories/approval-recommendation.repository';
+import {
   ILoanApplicationInternalRepository,
   LOAN_APPLICATION_INTERNAL_REPOSITORY,
 } from 'src/Modules/LoanAppInternal/Domain/Repositories/loanApp-internal.repository';
@@ -9,6 +13,8 @@ export class CA_GetApprovalHistory_UseCase {
   constructor(
     @Inject(LOAN_APPLICATION_INTERNAL_REPOSITORY)
     private readonly loanAppRepo: ILoanApplicationInternalRepository,
+    @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
+    private readonly approvalRecomRepo: IApprovalRecommendationRepository,
   ) {}
 
   async execute(creditAnalystId, page = 1, pageSize = 10, searchQuery = '') {
@@ -43,25 +49,71 @@ export class CA_GetApprovalHistory_UseCase {
         startIndex + pageSize,
       );
 
-      console.log('tol kontol kontol kimak', paginatedData);
-
       // Step 4: Format data
-      const formattedData = paginatedData.map((item) => ({
-        id_pengajuan: Number(item.loan_id),
-        id_nasabah: Number(item.nasabah_id),
-        nama_nasabah: item.nama_lengkap || '-',
-        nominal_pinjaman: new Intl.NumberFormat('id-ID', {
-          style: 'currency',
-          currency: 'IDR',
-        }).format(Number(item.nominal_pinjaman)),
-        id_marketing: item.id_marketing ? Number(item.id_marketing) : null,
-        nama_marketing: item.nama_marketing || null,
-        nama_supervisor: item.nama_supervisor || null,
-        approval_status: item.approval_status || '-',
-        loan_app_status: item.loan_status || '-',
-        approve_response_date: item.approval_date || '-',
-        is_it_appeal: item.is_banding ? item.is_banding : 0,
-      }));
+      const formattedData = await Promise.all(
+        paginatedData.map(async (item) => {
+          const nominal = Number(item.nominal_pinjaman);
+          const formattedNominal = new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+          }).format(nominal);
+
+          // Fetch approval recommendation
+          let approval_recommendation: any = null;
+          const draftId = item.draft_id ?? null;
+
+          if (draftId) {
+            try {
+              const approvalData =
+                await this.approvalRecomRepo.findByDraftId(draftId);
+
+              if (approvalData) {
+                approval_recommendation = {
+                  draft_id: approvalData.draft_id ?? draftId,
+                  nama_nasabah:
+                    approvalData.nama_nasabah ?? item.nasabah_nama ?? '-',
+                  recommendation: approvalData.recommendation ?? null,
+                  filePath: approvalData.filePath ?? null,
+                  catatan: approvalData.catatan ?? null,
+                  last_updated: approvalData.updated_at ?? null,
+                  isNeedCheck: !!item.isNeedCheck,
+                };
+              } else {
+                approval_recommendation = {
+                  draft_id: draftId,
+                  isNeedCheck: !!item.isNeedCheck,
+                  recommendation: null,
+                };
+              }
+            } catch (approvalErr) {
+              console.error(
+                `Warning: failed to fetch approval recommendation for draft_id=${draftId}`,
+                approvalErr,
+              );
+            }
+          }
+
+          return {
+            id_pengajuan: Number(item.loan_id),
+            id_nasabah: Number(item.nasabah_id),
+            nama_nasabah: item.nama_lengkap || '-',
+            nominal_pinjaman: new Intl.NumberFormat('id-ID', {
+              style: 'currency',
+              currency: 'IDR',
+            }).format(Number(item.nominal_pinjaman)),
+            id_marketing: item.id_marketing ? Number(item.id_marketing) : null,
+            nama_marketing: item.nama_marketing || null,
+            nama_supervisor: item.nama_supervisor || null,
+            payment_type: item.jenis_pembiayaan || null,
+            approval_status: item.approval_status || '-',
+            loan_status: item.loan_status || '-',
+            approve_response_date: item.approval_date || '-',
+            is_it_appeal: item.is_banding ? item.is_banding : 0,
+            is_need_survey: Number(item.is_need_survey!),
+            approval_recommendation, // Tambahkan ini
+          };
+        }),
+      );
 
       return {
         payload: {

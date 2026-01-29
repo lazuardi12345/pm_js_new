@@ -69,7 +69,7 @@ export class MKT_GetLoanApplicationByIdUseCase {
         throw new NotFoundException(`Loan Application with id ${id} not found`);
       }
 
-      console.log(loanData);
+      console.log('MKT - LOAN DATA GET BY ID: ', loanData);
 
       // ============================================================
       // 4. APPROVAL RECOMMENDATION LOGIC (EXISTING)
@@ -82,7 +82,7 @@ export class MKT_GetLoanApplicationByIdUseCase {
         let draftData: any = null;
         if (noKtp !== null) {
           draftData = await this.loanAppDraftRepo.findStatus(noKtp);
-          console.log(draftData);
+          console.log('MKT - DRAFT DATA GET BY ID: ', draftData);
         }
 
         if (draftData) {
@@ -104,24 +104,6 @@ export class MKT_GetLoanApplicationByIdUseCase {
                 last_updated: approvalData.updated_at ?? null,
                 isNeedCheck: !!draftData.isNeedCheck,
               };
-
-              //   const approvalNominal = Number(
-              //     approvalData.nominal_pinjaman ?? 0,
-              //   );
-              //   if (!Number.isNaN(approvalNominal) && approvalNominal < 7000000) {
-              //     approval_recommendation.dont_have_check = true;
-              //   }
-              // } else {
-              //   if (!Number.isNaN(nominalPinjaman) && nominalPinjaman < 7000000) {
-              //     approval_recommendation = {
-              //       draft_id: draftData.draft_id,
-              //       isNeedCheck: !!draftData.isNeedCheck,
-              //       dont_have_check: true,
-              //     };
-              //   } else {
-              //     approval_recommendation = null;
-              //   }
-              // }
             }
           } catch (approvalErr) {
             console.error(
@@ -135,13 +117,6 @@ export class MKT_GetLoanApplicationByIdUseCase {
             };
           }
         }
-        // else {
-        //   // if (!Number.isNaN(nominalPinjaman) && nominalPinjaman < 7000000) {
-        //   //   approval_recommendation = { dont_have_check: true };
-        //   // } else {
-        //   //   approval_recommendation = null;
-        //   // }
-        // }
       } catch (draftErr) {
         console.error(
           `Warning: failed to fetch draft status for no_ktp=${noKtp}`,

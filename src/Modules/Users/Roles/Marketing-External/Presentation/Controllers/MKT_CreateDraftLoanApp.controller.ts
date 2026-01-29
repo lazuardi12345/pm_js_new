@@ -28,6 +28,8 @@ import {
   secureFileFilter,
   uploadLimits,
 } from 'src/Shared/Modules/Authentication/Infrastructure/Helpers/FileFilter.help';
+import { JwtToken } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/jwt-extractor.decorator';
+import { CurrentSpvId } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/is-user-has-spv.decorator';
 
 @UseGuards(FileUploadAuthGuard)
 @Controller('mkt/ext/drafts')
@@ -47,8 +49,10 @@ export class MKT_CreateDraftLoanApplicationController {
   async createDraft(
     @UploadedFiles() files: Record<string, Express.Multer.File[]>,
     @CurrentUser('id') marketingId: number,
+    @CurrentSpvId() spvId: number | null,
     @Param('type') external_loan_type: string,
     @Body() dto: any,
+    @JwtToken() token?: string,
   ) {
     try {
       const collateralToJenisPembiayaanMap = {
@@ -106,6 +110,8 @@ export class MKT_CreateDraftLoanApplicationController {
         files,
         external_loan_type as ExternalCollateralType,
         jenisPembiayaan,
+        spvId,
+        token,
       );
     } catch (error) {
       console.error('Error occurred:', error);

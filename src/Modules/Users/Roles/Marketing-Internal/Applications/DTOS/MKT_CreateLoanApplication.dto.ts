@@ -498,6 +498,7 @@ export interface TypeLoanApplicationDetail {
   notes?: string;
   loan_is_banding?: number;
   loan_alasan_banding?: string;
+  draft_id?: string;
 
   // Relative (Optional)
   kerabat_kerja?: string;

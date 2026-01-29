@@ -8,6 +8,7 @@ export interface ILoanApplicationDraftExternalRepository {
   create(
     data: Partial<LoanApplicationExtEntity>,
   ): Promise<LoanApplicationExtEntity>;
+  getNextDraftPinjamanKeByNik(nik: string): Promise<number>;
   findStatus(
     nik: string,
   ): Promise<{ draft_id: string; isNeedCheck: boolean } | null>;

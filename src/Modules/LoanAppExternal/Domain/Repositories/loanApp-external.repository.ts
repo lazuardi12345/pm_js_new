@@ -34,6 +34,7 @@ export interface ILoanApplicationExternalRepository {
   findById(id: number): Promise<LoanApplicationExternal | null>;
   findByNasabahId(nasabahId: number): Promise<LoanApplicationExternal[]>;
   findAll(): Promise<LoanApplicationExternal[]>;
+  getNextLoanAppsPinjamanKeByNik(nik: string): Promise<number>;
   save(
     loanAppExternal: LoanApplicationExternal,
   ): Promise<LoanApplicationExternal>;

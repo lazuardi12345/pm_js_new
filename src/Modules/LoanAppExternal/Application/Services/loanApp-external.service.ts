@@ -120,6 +120,16 @@ export class LoanApplicationExternalService {
     const sanitizedPage = page && page > 0 ? page : 1;
     const sanitizedPageSize = pageSize && pageSize > 0 ? pageSize : 10;
 
+    console.log(
+      'Puki mak kau hijau',
+      role,
+      type,
+      paymentType,
+      keyword,
+      sanitizedPage,
+      sanitizedPageSize,
+    );
+
     const result =
       await this.repo.callSP_GENERAL_GetAllPreviewDataLoanBySearch_External(
         role,
@@ -131,8 +141,6 @@ export class LoanApplicationExternalService {
       );
 
     let mappedData: any[] = [];
-    console.log('result SP:', result);
-
     const rupiahFormatter = new Intl.NumberFormat('id-ID', {
       style: 'currency',
       currency: 'IDR',
@@ -244,7 +252,9 @@ export class LoanApplicationExternalService {
             mappedData = result.data.map((row: any) => ({
               id_nasabah: row.id_nasabah,
               id_pengajuan: row.id_pengajuan,
-              nominal_pinjaman: row.nominal_pinjaman,
+              nominal_pinjaman: rupiahFormatter.format(
+                Number(row.nominal_pinjaman),
+              ),
               nama_nasabah: row.nama_nasabah,
               nama_marketing: row.marketing_nama,
               loan_status: row.loan_status,
@@ -279,7 +289,9 @@ export class LoanApplicationExternalService {
             mappedData = result.data.map((row: any) => ({
               id_nasabah: row.id_nasabah,
               id_pengajuan: row.id_pengajuan,
-              nominal_pinjaman: row.nominal_pinjaman,
+              nominal_pinjaman: rupiahFormatter.format(
+                Number(row.nominal_pinjaman),
+              ),
               nama_nasabah: row.nama_nasabah,
               id_marketing: row.id_marketing,
               nama_supervisor: row.nama_supervisor,
@@ -316,70 +328,139 @@ export class LoanApplicationExternalService {
 
       case RoleSearchEnum.HM:
         switch (type) {
+          // HEAD MARKETING - HISTORY MAPPING
           case TypeSearchEnum.HISTORY:
-            // Transform data untuk HM History dengan approval details
-            mappedData = result.data.map((loan: any) => {
-              // Filter approvals untuk loan ini
-              const loanApprovals =
-                result.approvals?.filter(
-                  (app: any) => app.loan_id === loan.loan_id,
-                ) || [];
+            mappedData = result.data.map((item: any) => {
+              // Format currency
+              const loanAmountFormatted = item?.nominal_pinjaman
+                ? rupiahFormatter.format(Number(item.nominal_pinjaman))
+                : '-';
 
-              // Pisahkan approval normal (is_banding = 0) dan banding (is_banding = 1)
-              const normalApprovals = loanApprovals.filter(
-                (a: any) => a.is_banding === 0,
-              );
-              const bandingApprovals = loanApprovals.filter(
-                (a: any) => a.is_banding === 1,
-              );
+              const lastApprovedAmountFormatted = item?.last_approval_nominal
+                ? rupiahFormatter.format(Number(item.last_approval_nominal))
+                : '-';
 
-              // Helper function untuk build approval object
-              const buildApprovalStatus = (
-                approvals: any[],
-                roles: string[],
-              ) => {
-                const status: any = {};
+              // Get approval recommendation from draft_id
+              const approvalRecommendation = item?.draft_id
+                ? recMap.get(item.draft_id) || null
+                : null;
 
-                roles.forEach((role) => {
-                  const approval = approvals.find((a: any) => a.role === role);
-                  const roleKey =
-                    role === 'supervisor'
-                      ? 'spv'
-                      : role === 'credit_analyst'
-                        ? 'ca'
-                        : role === 'head_marketing'
-                          ? 'hm'
-                          : role;
-                  const nameKey = `${roleKey}_name`;
-                  const responseKey = `${roleKey}_response`;
-                  const responseAtKey = `${roleKey}_response_at`;
-
-                  status[roleKey] = {
-                    [nameKey]: approval?.user_name || '-',
-                    [responseKey]: approval?.response || '-',
-                    [responseAtKey]: approval?.responded_at || '-',
-                  };
-                });
-
-                return status;
+              // Build loan application status (APP - is_banding = 0)
+              const loanApplicationStatus = {
+                spv: {
+                  data: {
+                    spv_name: item?.spv_app_name ?? '-',
+                    spv_response: item?.spv_app_status ?? '-',
+                    spv_approved_amount: item?.spv_app_amount
+                      ? rupiahFormatter.format(Number(item.spv_app_amount))
+                      : '-',
+                    spv_approved_tenor: item?.spv_app_tenor ?? '-',
+                    spv_response_at: item?.spv_app_response_at ?? '-',
+                  },
+                },
+                svy: {
+                  data: {
+                    svy_visited_person: item?.survey_berjumpa_siapa ?? '-',
+                    svy_visited_time: item?.survey_created_at ?? '-',
+                  },
+                },
+                ca: {
+                  data: {
+                    ca_name: item?.ca_app_name ?? '-',
+                    ca_response: item?.ca_app_status ?? '-',
+                    ca_approved_amount: item?.ca_app_amount
+                      ? rupiahFormatter.format(Number(item.ca_app_amount))
+                      : '-',
+                    ca_approved_tenor: item?.ca_app_tenor ?? '-',
+                    ca_response_at: item?.ca_app_response_at ?? '-',
+                  },
+                },
+                hm: {
+                  data: {
+                    hm_name: item?.hm_app_name ?? '-',
+                    hm_response: item?.hm_app_status ?? '-',
+                    hm_approved_amount: item?.hm_app_amount
+                      ? rupiahFormatter.format(Number(item.hm_app_amount))
+                      : '-',
+                    hm_approved_tenor: item?.hm_app_tenor ?? '-',
+                    hm_response_at: item?.hm_app_response_at ?? '-',
+                  },
+                },
               };
 
-              // Build loan application status (normal approvals)
-              const loanApplicationStatus = buildApprovalStatus(
-                normalApprovals,
-                ['supervisor', 'credit_analyst', 'head_marketing'],
-              );
+              // Build loan appeal status (APPEAL - is_banding = 1)
+              const loanAppealStatus = {
+                ca: {
+                  data: {
+                    ca_name: item?.ca_appeal_name ?? '-',
+                    ca_response: item?.ca_appeal_status ?? '-',
+                    ca_approved_amount: item?.ca_appeal_amount
+                      ? rupiahFormatter.format(Number(item.ca_appeal_amount))
+                      : '-',
+                    ca_approved_tenor: item?.ca_appeal_tenor ?? '-',
+                    ca_response_at: item?.ca_appeal_response_at ?? '-',
+                  },
+                },
+                spv: {
+                  data: {
+                    spv_name: item?.spv_appeal_name ?? '-',
+                    spv_response: item?.spv_appeal_status ?? '-',
+                    spv_approved_amount: item?.spv_appeal_amount
+                      ? rupiahFormatter.format(Number(item.spv_appeal_amount))
+                      : '-',
+                    spv_approved_tenor: item?.spv_appeal_tenor ?? '-',
+                    spv_response_at: item?.spv_appeal_response_at ?? '-',
+                  },
+                },
+                hm: {
+                  data: {
+                    hm_name: item?.hm_appeal_name ?? '-',
+                    hm_response: item?.hm_appeal_status ?? '-',
+                    hm_approved_amount: item?.hm_appeal_amount
+                      ? rupiahFormatter.format(Number(item.hm_appeal_amount))
+                      : '-',
+                    hm_approved_tenor: item?.hm_appeal_tenor ?? '-',
+                    hm_response_at: item?.hm_appeal_response_at ?? '-',
+                  },
+                },
+              };
 
-              // Build loan appeal status (banding approvals)
-              const loanAppealStatus = buildApprovalStatus(bandingApprovals, [
-                'credit_analyst',
-                'head_marketing',
-              ]);
+              // Calculate earliest & latest timestamps from all approvals
+              const allTimestamps: Date[] = [];
 
-              // Get earliest and latest timestamps
-              const allTimestamps = loanApprovals
-                .filter((a: any) => a.responded_at)
-                .map((a: any) => new Date(a.responded_at));
+              // Collect APP timestamps
+              if (
+                item?.spv_app_response_at &&
+                item.spv_app_response_at !== '-'
+              ) {
+                allTimestamps.push(new Date(item.spv_app_response_at));
+              }
+              if (item?.ca_app_response_at && item.ca_app_response_at !== '-') {
+                allTimestamps.push(new Date(item.ca_app_response_at));
+              }
+              if (item?.hm_app_response_at && item.hm_app_response_at !== '-') {
+                allTimestamps.push(new Date(item.hm_app_response_at));
+              }
+
+              // Collect APPEAL timestamps
+              if (
+                item?.ca_appeal_response_at &&
+                item.ca_appeal_response_at !== '-'
+              ) {
+                allTimestamps.push(new Date(item.ca_appeal_response_at));
+              }
+              if (
+                item?.spv_appeal_response_at &&
+                item.spv_appeal_response_at !== '-'
+              ) {
+                allTimestamps.push(new Date(item.spv_appeal_response_at));
+              }
+              if (
+                item?.hm_appeal_response_at &&
+                item.hm_appeal_response_at !== '-'
+              ) {
+                allTimestamps.push(new Date(item.hm_appeal_response_at));
+              }
 
               const earliestTimestamp =
                 allTimestamps.length > 0
@@ -392,26 +473,49 @@ export class LoanApplicationExternalService {
                   : null;
 
               return {
-                loan_id: Number(loan.loan_id),
-                customer_id: loan.id_nasabah || null,
-                customer_name: loan.nama_nasabah,
-                loan_amount: rupiahFormatter.format(
-                  Number(loan.nominal_pinjaman),
-                ),
-                loan_sequence: loan.loan_sequence,
-                tenor: loan.tenor,
+                // Basic loan info
+                loan_id: Number(item?.loan_id ?? 0),
+                customer_id: Number(item?.client_id ?? 0),
+                customer_name: item?.nama_lengkap ?? '-',
+                customer_nik: item?.nik ?? '-',
+                loan_amount: loanAmountFormatted,
+                loan_sequence: item?.pinjaman_ke ?? '-',
+                tenor: item?.tenor ?? '-',
+                jenis_pembiayaan: item?.jenis_pembiayaan ?? '-',
+
+                // Timestamps
+                loan_submitted_at: item?.created_at ?? '-',
                 approval_request_submitted_at: earliestTimestamp,
                 approval_request_latest_responded_at: latestTimestamp,
-                latest_loan_app_status: loan.loan_app_status,
-                approval_tenor: loan.approval_tenor,
-                approval_amount: loan.approval_amount,
-                marketing_name: loan.marketing_nama,
+
+                // Loan status
+                latest_loan_status: item?.status_pengajuan ?? '-',
+                final_loan_status: item?.final_loan_status ?? '-',
+
+                // Marketing info
+                marketing_name: item?.marketing_nama ?? '-',
+
+                // Survey info
+                survey_id: item?.survey_id ?? null,
+
+                // Last approval info
+                last_approved_amount: lastApprovedAmountFormatted,
+                last_approved_tenor: Number(item?.last_approval_tenor ?? 0),
+                last_approval_role: item?.last_approval_role ?? '-',
+
+                // Approval recommendation
+                approval_recommendation: approvalRecommendation,
+
+                // Detailed approval statuses
                 loan_application_status: loanApplicationStatus,
                 loan_appeal_status: loanAppealStatus,
+
+                // HM specific info
+                hm_is_banding: item?.hm_is_banding ?? 0,
+                hm_latest_response_at: item?.hm_latest_response_at ?? '-',
               };
             });
             break;
-
           case TypeSearchEnum.REQUEST:
             mappedData = result.data.map((row: any) => ({
               pengajuan_id: row.pengajuan_id,

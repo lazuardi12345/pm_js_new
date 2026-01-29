@@ -128,19 +128,22 @@ export class MKT_CreateLoanApplicationUseCase {
           });
         }
 
-        if (!client_external?.nik) {
+        console.log(client_external);
+
+        if (
+          !client_external?.nik ||
+          client_external.nik.length < 12 ||
+          client_external.nik.length > 16
+        ) {
           throw new BadRequestException({
             payload: {
               error: true,
-              message: 'Nomor KTP wajib diisi',
+              message: 'Nomor KTP wajib diisi dengan format yang valid',
               reference: 'VALIDATION_ERROR',
             },
           });
         }
 
-        // ==========================
-        // 2. CEK NIK - PAKAI YANG ADA ATAU BUAT BARU
-        // ==========================
         const formattedNik = Number(client_external.nik);
         let customer = await this.clientRepo.findByKtp(formattedNik);
 

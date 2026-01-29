@@ -6,7 +6,6 @@ import { AllTypeAdminsModule } from './Modules/Admin/ModuleAllTypeAdmins.module'
 import { UsersModule } from './Modules/Users/ModuleUsers.module';
 import { AuthModule } from './Shared/Modules/Authentication/ModuleAuth.module';
 import { DraftsModule } from './Shared/Modules/Drafts/ModuleDrafts.module';
-import { NotificationsModule } from './Shared/Modules/Notifications/ModuleNotification.module';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -65,7 +64,6 @@ import { SurveyorExternalUseCaseModule } from './Modules/Users/Roles/Surveyor-Ex
     UsersModule,
     AuthModule,
     DraftsModule,
-    NotificationsModule,
     FileSystemStorageModules,
 
     //? --- All Use Cases ---

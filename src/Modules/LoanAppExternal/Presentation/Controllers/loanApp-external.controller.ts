@@ -93,14 +93,7 @@ export class LoanApplicationExternalController {
       pageSize,
     );
 
-    return {
-      payload: {
-        error: false,
-        message: 'Search Loan History fetched successfully',
-        refence: 'SEARCH_LOAN_HISTORY_OK',
-        data: results,
-      },
-    };
+    return results;
   }
 
   @Get('search/request/:paymentType')
@@ -137,7 +130,9 @@ export class LoanApplicationExternalController {
     if (!usertype) throw new UnauthorizedException('Invalid User Session');
     console.log(usertype, keyword, page, pageSize);
     const role = this.mapUserTypeToSearchEnum(usertype as USERTYPE);
-    return this.loanApplicationService.searchLoans(
+
+    console.log('puki 2 mak kau', keyword, page, pageSize, usertype);
+    const results = await this.loanApplicationService.searchLoans(
       role,
       TypeSearchEnum.REQUEST,
       null,
@@ -145,6 +140,8 @@ export class LoanApplicationExternalController {
       page,
       pageSize,
     );
+
+    return results;
   }
 
   @Get('all/loan-apps')

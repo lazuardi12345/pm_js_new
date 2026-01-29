@@ -116,6 +116,12 @@ export class MKT_CreateRepeatOrderController {
     @Body() body: any,
   ) {
     try {
+      if (!files?.foto_ktp_peminjam || files.foto_ktp_peminjam.length === 0) {
+        throw new BadRequestException(
+          'foto_ktp_peminjam wajib diupload untuk mengajukan Repeat Order ini',
+        );
+      }
+
       if (!body.payload)
         throw new BadRequestException('Payload field is required');
 
@@ -150,16 +156,6 @@ export class MKT_CreateRepeatOrderController {
         t6: 'KEDINASAN_NON_MOU',
       };
 
-      // // ================== SAMAKAN NAMA FIELD DENGAN DTO & PAYLOAD ==================
-      // const collateralFieldMap = {
-      //   t1: 'collateral_bpjs', // ← tanpa _external
-      //   t2: 'collateral_bpkb',
-      //   t3: 'collateral_shm',
-      //   t4: 'collateral_umkm',
-      //   t5: 'collateral_kedinasan_mou',
-      //   t6: 'collateral_kedinasan_non_mou',
-      // };
-
       const jenisPembiayaan =
         collateralToJenisPembiayaanMap[external_loan_type];
       if (!jenisPembiayaan)
@@ -174,13 +170,6 @@ export class MKT_CreateRepeatOrderController {
         parsedPayload.loan_application_external.jenis_pembiayaan =
           jenisPembiayaan;
       }
-
-      // // ================== FIX JOB EXTERNAL (rename field kalau ada) ==================
-      // if (parsedPayload.job_external?.id_card_peminjam) {
-      //   parsedPayload.job_external.foto_id_card_peminjam =
-      //     parsedPayload.job_external.id_card_peminjam;
-      //   delete parsedPayload.job_external.id_card_peminjam; // optional: bersihkan field lama
-      // }
 
       // ================== FIX other_exist_loan_external ==================
       if (!parsedPayload.other_exist_loan_external) {

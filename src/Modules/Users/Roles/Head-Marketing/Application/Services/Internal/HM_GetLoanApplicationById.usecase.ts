@@ -35,10 +35,7 @@ export class HM_GetLoanApplicationByIdInternalUseCase {
       await this.loanAppRepo.callSP_HM_GetDetail_LoanApplicationsInternal_ById(
         id,
       );
-    const [loanDataRows, approvals]: [
-      TypeLoanApplicationDetail[] | undefined,
-      TypeApprovalDetail[] | undefined,
-    ] = result as any;
+    const [loanDataRows, approvals]: [any, any] = result as any;
 
     const loanData = loanDataRows?.[0];
     if (!loanData) {
@@ -46,83 +43,51 @@ export class HM_GetLoanApplicationByIdInternalUseCase {
     }
 
     let approval_recommendation: any = null;
-    const noKtp = loanData.no_ktp ?? null;
-    const nominalPinjaman = Number(loanData.nominal_pinjaman ?? 0);
+    const draftId = loanData.draft_id ?? null;
 
-    try {
-      let draftData: any = null;
-      if (noKtp !== null) {
-        draftData = await this.loanAppDraftRepo.findStatus(noKtp);
-        console.log(draftData);
-      }
+    if (draftId) {
+      try {
+        const approvalData =
+          await this.approvalRecomRepo.findByDraftId(draftId);
 
-      console.log(
-        'back to be friends',
-        await this.loanAppDraftRepo.findStatus(noKtp),
-      );
+        console.log('Approval Data:', approvalData);
 
-      if (draftData) {
-        try {
-          const approvalData = await this.approvalRecomRepo.findByDraftId(
-            draftData.draft_id,
-          );
-
-          console.log('ANJAY', approvalData);
-
-          if (approvalData) {
-            approval_recommendation = {
-              draft_id: approvalData.draft_id ?? draftData.draft_id,
-              nama_nasabah:
-                approvalData.nama_nasabah ?? loanData.nama_lengkap ?? '-',
-              recommendation: approvalData.recommendation ?? null,
-              filePath: approvalData.filePath ?? null,
-              catatan: approvalData.catatan ?? null,
-              last_updated: approvalData.updated_at ?? null,
-              isNeedCheck: !!draftData.isNeedCheck,
-            };
-
-            const approvalNominal = Number(approvalData.nominal_pinjaman ?? 0);
-            if (!Number.isNaN(approvalNominal) && approvalNominal < 7000000) {
-              approval_recommendation.dont_have_check = true;
-            }
-          } else {
-            if (!Number.isNaN(nominalPinjaman) && nominalPinjaman < 7000000) {
-              approval_recommendation = {
-                draft_id: draftData.draft_id,
-                isNeedCheck: !!draftData.isNeedCheck,
-                dont_have_check: true,
-              };
-            } else {
-              approval_recommendation = null;
-            }
-          }
-        } catch (approvalErr) {
-          console.error(
-            `Warning: failed to fetch approval recommendation for draft_id=${draftData.draft_id}`,
-            approvalErr,
-          );
+        if (approvalData) {
           approval_recommendation = {
-            error: true,
-            message: 'Failed to fetch approval recommendation',
-            reference: 'RECOMMENDATION_FETCH_FAILED',
-          };
-        }
-      } else {
-        // Fallback: jika tidak ada draftData tapi nominal <7jt -> mark dont_have_check
-        if (!Number.isNaN(nominalPinjaman) && nominalPinjaman < 7000000) {
-          approval_recommendation = {
-            dont_have_check: true,
+            draft_id: approvalData.draft_id ?? draftId,
+            nama_nasabah:
+              approvalData.nama_nasabah ?? loanData.nama_lengkap ?? '-',
+            recommendation: approvalData.recommendation ?? null,
+            filePath: approvalData.filePath ?? null,
+            catatan: approvalData.catatan ?? null,
+            last_updated: approvalData.updated_at ?? null,
+            isNeedCheck: !!loanData.isNeedCheck,
           };
         } else {
-          approval_recommendation = null;
+          // Tidak ada approval data, tapi ada draft_id
+          approval_recommendation = {
+            draft_id: draftId,
+            isNeedCheck: !!loanData.isNeedCheck,
+            recommendation: null,
+          };
         }
+      } catch (approvalErr) {
+        console.error(
+          `Warning: failed to fetch approval recommendation for draft_id=${draftId}`,
+          approvalErr,
+        );
+        approval_recommendation = {
+          error: true,
+          message: 'Failed to fetch approval recommendation',
+          reference: 'RECOMMENDATION_FETCH_FAILED',
+        };
       }
-    } catch (draftErr) {
-      console.error(
-        `Warning: failed to fetch draft status for no_ktp=${noKtp}`,
-        draftErr,
-      );
-      // Biarkan approval_recommendation = null jika gagal ambil draft, tapi tidak abort
+    } else {
+      // Tidak ada draft_id sama sekali
+      approval_recommendation = {
+        recommendation: null,
+        isNeedCheck: false,
+      };
     }
 
     const loanAppStatus: Record<string, TypeStatusApproval | null> = {};

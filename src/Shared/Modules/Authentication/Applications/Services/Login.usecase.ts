@@ -14,17 +14,18 @@ export class LoginUseCase {
     nama: string;
     email: string;
     usertype: string;
+    spvId?: number | null;
     is_active: string;
   }): Promise<TokenResponseDto> {
-    // Generate JWT token
     const payload = {
       sub: user.id,
       email: user.email,
       usertype: user.usertype,
+      spvId: user?.spvId,
       is_active: user.is_active,
     };
     const token = await this.tokenSign.sign(payload);
 
-    return { accessToken: token, expiresIn: 36000 }; // 10 jam
+    return { accessToken: token, expiresIn: 1000 * 60 * 60 };
   }
 }

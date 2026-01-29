@@ -166,6 +166,20 @@ export class LoanApplicationExternalRepositoryImpl
     return ormEntities.map((e) => this.toDomain(e));
   }
 
+  async getNextLoanAppsPinjamanKeByNik(nik: string): Promise<number> {
+    const result = await this.ormRepository
+      .createQueryBuilder('la')
+      .select('MAX(la.pinjaman_ke)', 'max')
+      .innerJoin('la.nasabah', 'n')
+      .where('n.nik = :nik', { nik })
+      .andWhere('la.deleted_at IS NULL')
+      .andWhere('la.status_pengajuan_akhir = :status', { status: 'done' })
+      .getRawOne<{ max: number | string | null }>();
+
+    const last = result?.max ? Number(result.max) : 0;
+    return last + 1;
+  }
+
   async save(data: LoanApplicationExternal): Promise<LoanApplicationExternal> {
     const saved = await this.ormRepository.save(this.toOrm(data));
     return this.toDomain(saved as LoanApplicationExternal_ORM_Entity);

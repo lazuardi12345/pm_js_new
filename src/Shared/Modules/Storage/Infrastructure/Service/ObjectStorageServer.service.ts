@@ -716,7 +716,7 @@ export class MinioFileStorageService implements IFileStorageRepository {
   async updateFile(
     customerId_OR_URL: string,
     customerName: string,
-    fieldType: string, // ← Ini field type (foto_ktp, foto_kk, dll)
+    fieldType: string,
     file: Express.Multer.File,
     type: REQUEST_TYPE,
   ): Promise<FileMetadata> {
@@ -735,21 +735,22 @@ export class MinioFileStorageService implements IFileStorageRepository {
         customerName: string;
         isRepeatOrder: boolean;
         roFolder?: string;
-        fieldType?: string; // ← Extract field dari URL
+        fieldType?: string;
         originalFilename?: string;
       };
 
-      if (
+      const isUrlInput =
         customerId_OR_URL.includes('http://') ||
-        customerId_OR_URL.includes('https://')
-      ) {
+        customerId_OR_URL.includes('https://');
+
+      if (isUrlInput) {
         pathInfo = parseUrlPath(customerId_OR_URL, this.encKey);
         console.log('** Parsed from URL:', pathInfo);
 
         const urlFilename = pathInfo.originalFilename || '';
         const match = urlFilename.match(/-(foto_\w+|bukti_\w+)\./);
         if (match) {
-          fieldType = match[1]; // foto_ktp, foto_kk, bukti_absensi, dll
+          fieldType = match[1];
           console.log('** Extracted field type from URL:', fieldType);
         }
       } else {
@@ -765,26 +766,53 @@ export class MinioFileStorageService implements IFileStorageRepository {
         .toLowerCase()
         .replace(/\s+/g, '_');
 
-      const ext = file.originalname.split('.').pop();
-      const targetFilename = `${cleanName}-${fieldType}.${ext}`;
+      // ===================== BUILD TARGET PATH =====================
+      let encryptedName: string;
+      let targetFilename: string;
 
-      let plainPrefix: string;
-      if (pathInfo.isRepeatOrder && pathInfo.roFolder) {
-        plainPrefix = `${pathInfo.customerId}-${cleanName}/${pathInfo.roFolder}`;
-        console.log('==== RO Path:', plainPrefix);
+      if (isUrlInput) {
+        // ================= UPDATE MODE =================
+        if (!pathInfo.originalFilename) {
+          throw new Error('originalFilename not found from parsed URL');
+        }
+
+        targetFilename = pathInfo.originalFilename;
+
+        let plainPrefix: string;
+        if (pathInfo.isRepeatOrder && pathInfo.roFolder) {
+          plainPrefix = `${pathInfo.customerId}-${cleanName}/${pathInfo.roFolder}`;
+          console.log('==== RO Path (existing):', plainPrefix);
+        } else {
+          plainPrefix = `${pathInfo.customerId}-${cleanName}`;
+          console.log('==== Root Path (existing):', plainPrefix);
+        }
+
+        const fullPath = `${plainPrefix}/${targetFilename}`;
+        encryptedName = fullPath.endsWith('.enc')
+          ? fullPath
+          : `${fullPath}.enc`;
+
+        console.log('==== Using existing encrypted path:', encryptedName);
       } else {
-        plainPrefix = `${pathInfo.customerId}-${cleanName}`;
-        console.log('==== Root Path:', plainPrefix);
+        // ================= CREATE MODE =================
+        // Semua file dinormalisasi ke jpeg
+        targetFilename = `${cleanName}-${fieldType}.jpeg`;
+
+        const plainPrefix = `${pathInfo.customerId}-${cleanName}`;
+        console.log('==== Root Path (new):', plainPrefix);
+
+        const fullPath = `${plainPrefix}/${targetFilename}`;
+        encryptedName = `${fullPath}.enc`;
+
+        console.log('==== New encrypted path:', encryptedName);
       }
 
-      const fullPath = `${plainPrefix}/${targetFilename}`;
-      const encryptedName = fullPath.endsWith('.enc')
-        ? fullPath
-        : `${fullPath}.enc`;
+      // ===================== SAFETY GUARD =====================
+      if (encryptedName.includes('.enc.enc')) {
+        throw new Error(`Invalid encrypted path generated: ${encryptedName}`);
+      }
 
-      console.log('==== Target file:', encryptedName);
-
-      // Check if file exists
+      // ===================== CHECK FILE EXISTS =====================
       try {
         await this.minioClient.statObject(bucket, encryptedName);
         console.log('** File exists, proceeding with update');
@@ -796,10 +824,10 @@ export class MinioFileStorageService implements IFileStorageRepository {
         throw error;
       }
 
-      // Encrypt new file
+      // ===================== ENCRYPT NEW FILE =====================
       const { encrypted, iv } = this.encKey.encrypt(file.buffer);
 
-      // Replace file
+      // ===================== REPLACE FILE =====================
       await this.minioClient.putObject(
         bucket,
         encryptedName,
@@ -816,26 +844,26 @@ export class MinioFileStorageService implements IFileStorageRepository {
 
       console.log('✅ File updated successfully:', encryptedName);
 
-      // Build encrypted prefix untuk new URL
+      // ===================== BUILD URL =====================
       const encryptedCustomerId = this.encKey.encryptString(
         pathInfo.customerId,
       );
       const encryptedCustomerName = this.encKey.encryptString(
         pathInfo.customerName,
       );
+
       const safeCustomerId =
         encryptedCustomerId.encrypted.toString('base64url');
       const safeCustomerName =
         encryptedCustomerName.encrypted.toString('base64url');
       const encryptedPrefix = `${safeCustomerId.length}.${safeCustomerId}${safeCustomerName}`;
 
-      // Build URL
       const url =
         pathInfo.isRepeatOrder && pathInfo.roFolder
           ? `${process.env.BACKEND_URI}/storage/${bucket}/${encryptedPrefix}/${pathInfo.roFolder}/${targetFilename}`
           : `${process.env.BACKEND_URI}/storage/${bucket}/${encryptedPrefix}/${targetFilename}`;
 
-      console.log('🔗 New URL:', url);
+      console.log(' URL:', url);
 
       return {
         originalName: file.originalname,

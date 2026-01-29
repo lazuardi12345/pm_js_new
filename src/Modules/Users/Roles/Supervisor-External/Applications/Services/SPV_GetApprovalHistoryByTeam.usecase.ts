@@ -3,12 +3,18 @@ import {
   ILoanApplicationExternalRepository,
   LOAN_APPLICATION_EXTERNAL_REPOSITORY,
 } from 'src/Modules/LoanAppExternal/Domain/Repositories/loanApp-external.repository';
+import {
+  APPROVAL_RECOMMENDATION_REPOSITORY,
+  IApprovalRecommendationRepository,
+} from 'src/Modules/Admin/BI-Checking/Domain/Repositories/approval-recommendation.repository';
 
 @Injectable()
 export class SPV_GetAllApproval_ByTeam_UseCase {
   constructor(
     @Inject(LOAN_APPLICATION_EXTERNAL_REPOSITORY)
     private readonly loanAppRepo: ILoanApplicationExternalRepository,
+    @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
+    private readonly approvalRecomRepo: IApprovalRecommendationRepository,
   ) {}
 
   async execute(
@@ -61,28 +67,66 @@ export class SPV_GetAllApproval_ByTeam_UseCase {
         startIndex + pageSize,
       );
 
-      // STEP 4: Format hasil
-      const formattedData = paginatedData.map((item) => {
-        const nominal = Number(item.nominal_pinjaman);
-        const formattedNominal = new Intl.NumberFormat('id-ID', {
-          style: 'currency',
-          currency: 'IDR',
-        }).format(nominal);
+      // STEP 4: Format hasil dengan approval recommendation
+      const formattedData = await Promise.all(
+        paginatedData.map(async (item) => {
+          const nominal = Number(item.nominal_pinjaman);
+          const formattedNominal = new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+          }).format(nominal);
 
-        return {
-          id_pengajuan: Number(item.loan_id),
-          id_nasabah: Number(item.nasabah_id),
-          nama_nasabah: item.nasabah_nama,
-          nominal_pinjaman: formattedNominal,
-          id_marketing: Number(item.user_id),
-          nama_marketing: item.marketing_nama,
-          loan_status: item.loan_status,
-          approval_status: item.approval_status,
-          is_appeal: item.is_appeal,
-          reason_for_appeal: item.reason_for_appeal,
-          approve_response_date: item.approval_created_at,
-        };
-      });
+          // Fetch approval recommendation
+          let approval_recommendation: any = null;
+          const draftId = item.draft_id ?? null;
+
+          if (draftId) {
+            try {
+              const approvalData =
+                await this.approvalRecomRepo.findByDraftId(draftId);
+
+              if (approvalData) {
+                approval_recommendation = {
+                  draft_id: approvalData.draft_id ?? draftId,
+                  nama_nasabah:
+                    approvalData.nama_nasabah ?? item.nasabah_nama ?? '-',
+                  recommendation: approvalData.recommendation ?? null,
+                  filePath: approvalData.filePath ?? null,
+                  catatan: approvalData.catatan ?? null,
+                  last_updated: approvalData.updated_at ?? null,
+                  isNeedCheck: !!item.isNeedCheck,
+                };
+              } else {
+                approval_recommendation = {
+                  draft_id: draftId,
+                  isNeedCheck: !!item.isNeedCheck,
+                  recommendation: null,
+                };
+              }
+            } catch (approvalErr) {
+              console.error(
+                `Warning: failed to fetch approval recommendation for draft_id=${draftId}`,
+                approvalErr,
+              );
+            }
+          }
+
+          return {
+            id_pengajuan: Number(item.loan_id),
+            id_nasabah: Number(item.nasabah_id),
+            nama_nasabah: item.nasabah_nama,
+            nominal_pinjaman: formattedNominal,
+            id_marketing: Number(item.user_id),
+            nama_marketing: item.marketing_nama,
+            loan_status: item.loan_status,
+            approval_status: item.approval_status,
+            is_appeal: item.is_appeal,
+            reason_for_appeal: item.reason_for_appeal,
+            approve_response_date: item.approval_created_at,
+            approval_recommendation, // Tambahkan ini
+          };
+        }),
+      );
 
       return {
         data: formattedData,

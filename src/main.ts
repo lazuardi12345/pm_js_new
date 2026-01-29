@@ -35,8 +35,9 @@ async function bootstrap() {
         'http://192.182.6.100:3003',
         'http://192.182.6.100:3004',
         'http://admin-portal.local',
-        'http://loan-apps.local:3000',
+        'http://localhost:3000',
         'http://loan-apps.local',
+        'http://loan-apps.local:3000',
       ];
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);

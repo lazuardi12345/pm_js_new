@@ -127,7 +127,7 @@ export class CreateDraftLoanApplicationController {
         data: result.entity,
       };
     } catch (error) {
-      console.error('❌ Update FormData error:', error);
+      console.error('*! Update FormData error:', error);
       throw new BadRequestException('Failed to update draft');
     }
   }
@@ -136,9 +136,9 @@ export class CreateDraftLoanApplicationController {
   @Patch(':id/json')
   async updateDraftJsonOnly(@Param('id') id: string, @Body() body: any) {
     try {
-      console.log('🟢 [updateDraftJsonOnly] START');
-      console.log('➡️ Incoming ID:', id);
-      console.log('➡️ RAW body:', body);
+      console.log('[updateDraftJsonOnly] START');
+      console.log('Incoming ID:', id);
+      console.log('RAW body:', body);
 
       // Ambil payload jika ada, kalau tidak pakai body langsung
       let payloadData = body.payload ?? body;

@@ -29,7 +29,7 @@ export class MKT_UpdateLoanApplicationController {
       { name: 'foto_id_card_penjamin', maxCount: 1 },
       { name: 'foto_ktp_penjamin', maxCount: 1 },
       { name: 'foto_id_card', maxCount: 1 },
-      { name: 'bukti_absensi_file', maxCount: 1 },
+      { name: 'bukti_absensi', maxCount: 1 },
       { name: 'foto_rekening', maxCount: 1 },
     ]),
   )

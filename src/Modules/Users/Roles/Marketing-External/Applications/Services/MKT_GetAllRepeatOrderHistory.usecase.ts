@@ -90,17 +90,11 @@ export class MKT_GetAllRepeatOrderHistoryUseCase {
         {},
       );
 
-      /** ============================================
-       *  MERGE CLIENT + LOAN HISTORY
-       * ============================================ */
       const mergedData = normalizedClients.map((client) => ({
         ...client,
         loanApplications: loansByClient[client.nasabah_id] || [],
       }));
 
-      /** ============================================
-       *  FINAL RESPONSE
-       * ============================================ */
       return {
         payload: {
           error: false,
