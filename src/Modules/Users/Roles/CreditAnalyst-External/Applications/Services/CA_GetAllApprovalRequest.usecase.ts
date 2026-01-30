@@ -120,6 +120,7 @@ export class CA_GetAllApprovalRequest_UseCase {
             nama_supervisor: item.nama_supervisor,
             is_has_survey: Number(item.is_has_survey!),
             status: item.status_pengajuan,
+            loan_submitted_at: item?.loan_submitted_at ?? '-',
             approval_recommendation, // Tambahkan approval recommendation
           };
         }),

@@ -84,6 +84,10 @@ import {
   PenjaminEnum,
   RiwayatPinjamPenjaminEnum,
 } from 'src/Shared/Enums/Internal/Collateral.enum';
+import {
+  APPROVAL_RECOMMENDATION_REPOSITORY,
+  IApprovalRecommendationRepository,
+} from 'src/Modules/Admin/BI-Checking/Domain/Repositories/approval-recommendation.repository';
 
 @Injectable()
 export class MKT_CreateLoanApplicationUseCase {
@@ -104,15 +108,19 @@ export class MKT_CreateLoanApplicationUseCase {
     private readonly collateralRepo: ICollateralInternalRepository,
     @Inject(RELATIVE_INTERNAL_REPOSITORY)
     private readonly relativeRepo: IRelativesInternalRepository,
+    @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
+    private readonly approvalRecomRepo: IApprovalRecommendationRepository,
     // @Inject(CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY)
     // private readonly loanAppDraftRepo: ILoanApplicationDraftRepository,
-    // @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
-    // private readonly approvalRecomRepo: IApprovalRecommendationRepository,
     @Inject(UNIT_OF_WORK)
     private readonly uow: IUnitOfWork,
   ) {}
 
-  async execute(dto: CreateLoanApplicationDto, marketing_id: number) {
+  async execute(
+    dto: CreateLoanApplicationDto,
+    marketing_id: number,
+    draftId: string,
+  ) {
     const now = new Date();
     const nowWIB = new Date(now.getTime() + 7 * 60 * 60 * 1000);
 
@@ -148,6 +156,23 @@ export class MKT_CreateLoanApplicationUseCase {
               error: true,
               message: 'Nomor KTP wajib diisi',
               reference: 'VALIDATION_ERROR',
+            },
+          });
+        }
+
+        const approvalRecommendationCheck =
+          await this.approvalRecomRepo.findByDraftId(draftId);
+
+        const nominal = Number(
+          dto.loan_application_internal?.nominal_pinjaman ?? 0,
+        );
+
+        if (!approvalRecommendationCheck && nominal >= 7000000) {
+          throw new BadRequestException({
+            payload: {
+              error: true,
+              message: 'Approval Recommendation has no exist',
+              reference: 'REF_TO_APPROVAL_RECOMMENDATION_NOT_FOUND',
             },
           });
         }
@@ -295,6 +320,7 @@ export class MKT_CreateLoanApplicationUseCase {
             loan_application_internal.notes ?? '',
             isBandingBoolean,
             loan_application_internal.alasan_banding ?? '',
+            approvalRecommendationCheck?.draft_id,
           ),
         );
 

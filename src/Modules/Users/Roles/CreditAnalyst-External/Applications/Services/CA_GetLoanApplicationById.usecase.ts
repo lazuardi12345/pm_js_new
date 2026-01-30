@@ -112,22 +112,22 @@ export class CA_GetLoanApplicationByIdUseCase {
 
     const roleMap: Record<string | number, string> = {
       // SPV
-      SPV: 'spv',
-      Supervisor: 'spv',
-      supervisor: 'spv',
-      1: 'spv',
+      SPV: 'supervisor',
+      Supervisor: 'supervisor',
+      supervisor: 'supervisor',
+      1: 'supervisor',
 
       // CA
-      CA: 'ca',
-      'Credit Analyst': 'ca',
-      credit_analyst: 'ca',
-      2: 'ca',
+      CA: 'credit_analyst',
+      'Credit Analyst': 'credit_analyst',
+      credit_analyst: 'credit_analyst',
+      2: 'credit_analyst',
 
       // HM
-      HM: 'hm',
-      'Head Marketing': 'hm',
-      head_marketing: 'hm',
-      3: 'hm',
+      HM: 'head_marketing',
+      'Head Marketing': 'head_marketing',
+      head_marketing: 'head_marketing',
+      3: 'head_marketing',
     };
 
     (approvalsRows ?? []).forEach((approval: any) => {

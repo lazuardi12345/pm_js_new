@@ -53,16 +53,28 @@ export class CA_GetApprovalHistory_UseCase {
       const formattedData = await Promise.all(
         paginatedData.map(async (item) => {
           const nominal = Number(item.nominal_pinjaman);
+          const isLowAmount = Number.isFinite(nominal) && nominal < 7_000_000;
+
           const formattedNominal = new Intl.NumberFormat('id-ID', {
             style: 'currency',
             currency: 'IDR',
-          }).format(nominal);
+          }).format(Number.isFinite(nominal) ? nominal : 0);
 
-          // Fetch approval recommendation
+          // -------------------------
+          // Approval Recommendation Logic
+          // -------------------------
           let approval_recommendation: any = null;
-          const draftId = item.draft_id ?? null;
+          const draftId = item?.draft_id ?? null;
 
-          if (draftId) {
+          //LOW AMOUNT → wajib dont_have_check
+          if (isLowAmount) {
+            approval_recommendation = {
+              dont_have_check: true,
+            };
+          }
+
+          // HIGH AMOUNT → BI checking flow
+          else if (draftId) {
             try {
               const approvalData =
                 await this.approvalRecomRepo.findByDraftId(draftId);
@@ -79,10 +91,11 @@ export class CA_GetApprovalHistory_UseCase {
                   isNeedCheck: !!item.isNeedCheck,
                 };
               } else {
+                // draft ada tapi BI belum input
                 approval_recommendation = {
                   draft_id: draftId,
-                  isNeedCheck: !!item.isNeedCheck,
                   recommendation: null,
+                  isNeedCheck: !!item.isNeedCheck,
                 };
               }
             } catch (approvalErr) {
@@ -93,24 +106,25 @@ export class CA_GetApprovalHistory_UseCase {
             }
           }
 
+          // -------------------------
+          // Response Mapping
+          // -------------------------
           return {
             id_pengajuan: Number(item.loan_id),
             id_nasabah: Number(item.nasabah_id),
             nama_nasabah: item.nama_lengkap || '-',
-            nominal_pinjaman: new Intl.NumberFormat('id-ID', {
-              style: 'currency',
-              currency: 'IDR',
-            }).format(Number(item.nominal_pinjaman)),
+            nominal_pinjaman: formattedNominal,
             id_marketing: item.id_marketing ? Number(item.id_marketing) : null,
             nama_marketing: item.nama_marketing || null,
             nama_supervisor: item.nama_supervisor || null,
             payment_type: item.jenis_pembiayaan || null,
             approval_status: item.approval_status || '-',
             loan_status: item.loan_status || '-',
+            loan_submitted_at: item?.loan_submitted_at ?? '-',
             approve_response_date: item.approval_date || '-',
             is_it_appeal: item.is_banding ? item.is_banding : 0,
             is_need_survey: Number(item.is_need_survey!),
-            approval_recommendation, // Tambahkan ini
+            approval_recommendation,
           };
         }),
       );

@@ -119,6 +119,7 @@ export class SPV_GetAllApproval_ByTeam_UseCase {
             id_marketing: Number(item.user_id),
             nama_marketing: item.marketing_nama,
             loan_status: item.loan_status,
+            loan_submitted_at: item?.loan_submitted_at ?? '-',
             approval_status: item.approval_status,
             is_appeal: item.is_appeal,
             reason_for_appeal: item.reason_for_appeal,

@@ -119,6 +119,7 @@ export class SPV_GetAllApprovalRequestByTeam_UseCase {
             jenis_pembiayaan: item.jenis_pembiayaan || null,
             nama_marketing: item.marketing_nama || null,
             status: item.loan_status,
+            loan_submitted_at: item?.loan_submitted_at ?? '-',
             approval_recommendation, // Tambahkan approval recommendation
           };
         }),

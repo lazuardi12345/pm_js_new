@@ -106,6 +106,7 @@ export class CA_GetApprovalHistory_UseCase {
             payment_type: item.jenis_pembiayaan || null,
             approval_status: item.approval_status || '-',
             loan_status: item.loan_status || '-',
+            loan_submitted_at: item?.loan_submitted_at ?? '-',
             approve_response_date: item.approval_date || '-',
             is_it_appeal: item.is_banding ? item.is_banding : 0,
             is_need_survey: Number(item.is_need_survey!),

@@ -48,7 +48,6 @@ export class HM_GetAllApprovalRequestInternalUseCase {
         startIndex + pageSize,
       );
 
-      // Step 4: Format data
       // Step 4: Format data dengan approval recommendation
       const formattedData = await Promise.all(
         paginatedData.map(async (item) => {
@@ -104,7 +103,7 @@ export class HM_GetAllApprovalRequestInternalUseCase {
             id_marketing: item.marketing_id || null,
             nama_marketing: item.nama_marketing || '-',
             nama_supervisor: item.nama_supervisor || '-',
-            waktu_pengajuan: item.waktu_pengajuan || '-',
+            loan_submitted_at: item.waktu_pengajuan || '-',
             status_loan: item.status_loan || '-',
             perusahaan: item.perusahaan || '-',
             is_banding: !!item.is_banding,

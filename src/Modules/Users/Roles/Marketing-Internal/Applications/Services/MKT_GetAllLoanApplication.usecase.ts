@@ -119,25 +119,31 @@ export class MKT_GetAllLoanApplicationUseCase {
       const formattedData = await Promise.all(
         dataArray.map(async (item: any) => {
           try {
-            // Fetch approval recommendation
-            let approval_recommendation: any = null;
-            const draftId = item?.draft_id ?? null;
             const nominalPinjaman = Number(item?.loan_amount ?? 0);
             const isLowAmount =
-              !Number.isNaN(nominalPinjaman) && nominalPinjaman < 7000000;
+              Number.isFinite(nominalPinjaman) && nominalPinjaman < 7_000_000;
 
-            if (draftId) {
+            const draftId = item?.draft_id ?? null;
+
+            // -------------------------
+            // Approval Recommendation Logic
+            // -------------------------
+            let approval_recommendation: any = null;
+
+            // LOW AMOUNT → wajib dont_have_check
+            if (isLowAmount) {
+              approval_recommendation = {
+                dont_have_check: true,
+              };
+            }
+
+            // HIGH AMOUNT → BI checking flow
+            else if (draftId) {
               try {
                 const approvalData =
                   await this.approvalRecomRepo.findByDraftId(draftId);
 
                 if (approvalData) {
-                  const approvalNominal = Number(
-                    approvalData.nominal_pinjaman ?? 0,
-                  );
-                  const approvalIsLowAmount =
-                    !Number.isNaN(approvalNominal) && approvalNominal < 7000000;
-
                   approval_recommendation = {
                     draft_id: approvalData.draft_id ?? draftId,
                     nama_nasabah:
@@ -147,21 +153,13 @@ export class MKT_GetAllLoanApplicationUseCase {
                     catatan: approvalData.catatan ?? null,
                     last_updated: approvalData.updated_at ?? null,
                     isNeedCheck: !!item?.isNeedCheck,
-                    dont_have_check: approvalIsLowAmount,
-                  };
-                } else if (isLowAmount) {
-                  // Tidak ada approval data, tapi nominal < 7jt
-                  approval_recommendation = {
-                    draft_id: draftId,
-                    isNeedCheck: !!item?.isNeedCheck,
-                    dont_have_check: true,
                   };
                 } else {
-                  // Ada draft tapi belum ada approval, dan nominal >= 7jt
+                  // draft ada tapi BI belum input
                   approval_recommendation = {
                     draft_id: draftId,
-                    isNeedCheck: !!item?.isNeedCheck,
                     recommendation: null,
+                    isNeedCheck: !!item?.isNeedCheck,
                   };
                 }
               } catch (approvalErr) {
@@ -175,17 +173,13 @@ export class MKT_GetAllLoanApplicationUseCase {
                   reference: 'RECOMMENDATION_FETCH_FAILED',
                 };
               }
-            } else if (isLowAmount) {
-              // Tidak ada draft_id, tapi nominal < 7jt
-              approval_recommendation = {
-                dont_have_check: true,
-              };
             }
 
-            // convert nominal pinjaman safely
-            const loanAmountNum = Number(item?.loan_amount ?? 0);
+            // -------------------------
+            // Formatting
+            // -------------------------
             const loanAmountFormatted = formatCurrency(
-              Number.isFinite(loanAmountNum) ? loanAmountNum : 0,
+              Number.isFinite(nominalPinjaman) ? nominalPinjaman : 0,
             );
 
             const lastApprovedAmount = Number(item?.last_approval_nominal);
@@ -193,7 +187,9 @@ export class MKT_GetAllLoanApplicationUseCase {
               Number.isFinite(lastApprovedAmount) ? lastApprovedAmount : 0,
             );
 
-            // build safe object with defaults
+            // -------------------------
+            // Response Mapping
+            // -------------------------
             return {
               loan_id: Number(item?.loan_id ?? 0),
               customer_id: Number(item?.customer_id ?? 0),

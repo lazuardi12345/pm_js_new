@@ -133,6 +133,7 @@ export class SPV_GetAllApprovalRequestByTeam_UseCase {
             nominal_pinjaman: formattedNominal,
             id_marketing: item.user_id ? Number(item.user_id) : null,
             nama_marketing: item.marketing_nama || null,
+            loan_submitted_at: item?.loan_submitted_at ?? '-',
             status: item.loan_status,
             approval_recommendation, // Tambahkan ini
           };

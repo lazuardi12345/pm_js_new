@@ -84,7 +84,7 @@ export class MKT_CreateLoanApplicationUseCase {
       dto.loan_application_external?.nominal_pinjaman ?? 0,
     );
 
-    if (!approvalRecommendationCheck && nominal >= 7000000) {
+    if (!approvalRecommendationCheck && nominal >= 0) {
       throw new BadRequestException({
         payload: {
           error: true,
@@ -93,6 +93,11 @@ export class MKT_CreateLoanApplicationUseCase {
         },
       });
     }
+
+    const isAmountTriggerApprovalRecommendation = nominal >= 7000000;
+    const approvalDraftId = isAmountTriggerApprovalRecommendation
+      ? approvalRecommendationCheck?.draft_id
+      : undefined;
 
     try {
       return await this.uow.start(async () => {
@@ -316,7 +321,7 @@ export class MKT_CreateLoanApplicationUseCase {
             isBandingBoolean,
             loan_application_external.alasan_banding,
             loan_application_external?.survey_schedule,
-            approvalRecommendationCheck?.draft_id,
+            approvalDraftId,
             nowWIB,
             nowWIB,
             undefined,
