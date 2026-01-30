@@ -1,14 +1,12 @@
-// Presentation/ModuleLoanApplicationInternal.module.ts
 import { Module } from '@nestjs/common';
-import { NotifLoanAppInternal_Controller } from './Presentations/Controllers/NotifLoanAppInternal.controller';
-import { NotifCreateLoanAppIntModule } from './Modules/NotifLoanAppInt.module';
+import { ConfigModule } from '@nestjs/config';
+import { NotificationClientService } from './Infrastructure/Services/notification.service';
 
 @Module({
   imports: [
-    NotifCreateLoanAppIntModule,
-    // kalau nanti ada module lain tinggal ditambahin dsini
+    ConfigModule, // karena NotificationClientService pakai ConfigService
   ],
-  controllers: [NotifLoanAppInternal_Controller],
-  exports: [NotifCreateLoanAppIntModule],
+  providers: [NotificationClientService],
+  exports: [NotificationClientService],
 })
-export class NotificationsModule {}
+export class NotificationAdapterModule {}

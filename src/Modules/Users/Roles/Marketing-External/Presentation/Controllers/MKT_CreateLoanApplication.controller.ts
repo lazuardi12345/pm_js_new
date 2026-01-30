@@ -22,7 +22,7 @@ export class MKT_CreateLoanApplicationController {
   async submitLoanApp(
     @CurrentUser('id') marketingId: number,
     @Param('draft_id') draftId: string,
-    @Body() body: any, // Terima apa saja dulu
+    @Body() body: any,
   ) {
     try {
       const dto = body.payload;

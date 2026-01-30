@@ -25,6 +25,32 @@ export class LoanApplicationExtRepositoryImpl
     private readonly loanAppModel: Model<LoanApplicationExtDocument>,
   ) {}
 
+  async getLastLoanSequenceByNik(nik: string): Promise<number> {
+    const lastLoan = await this.loanAppModel
+      .findOne(
+        {
+          'client_external.nik': nik,
+          isCompleted: true,
+        },
+        {
+          'loan_application_external.pinjaman_ke': 1,
+        },
+      )
+      .sort({
+        'loan_application_external.pinjaman_ke': -1,
+      })
+      .lean<{
+        loan_application_external?: { pinjaman_ke?: number };
+      }>();
+
+    return lastLoan?.loan_application_external?.pinjaman_ke ?? 0;
+  }
+
+  async getNextDraftPinjamanKeByNik(nik: string): Promise<number> {
+    const last = await this.getLastLoanSequenceByNik(nik);
+    return last + 1;
+  }
+
   async create(
     data: Partial<LoanApplicationExtEntity>,
   ): Promise<LoanApplicationExtEntity> {
@@ -161,7 +187,7 @@ export class LoanApplicationExtRepositoryImpl
 
     const nominal_fixtype = Number(nominal_pinjaman);
 
-    if (nominal_fixtype >= 7000000) {
+    if (nominal_fixtype >= 0) {
       const response = await this.loanAppModel.updateOne(
         { _id: draft_id },
         { isNeedCheck: true },

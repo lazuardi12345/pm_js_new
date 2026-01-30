@@ -166,6 +166,20 @@ export class LoanApplicationExternalRepositoryImpl
     return ormEntities.map((e) => this.toDomain(e));
   }
 
+  async getNextLoanAppsPinjamanKeByNik(nik: string): Promise<number> {
+    const result = await this.ormRepository
+      .createQueryBuilder('la')
+      .select('MAX(la.pinjaman_ke)', 'max')
+      .innerJoin('la.nasabah', 'n')
+      .where('n.nik = :nik', { nik })
+      .andWhere('la.deleted_at IS NULL')
+      .andWhere('la.status_pengajuan_akhir = :status', { status: 'done' })
+      .getRawOne<{ max: number | string | null }>();
+
+    const last = result?.max ? Number(result.max) : 0;
+    return last + 1;
+  }
+
   async save(data: LoanApplicationExternal): Promise<LoanApplicationExternal> {
     const saved = await this.ormRepository.save(this.toOrm(data));
     return this.toDomain(saved as LoanApplicationExternal_ORM_Entity);
@@ -240,22 +254,14 @@ export class LoanApplicationExternalRepositoryImpl
   async callSP_GENERAL_GetAllPreviewDataLoanBySearch_External(
     role: RoleSearchEnum,
     type: TypeSearchEnum,
+    paymentType: JenisPembiayaanEnum,
     keyword: string,
     page?: number,
     pageSize?: number,
   ): Promise<{ data: any[]; totalData: any; approvals?: any[] }> {
-    console.log(
-      'CALL SP with params > : ',
-      keyword,
-      role,
-      type,
-      page,
-      pageSize,
-    );
-
     const result = await this.ormRepository.manager.query(
-      'CALL GENERAL_GetAllPreviewDataLoanBySearch_External(?, ?, ?, ?, ?)',
-      [keyword, role, type, page, pageSize],
+      'CALL GENERAL_GetAllPreviewDataLoanBySearch_External(?, ?, ?, ?, ?, ?)',
+      [keyword, role, type, page, pageSize, paymentType],
     );
     const totalData = result[0][0].total;
     const data = result[1] || [];
@@ -753,6 +759,33 @@ export class LoanApplicationExternalRepositoryImpl
     const result = await manager.query(
       'CALL AdCont_GetAllLoanData_External(?, ?)',
       [p_page, p_page_size],
+    );
+
+    return result;
+  }
+
+  async callSP_AdCont_GetAllLoanData_Internal(
+    p_page: number,
+    p_page_size: number,
+  ): Promise<any[]> {
+    const manager = this.ormRepository.manager;
+
+    const result = await manager.query(
+      'CALL AdCont_GetAllLoanData_Internal(?, ?)',
+      [p_page, p_page_size],
+    );
+
+    return result;
+  }
+
+  async callSP_AdCont_GetLoanDetailById_External(
+    p_loan_app_id: number,
+  ): Promise<any[]> {
+    const manager = this.ormRepository.manager;
+
+    const result = await manager.query(
+      'CALL AdCont_GetLoanDetailById_External(?)',
+      [p_loan_app_id],
     );
 
     return result;

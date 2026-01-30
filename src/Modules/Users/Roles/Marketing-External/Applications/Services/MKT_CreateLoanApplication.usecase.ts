@@ -84,7 +84,7 @@ export class MKT_CreateLoanApplicationUseCase {
       dto.loan_application_external?.nominal_pinjaman ?? 0,
     );
 
-    if (!approvalRecommendationCheck && nominal >= 7000000) {
+    if (!approvalRecommendationCheck && nominal >= 0) {
       throw new BadRequestException({
         payload: {
           error: true,
@@ -93,6 +93,11 @@ export class MKT_CreateLoanApplicationUseCase {
         },
       });
     }
+
+    const isAmountTriggerApprovalRecommendation = nominal >= 7000000;
+    const approvalDraftId = isAmountTriggerApprovalRecommendation
+      ? approvalRecommendationCheck?.draft_id
+      : undefined;
 
     try {
       return await this.uow.start(async () => {
@@ -128,19 +133,22 @@ export class MKT_CreateLoanApplicationUseCase {
           });
         }
 
-        if (!client_external?.nik) {
+        console.log(client_external);
+
+        if (
+          !client_external?.nik ||
+          client_external.nik.length < 12 ||
+          client_external.nik.length > 16
+        ) {
           throw new BadRequestException({
             payload: {
               error: true,
-              message: 'Nomor KTP wajib diisi',
+              message: 'Nomor KTP wajib diisi dengan format yang valid',
               reference: 'VALIDATION_ERROR',
             },
           });
         }
 
-        // ==========================
-        // 2. CEK NIK - PAKAI YANG ADA ATAU BUAT BARU
-        // ==========================
         const formattedNik = Number(client_external.nik);
         let customer = await this.clientRepo.findByKtp(formattedNik);
 
@@ -313,7 +321,7 @@ export class MKT_CreateLoanApplicationUseCase {
             isBandingBoolean,
             loan_application_external.alasan_banding,
             loan_application_external?.survey_schedule,
-            approvalRecommendationCheck?.draft_id,
+            approvalDraftId,
             nowWIB,
             nowWIB,
             undefined,
@@ -490,7 +498,11 @@ export class MKT_CreateLoanApplicationUseCase {
                     collateral_bpjs_external.foto_bpjs ??
                     null,
                 ),
-                collateral_bpjs_external.jaminan_tambahan,
+                parseFileUrl(
+                  documents_files?.dokumen_pendukung_bpjs ??
+                    collateral_bpjs_external.dokumen_pendukung_bpjs ??
+                    null,
+                ),
                 undefined,
                 nowWIB,
                 nowWIB,
@@ -650,7 +662,7 @@ export class MKT_CreateLoanApplicationUseCase {
                     null,
                 ),
                 parseFileUrl(
-                  documents_files?.foto_shm ??
+                  documents_files?.foto_biaya_operasional_mou ??
                     collateral_kedinasan_mou_external.foto_biaya_operasional ??
                     null,
                 ),

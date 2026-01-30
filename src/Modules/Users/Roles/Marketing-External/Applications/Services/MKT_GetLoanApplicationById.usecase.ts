@@ -17,15 +17,15 @@ import {
   APPROVAL_RECOMMENDATION_REPOSITORY,
   IApprovalRecommendationRepository,
 } from 'src/Modules/Admin/BI-Checking/Domain/Repositories/approval-recommendation.repository';
-import {
-  DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY,
-  ILoanApplicationDraftInternalRepository,
-} from 'src/Shared/Modules/Drafts/Domain/Repositories/int/LoanAppInt.repository';
 import { LoanType } from 'src/Shared/Enums/External/Loan-Application.enum';
 import {
   ILoanApplicationExternalRepository,
   LOAN_APPLICATION_EXTERNAL_REPOSITORY,
 } from 'src/Modules/LoanAppExternal/Domain/Repositories/loanApp-external.repository';
+import {
+  DRAFT_LOAN_APPLICATION_EXTERNAL_REPOSITORY,
+  ILoanApplicationDraftExternalRepository,
+} from 'src/Shared/Modules/Drafts/Domain/Repositories/ext/LoanAppExt.repository';
 
 @Injectable()
 export class MKT_GetLoanApplicationByIdUseCase {
@@ -34,8 +34,8 @@ export class MKT_GetLoanApplicationByIdUseCase {
     private readonly loanAppRepo: ILoanApplicationExternalRepository,
     @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
     private readonly approvalRecomRepo: IApprovalRecommendationRepository,
-    @Inject(DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY)
-    private readonly loanAppDraftRepo: ILoanApplicationDraftInternalRepository,
+    @Inject(DRAFT_LOAN_APPLICATION_EXTERNAL_REPOSITORY)
+    private readonly loanAppDraftRepo: ILoanApplicationDraftExternalRepository,
   ) {}
 
   async execute(id: number) {
@@ -69,17 +69,20 @@ export class MKT_GetLoanApplicationByIdUseCase {
         throw new NotFoundException(`Loan Application with id ${id} not found`);
       }
 
+      console.log('MKT - LOAN DATA GET BY ID: ', loanData);
+
       // ============================================================
       // 4. APPROVAL RECOMMENDATION LOGIC (EXISTING)
       // ============================================================
       let approval_recommendation: any = null;
       const noKtp = loanData.no_ktp ?? null;
-      const nominalPinjaman = Number(loanData.nominal_pinjaman ?? 0);
+      // const nominalPinjaman = Number(loanData.nominal_pinjaman ?? 0);
 
       try {
         let draftData: any = null;
         if (noKtp !== null) {
           draftData = await this.loanAppDraftRepo.findStatus(noKtp);
+          console.log('MKT - DRAFT DATA GET BY ID: ', draftData);
         }
 
         if (draftData) {
@@ -87,6 +90,8 @@ export class MKT_GetLoanApplicationByIdUseCase {
             const approvalData = await this.approvalRecomRepo.findByDraftId(
               draftData.draft_id,
             );
+
+            console.log(approvalData);
 
             if (approvalData) {
               approval_recommendation = {
@@ -99,23 +104,6 @@ export class MKT_GetLoanApplicationByIdUseCase {
                 last_updated: approvalData.updated_at ?? null,
                 isNeedCheck: !!draftData.isNeedCheck,
               };
-
-              const approvalNominal = Number(
-                approvalData.nominal_pinjaman ?? 0,
-              );
-              if (!Number.isNaN(approvalNominal) && approvalNominal < 7000000) {
-                approval_recommendation.dont_have_check = true;
-              }
-            } else {
-              if (!Number.isNaN(nominalPinjaman) && nominalPinjaman < 7000000) {
-                approval_recommendation = {
-                  draft_id: draftData.draft_id,
-                  isNeedCheck: !!draftData.isNeedCheck,
-                  dont_have_check: true,
-                };
-              } else {
-                approval_recommendation = null;
-              }
             }
           } catch (approvalErr) {
             console.error(
@@ -127,12 +115,6 @@ export class MKT_GetLoanApplicationByIdUseCase {
               message: 'Failed to fetch approval recommendation',
               reference: 'RECOMMENDATION_FETCH_FAILED',
             };
-          }
-        } else {
-          if (!Number.isNaN(nominalPinjaman) && nominalPinjaman < 7000000) {
-            approval_recommendation = { dont_have_check: true };
-          } else {
-            approval_recommendation = null;
           }
         }
       } catch (draftErr) {
@@ -352,7 +334,7 @@ export class MKT_GetLoanApplicationByIdUseCase {
             survey_photos: surveyPhotosRows || [],
             approval_recommendation,
           },
-          // Status data
+          appeal_notes: loanData.loan_alasan_banding,
           loan_app_status: loanAppStatus,
           appeal_status: appealStatus,
         },
@@ -381,7 +363,7 @@ export class MKT_GetLoanApplicationByIdUseCase {
             username: attachmentData.username,
             password: attachmentData.password,
             foto_bpjs: attachmentData.foto_bpjs,
-            jaminan_tambahan: attachmentData.jaminan_tambahan,
+            dokumen_pendukung_bpjs: attachmentData.jaminan_tambahan,
           },
         };
 
@@ -491,8 +473,8 @@ export class MKT_GetLoanApplicationByIdUseCase {
             foto_sku: attachmentData.foto_sku,
             foto_usaha: attachmentData.foto_usaha
               ? typeof attachmentData.foto_usaha === 'string'
-                ? JSON.parse(attachmentData.foto_usaha)
-                : attachmentData.foto_usaha
+                ? JSON.parse(attachmentData.foto_usaha[0])
+                : attachmentData.foto_usaha[0]
               : [],
             foto_pembukuan: attachmentData.foto_pembukuan,
           },

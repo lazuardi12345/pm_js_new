@@ -37,9 +37,12 @@ import { CollateralByUmkmExternalController } from './Presentation/Controllers/c
 import { CollateralKedinasan_Non_MOU_ExternalController } from './Presentation/Controllers/collateral-kedinasan-non-mou-external.controller';
 import { DetailInstallmentItemsExternalModule } from './Modules/detail-installment-items-external.module';
 import { DetailInstallmentItemsExternalController } from './Presentation/Controllers/detail-installment-items-external.controller';
+import { NotificationClientService } from '../../Shared/Modules/Notifications/Infrastructure/Services/notification.service';
+import { NotificationAdapterModule } from 'src/Shared/Modules/Notifications/ModuleNotification.module';
 
 @Module({
   imports: [
+    NotificationAdapterModule,
     AddressExternalModule,
     ApprovalExternalModule,
     ClientExternalModule,
@@ -60,6 +63,8 @@ import { DetailInstallmentItemsExternalController } from './Presentation/Control
     SurveyPhotos_External_Module,
     SurveyReports_External_Module,
   ],
+  providers: [NotificationAdapterModule],
+
   controllers: [
     AddressExternalController,
     ClientExternalController,

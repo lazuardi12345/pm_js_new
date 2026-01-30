@@ -3,11 +3,13 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import {
@@ -24,6 +26,10 @@ import { FinancialDependentsExternal_ORM_Entity } from './financial-dependents.o
 import { IsNumber, IsOptional } from 'class-validator';
 
 @Entity('client_external')
+@Unique('UQ_NO_NIK', ['nik'])
+@Index('IDX_CLIENT_EXTERNAL_SEARCH', ['nama_lengkap'], {
+  fulltext: true,
+})
 export class ClientExternal_ORM_Entity {
   @PrimaryGeneratedColumn('increment')
   id: number;

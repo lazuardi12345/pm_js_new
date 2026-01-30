@@ -1,4 +1,3 @@
-// src/Modules/LoanAppExternal/Presentation/Controllers/SVY_GetNasabahListWithApproval_Controller.ts
 import {
   Controller,
   Get,
@@ -10,6 +9,8 @@ import {
 } from '@nestjs/common';
 import { AdCont_GetAllLoanDataExternalUseCase } from '../Applications/Services/AdCont_GetLoanAppExternal.usecase';
 import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/jwtAuth.guard';
+import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/roles.decorator';
+import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 
 @UseGuards(JwtAuthGuard)
 @Controller('adcont/ext')
@@ -18,11 +19,12 @@ export class AdCont_GetAllLoanDataExternalController {
     private readonly getNasabahListUseCase: AdCont_GetAllLoanDataExternalUseCase,
   ) {}
 
+  @Roles(USERTYPE.ADMIN_KONTRAK)
   @Get('loan-apps-data')
   async getNasabahList(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('page_size', new DefaultValuePipe(10), ParseIntPipe)
-    page_size: number,
+    @Query('pageSize', new DefaultValuePipe(10), ParseIntPipe)
+    pageSize: number,
   ) {
     try {
       // Validasi input
@@ -30,11 +32,11 @@ export class AdCont_GetAllLoanDataExternalController {
         throw new BadRequestException('Page must be greater than 0');
       }
 
-      if (page_size < 1 || page_size > 100) {
+      if (pageSize < 1 || pageSize > 100) {
         throw new BadRequestException('Page size must be between 1 and 100');
       }
 
-      const result = await this.getNasabahListUseCase.execute(page, page_size);
+      const result = await this.getNasabahListUseCase.execute(page, pageSize);
 
       return result;
     } catch (error) {

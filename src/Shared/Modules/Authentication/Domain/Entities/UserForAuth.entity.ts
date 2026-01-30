@@ -1,4 +1,4 @@
-import { USERSTATUS } from "src/Shared/Enums/Users/Users.enum";
+import { USERSTATUS } from 'src/Shared/Enums/Users/Users.enum';
 
 export class UserForAuth {
   constructor(
@@ -9,6 +9,7 @@ export class UserForAuth {
     public readonly usertype: string,
     public readonly type: string,
     public readonly isActive: USERSTATUS,
+    public readonly spvId?: number | null,
   ) {}
 
   toJSON() {
@@ -18,6 +19,7 @@ export class UserForAuth {
       email: this.email,
       usertype: this.usertype,
       type: this.type,
+      spvId: this.spvId,
       is_active: this.isActive,
     };
   }

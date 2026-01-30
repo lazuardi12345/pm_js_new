@@ -57,10 +57,11 @@ export class MKT_CreateDraftLoanApplicationUseCase {
 
       if (duplicateChecker) {
         throw new HttpException(
-          'This Client National Identity Number already registered',
+          'NIK Peminjam telah digunakan',
           HttpStatus.FORBIDDEN,
         );
       }
+
       let filePaths: Record<string, FileMetadata[]> = {};
 
       // Proses file kalau ada

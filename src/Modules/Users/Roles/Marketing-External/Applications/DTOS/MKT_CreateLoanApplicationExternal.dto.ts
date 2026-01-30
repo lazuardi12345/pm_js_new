@@ -356,7 +356,7 @@ export class JobExternalDto {
   slip_gaji_penjamin: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   foto_id_card_peminjam: string;
 
   @IsString()
@@ -567,7 +567,7 @@ export class PengajuanBPJSDto {
 
   @IsOptional()
   @IsString()
-  jaminan_tambahan?: string;
+  dokumen_pendukung_bpjs?: string;
 }
 
 export class PengajuanBPKBDto {
@@ -1032,6 +1032,8 @@ export class FilesDto {
   @IsOptional()
   foto_bpjs?: string | Express.Multer.File;
   @IsOptional()
+  dokumen_pendukung_bpjs?: string | Express.Multer.File;
+  @IsOptional()
   jaminan_tambahan?: string | Express.Multer.File;
   @IsOptional()
   foto_no_rangka?: string | Express.Multer.File;
@@ -1317,7 +1319,7 @@ export interface TypeLoanApplicationDetail {
     username?: string;
     password?: string;
     foto_bpjs?: string;
-    jaminan_tambahan?: string;
+    dokumen_pendukung_bpjs?: string;
   };
 
   // ========== ATTACHMENT DATA - BPKB (Kendaraan) ==========

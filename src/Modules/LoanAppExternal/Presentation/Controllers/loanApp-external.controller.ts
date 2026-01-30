@@ -23,6 +23,7 @@ import {
   RoleSearchEnum,
   TypeSearchEnum,
 } from 'src/Shared/Enums/General/General.enum';
+import { JenisPembiayaanEnum } from 'src/Shared/Enums/External/Loan-Application.enum';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('loan-application-external')
@@ -47,10 +48,11 @@ export class LoanApplicationExternalController {
         );
     }
   }
-  @Get('search/history')
+  @Get('search/history/:paymentType')
   @Roles(USERTYPE.HM, USERTYPE.SPV, USERTYPE.MARKETING, USERTYPE.CA)
-  async searchLoanHistory(
+  async searchMarketingLoanHistory(
     @Req() req: any,
+    @Param('paymentType') paymentType: JenisPembiayaanEnum,
     @Query('keyword') keyword?: string,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
@@ -61,32 +63,85 @@ export class LoanApplicationExternalController {
     const results = await this.loanApplicationService.searchLoans(
       role,
       TypeSearchEnum.HISTORY,
+      paymentType,
       keyword ?? '',
       page,
       pageSize,
     );
 
-    return {
-      payload: {
-        error: false,
-        message: 'Search Loan History fetched successfully',
-        refence: 'SEARCH_LOAN_HISTORY_OK',
-        data: results,
-      },
-    };
+    return results;
   }
 
-  @Get('search/request')
+  @Get('search/history')
   @Roles(USERTYPE.HM, USERTYPE.SPV, USERTYPE.MARKETING, USERTYPE.CA)
-  async searchLoanRequest(@Req() req: any, @Query('keyword') keyword?: string) {
+  async searchAllRoleLoanHistory(
+    @Req() req: any,
+    @Param('paymentType') paymentType: JenisPembiayaanEnum,
+    @Query('keyword') keyword?: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number,
+  ) {
+    const { usertype } = req.user;
+    if (!usertype) throw new UnauthorizedException('Invalid User Session');
+    const role = this.mapUserTypeToSearchEnum(usertype as USERTYPE);
+    const results = await this.loanApplicationService.searchLoans(
+      role,
+      TypeSearchEnum.HISTORY,
+      paymentType,
+      keyword ?? '',
+      page,
+      pageSize,
+    );
+
+    return results;
+  }
+
+  @Get('search/request/:paymentType')
+  @Roles(USERTYPE.HM, USERTYPE.SPV, USERTYPE.MARKETING, USERTYPE.CA)
+  async searchMarketingLoanRequest(
+    @Req() req: any,
+    @Param('paymentType') paymentType: JenisPembiayaanEnum,
+    @Query('keyword') keyword?: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number,
+  ) {
     const { usertype } = req.user;
     if (!usertype) throw new UnauthorizedException('Invalid User Session');
     const role = this.mapUserTypeToSearchEnum(usertype as USERTYPE);
     return this.loanApplicationService.searchLoans(
       role,
       TypeSearchEnum.REQUEST,
+      paymentType,
       keyword ?? '',
+      page,
+      pageSize,
     );
+  }
+
+  @Get('search/request')
+  @Roles(USERTYPE.HM, USERTYPE.SPV, USERTYPE.MARKETING, USERTYPE.CA)
+  async searchAllRoleLoanRequest(
+    @Req() req: any,
+    @Query('keyword') keyword?: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number,
+  ) {
+    const { usertype } = req.user;
+    if (!usertype) throw new UnauthorizedException('Invalid User Session');
+    console.log(usertype, keyword, page, pageSize);
+    const role = this.mapUserTypeToSearchEnum(usertype as USERTYPE);
+
+    console.log('puki 2 mak kau', keyword, page, pageSize, usertype);
+    const results = await this.loanApplicationService.searchLoans(
+      role,
+      TypeSearchEnum.REQUEST,
+      null,
+      keyword ?? '',
+      page,
+      pageSize,
+    );
+
+    return results;
   }
 
   @Get('all/loan-apps')
@@ -120,14 +175,14 @@ export class LoanApplicationExternalController {
     return this.loanApplicationService.create(dto);
   }
 
-  @Get(':id')
-  async findById(@Param('id') id: number) {
-    return this.loanApplicationService.findById(+id);
-  }
-
   @Get()
   async findAll() {
     return this.loanApplicationService.findAll();
+  }
+
+  @Get(':id')
+  async findById(@Param('id') id: number) {
+    return this.loanApplicationService.findById(+id);
   }
 
   @Put(':id')

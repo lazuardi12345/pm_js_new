@@ -26,8 +26,6 @@ export class SPV_GetLoanApplicationByIdUseCase {
     private readonly loanAppRepo: ILoanApplicationInternalRepository,
     @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
     private readonly approvalRecomRepo: IApprovalRecommendationRepository,
-    @Inject(DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY)
-    private readonly loanAppDraftRepo: ILoanApplicationDraftInternalRepository,
   ) {}
 
   async execute(id: number) {
@@ -38,10 +36,7 @@ export class SPV_GetLoanApplicationByIdUseCase {
       );
 
     // tulis explicit typing supaya TS gak bingung
-    const [loanDataRows, approvals]: [
-      TypeLoanApplicationDetail[] | undefined,
-      TypeApprovalDetail[] | undefined,
-    ] = result as any;
+    const [loanDataRows, approvals] = result as any; // Hapus type annotation
 
     const loanData = loanDataRows?.[0];
     if (!loanData) {
@@ -49,82 +44,65 @@ export class SPV_GetLoanApplicationByIdUseCase {
     }
 
     let approval_recommendation: any = null;
-    const noKtp = loanData.no_ktp ?? null;
+    const draftId = loanData.draft_id ?? null;
     const nominalPinjaman = Number(loanData.nominal_pinjaman ?? 0);
+    const isLowAmount =
+      !Number.isNaN(nominalPinjaman) && nominalPinjaman < 7000000;
 
-    try {
-      let draftData: any = null;
-      if (noKtp !== null) {
-        draftData = await this.loanAppDraftRepo.findStatus(noKtp);
-        console.log(draftData);
-      }
+    if (draftId) {
+      try {
+        const approvalData =
+          await this.approvalRecomRepo.findByDraftId(draftId);
 
-      console.log(
-        'back to be friends',
-        await this.loanAppDraftRepo.findStatus(noKtp),
-      );
+        console.log('Approval Data:', approvalData);
 
-      if (draftData) {
-        try {
-          const approvalData = await this.approvalRecomRepo.findByDraftId(
-            draftData.draft_id,
-          );
+        if (approvalData) {
+          const approvalNominal = Number(approvalData.nominal_pinjaman ?? 0);
+          const approvalIsLowAmount =
+            !Number.isNaN(approvalNominal) && approvalNominal < 7000000;
 
-          console.log('ANJAY', approvalData);
-
-          if (approvalData) {
-            approval_recommendation = {
-              draft_id: approvalData.draft_id ?? draftData.draft_id,
-              nama_nasabah:
-                approvalData.nama_nasabah ?? loanData.nama_lengkap ?? '-',
-              recommendation: approvalData.recommendation ?? null,
-              filePath: approvalData.filePath ?? null,
-              catatan: approvalData.catatan ?? null,
-              last_updated: approvalData.updated_at ?? null,
-              isNeedCheck: !!draftData.isNeedCheck,
-            };
-
-            const approvalNominal = Number(approvalData.nominal_pinjaman ?? 0);
-            if (!Number.isNaN(approvalNominal) && approvalNominal < 7000000) {
-              approval_recommendation.dont_have_check = true;
-            }
-          } else {
-            if (!Number.isNaN(nominalPinjaman) && nominalPinjaman < 7000000) {
-              approval_recommendation = {
-                draft_id: draftData.draft_id,
-                isNeedCheck: !!draftData.isNeedCheck,
-                dont_have_check: true,
-              };
-            } else {
-              approval_recommendation = null;
-            }
-          }
-        } catch (approvalErr) {
-          console.error(
-            `Warning: failed to fetch approval recommendation for draft_id=${draftData.draft_id}`,
-            approvalErr,
-          );
           approval_recommendation = {
-            error: true,
-            message: 'Failed to fetch approval recommendation',
-            reference: 'RECOMMENDATION_FETCH_FAILED',
+            draft_id: approvalData.draft_id ?? draftId,
+            nama_nasabah:
+              approvalData.nama_nasabah ?? loanData.nama_lengkap ?? '-',
+            recommendation: approvalData.recommendation ?? null,
+            filePath: approvalData.filePath ?? null,
+            catatan: approvalData.catatan ?? null,
+            last_updated: approvalData.updated_at ?? null,
+            isNeedCheck: !!loanData.isNeedCheck,
+            dont_have_check: approvalIsLowAmount,
           };
-        }
-      } else {
-        // Fallback: jika tidak ada draftData tapi nominal <7jt -> mark dont_have_check
-        if (!Number.isNaN(nominalPinjaman) && nominalPinjaman < 7000000) {
+        } else if (isLowAmount) {
+          // Tidak ada approval data, tapi nominal < 7jt
           approval_recommendation = {
+            draft_id: draftId,
+            isNeedCheck: !!loanData.isNeedCheck,
             dont_have_check: true,
           };
         } else {
-          approval_recommendation = null;
+          // Ada draft tapi belum ada approval, dan nominal >= 7jt
+          approval_recommendation = {
+            draft_id: draftId,
+            isNeedCheck: !!loanData.isNeedCheck,
+            recommendation: null,
+          };
         }
+      } catch (approvalErr) {
+        console.error(
+          `Warning: failed to fetch approval recommendation for draft_id=${draftId}`,
+          approvalErr,
+        );
+        approval_recommendation = {
+          error: true,
+          message: 'Failed to fetch approval recommendation',
+          reference: 'RECOMMENDATION_FETCH_FAILED',
+        };
       }
-    } catch (draftErr) {
-      console.error(
-        `Warning: failed to fetch draft status for no_ktp=${noKtp}`,
-        draftErr,
-      );
+    } else if (isLowAmount) {
+      // Tidak ada draft_id, tapi nominal < 7jt
+      approval_recommendation = {
+        dont_have_check: true,
+      };
     }
 
     const loanAppStatus: Record<string, TypeStatusApproval | null> = {};

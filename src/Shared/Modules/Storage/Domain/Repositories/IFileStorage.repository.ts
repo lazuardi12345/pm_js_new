@@ -65,7 +65,7 @@ export interface IFileStorageRepository {
 
   getSurveyPhoto(
     customerNIN: string,
-    customerName: string,
+    preFolderName: string,
     filename: string,
   ): Promise<{ buffer: Buffer; mimetype: string; originalName: string }>;
 

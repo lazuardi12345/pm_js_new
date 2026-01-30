@@ -8,6 +8,11 @@ export type ApprovalDetail = {
   keterangan: string;
 };
 
+export type SurveyorResult = {
+  visited_person: string | null;
+  visited_time: string | null;
+};
+
 export interface LoanApplicationSummary {
   // Data Loan Application
   loan_id: number;
@@ -30,8 +35,9 @@ export interface LoanApplicationSummary {
 
   // Timeline Pengajuan Awal (APP) - Credit Analyst
   loan_application_status: {
-    ca: ApprovalDetail;
     spv: ApprovalDetail;
+    svy: SurveyorResult;
+    ca: ApprovalDetail;
     hm: ApprovalDetail;
   };
   loan_appeal_status: {

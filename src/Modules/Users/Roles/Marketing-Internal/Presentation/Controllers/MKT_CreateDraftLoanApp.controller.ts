@@ -4,6 +4,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
+  HttpStatus,
   InternalServerErrorException,
   Logger,
   Param,
@@ -58,14 +60,30 @@ export class MKT_CreateDraftLoanApplicationController {
 
       if (!files || Object.values(files).length === 0) {
         throw new BadRequestException('No files uploaded');
+      } else if (!payload.client_internal.no_ktp) {
+        throw new BadRequestException('NIK tidak boleh kosong');
+      } else if (
+        payload.loan_application_internal?.nominal_pinjaman === null ||
+        undefined ||
+        Number(payload.loan_application_internal?.nominal_pinjaman) === 0 ||
+        Number(payload.loan_application_internal?.nominal_pinjaman) < 0
+        // typeof payload.loan_application_internal?.nominal_pinjaman !== 'number'
+      ) {
+        throw new BadRequestException(
+          'Nominal wajib diisi dengan angka bernilai > 0',
+        );
       }
-
       return this.MKT_CreateDraftLoanAppUseCase.executeCreateDraft(
         payload,
         files,
       );
     } catch (error) {
       console.error('Error occurred:', error);
+
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
       throw new InternalServerErrorException(
         'An error occurred while processing your request',
       );

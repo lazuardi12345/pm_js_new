@@ -34,8 +34,7 @@ import {
 } from 'src/Shared/Modules/Drafts/Domain/Repositories/ext/LoanAppExt.repository';
 import { JenisPembiayaanEnum } from 'src/Shared/Enums/External/Loan-Application.enum';
 import { LoanApplicationExtEntity } from 'src/Shared/Modules/Drafts/Domain/Entities/ext/LoanAppExt.entity';
-import { contains } from 'class-validator';
-
+import { NotificationClientService } from 'src/Shared/Modules/Notifications/Infrastructure/Services/notification.service';
 @Injectable()
 export class MKT_CreateDraftLoanApplicationUseCase {
   constructor(
@@ -47,6 +46,8 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     private readonly clientRepo: IClientExternalRepository,
     @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
     private readonly approvalRecommendationRepo: IApprovalRecommendationRepository,
+
+    private readonly notificationClient: NotificationClientService,
   ) {}
 
   async executeCreateDraft(
@@ -54,30 +55,23 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     files?: Record<string, Express.Multer.File[]>,
     external_loan_type?: ExternalCollateralType,
     jenis_pembiayaan?: JenisPembiayaanEnum,
+    spvId?: number | null,
+    token?: string,
   ) {
-    console.log(external_loan_type);
-
-    if (
-      dto.client_external.no_hp.length >= 14 &&
-      /[\(\)\+]/.test(dto.client_external.no_hp)
-    ) {
-      throw new BadRequestException(
-        'Nomor HP tidak boleh mengandung tanda kurung () atau + jika panjangnya 14 karakter atau lebih',
-      );
-    } else if (
-      !dto.client_external?.nik ||
-      !/^\d{16}$/.test(dto.client_external.nik)
-    ) {
-      throw new BadRequestException('NIK wajib berupa 16 digit angka');
-    }
-
     const duplicateChecker = await this.clientRepo.findByKtp(
       Number(dto.client_external.nik),
     );
 
     if (duplicateChecker) {
       throw new HttpException(
-        'This Client National Identity Number already registered',
+        'NIK Peminjam telah digunakan',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    if (!token) {
+      throw new HttpException(
+        'You must pass the Authenticate!',
         HttpStatus.FORBIDDEN,
       );
     }
@@ -183,6 +177,12 @@ export class MKT_CreateDraftLoanApplicationUseCase {
           Number(dto.loan_application_external?.nominal_pinjaman),
         );
       }
+
+      this.notificationClient.sendDraftCreatedNotification(
+        loanApp,
+        spvId,
+        token,
+      );
 
       return {
         dto: {
@@ -311,7 +311,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
 
           // Collateral BPJS
           foto_bpjs: 'collateral_bpjs_external',
-          dokumen_pendukung_bpjs: 'collateral_bpjs_external',
+          kelengkapan_dokumen_bpjs: 'collateral_bpjs_external',
 
           // Collateral SHM
           foto_shm: 'collateral_shm_external',

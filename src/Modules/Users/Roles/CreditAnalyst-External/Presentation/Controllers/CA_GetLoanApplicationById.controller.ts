@@ -15,12 +15,14 @@ export class CA_GetLoanApplicationByIdController {
   @Get('detail/:id')
   async getLoanApplicationById(@Param('id') id: number) {
     try {
+      console.log(id);
       const payload = await this.getLoanAppByIdUseCase.execute(id);
 
       return {
         payload,
       };
     } catch (err) {
+      console.log(err);
       return {
         success: false,
         message: err.message,

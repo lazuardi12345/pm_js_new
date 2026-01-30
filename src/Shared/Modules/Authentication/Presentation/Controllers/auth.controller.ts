@@ -51,8 +51,9 @@ export class AuthController {
   @Post('login')
   async login(@Req() req, @Res({ passthrough: true }) res: Response) {
     const tokenDto = await this.LoginUseCase.execute(req.user);
+    console.log(req);
     console.log('ini user: ', req.user);
-    console.log(tokenDto);
+    console.log('token', tokenDto);
 
     // res.cookie('access_token', tokenDto.accessToken, {
     //   domain: '.ngrok-free.app',
@@ -73,6 +74,7 @@ export class AuthController {
           email: req.user.email,
           role: req.user.usertype,
           type: req.user.type,
+          spvId: req.user.spvId,
           access_token: tokenDto.accessToken,
         },
       },

@@ -8,7 +8,7 @@ import { JwtAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/G
 import cookieParser from 'cookie-parser';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-// somewhere in your initialization file
+import { MulterExceptionFilter } from './Shared/Modules/Authentication/Infrastructure/Helpers/MulterError.help';
 
 async function bootstrap() {
   process.env.TZ = 'Asia/Jakarta';
@@ -19,6 +19,7 @@ async function bootstrap() {
     exclude: ['storage/(.*)'],
   });
   app.useGlobalGuards(new JwtAuthGuard(app.get(Reflector)));
+  // app.useGlobalFilters(new MulterExceptionFilter());
   app.use(cookieParser());
 
   app.enableCors({
@@ -34,8 +35,9 @@ async function bootstrap() {
         'http://192.182.6.100:3003',
         'http://192.182.6.100:3004',
         'http://admin-portal.local',
-        'http://loan-apps.local:3000',
+        'http://localhost:3000',
         'http://loan-apps.local',
+        'http://loan-apps.local:3000',
       ];
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);

@@ -119,76 +119,52 @@ export class MKT_GetAllLoanApplicationUseCase {
       const formattedData = await Promise.all(
         dataArray.map(async (item: any) => {
           try {
-            // defensive read
-            const noKtp = item?.no_ktp ?? null;
+            const nominalPinjaman = Number(item?.loan_amount ?? 0);
+            const isLowAmount =
+              Number.isFinite(nominalPinjaman) && nominalPinjaman < 7_000_000;
 
-            // Safely attempt to fetch draft status (may throw)
-            let draftData: any = null;
-            try {
-              if (noKtp !== null) {
-                draftData = await this.loanAppDraftRepo.findStatus(noKtp);
-                console.log('catch draft-data', { draftData, noKtp });
-              }
-            } catch (draftErr) {
-              console.error(
-                `Warning: failed to fetch draft status for no_ktp=${noKtp}`,
-                draftErr,
-              );
-              // keep draftData = null; we don't want to abort whole response
-            }
+            const draftId = item?.draft_id ?? null;
 
+            // -------------------------
+            // Approval Recommendation Logic
+            // -------------------------
             let approval_recommendation: any = null;
 
-            if (draftData) {
-              try {
-                const approvalData = await this.approvalRecomRepo.findByDraftId(
-                  draftData.draft_id,
-                );
+            // LOW AMOUNT → wajib dont_have_check
+            if (isLowAmount) {
+              approval_recommendation = {
+                dont_have_check: true,
+              };
+            }
 
-                console.log('catch: ', approvalData);
+            // HIGH AMOUNT → BI checking flow
+            else if (draftId) {
+              try {
+                const approvalData =
+                  await this.approvalRecomRepo.findByDraftId(draftId);
 
                 if (approvalData) {
                   approval_recommendation = {
-                    draft_id: approvalData.draft_id ?? draftData.draft_id,
+                    draft_id: approvalData.draft_id ?? draftId,
                     nama_nasabah:
                       approvalData.nama_nasabah ?? item.customer_name ?? '-',
                     recommendation: approvalData.recommendation ?? null,
                     filePath: approvalData.filePath ?? null,
                     catatan: approvalData.catatan ?? null,
-                    last_updated:
-                      approvalData.updated_at ??
-                      approvalData.updated_at ??
-                      null,
-                    isNeedCheck: !!draftData.isNeedCheck,
+                    last_updated: approvalData.updated_at ?? null,
+                    isNeedCheck: !!item?.isNeedCheck,
                   };
-
-                  // tambahan: jika nominal di approvalData ada dan < 7jt, tambahkan flag
-                  const approvalNominal = Number(
-                    approvalData.nominal_pinjaman ?? 0,
-                  );
-                  if (
-                    !Number.isNaN(approvalNominal) &&
-                    approvalNominal < 7000000
-                  ) {
-                    approval_recommendation.dont_have_check = true;
-                  }
                 } else {
-                  // belum ada rekomendasi BI — cek nominal di item (fallback)
-                  const itemNominal = Number(item?.loan_amount ?? 0);
-                  if (!Number.isNaN(itemNominal) && itemNominal < 7000000) {
-                    approval_recommendation = {
-                      draft_id: draftData.draft_id,
-                      isNeedCheck: !!draftData.isNeedCheck,
-                      dont_have_check: true,
-                    };
-                  } else {
-                    // perlu BI check, tapi belum ada hasil
-                    approval_recommendation = null;
-                  }
+                  // draft ada tapi BI belum input
+                  approval_recommendation = {
+                    draft_id: draftId,
+                    recommendation: null,
+                    isNeedCheck: !!item?.isNeedCheck,
+                  };
                 }
               } catch (approvalErr) {
                 console.error(
-                  `Warning: failed to fetch approval recommendation for draft_id=${draftData.draft_id}`,
+                  `Warning: failed to fetch approval recommendation for draft_id=${draftId}`,
                   approvalErr,
                 );
                 approval_recommendation = {
@@ -199,22 +175,11 @@ export class MKT_GetAllLoanApplicationUseCase {
               }
             }
 
-            // fallback: if no draftData but item nominal <7jt -> mark dont_have_check
-            if (!draftData) {
-              const itemNominal = Number(item?.loan_amount ?? 0);
-              if (!Number.isNaN(itemNominal) && itemNominal < 7000000) {
-                approval_recommendation = {
-                  dont_have_check: true,
-                };
-              } else {
-                approval_recommendation = approval_recommendation ?? null;
-              }
-            }
-
-            // convert nominal pinjaman safely
-            const loanAmountNum = Number(item?.loan_amount ?? 0);
+            // -------------------------
+            // Formatting
+            // -------------------------
             const loanAmountFormatted = formatCurrency(
-              Number.isFinite(loanAmountNum) ? loanAmountNum : 0,
+              Number.isFinite(nominalPinjaman) ? nominalPinjaman : 0,
             );
 
             const lastApprovedAmount = Number(item?.last_approval_nominal);
@@ -222,7 +187,9 @@ export class MKT_GetAllLoanApplicationUseCase {
               Number.isFinite(lastApprovedAmount) ? lastApprovedAmount : 0,
             );
 
-            // build safe object with defaults
+            // -------------------------
+            // Response Mapping
+            // -------------------------
             return {
               loan_id: Number(item?.loan_id ?? 0),
               customer_id: Number(item?.customer_id ?? 0),
@@ -238,48 +205,54 @@ export class MKT_GetAllLoanApplicationUseCase {
               approval_recommendation,
               loan_application_status: {
                 spv: {
-                  spv_name: item?.spv_app_name ?? '-',
-                  spv_response: item?.spv_app_status ?? '-',
-                  spv_appr_amount: item?.spv_app_amount ?? '-',
-                  spv_appr_tenor: item?.spv_app_tenor ?? '-',
-                  spv_response_at: item?.spv_app_response_at ?? '-',
+                  data: {
+                    spv_name: item?.spv_app_name ?? '-',
+                    spv_response: item?.spv_app_status ?? '-',
+                    spv_approved_amount: item?.spv_app_amount ?? '-',
+                    spv_approved_tenor: item?.spv_app_tenor ?? '-',
+                    spv_response_at: item?.spv_app_response_at ?? '-',
+                  },
+                },
+                svy: {
+                  data: {
+                    svy_visited_person: item?.survey_berjumpa_siapa ?? '-',
+                    svy_visited_time: item?.survey_created_at ?? '-',
+                  },
                 },
                 ca: {
-                  ca_name: item?.ca_app_name ?? '-',
-                  ca_response: item?.ca_app_status ?? '-',
-                  ca_appr_amount: item?.ca_app_amount ?? '-',
-                  ca_appr_tenor: item?.ca_app_tenor ?? '-',
-                  ca_response_at: item?.ca_app_response_at ?? '-',
+                  data: {
+                    ca_name: item?.ca_app_name ?? '-',
+                    ca_response: item?.ca_app_status ?? '-',
+                    ca_approved_amount: item?.ca_app_amount ?? '-',
+                    ca_approved_tenor: item?.ca_app_tenor ?? '-',
+                    ca_response_at: item?.ca_app_response_at ?? '-',
+                  },
                 },
                 hm: {
-                  hm_name: item?.hm_app_name ?? '-',
-                  hm_response: item?.hm_app_status ?? '-',
-                  hm_appr_amount: item?.hm_app_amount ?? '-',
-                  hm_appr_tenor: item?.hm_app_tenor ?? '-',
-                  hm_response_at: item?.hm_app_response_at ?? '-',
+                  data: {
+                    hm_name: item?.hm_app_name ?? '-',
+                    hm_response: item?.hm_app_status ?? '-',
+                    hm_approved_amount: item?.hm_app_amount ?? '-',
+                    hm_approved_tenor: item?.hm_app_tenor ?? '-',
+                    hm_response_at: item?.hm_app_response_at ?? '-',
+                  },
                 },
               },
               loan_appeal_status: {
-                ca: {
-                  ca_name: item?.ca_appeal_name ?? '-',
-                  ca_response: item?.ca_appeal_status ?? '-',
-                  ca_appr_amount: item?.ca_appeal_amount ?? '-',
-                  ca_appr_tenor: item?.ca_appeal_tenor ?? '-',
-                  ca_response_at: item?.ca_appeal_response_at ?? '-',
-                },
                 hm: {
-                  hm_name: item?.hm_appeal_name ?? '-',
-                  hm_response: item?.hm_appeal_status ?? '-',
-                  ca_appr_amount: item?.hm_appeal_amount ?? '-',
-                  ca_appr_tenor: item?.hm_appeal_tenor ?? '-',
-                  hm_response_at: item?.hm_appeal_response_at ?? '-',
+                  data: {
+                    hm_name: item?.hm_appeal_name ?? '-',
+                    hm_response: item?.hm_appeal_status ?? '-',
+                    ca_approved_amount: item?.hm_appeal_amount ?? '-',
+                    ca_approved_tenor: item?.hm_appeal_tenor ?? '-',
+                    hm_response_at: item?.hm_appeal_response_at ?? '-',
+                  },
                 },
               },
               last_approved_amount: lastApprovedAmountFormatted,
               last_approved_tenor: Number(item?.last_approval_tenor),
             };
           } catch (itemErr) {
-            // Jika satu item gagal diproses, jangan gagalkan seluruh list.
             console.error('Error processing single loan item:', itemErr);
             return {
               error: true,

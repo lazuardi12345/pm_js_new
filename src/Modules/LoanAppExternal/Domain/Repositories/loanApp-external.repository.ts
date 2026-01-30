@@ -34,6 +34,7 @@ export interface ILoanApplicationExternalRepository {
   findById(id: number): Promise<LoanApplicationExternal | null>;
   findByNasabahId(nasabahId: number): Promise<LoanApplicationExternal[]>;
   findAll(): Promise<LoanApplicationExternal[]>;
+  getNextLoanAppsPinjamanKeByNik(nik: string): Promise<number>;
   save(
     loanAppExternal: LoanApplicationExternal,
   ): Promise<LoanApplicationExternal>;
@@ -71,6 +72,7 @@ export interface ILoanApplicationExternalRepository {
   callSP_GENERAL_GetAllPreviewDataLoanBySearch_External(
     role: RoleSearchEnum,
     type: TypeSearchEnum,
+    paymentType: JenisPembiayaanEnum | null,
     keyword: string,
     page?: number,
     pageSize?: number,
@@ -193,4 +195,13 @@ export interface ILoanApplicationExternalRepository {
     page: number,
     pageSize: number,
   ): Promise<any[]>;
+
+  callSP_AdCont_GetAllLoanData_Internal(
+    page: number,
+    pageSize: number,
+  ): Promise<any[]>;
+
+  callSP_AdCont_GetLoanDetailById_External(loan_app_id: number): Promise<any[]>;
+
+  // callSP_AdCont_GetLoanDetailById_Internal(loan_app_id: number): Promise<any[]>;
 }

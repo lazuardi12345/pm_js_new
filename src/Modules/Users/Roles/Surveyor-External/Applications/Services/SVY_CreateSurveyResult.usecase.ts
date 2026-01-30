@@ -20,6 +20,8 @@ import {
   CLIENT_EXTERNAL_REPOSITORY,
   IClientExternalRepository,
 } from 'src/Modules/LoanAppExternal/Domain/Repositories/client-external.repository';
+import { StatusPengajuanEnum } from 'src/Shared/Enums/External/Loan-Application.enum';
+import { now } from 'mongoose';
 
 @Injectable()
 export class SVY_CreateSurveyReportUseCase {
@@ -60,19 +62,25 @@ export class SVY_CreateSurveyReportUseCase {
             dto.pengajuan_luar_id,
           );
 
-        console.log('ppk', existingReport);
         if (existingReport && existingReport.length > 0) {
           throw new BadRequestException(
             'Survey report already exists for this pengajuan',
           );
         }
 
-        // 3. Upload survey photos (jika ada)
+        const timestamp = Date.now();
+
+        const folderName = client.nama_lengkap
+          ? `${timestamp}-${client.nama_lengkap}`
+          : `survey-${Date.now()}`;
+
+        // ───────────────────────────────────────────────────────────────
+        // Bagian yang diperbaiki: Upload survey photos dengan nama unik
         let uploadedFiles: Record<string, FileMetadata[]> = {};
         if (files && Object.keys(files).length > 0) {
           uploadedFiles = await this.fileStorage.saveSurveyPhotos(
             client.nik.toString(),
-            client.nama_lengkap ?? `draft-${client.nik}`,
+            folderName,
             files,
           );
 
@@ -94,6 +102,7 @@ export class SVY_CreateSurveyReportUseCase {
             }
           }
         }
+        // ───────────────────────────────────────────────────────────────
 
         // 4. Create Survey Report
         const surveyReportEntity = new SurveyReports(
@@ -127,6 +136,11 @@ export class SVY_CreateSurveyReportUseCase {
             createdPhotos.push(photo);
           }
         }
+
+        await this.uow.loanAppExternalRepo.updateLoanAppExternalStatus(
+          dto.pengajuan_luar_id,
+          StatusPengajuanEnum.SURVEY_SELESAI,
+        );
 
         return {
           payload: {

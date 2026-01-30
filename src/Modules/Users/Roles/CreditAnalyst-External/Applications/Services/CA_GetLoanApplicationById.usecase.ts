@@ -18,7 +18,6 @@ import {
   DRAFT_LOAN_APPLICATION_EXTERNAL_REPOSITORY,
   ILoanApplicationDraftExternalRepository,
 } from 'src/Shared/Modules/Drafts/Domain/Repositories/ext/LoanAppExt.repository';
-import { LoanType } from 'src/Shared/Enums/External/Loan-Application.enum';
 @Injectable()
 export class CA_GetLoanApplicationByIdUseCase {
   constructor(
@@ -35,6 +34,8 @@ export class CA_GetLoanApplicationByIdUseCase {
       await this.loanAppRepo.callSP_CA_GetDetail_LoanApplicationsExternal_ById(
         id,
       );
+
+    console.log(result);
 
     if (!result || !Array.isArray(result)) {
       throw new InternalServerErrorException(
@@ -59,82 +60,51 @@ export class CA_GetLoanApplicationByIdUseCase {
     }
 
     let approval_recommendation: any = null;
-    const noKtp = loanData.no_ktp ?? null;
-    const nominalPinjaman = Number(loanData.nominal_pinjaman ?? 0);
+    const draftId = loanData.draft_id ?? null;
 
-    try {
-      let draftData: any = null;
-      if (noKtp !== null) {
-        draftData = await this.loanAppDraftRepo.findStatus(noKtp);
-        console.log(draftData);
-      }
+    if (draftId) {
+      try {
+        const approvalData =
+          await this.approvalRecomRepo.findByDraftId(draftId);
 
-      console.log(
-        'back to be friends',
-        await this.loanAppDraftRepo.findStatus(noKtp),
-      );
+        console.log('Approval Data:', approvalData);
 
-      if (draftData) {
-        try {
-          const approvalData = await this.approvalRecomRepo.findByDraftId(
-            draftData.draft_id,
-          );
-
-          console.log('ANJAY', approvalData);
-
-          if (approvalData) {
-            approval_recommendation = {
-              draft_id: approvalData.draft_id ?? draftData.draft_id,
-              nama_nasabah:
-                approvalData.nama_nasabah ?? loanData.nama_lengkap ?? '-',
-              recommendation: approvalData.recommendation ?? null,
-              filePath: approvalData.filePath ?? null,
-              catatan: approvalData.catatan ?? null,
-              last_updated: approvalData.updated_at ?? null,
-              isNeedCheck: !!draftData.isNeedCheck,
-            };
-
-            const approvalNominal = Number(approvalData.nominal_pinjaman ?? 0);
-            if (!Number.isNaN(approvalNominal) && approvalNominal < 7000000) {
-              approval_recommendation.dont_have_check = true;
-            }
-          } else {
-            if (!Number.isNaN(nominalPinjaman) && nominalPinjaman < 7000000) {
-              approval_recommendation = {
-                draft_id: draftData.draft_id,
-                isNeedCheck: !!draftData.isNeedCheck,
-                dont_have_check: true,
-              };
-            } else {
-              approval_recommendation = null;
-            }
-          }
-        } catch (approvalErr) {
-          console.error(
-            `Warning: failed to fetch approval recommendation for draft_id=${draftData.draft_id}`,
-            approvalErr,
-          );
+        if (approvalData) {
           approval_recommendation = {
-            error: true,
-            message: 'Failed to fetch approval recommendation',
-            reference: 'RECOMMENDATION_FETCH_FAILED',
-          };
-        }
-      } else {
-        // Fallback: jika tidak ada draftData tapi nominal <7jt -> mark dont_have_check
-        if (!Number.isNaN(nominalPinjaman) && nominalPinjaman < 7000000) {
-          approval_recommendation = {
-            dont_have_check: true,
+            draft_id: approvalData.draft_id ?? draftId,
+            nama_nasabah:
+              approvalData.nama_nasabah ?? loanData.nama_lengkap ?? '-',
+            recommendation: approvalData.recommendation ?? null,
+            filePath: approvalData.filePath ?? null,
+            catatan: approvalData.catatan ?? null,
+            last_updated: approvalData.updated_at ?? null,
+            isNeedCheck: !!loanData.isNeedCheck,
           };
         } else {
-          approval_recommendation = null;
+          // Tidak ada approval data, tapi ada draft_id
+          approval_recommendation = {
+            draft_id: draftId,
+            isNeedCheck: !!loanData.isNeedCheck,
+            recommendation: null,
+          };
         }
+      } catch (approvalErr) {
+        console.error(
+          `Warning: failed to fetch approval recommendation for draft_id=${draftId}`,
+          approvalErr,
+        );
+        approval_recommendation = {
+          error: true,
+          message: 'Failed to fetch approval recommendation',
+          reference: 'RECOMMENDATION_FETCH_FAILED',
+        };
       }
-    } catch (draftErr) {
-      console.error(
-        `Warning: failed to fetch draft status for no_ktp=${noKtp}`,
-        draftErr,
-      );
+    } else {
+      // Tidak ada draft_id sama sekali
+      approval_recommendation = {
+        recommendation: null,
+        isNeedCheck: false,
+      };
     }
 
     const loanAppStatus: Record<string, any> = {};
@@ -142,22 +112,22 @@ export class CA_GetLoanApplicationByIdUseCase {
 
     const roleMap: Record<string | number, string> = {
       // SPV
-      SPV: 'spv',
-      Supervisor: 'spv',
-      supervisor: 'spv',
-      1: 'spv',
+      SPV: 'supervisor',
+      Supervisor: 'supervisor',
+      supervisor: 'supervisor',
+      1: 'supervisor',
 
       // CA
-      CA: 'ca',
-      'Credit Analyst': 'ca',
-      credit_analyst: 'ca',
-      2: 'ca',
+      CA: 'credit_analyst',
+      'Credit Analyst': 'credit_analyst',
+      credit_analyst: 'credit_analyst',
+      2: 'credit_analyst',
 
       // HM
-      HM: 'hm',
-      'Head Marketing': 'hm',
-      head_marketing: 'hm',
-      3: 'hm',
+      HM: 'head_marketing',
+      'Head Marketing': 'head_marketing',
+      head_marketing: 'head_marketing',
+      3: 'head_marketing',
     };
 
     (approvalsRows ?? []).forEach((approval: any) => {
@@ -349,6 +319,7 @@ export class CA_GetLoanApplicationByIdUseCase {
           approval_recommendation,
         },
         loan_latest_status: loanData.status_pengajuan,
+        appeal_notes: loanData.loan_alasan_banding,
         // Status data
         loan_app_status: loanAppStatus,
         appeal_status: appealStatus,
@@ -356,6 +327,7 @@ export class CA_GetLoanApplicationByIdUseCase {
     };
   }
   catch(error) {
+    console.log(error);
     console.error('Unexpected error:', error);
     throw error;
   }

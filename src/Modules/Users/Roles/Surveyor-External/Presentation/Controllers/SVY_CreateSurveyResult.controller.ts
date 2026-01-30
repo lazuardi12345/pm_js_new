@@ -33,7 +33,6 @@ export class SVY_CreateSurveyReportController {
     @Body('payload') payloadRaw: string, // Terima sebagai string dulu
   ) {
     try {
-      // 1. Parse payload dulu
       if (!payloadRaw) {
         throw new BadRequestException('Payload is required');
       }
@@ -65,6 +64,8 @@ export class SVY_CreateSurveyReportController {
       if (!files || !files.foto_survey || files.foto_survey.length === 0) {
         throw new BadRequestException('At least one survey photo is required');
       }
+
+      console.log(files);
 
       // 4. Initialize survey_photos array jika belum ada
       if (!payload.survey_photos) {

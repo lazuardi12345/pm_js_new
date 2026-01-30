@@ -77,9 +77,13 @@ import { ApprovalRecommendationModule } from 'src/Modules/Admin/BI-Checking/Modu
 import { DraftRepeatOrderModule } from 'src/Shared/Modules/Drafts/Modules/DraftRepeatOrder.module';
 import { DetailInstallmentItemsExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/detail-installment-items.orm-entity';
 import { DetailInstallmentItemsExternalModule } from 'src/Modules/LoanAppExternal/Modules/detail-installment-items-external.module';
+import { NotificationAdapterModule } from 'src/Shared/Modules/Notifications/ModuleNotification.module';
+import { MKT_GetNextLoanSequenceController } from './Presentation/Controllers/MKT_GetNextLoanSequence.controller';
+import { MKT_GetNextLoanSequenceUseCase } from './Applications/Services/MKT_GetNextLoanSequence.usecase';
 @Module({
   imports: [
     HttpModule,
+    NotificationAdapterModule,
     DraftLoanApplicationModule,
     AddressExternalModule,
     ApprovalExternalModule,
@@ -124,6 +128,7 @@ import { DetailInstallmentItemsExternalModule } from 'src/Modules/LoanAppExterna
   ],
   controllers: [
     // controllers
+    MKT_GetNextLoanSequenceController,
     MKT_GetDashboardStatsController,
     MKT_GetClientDatabaseController,
     MKT_CreateDraftLoanApplicationController,
@@ -138,6 +143,7 @@ import { DetailInstallmentItemsExternalModule } from 'src/Modules/LoanAppExterna
   ],
   providers: [
     // usecases
+    MKT_GetNextLoanSequenceUseCase,
     MKT_GetDashboardStatsUseCase,
     MKT_CreateDraftLoanApplicationUseCase,
     MKT_CreateLoanApplicationUseCase,
