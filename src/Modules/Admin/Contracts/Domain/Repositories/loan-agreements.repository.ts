@@ -10,4 +10,5 @@ export interface ILoanAgreementRepository {
   save(loanAggrement: LoanAgreement): Promise<LoanAgreement>;
   update(id: number, address: Partial<LoanAgreement>): Promise<LoanAgreement>;
   delete(id: number): Promise<void>;
+  generateAndSave(loanData: Partial<LoanAgreement>): Promise<LoanAgreement>;
 }

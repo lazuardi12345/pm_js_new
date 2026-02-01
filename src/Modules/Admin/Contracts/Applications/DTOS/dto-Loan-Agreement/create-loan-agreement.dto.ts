@@ -5,7 +5,9 @@ import {
   IsDateString,
   IsNotEmpty,
   IsDate,
+  IsEnum,
 } from 'class-validator';
+import { InternalCompanyList } from 'src/Shared/Enums/Admins/Contract/loan-agreement.enum';
 
 export class CreateLoanAgreementDto {
   @IsString()
@@ -24,9 +26,9 @@ export class CreateLoanAgreementDto {
   @IsNotEmpty()
   alamat: string;
 
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
-  no_ktp: string;
+  no_ktp: number;
 
   @IsString()
   @IsNotEmpty()
@@ -37,8 +39,8 @@ export class CreateLoanAgreementDto {
   kelompok?: string;
 
   @IsOptional()
-  @IsString()
-  perusahaan?: string;
+  @IsEnum(InternalCompanyList)
+  perusahaan?: InternalCompanyList;
 
   @IsOptional()
   @IsString()
@@ -61,8 +63,8 @@ export class CreateLoanAgreementDto {
   kedinasan?: string;
 
   @IsOptional()
-  @IsString()
-  pinjaman_ke?: string;
+  @IsNumber()
+  pinjaman_ke?: number;
 
   @IsNumber()
   pokok_pinjaman: number;

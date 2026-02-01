@@ -6,7 +6,6 @@ import { IApprovalExternalRepository } from '../../Domain/Repositories/approval-
 import { ApprovalExternal_ORM_Entity } from '../Entities/approval-external.orm-entity';
 import { LoanApplicationExternal_ORM_Entity } from '../Entities/loan-application-external.orm-entity';
 import { Users_ORM_Entity } from 'src/Modules/Users/Infrastructure/Entities/users.orm-entity';
-import { ApprovalExternalStatus } from 'src/Shared/Enums/External/Approval.enum';
 
 @Injectable()
 export class ApprovalExternalRepositoryImpl
@@ -30,6 +29,7 @@ export class ApprovalExternalRepositoryImpl
       ormEntity.tenor_persetujuan,
       ormEntity.status,
       ormEntity.kesimpulan,
+      ormEntity.dokumen_pendukung,
       ormEntity.created_at,
       ormEntity.updated_at,
       ormEntity.deleted_at,
@@ -51,6 +51,7 @@ export class ApprovalExternalRepositoryImpl
       tenor_persetujuan: domainEntity.tenor_persetujuan,
       status: domainEntity.status,
       kesimpulan: domainEntity.kesimpulan,
+      dokumen_pendukung: domainEntity.dokumen_pendukung,
       is_banding: domainEntity.is_banding,
       created_at: domainEntity.created_at,
       updated_at: domainEntity.updated_at,
@@ -77,6 +78,8 @@ export class ApprovalExternalRepositoryImpl
       ormData.tenor_persetujuan = partial.tenor_persetujuan;
     if (partial.status) ormData.status = partial.status;
     if (partial.kesimpulan) ormData.kesimpulan = partial.kesimpulan;
+    if (partial.dokumen_pendukung)
+      ormData.dokumen_pendukung = partial.dokumen_pendukung;
     if (partial.is_banding) ormData.is_banding = partial.is_banding;
     if (partial.created_at) ormData.created_at = partial.created_at;
     if (partial.updated_at) ormData.updated_at = partial.updated_at;

@@ -748,7 +748,7 @@ export class LoanApplicationExternalRepositoryImpl
     return { data, total };
   }
 
-  //! ========== AC ==========
+  //! ========== AdminContract ==========
 
   async callSP_AdCont_GetAllLoanData_External(
     p_page: number,

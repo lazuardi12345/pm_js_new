@@ -60,6 +60,9 @@ export class ApprovalExternal_ORM_Entity {
   @Column({ type: 'text', nullable: true })
   kesimpulan?: string;
 
+  @Column({ type: 'text', nullable: true })
+  dokumen_pendukung?: string;
+
   @Column({ type: 'tinyint', default: 0 })
   is_banding: boolean;
 

@@ -2,16 +2,25 @@
 // ! MODULE CONTRACT
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { LoanAgreement } from '../../Domain/Entities/loan-agreements.entity';
 import { ILoanAgreementRepository } from '../../Domain/Repositories/loan-agreements.repository';
 import { LoanAggrement_ORM_Entity } from '../Entities/loan-agreement.orm-entity';
+import {
+  formatContractNumber,
+  normalizeContractType,
+} from '../../helper/utils/contract.utils';
+import dayjs from 'dayjs';
+import { ContractSequence_ORM_Entity } from '../Entities/contract-sequence.orm-entity';
+import { resolveSequenceKey } from '../../helper/mapper/contract-group.mapper';
+import { InternalCompanyList } from 'src/Shared/Enums/Admins/Contract/loan-agreement.enum';
 
 @Injectable()
 export class LoanAggrementRepositoryImpl implements ILoanAgreementRepository {
   constructor(
     @InjectRepository(LoanAggrement_ORM_Entity)
     private readonly ormRepository: Repository<LoanAggrement_ORM_Entity>,
+    private readonly dataSource: DataSource,
   ) {}
 
   private toDomain(entity: LoanAggrement_ORM_Entity): LoanAgreement {
@@ -30,7 +39,6 @@ export class LoanAggrementRepositoryImpl implements ILoanAgreementRepository {
       entity.tanggal_jatuh_tempo,
       entity.id,
       entity.nomor_urut,
-      entity.kelompok,
       entity.perusahaan,
       entity.inisial_marketing,
       entity.golongan,
@@ -60,7 +68,6 @@ export class LoanAggrementRepositoryImpl implements ILoanAgreementRepository {
       bunga: domain.bunga,
       tanggal_jatuh_tempo: domain.tanggal_jatuh_tempo,
       nomor_urut: domain.nomor_urut,
-      kelompok: domain.kelompok,
       perusahaan: domain.perusahaan,
       inisial_marketing: domain.inisial_marketing,
       golongan: domain.golongan,
@@ -96,7 +103,6 @@ export class LoanAggrementRepositoryImpl implements ILoanAgreementRepository {
       ormData.tanggal_jatuh_tempo = partial.tanggal_jatuh_tempo;
     if (partial.nomor_urut !== undefined)
       ormData.nomor_urut = partial.nomor_urut;
-    if (partial.kelompok) ormData.kelompok = partial.kelompok;
     if (partial.perusahaan) ormData.perusahaan = partial.perusahaan;
     if (partial.inisial_marketing)
       ormData.inisial_marketing = partial.inisial_marketing;
@@ -139,5 +145,88 @@ export class LoanAggrementRepositoryImpl implements ILoanAgreementRepository {
 
   async delete(id: number): Promise<void> {
     await this.ormRepository.softDelete(id);
+  }
+
+  //* CUSTOM CODE (NON CRUD)
+  async generate(type: string, perusahaan?: InternalCompanyList) {
+    const now = dayjs();
+    const bulan = now.month() + 1;
+    const tahun = now.year();
+    const tahunShort = now.format('YY');
+
+    const normalizedType = normalizeContractType(type);
+    const sequenceKey = resolveSequenceKey(normalizedType, perusahaan);
+
+    return this.dataSource.transaction(async (manager) => {
+      const repo = manager.getRepository(ContractSequence_ORM_Entity);
+
+      const sequence = await repo
+        .createQueryBuilder('seq')
+        .setLock('pessimistic_write')
+        .where('seq.kelompok = :key', { key: sequenceKey })
+        .andWhere('seq.bulan = :bulan', { bulan })
+        .andWhere('seq.tahun = :tahun', { tahun })
+        .getOne();
+
+      let nextNumber: number;
+
+      if (!sequence) {
+        nextNumber = 1;
+        await repo.insert({
+          kelompok: sequenceKey,
+          bulan,
+          tahun,
+          lastNumber: 1,
+        });
+      } else {
+        nextNumber = sequence.lastNumber + 1;
+        await repo.update(sequence.id, {
+          lastNumber: nextNumber,
+        });
+      }
+
+      return {
+        nomorKontrak: formatContractNumber(nextNumber, bulan, tahunShort),
+        nomorUrut: nextNumber,
+        sequenceKey,
+      };
+    });
+  }
+
+  async generateAndSave(
+    loanData: Partial<LoanAgreement>,
+  ): Promise<LoanAgreement> {
+    const nomorData = await this.generate(loanData.type!, loanData.perusahaan);
+    const loanDomain = new LoanAgreement(
+      nomorData.nomorKontrak,
+      loanData.nama!,
+      loanData.alamat!,
+      loanData.no_ktp!,
+      loanData.type!,
+      loanData.pokok_pinjaman!,
+      loanData.tenor!,
+      loanData.biaya_admin!,
+      loanData.cicilan!,
+      loanData.biaya_layanan!,
+      loanData.bunga!,
+      loanData.tanggal_jatuh_tempo!,
+      undefined, // id baru
+      nomorData.nomorUrut,
+      loanData.perusahaan,
+      loanData.inisial_marketing,
+      loanData.golongan,
+      loanData.inisial_ca,
+      loanData.id_card,
+      loanData.kedinasan,
+      loanData.pinjaman_ke,
+      loanData.catatan,
+      undefined,
+      undefined,
+    );
+
+    const ormEntity = this.toOrm(loanDomain);
+    const saved = await this.ormRepository.save(ormEntity);
+
+    return this.toDomain(saved as LoanAggrement_ORM_Entity);
   }
 }

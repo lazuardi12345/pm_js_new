@@ -20,7 +20,6 @@ export class ApprovalInternalRepositoryImpl
   constructor(
     @InjectRepository(ApprovalInternal_ORM_Entity)
     private readonly ormRepository: Repository<ApprovalInternal_ORM_Entity>,
-
     private readonly loanAppRepo: LoanApplicationInternalRepositoryImpl, // Inject repository Loan
   ) {}
 
@@ -40,6 +39,7 @@ export class ApprovalInternalRepositoryImpl
       orm.id,
       orm.keterangan,
       orm.kesimpulan,
+      orm.dokumen_pendukung,
       orm.created_at,
       orm.updated_at,
       orm.deleted_at,
@@ -62,6 +62,7 @@ export class ApprovalInternalRepositoryImpl
       is_banding: domainEntity.isBanding,
       keterangan: domainEntity.keterangan,
       kesimpulan: domainEntity.kesimpulan,
+      dokumen_pendukung: domainEntity.dokumen_pendukung,
       created_at: domainEntity.createdAt,
       updated_at: domainEntity.updatedAt,
       deleted_at: domainEntity.deletedAt,
@@ -90,6 +91,8 @@ export class ApprovalInternalRepositoryImpl
     if (partial.isBanding !== undefined) ormData.is_banding = partial.isBanding;
     if (partial.keterangan) ormData.keterangan = partial.keterangan;
     if (partial.kesimpulan) ormData.kesimpulan = partial.kesimpulan;
+    if (partial.dokumen_pendukung)
+      ormData.dokumen_pendukung = partial.dokumen_pendukung;
     if (partial.createdAt) ormData.created_at = partial.createdAt;
     if (partial.updatedAt) ormData.updated_at = partial.updatedAt;
     if (partial.deletedAt) ormData.deleted_at = partial.deletedAt;

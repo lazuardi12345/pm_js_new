@@ -44,4 +44,8 @@ export class CreateApprovalDto {
   @IsOptional()
   @IsString()
   kesimpulan?: string;
+
+  @IsOptional()
+  @IsString()
+  dokumen_pendukung?: string;
 }

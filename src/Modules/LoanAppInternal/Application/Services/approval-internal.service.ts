@@ -29,6 +29,7 @@ export class ApprovalInternalService {
       undefined,
       dto.keterangan,
       dto.kesimpulan,
+      dto.dokumen_pendukung,
       now,
       now,
       null,

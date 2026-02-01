@@ -165,4 +165,6 @@ export interface ILoanApplicationInternalRepository {
     page: number,
     pageSize: number,
   ): Promise<any[]>;
+
+  callSP_AdCont_GetLoanDetailById_Internal(loan_app_id: number): Promise<any[]>;
 }

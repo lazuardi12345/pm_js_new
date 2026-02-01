@@ -623,4 +623,17 @@ export class LoanApplicationInternalRepositoryImpl
 
     return result;
   }
+
+  async callSP_AdCont_GetLoanDetailById_Internal(
+    p_loan_app_id: number,
+  ): Promise<any[]> {
+    const manager = this.ormRepository.manager;
+
+    const result = await manager.query(
+      'CALL AdCont_GetLoanDetailById_Internal(?)',
+      [p_loan_app_id],
+    );
+
+    return result;
+  }
 }

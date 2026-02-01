@@ -1,3 +1,4 @@
+import { InternalCompanyList } from 'src/Shared/Enums/Admins/Contract/loan-agreement.enum';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -5,6 +6,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  Index,
 } from 'typeorm';
 
 @Entity('loan_agreement')
@@ -12,7 +14,8 @@ export class LoanAggrement_ORM_Entity {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Index('IDX_CONTRACT_NUMBER')
+  @Column({ type: 'char', length: 15 })
   nomor_kontrak: string;
 
   @Column({ type: 'int', nullable: true })
@@ -24,35 +27,33 @@ export class LoanAggrement_ORM_Entity {
   @Column({ type: 'text' })
   alamat: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  no_ktp: string;
+  @Index('IDX_CLIENT_RESIDENT_ID')
+  @Column({ type: 'bigint' })
+  no_ktp: number;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'char', length: 50 })
   type: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  kelompok?: string;
+  @Column({ type: 'enum', enum: InternalCompanyList, nullable: true })
+  perusahaan?: InternalCompanyList;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  perusahaan?: string;
-
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ type: 'char', length: 4 })
   inisial_marketing?: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ type: 'char', length: 20, nullable: true })
   golongan?: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ type: 'char', length: 4, nullable: true })
   inisial_ca?: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ type: 'char', length: 16, nullable: true })
   id_card?: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ type: 'char', length: 25, nullable: true })
   kedinasan?: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  pinjaman_ke?: string;
+  @Column({ type: 'int', nullable: true })
+  pinjaman_ke?: number;
 
   @Column({ type: 'decimal', precision: 15, scale: 2 })
   pokok_pinjaman: number;

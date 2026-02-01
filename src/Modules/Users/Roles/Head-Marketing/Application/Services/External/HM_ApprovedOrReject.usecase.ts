@@ -36,6 +36,7 @@ export class HM_ApproveOrRejectExternalUseCase {
     tenor_persetujuan?: number,
     nominal_persetujuan?: number,
     kesimpulan?: string,
+    dokumen_pendukung?: string,
   ) {
     try {
       console.log(
@@ -90,10 +91,10 @@ export class HM_ApproveOrRejectExternalUseCase {
         tenor_persetujuan,
         ApprovalExternalStatus.PENDING,
         kesimpulan || '',
+        dokumen_pendukung || undefined,
         undefined,
       );
 
-      // ✅ Terapkan status approval menggunakan SETTER
       let newLoanStatus: StatusPengajuanEnum;
       if (status === ApprovalExternalStatus.APPROVED) {
         approval.approve(); // ← Panggil method setter

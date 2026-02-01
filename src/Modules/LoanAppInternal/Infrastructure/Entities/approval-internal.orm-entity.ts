@@ -72,6 +72,9 @@ export class ApprovalInternal_ORM_Entity {
   @Column({ type: 'text', nullable: true })
   kesimpulan?: string;
 
+  @Column({ type: 'text', nullable: true })
+  dokumen_pendukung?: string;
+
   @CreateDateColumn({ type: 'timestamp', nullable: true })
   created_at?: Date;
 

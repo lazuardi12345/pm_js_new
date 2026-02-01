@@ -22,15 +22,10 @@ export class HM_ApprovedOrRejectExternalController {
       kesimpulan?: string;
       tenor_persetujuan?: number;
       nominal_persetujuan?: number;
+      dokumen_pendukung?: string;
     },
     @CurrentUser('id') headMarketingId: number,
   ) {
-    console.log('--- HM_ApprovedOrRejectController ---');
-    console.log('Request URL:', req.url);
-    console.log('Loan ID param:', loan_id);
-    console.log('Body:', payload);
-    console.log('HeadMarketingId from cookie/decorator:', headMarketingId);
-
     // Validasi HM ID
     if (!headMarketingId) {
       console.error('HM ID tidak ditemukan di cookie/decorator!');
@@ -47,6 +42,7 @@ export class HM_ApprovedOrRejectExternalController {
         payload.tenor_persetujuan,
         payload.nominal_persetujuan,
         payload.kesimpulan,
+        payload.dokumen_pendukung,
       );
 
       console.log('Approval berhasil disimpan:', savedApproval);

@@ -28,8 +28,9 @@ export class CA_LoanAppealResponseUseCase {
       | ApprovalExternalStatus.REJECTED,
     appeal_analyze?: string, //! di database tetep nilainya keterangan, tapi di FE ini pertimbangan
     appeal_conclusion?: string,
-    nominal_persetujuan?: number,
-    tenor_persetujuan?: number,
+    appeal_approval_amount?: number,
+    appeal_approval_tenor?: number,
+    additional_document?: string,
   ) {
     try {
       const now = new Date();
@@ -40,10 +41,11 @@ export class CA_LoanAppealResponseUseCase {
         true,
         undefined,
         appeal_analyze,
-        nominal_persetujuan,
-        tenor_persetujuan,
+        appeal_approval_amount,
+        appeal_approval_tenor,
         appeal_response,
         appeal_conclusion,
+        additional_document,
         now,
         now,
       );

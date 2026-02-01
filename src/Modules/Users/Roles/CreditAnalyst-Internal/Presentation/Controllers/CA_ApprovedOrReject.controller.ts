@@ -25,18 +25,15 @@ export class CA_ApprovedOrRejectController {
         kesimpulan?: string;
         tenor_persetujuan?: number;
         nominal_persetujuan?: number;
+        dokumen_pendukung?: string;
       };
     },
     @CurrentUser('id') creditAnalystId: number,
   ) {
-    // Ambil CA ID dari cookie
     if (!creditAnalystId) {
       throw new Error('CA ID tidak ditemukan di cookie');
     }
 
-    console.log('dari controller', body);
-
-    // Jalankan use case
     const savedApproval = await this.approveOrRejectUseCase.execute(
       loan_id,
       creditAnalystId,
@@ -46,6 +43,7 @@ export class CA_ApprovedOrRejectController {
       body.payload.nominal_persetujuan,
       body.payload.keterangan,
       body.payload.kesimpulan,
+      body.payload.dokumen_pendukung,
     );
 
     // Return response

@@ -43,6 +43,7 @@ export class CA_ApproveOrRejectUseCase {
     nominal_persetujuan?: number,
     analisa?: string,
     catatan?: string,
+    dokumen_pendukung?: string,
   ) {
     try {
       console.log(
@@ -99,6 +100,7 @@ export class CA_ApproveOrRejectUseCase {
         tenor_persetujuan,
         status,
         catatan,
+        dokumen_pendukung,
       );
 
       // Terapkan status approval

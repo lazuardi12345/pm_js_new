@@ -25,6 +25,7 @@ export class CA_ApprovedOrRejectController {
         analisa: string;
         tenor_persetujuan: number;
         nominal_persetujuan: number;
+        dokumen_pendukung?: string;
       };
     },
     @CurrentUser('id') creditAnalystId: number,
@@ -46,6 +47,7 @@ export class CA_ApprovedOrRejectController {
       body.payload.nominal_persetujuan!,
       body.payload.analisa!,
       body.payload.kesimpulan!,
+      body.payload.dokumen_pendukung!,
     );
 
     // Return response

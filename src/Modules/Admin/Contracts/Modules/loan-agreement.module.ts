@@ -6,9 +6,14 @@ import { LoanAggrementRepositoryImpl } from '../Infrastructure/Repositories/loan
 import { LOAN_AGREEMENT_REPOSITORY } from '../Domain/Repositories/loan-agreements.repository';
 import { LoanAgreementService } from '../Applications/Services/loan-agreements.service';
 import { loanAgreementController } from '../Presentation/Controllers/loan-agreement.controller';
-
+import { ContractSequence_ORM_Entity } from '../Infrastructure/Entities/contract-sequence.orm-entity';
 @Module({
-  imports: [TypeOrmModule.forFeature([LoanAggrement_ORM_Entity])],
+  imports: [
+    TypeOrmModule.forFeature([
+      LoanAggrement_ORM_Entity,
+      ContractSequence_ORM_Entity,
+    ]),
+  ],
   controllers: [loanAgreementController],
   providers: [
     {
@@ -16,12 +21,7 @@ import { loanAgreementController } from '../Presentation/Controllers/loan-agreem
       useClass: LoanAggrementRepositoryImpl,
     },
     LoanAgreementService,
-    // GetAddressByNasabahIdUseCase,
   ],
-  exports: [
-    LOAN_AGREEMENT_REPOSITORY,
-    LoanAgreementService,
-    // GetAddressByNasabahIdUseCase,
-  ],
+  exports: [LOAN_AGREEMENT_REPOSITORY, LoanAgreementService],
 })
 export class LoanAgreementModule {}

@@ -33,8 +33,9 @@ export class CA_LoanAppealResponseController {
       appeal_analyze?: string;
       appeal_conclusion?: string;
       appeal_notes?: string;
-      nominal_persetujuan?: number;
-      tenor_persetujuan?: number;
+      appeal_approval_amount?: number;
+      appeal_approval_tenor?: number;
+      additional_document?: string;
     },
     @CurrentUser('id') creditAnalystId: number,
   ) {
@@ -43,8 +44,9 @@ export class CA_LoanAppealResponseController {
         appeal_response,
         appeal_analyze,
         appeal_conclusion,
-        nominal_persetujuan,
-        tenor_persetujuan,
+        appeal_approval_amount,
+        appeal_approval_tenor,
+        additional_document,
       } = payload;
 
       const result = await this.postAppealResponseUseCase.execute(
@@ -53,8 +55,9 @@ export class CA_LoanAppealResponseController {
         appeal_response,
         appeal_analyze,
         appeal_conclusion,
-        nominal_persetujuan,
-        tenor_persetujuan,
+        appeal_approval_amount,
+        appeal_approval_tenor,
+        additional_document,
       );
 
       return result;

@@ -28,6 +28,7 @@ export class ApprovalExternalService {
       dto.tenor_persetujuan,
       dto.status,
       dto.kesimpulan,
+      dto.dokumen_pendukung,
       now,
       now,
       null,
