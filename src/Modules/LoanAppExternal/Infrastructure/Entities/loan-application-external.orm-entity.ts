@@ -120,6 +120,11 @@ export class LoanApplicationExternal_ORM_Entity {
   @Index('IDX_DraftID_at_LoanApplicationExternal', ['draft_id']) // <- index explicit name
   draft_id?: string;
 
+  @Column({ type: 'int', nullable: true })
+  @Index('IDX_MarketingID_at_LoanApplicationExternal', ['marketing_id'])
+  marketing_id?: number;
+
+  @Column()
   @CreateDateColumn({ type: 'timestamp', nullable: true })
   created_at?: Date;
 

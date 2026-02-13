@@ -15,6 +15,7 @@ import {
 } from 'typeorm';
 
 @Index('IDX_LOAN_APPLICATION_ROLE', ['pengajuan', 'role'])
+@Index('IDX_APPROVAL_INTERNAL_STATUS_CREATED_AT', ['created_at', 'status'])
 @Entity('approval_internal')
 export class ApprovalInternal_ORM_Entity {
   @PrimaryGeneratedColumn('increment')

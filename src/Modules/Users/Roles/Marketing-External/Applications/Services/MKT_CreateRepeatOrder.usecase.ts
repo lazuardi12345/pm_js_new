@@ -386,6 +386,7 @@ export class MKT_CreateRepeatOrderUseCase {
             loan_application_external.alasan_banding,
             loan_application_external.survey_schedule,
             loan_application_external.draft_id,
+            undefined,
             nowWIB,
             nowWIB,
             undefined,

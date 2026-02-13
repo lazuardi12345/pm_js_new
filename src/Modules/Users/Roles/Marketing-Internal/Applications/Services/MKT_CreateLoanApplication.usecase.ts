@@ -94,20 +94,6 @@ export class MKT_CreateLoanApplicationUseCase {
   constructor(
     @Inject(CLIENT_INTERNAL_REPOSITORY)
     private readonly clientRepo: IClientInternalRepository,
-    @Inject(CLIENT_INTERNAL_PROFILE_REPOSITORY)
-    private readonly clientProfileRepo: IClientInternalProfileRepository,
-    @Inject(ADDRESS_INTERNAL_REPOSITORY)
-    private readonly addressRepo: IAddressInternalRepository,
-    @Inject(FAMILY_INTERNAL_REPOSITORY)
-    private readonly familyRepo: IFamilyInternalRepository,
-    @Inject(JOB_INTERNAL_REPOSITORY)
-    private readonly jobRepo: IJobInternalRepository,
-    @Inject(LOAN_APPLICATION_INTERNAL_REPOSITORY)
-    private readonly loanAppRepo: ILoanApplicationInternalRepository,
-    @Inject(COLLATERAL_INTERNAL_REPOSITORY)
-    private readonly collateralRepo: ICollateralInternalRepository,
-    @Inject(RELATIVE_INTERNAL_REPOSITORY)
-    private readonly relativeRepo: IRelativesInternalRepository,
     @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
     private readonly approvalRecomRepo: IApprovalRecommendationRepository,
     // @Inject(CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY)

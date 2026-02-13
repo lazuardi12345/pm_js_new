@@ -32,6 +32,7 @@ import {
   IClientInternalRepository,
 } from 'src/Modules/LoanAppInternal/Domain/Repositories/client-internal.repository';
 import { ExternalCollateralType } from 'src/Shared/Enums/General/General.enum';
+import { NotificationClientService } from 'src/Shared/Modules/Notifications/Infrastructure/Services/notification.service';
 
 @Injectable()
 export class MKT_CreateDraftLoanApplicationUseCase {
@@ -44,11 +45,15 @@ export class MKT_CreateDraftLoanApplicationUseCase {
     private readonly fileStorage: IFileStorageRepository,
     @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
     private readonly approvalRecommendationRepo: IApprovalRecommendationRepository,
+
+    private readonly notificationClient: NotificationClientService,
   ) {}
 
   async executeCreateDraft(
     dto: PayloadDTO,
     files?: Record<string, Express.Multer.File[]>,
+    token?: string,
+    spvId?: number | null,
   ) {
     try {
       const duplicateChecker = await this.clientRepo.findByKtp(
@@ -109,6 +114,15 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         await this.loanAppDraftRepo.triggerIsNeedCheckBeingTrue(
           loanApp._id?.toString(),
           Number(dto.loan_application_internal?.nominal_pinjaman),
+        );
+      }
+
+      if (Number(dto.loan_application_internal?.nominal_pinjaman) > 7000000) {
+        //? SEND TO NOTIFICATION!
+        this.notificationClient.sendDraftCreatedNotification(
+          loanApp,
+          spvId,
+          token,
         );
       }
 

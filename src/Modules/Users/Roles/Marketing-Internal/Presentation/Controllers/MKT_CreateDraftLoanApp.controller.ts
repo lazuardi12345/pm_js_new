@@ -23,6 +23,8 @@ import { PayloadDTO } from 'src/Shared/Modules/Drafts/Applications/DTOS/LoanAppI
 import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
 import multer from 'multer';
 import { FileUploadAuthGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/file-upload.decorator';
+import { CurrentSpvId } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/is-user-has-spv.decorator';
+import { JwtToken } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/jwt-extractor.decorator';
 
 @UseGuards(FileUploadAuthGuard)
 @Controller('mkt/int/drafts')
@@ -43,6 +45,8 @@ export class MKT_CreateDraftLoanApplicationController {
     @UploadedFiles() files: Record<string, Express.Multer.File[]>,
     @CurrentUser('id') marketingId: number,
     @Body() dto: any,
+    @CurrentSpvId() spvId: number | null,
+    @JwtToken() token?: string,
   ) {
     try {
       let payload: PayloadDTO;
@@ -76,6 +80,8 @@ export class MKT_CreateDraftLoanApplicationController {
       return this.MKT_CreateDraftLoanAppUseCase.executeCreateDraft(
         payload,
         files,
+        token,
+        spvId,
       );
     } catch (error) {
       console.error('Error occurred:', error);

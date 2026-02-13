@@ -212,6 +212,23 @@ export class ApprovalRecommendationRepositoryImpl
     return this.toDomain(ormEntity);
   }
 
+  async findAllAcrossDataDraftById(draftId: string): Promise<any | null> {
+    const queries = [
+      this.mongoDraftInternalRepository.findById(draftId).lean(),
+      this.mongoDraftExternalRepository.findById(draftId).lean(),
+      this.repeatOrderIntRepository.findById(draftId).lean(),
+      this.repeatOrderExtRepository.findById(draftId).lean(),
+    ];
+
+    const results = await Promise.allSettled(queries);
+
+    for (const result of results) {
+      if (result.status === 'fulfilled' && result.value) {
+        return result.value;
+      }
+    }
+  }
+
   async findByNIK(nik: string): Promise<ApprovalRecommendation[]> {
     return this.ormRepository.find({
       where: {

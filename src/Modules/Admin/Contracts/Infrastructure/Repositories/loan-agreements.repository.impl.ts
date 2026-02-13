@@ -229,4 +229,34 @@ export class LoanAggrementRepositoryImpl implements ILoanAgreementRepository {
 
     return this.toDomain(saved as LoanAggrement_ORM_Entity);
   }
+
+  async callSP_AdCont_GetAllLoanAgreementData(
+    searchNomorKontrak: string | null,
+    searchNoKtp: number | null,
+    searchNama: string | null,
+    page: number,
+    pageSize: number,
+  ): Promise<any[]> {
+    try {
+      // Call stored procedure
+      const result = await this.dataSource.query(
+        `CALL AdCont_GetAllLoanAgreementData(?, ?, ?, ?, ?, @total_records, @total_pages)`,
+        [searchNomorKontrak, searchNoKtp, searchNama, page, pageSize],
+      );
+
+      // Get OUT parameters
+      const [metadata] = await this.dataSource.query(
+        `SELECT @total_records as total_records, @total_pages as total_pages`,
+      );
+
+      // Return metadata and data
+      return [
+        [metadata], // First element: metadata
+        result[0], // Second element: actual data
+      ];
+    } catch (error) {
+      console.error('Error calling AdCont_GetAllLoanAgreementData:', error);
+      throw error;
+    }
+  }
 }

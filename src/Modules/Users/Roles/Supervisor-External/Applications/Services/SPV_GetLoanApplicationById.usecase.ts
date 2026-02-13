@@ -15,11 +15,6 @@ import {
   APPROVAL_RECOMMENDATION_REPOSITORY,
   IApprovalRecommendationRepository,
 } from 'src/Modules/Admin/BI-Checking/Domain/Repositories/approval-recommendation.repository';
-import {
-  DRAFT_LOAN_APPLICATION_EXTERNAL_REPOSITORY,
-  ILoanApplicationDraftExternalRepository,
-} from 'src/Shared/Modules/Drafts/Domain/Repositories/ext/LoanAppExt.repository';
-// import { LoanType } from 'src/Shared/Enums/External/Loan-Application.enum';
 
 @Injectable()
 export class SPV_GetLoanApplicationByIdUseCase {
@@ -28,8 +23,6 @@ export class SPV_GetLoanApplicationByIdUseCase {
     private readonly loanAppRepo: ILoanApplicationExternalRepository,
     @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
     private readonly approvalRecomRepo: IApprovalRecommendationRepository,
-    @Inject(DRAFT_LOAN_APPLICATION_EXTERNAL_REPOSITORY)
-    private readonly loanAppDraftRepo: ILoanApplicationDraftExternalRepository,
   ) {}
 
   async execute(id: number) {
@@ -146,6 +139,7 @@ export class SPV_GetLoanApplicationByIdUseCase {
           kesimpulan: approval.kesimpulan,
           approved_tenor: approval.approved_tenor,
           approved_amount: approval.approved_amount,
+          additional_files: approval?.additional_files ?? '-',
           created_at: approval.created_at,
           updated_at: approval.updated_at,
         },
@@ -267,6 +261,7 @@ export class SPV_GetLoanApplicationByIdUseCase {
             catatan_marketing: loanData.catatan_marketing,
             is_banding: loanData.is_banding,
             alasan_banding: loanData.alasan_banding,
+            marketing_id: loanData.marketing_id,
           },
 
           emergency_contact_external: {

@@ -26,6 +26,8 @@ import { LoanApplicationExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/
 import { LoanApplicationInternal_ORM_Entity } from 'src/Modules/LoanAppInternal/Infrastructure/Entities/loan-application-internal.orm-entity';
 import { LoanAggrement_ORM_Entity } from 'src/Modules/Admin/Contracts/Infrastructure/Entities/loan-agreement.orm-entity';
 import { LoanAgreementModule } from 'src/Modules/Admin/Contracts/Modules/loan-agreement.module';
+import { AdCont_GetAllLoanAgreementsUseCase } from './Applications/Services/AdCont_GetAllLoanAgreement.usecase';
+import { AdCont_getAllLoanAgreementController } from './Presentation/AdCont_GetAllLoanAgreement.controller';
 @Module({
   imports: [
     VouchersModule,
@@ -46,6 +48,7 @@ import { LoanAgreementModule } from 'src/Modules/Admin/Contracts/Modules/loan-ag
     AdCont_GetAllLoanDataInternalController,
     AdCont_GetLoanDetailByIdExternalController,
     AdCont_GetLoanDetailByIdInternalController,
+    AdCont_getAllLoanAgreementController,
   ],
   providers: [
     AdCont_CreateVoucherUseCase,
@@ -54,6 +57,7 @@ import { LoanAgreementModule } from 'src/Modules/Admin/Contracts/Modules/loan-ag
     AdCont_GetAllLoanDataInternalUseCase,
     AdCont_GetLoanDetailByIdExternalUseCase,
     AdCont_GetLoanDetailByIdInternalUseCase,
+    AdCont_GetAllLoanAgreementsUseCase,
   ],
 })
 export class AdminContractUseCaseModule {}

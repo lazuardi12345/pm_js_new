@@ -6,11 +6,15 @@ import { IApprovalExternalRepository } from '../../Domain/Repositories/approval-
 import { ApprovalExternal_ORM_Entity } from '../Entities/approval-external.orm-entity';
 import { LoanApplicationExternal_ORM_Entity } from '../Entities/loan-application-external.orm-entity';
 import { Users_ORM_Entity } from 'src/Modules/Users/Infrastructure/Entities/users.orm-entity';
+import { ApprovalExternalNotificationRaw } from '../../Application/DTOS/dto-Approval/get-total-notification.dto';
+import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 
 @Injectable()
 export class ApprovalExternalRepositoryImpl
   implements IApprovalExternalRepository
 {
+  dataSource: any;
+  db: any;
   constructor(
     @InjectRepository(ApprovalExternal_ORM_Entity)
     private readonly ormRepository: Repository<ApprovalExternal_ORM_Entity>,
@@ -142,5 +146,34 @@ export class ApprovalExternalRepositoryImpl
       relations: ['pengajuan_luar', 'user'],
     });
     return ormEntities.map(this.toDomain);
+  }
+
+  // ======================
+  // NOTIFICATION - REQUEST
+  // ======================
+
+  async totalApprovalRequestExternal(
+    role: USERTYPE,
+    userId: number,
+  ): Promise<ApprovalExternalNotificationRaw> {
+    return this.execCountSP(
+      'GENERAL_NotificationApprovalsExternal',
+      role,
+      userId,
+    );
+  }
+
+  private async execCountSP(
+    spName: string,
+    role: USERTYPE,
+    userId: number,
+  ): Promise<ApprovalExternalNotificationRaw> {
+    const manager = this.ormRepository.manager;
+
+    const result = await manager.query(`CALL ${spName}(?, ?)`, [role, userId]);
+
+    return {
+      total: result?.[0]?.[0]?.approval_request_total ?? 0,
+    };
   }
 }

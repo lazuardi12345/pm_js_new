@@ -9,6 +9,9 @@ import {
   Index,
 } from 'typeorm';
 
+@Index('IDX_SEARCH_CONTRACT_BY_NAME', ['nama'], {
+  fulltext: true,
+})
 @Entity('loan_agreement')
 export class LoanAggrement_ORM_Entity {
   @PrimaryGeneratedColumn({ type: 'bigint' })

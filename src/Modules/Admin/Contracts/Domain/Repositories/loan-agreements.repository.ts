@@ -11,4 +11,13 @@ export interface ILoanAgreementRepository {
   update(id: number, address: Partial<LoanAgreement>): Promise<LoanAgreement>;
   delete(id: number): Promise<void>;
   generateAndSave(loanData: Partial<LoanAgreement>): Promise<LoanAgreement>;
+
+  //? Store Procedure Interface Repo
+  callSP_AdCont_GetAllLoanAgreementData(
+    searchNomorKontrak: string | null,
+    searchNoKtp: number | null,
+    searchNama: string | null,
+    page: number,
+    pageSize: number,
+  ): Promise<any[]>;
 }

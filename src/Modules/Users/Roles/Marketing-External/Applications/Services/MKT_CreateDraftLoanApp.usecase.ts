@@ -178,6 +178,7 @@ export class MKT_CreateDraftLoanApplicationUseCase {
         );
       }
 
+      //? SEND TO NOTIFICATION!
       this.notificationClient.sendDraftCreatedNotification(
         loanApp,
         spvId,

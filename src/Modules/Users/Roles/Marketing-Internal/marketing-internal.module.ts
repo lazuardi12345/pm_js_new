@@ -60,10 +60,12 @@ import { ClientInternalProfileModule } from 'src/Modules/LoanAppInternal/Modules
 import { ClientInternalProfile_ORM_Entity } from 'src/Modules/LoanAppInternal/Infrastructure/Entities/client-internal-profile.orm-entity';
 import { ApprovalRecommendationModule } from 'src/Modules/Admin/BI-Checking/Modules/approval-recommendation.module';
 import { DraftRepeatOrderModule } from 'src/Shared/Modules/Drafts/Modules/DraftRepeatOrder.module';
+import { NotificationAdapterModule } from 'src/Shared/Modules/Notifications/ModuleNotification.module';
 
 @Module({
   imports: [
     HttpModule,
+    NotificationAdapterModule,
     AddressInternalModule,
     ApprovalInternalModule,
     ClientInternalModule,

@@ -96,10 +96,7 @@ export class CA_GetApprovalHistory_UseCase {
             id_pengajuan: Number(item.loan_id),
             id_nasabah: Number(item.nasabah_id),
             nama_nasabah: item.nama_lengkap || '-',
-            nominal_pinjaman: new Intl.NumberFormat('id-ID', {
-              style: 'currency',
-              currency: 'IDR',
-            }).format(Number(item.nominal_pinjaman)),
+            nominal_pinjaman: item.nominal_pinjaman || '-',
             id_marketing: item.id_marketing ? Number(item.id_marketing) : null,
             nama_marketing: item.nama_marketing || null,
             nama_supervisor: item.nama_supervisor || null,

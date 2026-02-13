@@ -81,10 +81,7 @@ export class HM_GetAllApprovalHistoryExternalUseCase {
             loan_id: Number(item.loan_id),
             customer_id: Number(item.customer_id),
             customer_name: item.customer_name || '-',
-            loan_amount: new Intl.NumberFormat('id-ID', {
-              style: 'currency',
-              currency: 'IDR',
-            }).format(Number(item!.loan_amount)),
+            loan_amount: item.loan_amount || '-',
             loan_sequence: item.pinjaman_ke || '-',
             tenor: item.tenor || '-',
             approval_request_submitted_at:
@@ -102,7 +99,11 @@ export class HM_GetAllApprovalHistoryExternalUseCase {
                 data: {
                   spv_name: item.spv_app_name || '-',
                   spv_response: item.spv_app_status || '-',
-                  spv_approved_amount: item.spv_app_approved_amount || '-',
+                  spv_approved_amount:
+                    new Intl.NumberFormat('id-ID', {
+                      style: 'currency',
+                      currency: 'IDR',
+                    }).format(Number(item!.spv_app_approved_amount)) || '-',
                   spv_approved_tenor: item.spv_app_approved_tenor || '-',
                   spv_response_at: item.spv_app_response_at || '-',
                 },
@@ -117,7 +118,11 @@ export class HM_GetAllApprovalHistoryExternalUseCase {
                 data: {
                   ca_name: item.ca_app_name || '-',
                   ca_response: item.ca_app_status || '-',
-                  ca_approved_amount: item.ca_app_approved_amount || '-',
+                  ca_approved_amount:
+                    new Intl.NumberFormat('id-ID', {
+                      style: 'currency',
+                      currency: 'IDR',
+                    }).format(Number(item!.ca_app_approved_amount)) || '-',
                   ca_approved_tenor: item.ca_app_approved_tenor || '-',
                   ca_response_at: item.ca_app_response_at || '-',
                 },
@@ -126,7 +131,11 @@ export class HM_GetAllApprovalHistoryExternalUseCase {
                 data: {
                   hm_name: item.hm_app_name || '-',
                   hm_response: item.hm_app_status || '-',
-                  hm_approved_amount: item.hm_app_approved_amount || '-',
+                  hm_approved_amount:
+                    new Intl.NumberFormat('id-ID', {
+                      style: 'currency',
+                      currency: 'IDR',
+                    }).format(Number(item!.hm_app_approved_amount)) || '-',
                   hm_approved_tenor: item.hm_app_approved_tenor || '-',
                   hm_response_at: item.hm_app_response_at || '-',
                 },

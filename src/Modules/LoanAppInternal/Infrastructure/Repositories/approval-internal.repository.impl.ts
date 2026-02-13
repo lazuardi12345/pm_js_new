@@ -11,6 +11,8 @@ import { Users_ORM_Entity } from 'src/Modules/Users/Infrastructure/Entities/user
 import { LoanApplicationInternalRepositoryImpl } from './loanApp-internal.repository.impl';
 import { StatusPengajuanEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
 import { ApprovalInternalStatusEnum } from 'src/Shared/Enums/Internal/Approval.enum';
+import { ApprovalInternalNotificationRaw } from '../../Application/DTOS/dto-Address/get-total-notification.dto';
+import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 
 @Injectable()
 export class ApprovalInternalRepositoryImpl
@@ -204,5 +206,30 @@ export class ApprovalInternalRepositoryImpl
         user_id: userId,
       },
     });
+  }
+
+  async totalApprovalRequestInternal(
+    role: USERTYPE,
+    userId: number,
+  ): Promise<ApprovalInternalNotificationRaw> {
+    return this.execCountSP(
+      'GENERAL_NotificationApprovalsInternal',
+      role,
+      userId,
+    );
+  }
+
+  private async execCountSP(
+    spName: string,
+    role: USERTYPE,
+    userId: number,
+  ): Promise<ApprovalInternalNotificationRaw> {
+    const manager = this.ormRepository.manager;
+
+    const result = await manager.query(`CALL ${spName}(?, ?)`, [role, userId]);
+
+    return {
+      total: result?.[0]?.[0]?.approval_request_total ?? 0,
+    };
   }
 }

@@ -11,8 +11,14 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  Index,
 } from 'typeorm';
 
+@Index('IDX_APPROVAL_EXTERNAL_ROLE_STATUS_CREATED_AT', [
+  'role',
+  'status',
+  'created_at',
+])
 @Entity('approval_external')
 export class ApprovalExternal_ORM_Entity {
   @PrimaryGeneratedColumn('increment')
@@ -42,7 +48,10 @@ export class ApprovalExternal_ORM_Entity {
   })
   user: Users_ORM_Entity;
 
-  @Column({ type: 'enum', enum: USERTYPE })
+  @Column({
+    type: 'enum',
+    enum: ['credit_analyst', 'supervisor', 'head_marketing'],
+  })
   role: USERTYPE;
 
   @Column({ type: 'text', nullable: true })

@@ -237,7 +237,7 @@ export class MKT_GetAllLoanApplicationUseCase {
               customer_id: Number(item?.customer_id ?? 0),
               customer_name: item?.customer_name ?? '-',
               customer_type: item?.customer_type ?? '-',
-              loan_amount: loanAmountFormatted,
+              loan_amount: item?.loan_amount ?? '-',
               loan_sequence: item?.pinjaman_ke ?? '-',
               tenor: item?.tenor ?? '-',
               loan_submitted_at: item?.loan_submitted_at ?? '-',

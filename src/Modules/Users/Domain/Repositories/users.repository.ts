@@ -1,3 +1,4 @@
+import { RoleSearchEnum } from 'src/Shared/Enums/General/General.enum';
 import { UsersEntity } from '../Entities/users.entity';
 
 export const USERS_REPOSITORY = 'USERS_REPOSITORY';
@@ -16,4 +17,5 @@ export interface IUsersRepository {
   save(user: UsersEntity): Promise<UsersEntity>;
   update(id: number, user: Partial<UsersEntity>): Promise<UsersEntity>;
   softDelete(id: number): Promise<void>;
+  findIdsByRoles(roles: string[]): Promise<number[]>;
 }

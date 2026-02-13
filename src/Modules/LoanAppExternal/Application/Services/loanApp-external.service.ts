@@ -30,6 +30,55 @@ export class LoanApplicationExternalService {
     private readonly approvalRecommendationRepo: IApprovalRecommendationRepository,
   ) {}
 
+  private buildApprovalRecommendation(row: any): any {
+    const draftId = row.draft_id ?? null;
+    const nominalPinjaman = Number(row.nominal_pinjaman ?? 0);
+    const isLowAmount =
+      !Number.isNaN(nominalPinjaman) && nominalPinjaman < 7000000;
+
+    // Tidak ada draft_id
+    if (!draftId) {
+      if (isLowAmount) {
+        return { dont_have_check: true };
+      }
+      return null;
+    }
+
+    // Ada draft_id
+    const hasApprovalData = !!row.recommendation || !!row.filePath;
+
+    if (hasApprovalData) {
+      const approvalNominal = Number(row.approval_nominal_pinjaman ?? 0);
+      const approvalIsLowAmount =
+        !Number.isNaN(approvalNominal) && approvalNominal < 7000000;
+
+      return {
+        draft_id: draftId,
+        nama_nasabah: row.nama_nasabah ?? '-',
+        recommendation: row.recommendation ?? null,
+        filePath: row.filePath ?? null,
+        catatan: row.catatan ?? null,
+        last_updated: row.last_updated ?? null,
+        isNeedCheck: row.is_need_check ?? false,
+        dont_have_check: approvalIsLowAmount,
+      };
+    } else if (isLowAmount) {
+      // Ada draft tapi belum ada approval, dan nominal < 7jt
+      return {
+        draft_id: draftId,
+        isNeedCheck: row.is_need_check ?? false,
+        dont_have_check: true,
+      };
+    } else {
+      // Ada draft tapi belum ada approval, dan nominal >= 7jt
+      return {
+        draft_id: draftId,
+        isNeedCheck: row.is_need_check ?? false,
+        recommendation: null,
+      };
+    }
+  }
+
   async create(
     dto: CreateLoanApplicationExternalDto,
   ): Promise<LoanApplicationExternal> {
@@ -57,6 +106,7 @@ export class LoanApplicationExternalService {
       dto.alasan_banding,
       dto.survey_schedule,
       dto.draft_id,
+      dto.marketing_id,
       now,
       now,
       null,
@@ -120,16 +170,6 @@ export class LoanApplicationExternalService {
     const sanitizedPage = page && page > 0 ? page : 1;
     const sanitizedPageSize = pageSize && pageSize > 0 ? pageSize : 10;
 
-    console.log(
-      'Puki mak kau hijau',
-      role,
-      type,
-      paymentType,
-      keyword,
-      sanitizedPage,
-      sanitizedPageSize,
-    );
-
     const result =
       await this.repo.callSP_GENERAL_GetAllPreviewDataLoanBySearch_External(
         role,
@@ -141,11 +181,11 @@ export class LoanApplicationExternalService {
       );
 
     let mappedData: any[] = [];
-    const rupiahFormatter = new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0,
-    });
+    // const rupiahFormatter = new Intl.NumberFormat('id-ID', {
+    //   style: 'currency',
+    //   currency: 'IDR',
+    //   minimumFractionDigits: 0,
+    // });
 
     const draftIds = result.data
       .map((item: any) => item?.draft_id)
@@ -169,12 +209,12 @@ export class LoanApplicationExternalService {
         switch (type) {
           case TypeSearchEnum.HISTORY:
             mappedData = result.data.map((item: any) => {
-              const loanAmountFormatted = item?.nominal_pinjaman
-                ? rupiahFormatter.format(Number(item.nominal_pinjaman))
-                : '-';
-              const lastApprovedAmountFormatted = item?.last_approval_nominal
-                ? rupiahFormatter.format(Number(item.last_approval_nominal))
-                : '-';
+              // const loanAmountFormatted = item?.nominal_pinjaman
+              //   ? rupiahFormatter.format(Number(item.nominal_pinjaman))
+              //   : '-';
+              // const lastApprovedAmountFormatted = item?.last_approval_nominal
+              //   ? rupiahFormatter.format(Number(item.last_approval_nominal))
+              //   : '-';
               const approvalRecommendation = item?.draft_id
                 ? recMap.get(item.draft_id) || null
                 : null;
@@ -184,7 +224,7 @@ export class LoanApplicationExternalService {
                 customer_id: Number(item?.customer_id ?? 0),
                 customer_name: item?.nama_lengkap ?? '-',
                 customer_type: item?.customer_type ?? '-',
-                loan_amount: loanAmountFormatted,
+                loan_amount: item?.nominal_pinjaman ?? '-',
                 loan_sequence: item?.pinjaman_ke ?? '-',
                 tenor: item?.tenor ?? '-',
                 loan_submitted_at: item?.created_at ?? '-',
@@ -238,7 +278,7 @@ export class LoanApplicationExternalService {
                     },
                   },
                 },
-                last_approved_amount: lastApprovedAmountFormatted,
+                last_approved_amount: item?.last_approval_nominal ?? '-',
                 last_approved_tenor: Number(item?.last_approval_tenor ?? 0),
               };
             });
@@ -250,17 +290,20 @@ export class LoanApplicationExternalService {
         switch (type) {
           case TypeSearchEnum.HISTORY:
             mappedData = result.data.map((row: any) => ({
-              id_nasabah: row.id_nasabah,
               id_pengajuan: row.id_pengajuan,
-              nominal_pinjaman: rupiahFormatter.format(
-                Number(row.nominal_pinjaman),
-              ),
+              id_nasabah: row.id_nasabah,
               nama_nasabah: row.nama_nasabah,
+              nominal_pinjaman: row.nominal_pinjaman,
+              id_marketing: row.id_marketing,
               nama_marketing: row.marketing_nama,
               loan_status: row.loan_status,
+              loan_submitted_at: row.loan_submitted_at,
               approval_status: row.approval_status,
-              is_appealed: row.is_appealed,
+              is_appeal: row.is_appeal,
+              reason_for_appeal: row.reason_for_appeal,
+              jenis_pembiayaan: row.jenis_pembiayaan,
               approve_response_date: row.approve_response_date,
+              approval_recommendation: this.buildApprovalRecommendation(row),
             }));
             break;
 
@@ -269,9 +312,7 @@ export class LoanApplicationExternalService {
               id_pengajuan: row.loan_id,
               nama_nasabah: row.nama_nasabah,
               tipe_nasabah: 'reguler',
-              nominal_pinjaman: rupiahFormatter.format(
-                Number(row.nominal_pinjaman),
-              ),
+              nominal_pinjaman: row.nominal_pinjaman,
               jenis_pembiayaan: row.jenis_pembiayaan,
               nama_marketing: row.marketing_nama,
               status: row.loan_app_status,
@@ -289,9 +330,7 @@ export class LoanApplicationExternalService {
             mappedData = result.data.map((row: any) => ({
               id_nasabah: row.id_nasabah,
               id_pengajuan: row.id_pengajuan,
-              nominal_pinjaman: rupiahFormatter.format(
-                Number(row.nominal_pinjaman),
-              ),
+              nominal_pinjaman: row.nominal_pinjaman,
               nama_nasabah: row.nama_nasabah,
               id_marketing: row.id_marketing,
               nama_supervisor: row.nama_supervisor,
@@ -311,9 +350,7 @@ export class LoanApplicationExternalService {
               nama_nasabah: row.nama_nasabah,
               tipe_nasabah: 'reguler',
               jenis_pembiayaan: row.jenis_pembiayaan,
-              nominal_pinjaman: rupiahFormatter.format(
-                Number(row.nominal_pinjaman),
-              ),
+              nominal_pinjaman: row.nominal_pinjaman,
               nama_marketing: row.marketing_nama,
               nama_supervisor: row.supervisor_nama,
               is_has_survey: row.is_has_survey,
@@ -332,13 +369,13 @@ export class LoanApplicationExternalService {
           case TypeSearchEnum.HISTORY:
             mappedData = result.data.map((item: any) => {
               // Format currency
-              const loanAmountFormatted = item?.nominal_pinjaman
-                ? rupiahFormatter.format(Number(item.nominal_pinjaman))
-                : '-';
+              // const loanAmountFormatted = item?.nominal_pinjaman
+              //   ? rupiahFormatter.format(Number(item.nominal_pinjaman))
+              //   : '-';
 
-              const lastApprovedAmountFormatted = item?.last_approval_nominal
-                ? rupiahFormatter.format(Number(item.last_approval_nominal))
-                : '-';
+              // const lastApprovedAmountFormatted = item?.last_approval_nominal
+              //   ? rupiahFormatter.format(Number(item.last_approval_nominal))
+              //   : '-';
 
               // Get approval recommendation from draft_id
               const approvalRecommendation = item?.draft_id
@@ -351,9 +388,7 @@ export class LoanApplicationExternalService {
                   data: {
                     spv_name: item?.spv_app_name ?? '-',
                     spv_response: item?.spv_app_status ?? '-',
-                    spv_approved_amount: item?.spv_app_amount
-                      ? rupiahFormatter.format(Number(item.spv_app_amount))
-                      : '-',
+                    spv_approved_amount: item?.spv_app_amount ?? '-',
                     spv_approved_tenor: item?.spv_app_tenor ?? '-',
                     spv_response_at: item?.spv_app_response_at ?? '-',
                   },
@@ -368,9 +403,7 @@ export class LoanApplicationExternalService {
                   data: {
                     ca_name: item?.ca_app_name ?? '-',
                     ca_response: item?.ca_app_status ?? '-',
-                    ca_approved_amount: item?.ca_app_amount
-                      ? rupiahFormatter.format(Number(item.ca_app_amount))
-                      : '-',
+                    ca_approved_amount: item?.ca_app_amount ?? '-',
                     ca_approved_tenor: item?.ca_app_tenor ?? '-',
                     ca_response_at: item?.ca_app_response_at ?? '-',
                   },
@@ -379,9 +412,7 @@ export class LoanApplicationExternalService {
                   data: {
                     hm_name: item?.hm_app_name ?? '-',
                     hm_response: item?.hm_app_status ?? '-',
-                    hm_approved_amount: item?.hm_app_amount
-                      ? rupiahFormatter.format(Number(item.hm_app_amount))
-                      : '-',
+                    hm_approved_amount: item?.hm_app_amount ?? '-',
                     hm_approved_tenor: item?.hm_app_tenor ?? '-',
                     hm_response_at: item?.hm_app_response_at ?? '-',
                   },
@@ -394,9 +425,7 @@ export class LoanApplicationExternalService {
                   data: {
                     ca_name: item?.ca_appeal_name ?? '-',
                     ca_response: item?.ca_appeal_status ?? '-',
-                    ca_approved_amount: item?.ca_appeal_amount
-                      ? rupiahFormatter.format(Number(item.ca_appeal_amount))
-                      : '-',
+                    ca_approved_amount: item?.ca_appeal_amount ?? '-',
                     ca_approved_tenor: item?.ca_appeal_tenor ?? '-',
                     ca_response_at: item?.ca_appeal_response_at ?? '-',
                   },
@@ -405,9 +434,7 @@ export class LoanApplicationExternalService {
                   data: {
                     spv_name: item?.spv_appeal_name ?? '-',
                     spv_response: item?.spv_appeal_status ?? '-',
-                    spv_approved_amount: item?.spv_appeal_amount
-                      ? rupiahFormatter.format(Number(item.spv_appeal_amount))
-                      : '-',
+                    spv_approved_amount: item?.spv_appeal_amount ?? '-',
                     spv_approved_tenor: item?.spv_appeal_tenor ?? '-',
                     spv_response_at: item?.spv_appeal_response_at ?? '-',
                   },
@@ -416,9 +443,7 @@ export class LoanApplicationExternalService {
                   data: {
                     hm_name: item?.hm_appeal_name ?? '-',
                     hm_response: item?.hm_appeal_status ?? '-',
-                    hm_approved_amount: item?.hm_appeal_amount
-                      ? rupiahFormatter.format(Number(item.hm_appeal_amount))
-                      : '-',
+                    hm_approved_amount: item?.hm_appeal_amount ?? '-',
                     hm_approved_tenor: item?.hm_appeal_tenor ?? '-',
                     hm_response_at: item?.hm_appeal_response_at ?? '-',
                   },
@@ -478,7 +503,7 @@ export class LoanApplicationExternalService {
                 customer_id: Number(item?.client_id ?? 0),
                 customer_name: item?.nama_lengkap ?? '-',
                 customer_nik: item?.nik ?? '-',
-                loan_amount: loanAmountFormatted,
+                loan_amount: item?.nominal_pinjaman ?? '-',
                 loan_sequence: item?.pinjaman_ke ?? '-',
                 tenor: item?.tenor ?? '-',
                 jenis_pembiayaan: item?.jenis_pembiayaan ?? '-',
@@ -489,7 +514,7 @@ export class LoanApplicationExternalService {
                 approval_request_latest_responded_at: latestTimestamp,
 
                 // Loan status
-                latest_loan_status: item?.status_pengajuan ?? '-',
+                latest_loan_app_status: item?.status_pengajuan ?? '-',
                 final_loan_status: item?.final_loan_status ?? '-',
 
                 // Marketing info
@@ -499,7 +524,7 @@ export class LoanApplicationExternalService {
                 survey_id: item?.survey_id ?? null,
 
                 // Last approval info
-                last_approved_amount: lastApprovedAmountFormatted,
+                last_approved_amount: Number(item?.last_approval_nominal ?? 0),
                 last_approved_tenor: Number(item?.last_approval_tenor ?? 0),
                 last_approval_role: item?.last_approval_role ?? '-',
 

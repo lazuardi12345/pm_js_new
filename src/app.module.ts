@@ -37,7 +37,7 @@ import { SurveyorExternalUseCaseModule } from './Modules/Users/Roles/Surveyor-Ex
       port: 3306,
       username: process.env.MYSQL_USN,
       password: process.env.MYSQL_PWD,
-      database: process.env.DB_DEV || 'pm_js_test',
+      database: process.env.MYSQL_DB_TEST,
       charset: 'utf8mb4',
       autoLoadEntities: true,
       synchronize: true,

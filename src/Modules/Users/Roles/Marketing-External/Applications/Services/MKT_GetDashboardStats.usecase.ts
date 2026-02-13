@@ -11,7 +11,7 @@ export class MKT_GetDashboardStatsUseCase {
     private readonly loanAppRepo: ILoanApplicationExternalRepository,
   ) {}
 
-  async execute(marketingId: number) {
+  async execute(marketingId: number, type: 'internal' | 'external') {
     try {
       // ================================
       // 1. VALIDASI INPUT
@@ -29,6 +29,15 @@ export class MKT_GetDashboardStatsUseCase {
         };
       }
 
+      if (!type || !['internal', 'external'].includes(type)) {
+        return {
+          error: true,
+          message: 'Invalid type. Must be internal or external',
+          reference: 'INVALID_TYPE',
+          data: null,
+        };
+      }
+
       // ================================
       // 2. CALL SP
       // ================================
@@ -37,11 +46,22 @@ export class MKT_GetDashboardStatsUseCase {
       try {
         stats = await this.loanAppRepo.callSP_MKT_GetDashboard_External(
           Number(marketingId),
+          type,
         );
       } catch (err) {
         console.error('SP ERROR:', err);
 
-        // Misal database down / koneksi gagal
+        // Handle specific SQL errors
+        if (err?.message?.includes('SPV ID not found')) {
+          return {
+            error: true,
+            message: 'SPV ID not found for this marketing',
+            reference: 'SPV_ID_NOT_FOUND',
+            data: null,
+          };
+        }
+
+        // Database connection error
         if (err?.code === 'ECONNREFUSED' || err?.name === 'MongoNetworkError') {
           return {
             error: true,
@@ -72,28 +92,32 @@ export class MKT_GetDashboardStatsUseCase {
       }
 
       // ================================
-      // 4. NORMALISASI AMAN (TANPA UBAH STRUCTURE)
+      // 4. NORMALISASI AMAN (5 PARAMETERS DARI SP)
       // ================================
       const safeNum = (val: any) => {
         const n = Number(val);
         return Number.isFinite(n) ? n : 0;
       };
 
-      const total_loans = safeNum(stats.total_loans);
-      const approved_loans = safeNum(stats.approved_loans);
-      const rejected_loans = safeNum(stats.rejected_loans);
+      const pending = safeNum(stats.pending);
+      const approved_by_spv = safeNum(stats.approved_by_spv);
+      const rejected_by_spv = safeNum(stats.rejected_by_spv);
+      const success = safeNum(stats.success);
+      const canceled = safeNum(stats.canceled);
 
       // ================================
-      // 5. RETURN FINAL (STRUCTURE TETAP)
+      // 5. RETURN FINAL (SESUAI STRUCTURE SP)
       // ================================
       return {
         error: false,
         message: 'Marketing dashboard statistics retrieved successfully',
         reference: 'DASHBOARD_STATS_OK',
         data: {
-          total_loans,
-          approved_loans,
-          rejected_loans,
+          pending,
+          approved: approved_by_spv,
+          rejected: rejected_by_spv,
+          success,
+          canceled,
         },
       };
     } catch (err) {

@@ -25,6 +25,7 @@ async function bootstrap() {
   app.enableCors({
     origin: (origin, callback) => {
       const allowedOrigins = [
+        'https://cash-gampang-ui.vercel.app',
         'http://app.local:3000',
         'http://app.local:3002',
         'http://app.local:3001',
@@ -35,6 +36,7 @@ async function bootstrap() {
         'http://192.182.6.100:3003',
         'http://192.182.6.100:3004',
         'http://admin-portal.local',
+        'http://hm-portal.local',
         'http://localhost:3000',
         'http://loan-apps.local',
         'http://loan-apps.local:3000',

@@ -17,6 +17,7 @@ export interface IApprovalRecommendationRepository {
   findAllRecommendationInternalRequests(): Promise<ApprovalRecommendation[]>;
   findAllRecommendationExternalRequests(): Promise<ApprovalRecommendation[]>;
   findById(id: number): Promise<ApprovalRecommendation | null>;
+  findAllAcrossDataDraftById(draftId: string): Promise<any | null>;
   findByDraftId(draft_id: string): Promise<ApprovalRecommendation | null>;
   findByNIK(nik: string): Promise<ApprovalRecommendation[] | null>;
   delete(id: number): Promise<void>;

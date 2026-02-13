@@ -51,13 +51,18 @@ export class HM_GetAllApprovalRequestInternalUseCase {
       // Step 4: Format data dengan approval recommendation
       const formattedData = await Promise.all(
         paginatedData.map(async (item) => {
-          const nominal = Number(item.nominal_pinjaman) || 0;
+          const nominal = Number(item.nominal_pinjaman);
+          const isLowAmount = Number.isFinite(nominal) && nominal < 7_000_000;
 
           // Fetch approval recommendation
           let approval_recommendation: any = null;
           const draftId = item.draft_id ?? null;
 
-          if (draftId) {
+          if (isLowAmount) {
+            approval_recommendation = {
+              dont_have_check: true,
+            };
+          } else if (draftId) {
             try {
               const approvalData =
                 await this.approvalRecomRepo.findByDraftId(draftId);

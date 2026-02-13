@@ -65,6 +65,7 @@ export class LoanApplicationExternalRepositoryImpl
       orm.alasan_banding,
       orm.survey_schedule,
       orm.draft_id,
+      orm.marketing_id,
       orm.created_at,
       orm.updated_at,
       orm.deleted_at,
@@ -95,6 +96,7 @@ export class LoanApplicationExternalRepositoryImpl
       alasan_banding: domain.alasan_banding,
       survey_schedule: domain.survey_schedule,
       draft_id: domain.draft_id,
+      marketing_id: domain.marketing_id,
       created_at: domain.created_at,
       updated_at: domain.updated_at,
       deleted_at: domain.deleted_at,
@@ -136,6 +138,7 @@ export class LoanApplicationExternalRepositoryImpl
     if (partial.alasan_banding) orm.alasan_banding = partial.alasan_banding;
     if (partial.survey_schedule) orm.survey_schedule = partial.survey_schedule;
     if (partial.draft_id) orm.draft_id = partial.draft_id;
+    if (partial.marketing_id) orm.marketing_id = partial.marketing_id;
     if (partial.created_at) orm.created_at = partial.created_at;
     if (partial.updated_at) orm.updated_at = partial.updated_at;
     if (partial.deleted_at) orm.deleted_at = partial.deleted_at;
@@ -416,10 +419,11 @@ export class LoanApplicationExternalRepositoryImpl
 
   async callSP_MKT_GetDashboard_External(
     marketingId: number,
+    type: string,
   ): Promise<MarketingStats> {
     const results: MarketingStats = await this.ormRepository.manager.query(
-      `CALL MKT_GetDashboardStats(?)`,
-      [marketingId],
+      `CALL MKT_GetDashboardStats(?, ?)`,
+      [marketingId, type],
     );
 
     console.log(results[0][0]);
@@ -483,10 +487,11 @@ export class LoanApplicationExternalRepositoryImpl
 
   async callSP_SPV_GetDashboard_External(
     supervisorId: number,
+    type: string,
   ): Promise<SupervisorStats> {
     const results: SupervisorStats = await this.ormRepository.manager.query(
-      `CALL SPV_GetDashboardStats(?)`,
-      [supervisorId],
+      `CALL SPV_GetDashboardStats(?, ?)`,
+      [supervisorId, type],
     );
 
     console.log(results[0][0]);
@@ -549,15 +554,18 @@ export class LoanApplicationExternalRepositoryImpl
     return results;
   }
   async callSP_CA_GetDashboard_External(
-    creditAnalystId: number,
-  ): Promise<SupervisorStats> {
-    const results: SupervisorStats = await this.ormRepository.manager.query(
-      `CALL CA_GetDashboardStats(?)`,
-      [creditAnalystId],
+    userId: number,
+    type: string,
+    year?: number,
+    month?: number,
+    week?: number,
+  ): Promise<any[]> {
+    const manager = this.ormRepository.manager;
+    const result = await manager.query(
+      'CALL CA_GetDashboardStats(?, ?, ?, ?, ?)',
+      [userId, type, year || null, month || null, week || null],
     );
-
-    console.log(results[0][0]);
-    return results[0][0];
+    return result[0]; // SP result biasanya di index 0
   }
 
   //! ========== SVY ==========

@@ -90,4 +90,8 @@ export class CreateLoanApplicationExternalDto {
   @IsOptional()
   @IsString()
   draft_id?: string;
+
+  @IsOptional()
+  @IsNumber()
+  marketing_id?: number;
 }
