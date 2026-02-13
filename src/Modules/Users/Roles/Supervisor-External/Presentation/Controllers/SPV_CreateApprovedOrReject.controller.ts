@@ -4,6 +4,7 @@ import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 import { SPV_ApproveOrRejectUseCase } from '../../Applications/Services/SPV_ApprovedOrReject.usecase';
 import { ApprovalExternalStatus } from 'src/Shared/Enums/External/Approval.enum';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
+import { JwtToken } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/jwt-extractor.decorator';
 
 @Controller('spv/ext/loan-apps')
 export class SPV_ApprovedOrRejectController {
@@ -22,8 +23,11 @@ export class SPV_ApprovedOrRejectController {
       approved_amount?: number;
       analisa?: string;
       kesimpulan?: string;
+      marketing_id?: number;
     },
     @CurrentUser('id') supervisorId: number,
+    @JwtToken()
+    token?: string,
   ) {
     // Ambil SPV ID dari cookie
     if (!supervisorId) {
@@ -39,6 +43,8 @@ export class SPV_ApprovedOrRejectController {
       body.approved_tenor,
       body.approved_amount,
       body.kesimpulan,
+      body.marketing_id,
+      token,
     );
 
     // Return response

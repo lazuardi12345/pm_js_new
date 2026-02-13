@@ -16,6 +16,12 @@ import {
 import { ApprovalInternalStatusEnum } from 'src/Shared/Enums/Internal/Approval.enum';
 import { StatusPengajuanEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
+import { NotificationClientService } from 'src/Shared/Modules/Notifications/Infrastructure/Services/notification.service';
+import {
+  FILE_STORAGE_SERVICE,
+  IFileStorageRepository,
+} from 'src/Shared/Modules/Storage/Domain/Repositories/IFileStorage.repository';
+import { REQUEST_TYPE } from 'src/Shared/Modules/Storage/Infrastructure/Service/Interface/RequestType.interface';
 
 @Injectable()
 export class SPV_ApproveOrRejectUseCase {
@@ -26,6 +32,10 @@ export class SPV_ApproveOrRejectUseCase {
     private readonly loanAppRepo: ILoanApplicationInternalRepository,
     @Inject(USERS_REPOSITORY)
     private readonly userRepo: IUsersRepository,
+    @Inject(FILE_STORAGE_SERVICE)
+    private readonly fileStorage: IFileStorageRepository,
+
+    private readonly notificationClient: NotificationClientService,
   ) {}
 
   async execute(
@@ -36,6 +46,9 @@ export class SPV_ApproveOrRejectUseCase {
     tenor_persetujuan?: number,
     nominal_persetujuan?: number,
     keterangan?: string,
+    files?: Record<string, Express.Multer.File[]>,
+    marketingId?: number,
+    token?: string,
   ) {
     try {
       console.log(
@@ -81,6 +94,20 @@ export class SPV_ApproveOrRejectUseCase {
         );
       }
 
+      let additionalFileUrl: string | undefined;
+
+      if (files?.additional_files?.length) {
+        const filePaths = await this.fileStorage.saveFiles(
+          1,
+          'supervisor',
+          { additional_files: files.additional_files },
+          REQUEST_TYPE.INTERNAL,
+        );
+
+        // Ambil file pertama aja
+        additionalFileUrl = filePaths?.additional_files?.[0]?.url;
+      }
+
       // Buat entitas approval
       const approval = new ApprovalInternal(
         loan_id,
@@ -93,6 +120,7 @@ export class SPV_ApproveOrRejectUseCase {
         undefined,
         keterangan || '',
         undefined,
+        additionalFileUrl,
       );
 
       // Terapkan status approval
@@ -123,6 +151,25 @@ export class SPV_ApproveOrRejectUseCase {
         newLoanStatus,
       );
 
+      if (!token) {
+        throw new HttpException('Error', HttpStatus.BAD_REQUEST);
+      }
+
+      if (status === ApprovalInternalStatusEnum.APPROVED) {
+        await this.notificationClient.sendSPVApprovalResponseNotification(
+          loan_id,
+          user_id,
+          marketingId,
+          token,
+        );
+      } else if (status === ApprovalInternalStatusEnum.REJECTED) {
+        await this.notificationClient.sendSPVRejectionResponseNotification(
+          loan_id,
+          user_id,
+          marketingId,
+          token,
+        );
+      }
       return {
         error: false,
         message: `Approval berhasil disimpan dengan status ${savedApproval.status}`,

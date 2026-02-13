@@ -94,11 +94,7 @@ export class HM_GetAllApprovalRequestExternalUseCase {
             nama_nasabah: item.nama_nasabah || '-',
             tipe_nasabah: item.tipe_nasabah || '-',
             pinjaman_ke: item.pinjaman_ke ?? 0,
-            nominal_pinjaman: new Intl.NumberFormat('id-ID', {
-              style: 'currency',
-              currency: 'IDR',
-              minimumFractionDigits: 0,
-            }).format(nominal),
+            nominal_pinjaman: item.nominal_pinjaman ?? 0,
             tenor: item.tenor ? `${item.tenor} bulan` : '0 bulan',
             id_marketing: item.marketing_id || null,
             nama_marketing: item.nama_marketing || '-',

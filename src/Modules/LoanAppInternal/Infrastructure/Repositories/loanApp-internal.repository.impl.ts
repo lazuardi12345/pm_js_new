@@ -391,10 +391,11 @@ export class LoanApplicationInternalRepositoryImpl
 
   async callSP_MKT_GetDashboard_Internal(
     marketingId: number,
+    type?: string,
   ): Promise<MarketingStats> {
     const results: MarketingStats = await this.ormRepository.manager.query(
-      `CALL MKT_GetDashboardStats(?)`,
-      [marketingId],
+      `CALL MKT_GetDashboardStats(?, ?)`,
+      [marketingId, type],
     );
 
     console.log(results[0][0]);
@@ -457,10 +458,11 @@ export class LoanApplicationInternalRepositoryImpl
 
   async callSP_SPV_GetDashboard_Internal(
     supervisorId: number,
+    type: string,
   ): Promise<SupervisorStats> {
     const results: SupervisorStats = await this.ormRepository.manager.query(
-      `CALL SPV_GetDashboardStats(?)`,
-      [supervisorId],
+      `CALL SPV_GetDashboardStats(?, ?)`,
+      [supervisorId, type],
     );
 
     console.log(results[0][0]);
@@ -523,15 +525,18 @@ export class LoanApplicationInternalRepositoryImpl
   }
 
   async callSP_CA_GetDashboard_Internal(
-    creditAnalystId: number,
-  ): Promise<SupervisorStats> {
-    const results: SupervisorStats = await this.ormRepository.manager.query(
-      `CALL CA_GetDashboardStats(?)`,
-      [creditAnalystId],
+    userId: number,
+    type: string,
+    year?: number,
+    month?: number,
+    week?: number,
+  ): Promise<any[]> {
+    const manager = this.ormRepository.manager;
+    const result = await manager.query(
+      'CALL CA_GetDashboardStats(?, ?, ?, ?, ?)',
+      [userId, type, year || null, month || null, week || null],
     );
-
-    console.log(results[0][0]);
-    return results[0][0];
+    return result[0]; // SP result biasanya di index 0
   }
 
   // ========== HEAD MARKETING (HM) ==========
@@ -619,6 +624,19 @@ export class LoanApplicationInternalRepositoryImpl
     const result = await manager.query(
       'CALL AdCont_GetAllLoanData_Internal(?, ?)',
       [p_page, p_page_size],
+    );
+
+    return result;
+  }
+
+  async callSP_AdCont_GetLoanDetailById_Internal(
+    p_loan_app_id: number,
+  ): Promise<any[]> {
+    const manager = this.ormRepository.manager;
+
+    const result = await manager.query(
+      'CALL AdCont_GetLoanDetailById_Internal(?)',
+      [p_loan_app_id],
     );
 
     return result;

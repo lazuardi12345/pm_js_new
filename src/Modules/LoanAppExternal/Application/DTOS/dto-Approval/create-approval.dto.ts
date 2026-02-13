@@ -40,6 +40,10 @@ export class CreateApprovalExternalDto {
   kesimpulan?: string;
 
   @IsOptional()
+  @IsString()
+  dokumen_pendukung?: string;
+
+  @IsOptional()
   @IsBoolean()
   is_banding?: boolean;
 }

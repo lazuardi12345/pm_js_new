@@ -14,9 +14,11 @@ import { AdBIC_CreateApprovalResponseController } from './Presentation/AdBIC_Cre
 import { FileSystemStorageModules } from 'src/Shared/Modules/Storage/ModuleStorage.module';
 import { AdBIC_FindAllRecommendationHistoryController } from './Presentation/AdBIC_GetAllApprovalRecommendationHistory.controller';
 import { AdBIC_FindAllRecommendationRequestController } from './Presentation/AdBIC_GetAllApprovalRecommendationRequest.controller';
+import { NotificationAdapterModule } from 'src/Shared/Modules/Notifications/ModuleNotification.module';
 
 @Module({
   imports: [
+    NotificationAdapterModule,
     FileSystemStorageModules,
     ApprovalRecommendationModule,
     TypeOrmModule.forFeature([ApprovalRecommendationModule]),

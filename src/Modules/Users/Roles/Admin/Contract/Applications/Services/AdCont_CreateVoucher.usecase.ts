@@ -10,7 +10,7 @@ import {
   VOUCHER_REPOSITORY,
   IVouchersRepository,
 } from 'src/Modules/Admin/Contracts/Domain/Repositories/vouchers.repository';
-import { AdCont_CreateVoucherDto } from '../DTOS/AdCont_CreateContractPayload.dto';
+import { AdCont_CreateVoucherDto } from '../DTOS/AdCont_CreateVoucherPayload.dto';
 import { Vouchers } from 'src/Modules/Admin/Contracts/Domain/Entities/vouchers.entity';
 
 @Injectable()

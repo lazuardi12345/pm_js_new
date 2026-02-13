@@ -13,6 +13,7 @@ export class ApprovalExternal {
     public readonly tenor_persetujuan?: number,
     public status?: ApprovalExternalStatus, // ← HAPUS readonly di sini!
     public readonly kesimpulan?: string,
+    public readonly dokumen_pendukung?: string,
     public readonly created_at?: Date,
     public readonly updated_at?: Date,
     public readonly deleted_at?: Date | null,

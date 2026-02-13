@@ -24,6 +24,55 @@ export class LoanApplicationInternalService {
     private readonly repo: ILoanApplicationInternalRepository,
   ) {}
 
+  private buildApprovalRecommendation(row: any): any {
+    const draftId = row.draft_id ?? null;
+    const nominalPinjaman = Number(row.nominal_pinjaman ?? 0);
+    const isLowAmount =
+      !Number.isNaN(nominalPinjaman) && nominalPinjaman < 7000000;
+
+    // Tidak ada draft_id
+    if (!draftId) {
+      if (isLowAmount) {
+        return { dont_have_check: true };
+      }
+      return null;
+    }
+
+    // Ada draft_id
+    const hasApprovalData = !!row.recommendation || !!row.filePath;
+
+    if (hasApprovalData) {
+      const approvalNominal = Number(row.approval_nominal_pinjaman ?? 0);
+      const approvalIsLowAmount =
+        !Number.isNaN(approvalNominal) && approvalNominal < 7000000;
+
+      return {
+        draft_id: draftId,
+        nama_nasabah: row.nama_nasabah ?? '-',
+        recommendation: row.recommendation ?? null,
+        filePath: row.filePath ?? null,
+        catatan: row.catatan ?? null,
+        last_updated: row.last_updated ?? null,
+        isNeedCheck: row.is_need_check ?? false,
+        dont_have_check: approvalIsLowAmount,
+      };
+    } else if (isLowAmount) {
+      // Ada draft tapi belum ada approval, dan nominal < 7jt
+      return {
+        draft_id: draftId,
+        isNeedCheck: row.is_need_check ?? false,
+        dont_have_check: true,
+      };
+    } else {
+      // Ada draft tapi belum ada approval, dan nominal >= 7jt
+      return {
+        draft_id: draftId,
+        isNeedCheck: row.is_need_check ?? false,
+        recommendation: null,
+      };
+    }
+  }
+
   async create(
     dto: CreateLoanApplicationInternalDto,
   ): Promise<LoanApplicationInternal> {
@@ -127,15 +176,19 @@ export class LoanApplicationInternalService {
         switch (type) {
           case TypeSearchEnum.HISTORY:
             mappedData = result.data.map((row: any) => ({
-              id_nasabah: row.id_nasabah,
               id_pengajuan: row.id_pengajuan,
-              nominal_pinjaman: row.nominal_pinjaman,
+              id_nasabah: row.id_nasabah,
               nama_nasabah: row.nama_nasabah,
-              nama_marketing: row.marketing_nama,
+              nominal_pinjaman: row.nominal_pinjaman,
+              id_marketing: row.id_marketing,
+              nama_marketing: row.marketing_nama, // Dari SP: marketing_nama
               loan_status: row.loan_status,
+              loan_submitted_at: row.loan_submitted_at,
               approval_status: row.approval_status,
-              is_appealed: row.is_appealed,
+              is_appeal: row.is_appeal, // Dari SP: is_appeal (bukan is_appealed)
+              reason_for_appeal: row.reason_for_appeal,
               approve_response_date: row.approve_response_date,
+              approval_recommendation: this.buildApprovalRecommendation(row),
             }));
             break;
 
@@ -155,26 +208,36 @@ export class LoanApplicationInternalService {
         switch (type) {
           case TypeSearchEnum.HISTORY:
             mappedData = result.data.map((row: any) => ({
-              id_nasabah: row.id_nasabah,
               id_pengajuan: row.id_pengajuan,
-              nominal_pinjaman: row.nominal_pinjaman,
+              id_nasabah: row.id_nasabah,
               nama_nasabah: row.nama_nasabah,
+              nominal_pinjaman: row.nominal_pinjaman,
               id_marketing: row.id_marketing,
+              nama_marketing: row.nama_marketing,
               nama_supervisor: row.nama_supervisor,
-              nama_marketing: row.marketing_nama,
-              loan_app_status: row.loan_app_status,
+              payment_type: row.payment_type,
               approval_status: row.approval_status,
-              approval_tenor: row.approval_tenor,
-              approval_amount: row.approval_amount,
-              is_it_appeal: row.is_it_appeal,
+              loan_status: row.loan_status,
+              loan_submitted_at: row.loan_submitted_at,
               approve_response_date: row.approve_response_date,
+              is_it_appeal: row.is_it_appeal,
+              is_need_survey: row.is_need_survey,
+              approval_recommendation: this.buildApprovalRecommendation(row),
             }));
             break;
 
           case TypeSearchEnum.REQUEST:
             mappedData = result.data.map((row: any) => ({
-              loanAppId: row.loanAppId,
-              status: row.status,
+              id_pengajuan: row.loan_id,
+              nama_nasabah: row.nama_nasabah,
+              tipe_nasabah: row.tipe_nasabah,
+              nominal_pinjaman: row.nominal_pinjaman,
+              nama_marketing: row.nama_marketing,
+              nama_supervisor: row.nama_supervisor,
+              is_has_survey: row.is_has_survey || null,
+              status: row.status_pengajuan,
+              loan_submitted_at: row.loan_submitted_at,
+              approval_recommendation: this.buildApprovalRecommendation(row),
             }));
             break;
 
@@ -219,14 +282,17 @@ export class LoanApplicationInternalService {
                         : role === 'head_marketing'
                           ? 'hm'
                           : role;
-                  const nameKey = `${roleKey}_name`;
-                  const responseKey = `${roleKey}_response`;
-                  const responseAtKey = `${roleKey}_response_at`;
 
                   status[roleKey] = {
-                    [nameKey]: approval?.user_name || '-',
-                    [responseKey]: approval?.response || '-',
-                    [responseAtKey]: approval?.responded_at || '-',
+                    data: {
+                      [`${roleKey}_name`]: approval?.user_name || '-',
+                      [`${roleKey}_response`]: approval?.response || '-',
+                      [`${roleKey}_approved_amount`]:
+                        approval?.approval_amount ?? '-',
+                      [`${roleKey}_approved_tenor`]:
+                        approval?.approval_tenor ?? '-',
+                      [`${roleKey}_response_at`]: approval?.responded_at || '-',
+                    },
                   };
                 });
 
@@ -262,21 +328,29 @@ export class LoanApplicationInternalService {
 
               return {
                 loan_id: Number(loan.loan_id),
-                customer_id: loan.id_nasabah || null,
+                customer_id: loan.customer_id ? Number(loan.customer_id) : null,
                 customer_name: loan.nama_nasabah,
                 loan_amount: rupiahFormatter.format(
                   Number(loan.nominal_pinjaman),
                 ),
                 loan_sequence: loan.loan_sequence,
                 tenor: loan.tenor,
+                loan_submitted_at: loan.loan_submitted_at,
                 approval_request_submitted_at: earliestTimestamp,
                 approval_request_latest_responded_at: latestTimestamp,
                 latest_loan_app_status: loan.loan_app_status,
+                approval_status: loan.approval_status,
                 approval_tenor: loan.approval_tenor,
                 approval_amount: loan.approval_amount,
+                is_banding: loan.is_banding ? Number(loan.is_banding) : 0,
+                marketing_id: loan.marketing_id
+                  ? Number(loan.marketing_id)
+                  : null,
                 marketing_name: loan.marketing_nama,
+                supervisor_name: loan.supervisor_nama,
                 loan_application_status: loanApplicationStatus,
                 loan_appeal_status: loanAppealStatus,
+                approval_recommendation: this.buildApprovalRecommendation(loan),
               };
             });
             break;

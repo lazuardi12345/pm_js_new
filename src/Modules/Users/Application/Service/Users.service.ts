@@ -2,7 +2,11 @@ import { Injectable, Inject } from '@nestjs/common';
 import { UsersEntity } from '../../Domain/Entities/users.entity';
 import { CreateUserDto } from '../DTOS/create-user.dto';
 import { UpdateUserDto } from '../DTOS/update-user.dto';
-import { IUsersRepository, USERS_REPOSITORY } from '../../Domain/Repositories/users.repository';
+import {
+  IUsersRepository,
+  USERS_REPOSITORY,
+} from '../../Domain/Repositories/users.repository';
+import { RoleSearchEnum } from 'src/Shared/Enums/General/General.enum';
 
 @Injectable()
 export class UsersService {
@@ -45,5 +49,9 @@ export class UsersService {
 
   async softDelete(id: number): Promise<void> {
     return this.repo.softDelete(id);
+  }
+
+  async findIdsByRoles(roles: string[]): Promise<number[]> {
+    return this.repo.findIdsByRoles(roles);
   }
 }

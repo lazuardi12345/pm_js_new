@@ -47,6 +47,7 @@ import {
   APPROVAL_RECOMMENDATION_REPOSITORY,
   IApprovalRecommendationRepository,
 } from 'src/Modules/Admin/BI-Checking/Domain/Repositories/approval-recommendation.repository';
+import { NotificationClientService } from 'src/Shared/Modules/Notifications/Infrastructure/Services/notification.service';
 
 @Injectable()
 export class MKT_CreateLoanApplicationUseCase {
@@ -57,12 +58,16 @@ export class MKT_CreateLoanApplicationUseCase {
     private readonly approvalRecommendationRepo: IApprovalRecommendationRepository,
     @Inject(UNIT_OF_WORK)
     private readonly uow: IUnitOfWork,
+
+    private readonly notificationClient: NotificationClientService,
   ) {}
 
   async execute(
     dto: CreateLoanApplicationExternalDto,
     marketing_id: number,
     draftId: string,
+    spvId?: number | null,
+    token?: string,
   ) {
     const now = new Date();
     const nowWIB = new Date(now.getTime() + 7 * 60 * 60 * 1000);
@@ -153,7 +158,6 @@ export class MKT_CreateLoanApplicationUseCase {
         let customer = await this.clientRepo.findByKtp(formattedNik);
 
         if (!customer) {
-          // NIK BARU - Buat client baru
           try {
             const client = new ClientExternal(
               { id: marketing_id },
@@ -322,6 +326,7 @@ export class MKT_CreateLoanApplicationUseCase {
             loan_application_external.alasan_banding,
             loan_application_external?.survey_schedule,
             approvalDraftId,
+            marketing_id,
             nowWIB,
             nowWIB,
             undefined,
@@ -689,7 +694,6 @@ export class MKT_CreateLoanApplicationUseCase {
           // 4. Kedinasan NON MOU
           // ==========================
           case 'KEDINASAN_NON_MOU': {
-            console.log('OOO PUKIIII', collateral_kedinasan_non_mou_external);
             await this.uow.collateralByKedinasan_NON_MOURepo.save(
               new CollateralByKedinasan_Non_MOU(
                 { id: loanApp.id! },
@@ -845,6 +849,12 @@ export class MKT_CreateLoanApplicationUseCase {
               `Unknown collateral type: ${loan_external_type}`,
             );
         }
+
+        await this.notificationClient.sendLoanApplicationSubmittedNotification(
+          loanApp,
+          spvId,
+          token,
+        );
 
         return {
           payload: {

@@ -63,65 +63,68 @@ export class CA_GetAllApprovalRequest_UseCase {
       const formattedData = await Promise.all(
         paginatedData.map(async (item) => {
           const nominal = Number(item.nominal_pinjaman);
-          const formattedNominal = new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-          }).format(nominal);
+          const isLowAmount = Number.isFinite(nominal) && nominal < 7_000_000;
 
-          // Fetch approval recommendation langsung pakai draft_id
+          // Fetch approval recommendation
           let approval_recommendation: any = null;
+          const draftId = item.draft_id ?? null;
 
-          console.log(item);
-
-          if (item.draft_id) {
+          if (isLowAmount) {
+            approval_recommendation = {
+              dont_have_check: true,
+            };
+          } else if (draftId) {
             try {
-              const approvalData = await this.approvalRecomRepo.findByDraftId(
-                item.draft_id,
-              );
-
-              console.log(
-                'Approval Data for draft_id:',
-                item.draft_id,
-                approvalData,
-              );
+              const approvalData =
+                await this.approvalRecomRepo.findByDraftId(draftId);
 
               if (approvalData) {
                 approval_recommendation = {
-                  draft_id: approvalData.draft_id ?? item.draft_id,
+                  draft_id: approvalData.draft_id ?? draftId,
                   nama_nasabah:
-                    approvalData.nama_nasabah ?? item.nasabah_nama ?? '-',
+                    approvalData.nama_nasabah ?? item.nama_nasabah ?? '-',
                   recommendation: approvalData.recommendation ?? null,
                   filePath: approvalData.filePath ?? null,
                   catatan: approvalData.catatan ?? null,
                   last_updated: approvalData.updated_at ?? null,
                   isNeedCheck: !!item.isNeedCheck,
                 };
+              } else {
+                approval_recommendation = {
+                  draft_id: draftId,
+                  isNeedCheck: !!item.isNeedCheck,
+                  recommendation: null,
+                };
               }
             } catch (approvalErr) {
               console.error(
-                `Warning: failed to fetch approval recommendation for draft_id=${item.draft_id}`,
+                `Warning: failed to fetch approval recommendation for draft_id=${draftId}`,
                 approvalErr,
               );
-              approval_recommendation = {
-                error: true,
-                message: 'Failed to fetch approval recommendation',
-                reference: 'RECOMMENDATION_FETCH_FAILED',
-              };
             }
           }
 
           return {
-            id_pengajuan: Number(item.loan_id),
-            nama_nasabah: item.nama_nasabah,
-            tipe_nasabah: 'reguler',
-            jenis_pembiayaan: item.jenis_pembiayaan,
-            nominal_pinjaman: formattedNominal,
-            nama_marketing: item.nama_marketing,
-            nama_supervisor: item.nama_supervisor,
-            is_has_survey: Number(item.is_has_survey!),
-            status: item.status_pengajuan,
-            loan_submitted_at: item?.loan_submitted_at ?? '-',
-            approval_recommendation, // Tambahkan approval recommendation
+            pengajuan_id: item.pengajuan_id || null,
+            id_nasabah: item.nasabah_id || null,
+            nama_nasabah: item.nama_nasabah || '-',
+            tipe_nasabah: item.tipe_nasabah || '-',
+            pinjaman_ke: item.pinjaman_ke ?? 0,
+            nominal_pinjaman: new Intl.NumberFormat('id-ID', {
+              style: 'currency',
+              currency: 'IDR',
+              minimumFractionDigits: 0,
+            }).format(nominal),
+            tenor: item.tenor ? `${item.tenor} bulan` : '0 bulan',
+            id_marketing: item.marketing_id || null,
+            nama_marketing: item.nama_marketing || '-',
+            nama_supervisor: item.nama_supervisor || '-',
+            loan_submitted_at: item.waktu_pengajuan || '-',
+            status_loan: item.status_loan || '-',
+            perusahaan: item.perusahaan || '-',
+            is_banding: !!item.is_banding,
+            is_need_survey: Number(item.is_need_survey!),
+            approval_recommendation, // Tambahkan ini
           };
         }),
       );

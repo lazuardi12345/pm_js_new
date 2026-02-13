@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, In } from 'typeorm';
 
 import { UsersEntity } from '../../Domain/Entities/users.entity';
 import { IUsersRepository } from '../../Domain/Repositories/users.repository';
 import { Users_ORM_Entity } from '../Entities/users.orm-entity';
+import { RoleSearchEnum } from 'src/Shared/Enums/General/General.enum';
+import { USERSTATUS } from 'src/Shared/Enums/Users/Users.enum';
 
 @Injectable()
 export class UsersRepositoryImpl implements IUsersRepository {
@@ -110,6 +112,17 @@ export class UsersRepositoryImpl implements IUsersRepository {
 
   async softDelete(id: number): Promise<void> {
     await this.ormRepository.softDelete(id);
+  }
+
+  async findIdsByRoles(roles: string[]): Promise<number[]> {
+    const ormEntities = await this.ormRepository.find({
+      where: {
+        usertype: In(roles),
+        is_active: USERSTATUS.ACTIVE,
+      },
+      select: ['id'], // Only select ID for performance
+    });
+    return ormEntities.map((orm) => orm.id);
   }
 
   async callSP_HM_GetAllUsers(

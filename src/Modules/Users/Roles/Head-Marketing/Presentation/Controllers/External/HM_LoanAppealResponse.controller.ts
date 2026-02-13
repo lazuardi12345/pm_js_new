@@ -10,7 +10,6 @@ import {
 import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
 import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/roles.decorator';
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
-import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
 import { HM_LoanAppealResponseExternalUseCase } from '../../../Application/Services/External/HM_LoanAppealResponse.usecase';
 import { ApprovalExternalStatus } from 'src/Shared/Enums/External/Approval.enum';
@@ -32,12 +31,21 @@ export class HM_LoanAppealResponseExternalController {
         | ApprovalExternalStatus.REJECTED;
       appeal_consideration?: string;
       appeal_conclusion?: string;
+      appeal_approval_tenor?: number;
+      appeal_approval_amount?: number;
+      additional_document?: string;
     },
     @CurrentUser('id') headMarketingId: number,
   ) {
     try {
-      const { appeal_response, appeal_consideration, appeal_conclusion } =
-        payload;
+      const {
+        appeal_response,
+        appeal_consideration,
+        appeal_conclusion,
+        appeal_approval_tenor,
+        appeal_approval_amount,
+        additional_document,
+      } = payload;
 
       const result = await this.postAppealResponseUseCase.execute(
         headMarketingId,
@@ -45,6 +53,9 @@ export class HM_LoanAppealResponseExternalController {
         appeal_response,
         appeal_consideration,
         appeal_conclusion,
+        appeal_approval_tenor,
+        appeal_approval_amount,
+        additional_document,
       );
 
       return result;

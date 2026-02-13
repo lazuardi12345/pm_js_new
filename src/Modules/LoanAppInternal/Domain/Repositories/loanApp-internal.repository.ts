@@ -77,6 +77,7 @@ export interface ILoanApplicationInternalRepository {
   //! ========== MARKETING ==========
   callSP_MKT_GetDashboard_Internal(
     marketingId: number,
+    type?: string,
   ): Promise<MarketingStats>;
 
   callSP_MKT_GetAllLoanApplications_Internal(
@@ -116,6 +117,7 @@ export interface ILoanApplicationInternalRepository {
   callSP_SPV_GetAllTeams_Internal(supervisorId: number): Promise<any[]>;
   callSP_SPV_GetDashboard_Internal(
     supervisorId: number,
+    type: string,
   ): Promise<SupervisorStats>;
 
   //!========== HEAD MARKETING (HM) ==========
@@ -157,12 +159,18 @@ export interface ILoanApplicationInternalRepository {
     loanAppId: number,
   ): Promise<[TypeLoanApplicationDetail[], TypeApprovalDetail[]]>;
   callSP_CA_GetDashboard_Internal(
-    creditAnalystId: number,
-  ): Promise<SupervisorStats>;
+    userId: number,
+    type: string,
+    year?: number,
+    month?: number,
+    week?: number,
+  ): Promise<any[]>;
 
   //! ========== AdminContract (AC) ==========
   callSP_AdCont_GetAllLoanData_Internal(
     page: number,
     pageSize: number,
   ): Promise<any[]>;
+
+  callSP_AdCont_GetLoanDetailById_Internal(loan_app_id: number): Promise<any[]>;
 }

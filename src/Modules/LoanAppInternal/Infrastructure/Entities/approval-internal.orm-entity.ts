@@ -15,6 +15,7 @@ import {
 } from 'typeorm';
 
 @Index('IDX_LOAN_APPLICATION_ROLE', ['pengajuan', 'role'])
+@Index('IDX_APPROVAL_INTERNAL_STATUS_CREATED_AT', ['created_at', 'status'])
 @Entity('approval_internal')
 export class ApprovalInternal_ORM_Entity {
   @PrimaryGeneratedColumn('increment')
@@ -71,6 +72,9 @@ export class ApprovalInternal_ORM_Entity {
 
   @Column({ type: 'text', nullable: true })
   kesimpulan?: string;
+
+  @Column({ type: 'text', nullable: true })
+  dokumen_pendukung?: string;
 
   @CreateDateColumn({ type: 'timestamp', nullable: true })
   created_at?: Date;

@@ -18,7 +18,11 @@ export class SPV_GetDashboardStatsController {
   @Get('dashboard-stats')
   async getDashboardStats(@CurrentUser('id') supervisorId: number) {
     try {
-      const payload = await this.getDashboardStatsUseCase.execute(supervisorId);
+      const external = 'external';
+      const payload = await this.getDashboardStatsUseCase.execute(
+        supervisorId,
+        external,
+      );
       return {
         payload,
       };

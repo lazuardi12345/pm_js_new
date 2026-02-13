@@ -63,10 +63,10 @@ export class CA_GetAllApprovalRequest_UseCase {
       const formattedData = await Promise.all(
         paginatedData.map(async (item) => {
           const nominal = Number(item.nominal_pinjaman);
-          const formattedNominal = new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-          }).format(nominal);
+          // const formattedNominal = new Intl.NumberFormat('id-ID', {
+          //   style: 'currency',
+          //   currency: 'IDR',
+          // }).format(nominal);
 
           // Fetch approval recommendation langsung pakai draft_id
           let approval_recommendation: any = null;
@@ -115,7 +115,7 @@ export class CA_GetAllApprovalRequest_UseCase {
             nama_nasabah: item.nama_nasabah,
             tipe_nasabah: 'reguler',
             jenis_pembiayaan: item.jenis_pembiayaan,
-            nominal_pinjaman: formattedNominal,
+            nominal_pinjaman: item.nominal,
             nama_marketing: item.nama_marketing,
             nama_supervisor: item.nama_supervisor,
             is_has_survey: Number(item.is_has_survey!),

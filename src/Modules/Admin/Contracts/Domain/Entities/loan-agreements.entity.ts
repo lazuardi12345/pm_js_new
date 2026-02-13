@@ -1,9 +1,11 @@
+import { InternalCompanyList } from 'src/Shared/Enums/Admins/Contract/loan-agreement.enum';
+
 export class LoanAgreement {
   constructor(
     public readonly nomor_kontrak: string,
     public readonly nama: string,
     public readonly alamat: string,
-    public readonly no_ktp: string,
+    public readonly no_ktp: number,
     public readonly type: string,
     public readonly pokok_pinjaman: number,
     public readonly tenor: number,
@@ -14,14 +16,13 @@ export class LoanAgreement {
     public readonly tanggal_jatuh_tempo: Date,
     public readonly id?: number,
     public readonly nomor_urut?: number,
-    public readonly kelompok?: string,
-    public readonly perusahaan?: string,
+    public readonly perusahaan?: InternalCompanyList,
     public readonly inisial_marketing?: string,
     public readonly golongan?: string,
     public readonly inisial_ca?: string,
     public readonly id_card?: string,
     public readonly kedinasan?: string,
-    public readonly pinjaman_ke?: string,
+    public readonly pinjaman_ke?: number,
     public readonly catatan?: string,
     public readonly created_at?: Date,
     public readonly deleted_at?: Date | null,

@@ -11,31 +11,124 @@ export class SPV_GetDashboardStatsUseCase {
     private readonly loanAppRepo: ILoanApplicationInternalRepository,
   ) {}
 
-  async execute(supervisorId: number) {
-    // ambil data dari SP
-    const stats =
-      await this.loanAppRepo.callSP_SPV_GetDashboard_Internal(supervisorId);
+  async execute(supervisorId: number, type: 'internal' | 'external') {
+    try {
+      // ================================
+      // 1. VALIDASI INPUT
+      // ================================
+      if (
+        supervisorId === null ||
+        supervisorId === undefined ||
+        Number.isNaN(Number(supervisorId))
+      ) {
+        return {
+          error: true,
+          message: 'Invalid supervisorId',
+          reference: 'INVALID_SUPERVISOR_ID',
+          data: null,
+        };
+      }
 
-    // kalau gak ada data dari SP
-    if (!stats) {
+      if (!type || !['internal', 'external'].includes(type)) {
+        return {
+          error: true,
+          message: 'Invalid type. Must be internal or external',
+          reference: 'INVALID_TYPE',
+          data: null,
+        };
+      }
+
+      // ================================
+      // 2. CALL SP
+      // ================================
+      let stats: any;
+
+      try {
+        stats = await this.loanAppRepo.callSP_SPV_GetDashboard_Internal(
+          Number(supervisorId),
+          type,
+        );
+      } catch (err) {
+        console.error('SP ERROR:', err);
+
+        // Handle specific SQL errors
+        if (err?.message?.includes('SPV ID not found')) {
+          return {
+            error: true,
+            message: 'SPV ID not found for this marketing',
+            reference: 'SPV_ID_NOT_FOUND',
+            data: null,
+          };
+        }
+
+        // Database connection error
+        if (err?.code === 'ECONNREFUSED' || err?.name === 'MongoNetworkError') {
+          return {
+            error: true,
+            message: 'Database connection error',
+            reference: 'DB_CONNECTION_ERROR',
+            data: null,
+          };
+        }
+
+        return {
+          error: true,
+          message: 'Failed to retrieve dashboard statistics',
+          reference: 'DASHBOARD_STATS_SP_ERROR',
+          data: null,
+        };
+      }
+
+      // ================================
+      // 3. HANDLE KALAU DATA KOSONG
+      // ================================
+      if (!stats || typeof stats !== 'object') {
+        return {
+          error: true,
+          message: `Dashboard stats for Supervisor ID ${supervisorId} not found`,
+          reference: 'DASHBOARD_STATS_NOT_FOUND',
+          data: null,
+        };
+      }
+
+      // ================================
+      // 4. NORMALISASI AMAN (5 PARAMETERS DARI SP)
+      // ================================
+      const safeNum = (val: any) => {
+        const n = Number(val);
+        return Number.isFinite(n) ? n : 0;
+      };
+
+      const approved_by_spv = safeNum(stats.approved_by_spv);
+      const rejected_by_spv = safeNum(stats.rejected_by_spv);
+      const success = safeNum(stats.success);
+      const canceled = safeNum(stats.canceled);
+
+      // ================================
+      // 5. RETURN FINAL (SESUAI STRUCTURE SP)
+      // ================================
+      return {
+        error: false,
+        message: 'Supervisor dashboard statistics retrieved successfully',
+        reference: 'DASHBOARD_STATS_OK',
+        data: {
+          approved: approved_by_spv,
+          rejected: rejected_by_spv,
+          success,
+          canceled,
+        },
+      };
+    } catch (err) {
+      console.error('UNEXPECTED ERROR:', err);
+
+      // fallback aman
       return {
         error: true,
-        message: `Dashboard stats for SPV ID ${supervisorId} not found`,
-        reference: 'DASHBOARD_STATS_NOT_FOUND',
+        message:
+          err?.message || 'Unexpected error while retrieving dashboard stats',
+        reference: 'DASHBOARD_UNKNOWN_ERROR',
         data: null,
       };
     }
-
-    // return hasil marketing doang
-    return {
-      error: false,
-      message: 'Marketing dashboard statistics retrieved successfully',
-      reference: 'DASHBOARD_STATS_OK',
-      data: {
-        total_loans: stats.approval_request,
-        approved_loans: stats.approved_request,
-        rejected_loans: stats.rejected_request,
-      },
-    };
   }
 }

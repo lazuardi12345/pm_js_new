@@ -64,10 +64,6 @@ export class SPV_GetAllApprovalRequestByTeam_UseCase {
       const formattedData = await Promise.all(
         paginatedData.map(async (item) => {
           const nominal = Number(item.nominal_pinjaman);
-          const formattedNominal = new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-          }).format(nominal);
 
           // Fetch approval recommendation langsung pakai draft_id
           let approval_recommendation: any = null;
@@ -115,7 +111,7 @@ export class SPV_GetAllApprovalRequestByTeam_UseCase {
             id_pengajuan: Number(item.loan_id),
             nama_nasabah: item.nasabah_nama,
             tipe_nasabah: 'reguler',
-            nominal_pinjaman: formattedNominal,
+            nominal_pinjaman: item.nominal_pinjaman || '-',
             jenis_pembiayaan: item.jenis_pembiayaan || null,
             nama_marketing: item.marketing_nama || null,
             status: item.loan_status,

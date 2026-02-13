@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from '../../Application/Service/Users.service';
 import { CreateUserDto } from '../../Application/DTOS/create-user.dto';
@@ -20,12 +21,19 @@ export class UsersController {
     return this.usersService.create(dto);
   }
 
+  @Public()
+  @Get('/by-roles')
+  async getUsersByRoles(@Query('roles') roles: string) {
+    const roleArray = roles.split(',');
+    const users = await this.usersService.findIdsByRoles(roleArray);
+    return { data: users.map((id) => ({ id })) };
+  }
+
   @Get(':id')
   async findById(@Param('id') id: number) {
     return this.usersService.findById(+id);
   }
 
-  @Public()
   @Get()
   async findAll() {
     return this.usersService.findAll();

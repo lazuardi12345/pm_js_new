@@ -31,6 +31,7 @@ export class CA_LoanAppealResponseUseCase {
     appeal_conclusion?: string,
     nominal_persetujuan?: number,
     tenor_persetujuan?: number,
+    dokumen_pendukung?: string,
   ) {
     try {
       const now = new Date();
@@ -45,6 +46,7 @@ export class CA_LoanAppealResponseUseCase {
         undefined,
         appeal_consideration,
         appeal_conclusion,
+        dokumen_pendukung,
         now,
         now,
       );

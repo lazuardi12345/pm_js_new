@@ -28,6 +28,7 @@ export class LoanApplicationExternal {
     public readonly alasan_banding?: string,
     public survey_schedule?: Date,
     public draft_id?: string,
+    public marketing_id?: number,
     public readonly created_at?: Date,
     public readonly updated_at?: Date,
     public readonly deleted_at?: Date | null,

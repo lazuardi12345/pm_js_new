@@ -36,6 +36,7 @@ export class HM_ApproveOrRejectInternalUseCase {
     tenor_persetujuan?: number,
     nominal_persetujuan?: number,
     keterangan?: string,
+    dokumen_pendukung?: string,
   ) {
     try {
       console.log(
@@ -89,6 +90,7 @@ export class HM_ApproveOrRejectInternalUseCase {
         undefined,
         keterangan || '',
         undefined,
+        dokumen_pendukung,
       );
 
       // Terapkan status approval

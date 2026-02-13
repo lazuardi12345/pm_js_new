@@ -4,7 +4,6 @@ import { SPV_GetDashboardStatsUseCase } from '../../Applications/Services/SPV_Ge
 import { RolesGuard } from 'src/Shared/Modules/Authentication/Infrastructure/Guards/roles.guard';
 import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/roles.decorator';
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
-import { Public } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/public.decorator';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
 @Controller('spv/int/loan-apps')
 export class SPV_GetDashboardStatsController {
@@ -19,7 +18,11 @@ export class SPV_GetDashboardStatsController {
   @Get('dashboard-stats')
   async getDashboardStats(@CurrentUser('id') supervisorId: number) {
     try {
-      const payload = await this.getDashboardStatsUseCase.execute(supervisorId);
+      const internal = 'internal';
+      const payload = await this.getDashboardStatsUseCase.execute(
+        supervisorId,
+        internal,
+      );
       return {
         payload,
       };

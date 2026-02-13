@@ -105,8 +105,8 @@ export class SPV_GetLoanApplicationByIdUseCase {
       };
     }
 
-    const loanAppStatus: Record<string, TypeStatusApproval | null> = {};
-    const appealStatus: Record<string, TypeStatusApproval | null> = {};
+    const loanAppStatus: Record<string, any | null> = {};
+    const appealStatus: Record<string, any | null> = {};
 
     // mapping role ke key yang konsisten
     const roleMap: Record<string | number, string> = {
@@ -119,10 +119,10 @@ export class SPV_GetLoanApplicationByIdUseCase {
     };
 
     // === IMPORTANT: approvals is TypeApprovalDetail[] ===
-    (approvals ?? []).forEach((approval: TypeApprovalDetail) => {
+    (approvals ?? []).forEach((approval: any) => {
       const roleKey = roleMap[approval.role] ?? approval.role;
 
-      const data: TypeStatusApproval = {
+      const data: any = {
         id_user: approval.user_id,
         name: approval.user_nama,
         data: {
@@ -132,6 +132,7 @@ export class SPV_GetLoanApplicationByIdUseCase {
           kesimpulan: approval.kesimpulan,
           approved_tenor: approval.tenor_persetujuan,
           approved_amount: approval.nominal_persetujuan,
+          additional_files: approval?.additional_files ?? '-',
           created_at: approval.created_at,
           updated_at: approval.updated_at,
         },
@@ -227,6 +228,7 @@ export class SPV_GetLoanApplicationByIdUseCase {
             notes: loanData.notes,
             is_banding: loanData.loan_is_banding || '-',
             alasan_banding: loanData.loan_alasan_banding || '-',
+            marketing_id: loanData.marketing_id || '-',
           },
           relatives_internal: {
             kerabat_kerja: loanData.kerabat_kerja,

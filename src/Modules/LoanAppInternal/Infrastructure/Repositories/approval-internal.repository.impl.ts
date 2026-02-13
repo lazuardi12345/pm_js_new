@@ -11,6 +11,8 @@ import { Users_ORM_Entity } from 'src/Modules/Users/Infrastructure/Entities/user
 import { LoanApplicationInternalRepositoryImpl } from './loanApp-internal.repository.impl';
 import { StatusPengajuanEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
 import { ApprovalInternalStatusEnum } from 'src/Shared/Enums/Internal/Approval.enum';
+import { ApprovalInternalNotificationRaw } from '../../Application/DTOS/dto-Address/get-total-notification.dto';
+import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 
 @Injectable()
 export class ApprovalInternalRepositoryImpl
@@ -20,7 +22,6 @@ export class ApprovalInternalRepositoryImpl
   constructor(
     @InjectRepository(ApprovalInternal_ORM_Entity)
     private readonly ormRepository: Repository<ApprovalInternal_ORM_Entity>,
-
     private readonly loanAppRepo: LoanApplicationInternalRepositoryImpl, // Inject repository Loan
   ) {}
 
@@ -40,6 +41,7 @@ export class ApprovalInternalRepositoryImpl
       orm.id,
       orm.keterangan,
       orm.kesimpulan,
+      orm.dokumen_pendukung,
       orm.created_at,
       orm.updated_at,
       orm.deleted_at,
@@ -62,6 +64,7 @@ export class ApprovalInternalRepositoryImpl
       is_banding: domainEntity.isBanding,
       keterangan: domainEntity.keterangan,
       kesimpulan: domainEntity.kesimpulan,
+      dokumen_pendukung: domainEntity.dokumen_pendukung,
       created_at: domainEntity.createdAt,
       updated_at: domainEntity.updatedAt,
       deleted_at: domainEntity.deletedAt,
@@ -90,6 +93,8 @@ export class ApprovalInternalRepositoryImpl
     if (partial.isBanding !== undefined) ormData.is_banding = partial.isBanding;
     if (partial.keterangan) ormData.keterangan = partial.keterangan;
     if (partial.kesimpulan) ormData.kesimpulan = partial.kesimpulan;
+    if (partial.dokumen_pendukung)
+      ormData.dokumen_pendukung = partial.dokumen_pendukung;
     if (partial.createdAt) ormData.created_at = partial.createdAt;
     if (partial.updatedAt) ormData.updated_at = partial.updatedAt;
     if (partial.deletedAt) ormData.deleted_at = partial.deletedAt;
@@ -201,5 +206,30 @@ export class ApprovalInternalRepositoryImpl
         user_id: userId,
       },
     });
+  }
+
+  async totalApprovalRequestInternal(
+    role: USERTYPE,
+    userId: number,
+  ): Promise<ApprovalInternalNotificationRaw> {
+    return this.execCountSP(
+      'GENERAL_NotificationApprovalsInternal',
+      role,
+      userId,
+    );
+  }
+
+  private async execCountSP(
+    spName: string,
+    role: USERTYPE,
+    userId: number,
+  ): Promise<ApprovalInternalNotificationRaw> {
+    const manager = this.ormRepository.manager;
+
+    const result = await manager.query(`CALL ${spName}(?, ?)`, [role, userId]);
+
+    return {
+      total: result?.[0]?.[0]?.approval_request_total ?? 0,
+    };
   }
 }

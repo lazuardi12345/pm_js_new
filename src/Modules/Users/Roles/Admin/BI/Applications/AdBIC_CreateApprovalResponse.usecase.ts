@@ -18,21 +18,24 @@ import {
 import { ApprovalRecommendation } from 'src/Modules/Admin/BI-Checking/Domain/Entities/approval-recommendation.entity';
 import { AdBIC_CreatePayloadDto } from './DTOS/AdBIC_CreatePayload.dto';
 import { LoanTypeEnum } from 'src/Shared/Enums/Admins/BI/approval-recommendation.enum';
+import { NotificationClientService } from 'src/Shared/Modules/Notifications/Infrastructure/Services/notification.service';
 
 @Injectable()
 export class AdBIC_CreateApprovalResponseUseCase {
   constructor(
     @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
     private readonly approvalRecommendation: IApprovalRecommendationRepository,
-
     @Inject(FILE_STORAGE_SERVICE)
     private readonly fileStorage: IFileStorageRepository,
+
+    private readonly notificationClient: NotificationClientService,
   ) {}
 
   async executeCreateDraft(
     dto: AdBIC_CreatePayloadDto,
     files?: Record<string, Express.Multer.File[]>,
     type?: LoanTypeEnum,
+    token?: string,
   ) {
     try {
       let filePaths: Record<string, FileMetadata[]> = {};
@@ -86,7 +89,6 @@ export class AdBIC_CreateApprovalResponseUseCase {
           new Date(),
         );
 
-        // 5️⃣ Save
         const loanApp = await this.approvalRecommendation.create(entity);
 
         if (!loanApp) {
@@ -101,6 +103,18 @@ export class AdBIC_CreateApprovalResponseUseCase {
             HttpStatus.INTERNAL_SERVER_ERROR,
           );
         }
+
+        const findMarketingId =
+          await this.approvalRecommendation.findAllAcrossDataDraftById(
+            dto.draft_id! ?? undefined,
+          );
+
+        const marketingId = findMarketingId.marketing_id.toString();
+        const draftId = findMarketingId._id.toString();
+        this.notificationClient.sendAdminBIApprovalNotification(
+          { marketingId, draftId },
+          token,
+        );
 
         return {
           dto: {

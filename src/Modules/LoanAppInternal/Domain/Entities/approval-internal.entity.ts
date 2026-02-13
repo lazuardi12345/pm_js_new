@@ -1,7 +1,6 @@
 // src/modules/LoanAppInternal/domain/entities/approval-internal.entity.ts
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 import { ApprovalInternalStatusEnum } from 'src/Shared/Enums/Internal/Approval.enum';
-import { StatusPengajuanAkhirEnum } from 'src/Shared/Enums/Internal/LoanApp.enum';
 
 export class ApprovalInternal {
   constructor(
@@ -15,6 +14,7 @@ export class ApprovalInternal {
     public readonly id?: number,
     public readonly keterangan?: string,
     public readonly kesimpulan?: string,
+    public readonly dokumen_pendukung?: string,
     public readonly createdAt?: Date,
     public readonly updatedAt?: Date,
     public readonly deletedAt?: Date | null,

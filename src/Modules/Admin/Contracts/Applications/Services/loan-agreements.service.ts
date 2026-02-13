@@ -30,16 +30,15 @@ export class LoanAgreementService {
       dto.bunga,
       dto.tanggal_jatuh_tempo,
       undefined,
-      dto.nomor_urut, // Optional nomor_urut
-      dto.kelompok, // Optional kelompok
-      dto.perusahaan, // Optional perusahaan
-      dto.inisial_marketing, // Optional inisial_marketing
-      dto.golongan, // Optional golongan
-      dto.inisial_ca, // Optional inisial_ca
-      dto.id_card, // Optional id_card
-      dto.kedinasan, // Optional kedinasan
-      dto.pinjaman_ke, // Optional pinjaman_ke
-      dto.catatan, // Optional catatan
+      dto.nomor_urut,
+      dto.perusahaan,
+      dto.inisial_marketing,
+      dto.golongan,
+      dto.inisial_ca,
+      dto.id_card,
+      dto.kedinasan,
+      dto.pinjaman_ke,
+      dto.catatan,
       now,
       null,
       now,

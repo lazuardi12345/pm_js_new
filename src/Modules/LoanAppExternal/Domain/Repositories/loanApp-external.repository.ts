@@ -82,6 +82,7 @@ export interface ILoanApplicationExternalRepository {
 
   callSP_MKT_GetDashboard_External(
     marketingId: number,
+    type: string,
   ): Promise<MarketingStats>;
 
   callSP_MKT_GetAllLoanApplications_External(
@@ -122,6 +123,7 @@ export interface ILoanApplicationExternalRepository {
   callSP_SPV_GetAllTeams_External(supervisorId: number): Promise<any[]>;
   callSP_SPV_GetDashboard_External(
     supervisorId: number,
+    type: string,
   ): Promise<SupervisorStats>;
 
   //!========== HEAD MARKETING (HM) ==========
@@ -163,8 +165,12 @@ export interface ILoanApplicationExternalRepository {
     loanAppId: number,
   ): Promise<[TypeLoanApplicationDetail[], TypeApprovalDetail[]]>;
   callSP_CA_GetDashboard_External(
-    creditAnalystId: number,
-  ): Promise<SupervisorStats>;
+    userId: number,
+    type: string,
+    year?: number,
+    month?: number,
+    week?: number,
+  ): Promise<any[]>;
 
   //! ========== SURVEYOR (SVY) ==========
   callSP_SVY_GetAllUnscheduledSurveyList_External(
@@ -196,12 +202,5 @@ export interface ILoanApplicationExternalRepository {
     pageSize: number,
   ): Promise<any[]>;
 
-  callSP_AdCont_GetAllLoanData_Internal(
-    page: number,
-    pageSize: number,
-  ): Promise<any[]>;
-
   callSP_AdCont_GetLoanDetailById_External(loan_app_id: number): Promise<any[]>;
-
-  // callSP_AdCont_GetLoanDetailById_Internal(loan_app_id: number): Promise<any[]>;
 }

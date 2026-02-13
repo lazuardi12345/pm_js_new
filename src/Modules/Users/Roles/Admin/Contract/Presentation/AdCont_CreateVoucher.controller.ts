@@ -6,9 +6,9 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { AdCont_CreateVoucherUseCase } from '../Applications/Services/AdCont_CreateVoucher.usecase';
-import { AdCont_CreateVoucherDto } from '../Applications/DTOS/AdCont_CreateContractPayload.dto';
+import { AdCont_CreateVoucherDto } from '../Applications/DTOS/AdCont_CreateVoucherPayload.dto';
 
-@Controller('admin-contracts')
+@Controller('adcont')
 export class AdCont_CreateVouchersController {
   constructor(
     private readonly createVoucherUseCase: AdCont_CreateVoucherUseCase,

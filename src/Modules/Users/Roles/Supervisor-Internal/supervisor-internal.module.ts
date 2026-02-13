@@ -33,9 +33,12 @@ import { SPV_GetDetailDraftByIdUseCase } from './Applications/Services/SPV_GetDe
 import { SPV_GetDetailDraftByIdController } from './Presentation/Controllers/SPV_GetDetailDraftById.controller';
 import { DraftRepeatOrderModule } from 'src/Shared/Modules/Drafts/Modules/DraftRepeatOrder.module';
 import { ApprovalRecommendationModule } from 'src/Modules/Admin/BI-Checking/Modules/approval-recommendation.module';
+import { FileSystemStorageModules } from 'src/Shared/Modules/Storage/ModuleStorage.module';
+import { NotificationAdapterModule } from 'src/Shared/Modules/Notifications/ModuleNotification.module';
 
 @Module({
   imports: [
+    NotificationAdapterModule,
     ApprovalInternalModule,
     LoanApplicationInternalModule,
     UsersModule,
@@ -47,6 +50,7 @@ import { ApprovalRecommendationModule } from 'src/Modules/Admin/BI-Checking/Modu
     DraftLoanApplicationModule,
     DraftRepeatOrderModule,
     ApprovalRecommendationModule,
+    FileSystemStorageModules,
   ],
   controllers: [
     SPV_ApprovedOrRejectController,

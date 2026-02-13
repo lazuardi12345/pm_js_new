@@ -16,6 +16,7 @@ import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 import { ApprovalExternalStatus } from 'src/Shared/Enums/External/Approval.enum';
 import { StatusPengajuanEnum } from 'src/Shared/Enums/External/Loan-Application.enum';
 import { ApprovalExternal } from 'src/Modules/LoanAppExternal/Domain/Entities/approval-external.entity';
+import { NotificationClientService } from 'src/Shared/Modules/Notifications/Infrastructure/Services/notification.service';
 
 @Injectable()
 export class SPV_ApproveOrRejectUseCase {
@@ -26,6 +27,8 @@ export class SPV_ApproveOrRejectUseCase {
     private readonly loanAppRepo: ILoanApplicationExternalRepository,
     @Inject(USERS_REPOSITORY)
     private readonly userRepo: IUsersRepository,
+
+    private readonly notificationClient: NotificationClientService,
   ) {}
 
   async execute(
@@ -36,6 +39,8 @@ export class SPV_ApproveOrRejectUseCase {
     approved_tenor?: number,
     approved_amount?: number,
     kesimpulan?: string,
+    marketingId?: number,
+    token?: string,
   ) {
     try {
       console.log(
@@ -122,6 +127,26 @@ export class SPV_ApproveOrRejectUseCase {
         loan_id,
         newLoanStatus,
       );
+
+      if (!token) {
+        throw new HttpException('Error', HttpStatus.BAD_REQUEST);
+      }
+
+      if (status === ApprovalExternalStatus.APPROVED) {
+        await this.notificationClient.sendSPVApprovalResponseNotification(
+          loan_id,
+          user_id,
+          marketingId,
+          token,
+        );
+      } else if (status === ApprovalExternalStatus.REJECTED) {
+        await this.notificationClient.sendSPVRejectionResponseNotification(
+          loan_id,
+          user_id,
+          marketingId,
+          token,
+        );
+      }
 
       return {
         error: false,

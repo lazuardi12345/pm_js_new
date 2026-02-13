@@ -19,7 +19,11 @@ export class MKT_GetDashboardStatsController {
   @Get('dashboard-stats')
   async getDashboardStats(@CurrentUser('id') marketingId: number) {
     try {
-      const payload = await this.getDashboardStatsUseCase.execute(marketingId);
+      const internal = 'internal';
+      const payload = await this.getDashboardStatsUseCase.execute(
+        marketingId,
+        internal,
+      );
       return {
         payload,
       };

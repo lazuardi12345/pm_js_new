@@ -1,5 +1,7 @@
 // Domain/Repositories/approval-external.repository.ts
-import { ApprovalExternal } from "../Entities/approval-external.entity";
+import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
+import { ApprovalExternalNotificationRaw } from '../../Application/DTOS/dto-Approval/get-total-notification.dto';
+import { ApprovalExternal } from '../Entities/approval-external.entity';
 
 export const APPROVAL_EXTERNAL_REPOSITORY = 'APPROVAL_EXTERNAL_REPOSITORY';
 
@@ -13,4 +15,9 @@ export interface IApprovalExternalRepository {
     address: Partial<ApprovalExternal>,
   ): Promise<ApprovalExternal>;
   delete(id: number): Promise<void>;
+
+  totalApprovalRequestExternal(
+    role: USERTYPE,
+    userId: number,
+  ): Promise<ApprovalExternalNotificationRaw>;
 }

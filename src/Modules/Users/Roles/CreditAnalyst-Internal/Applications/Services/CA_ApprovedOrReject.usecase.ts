@@ -1,10 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import { ApprovalInternal } from 'src/Modules/LoanAppInternal/Domain/Entities/approval-internal.entity';
 import {
@@ -43,6 +37,7 @@ export class CA_ApproveOrRejectUseCase {
     nominal_persetujuan?: number,
     keterangan?: string,
     kesimpulan?: string,
+    dokumen_pendukung?: string,
   ) {
     try {
       console.log(
@@ -99,11 +94,12 @@ export class CA_ApproveOrRejectUseCase {
         undefined,
         keterangan || '',
         kesimpulan || '',
+        dokumen_pendukung || undefined,
       );
 
       // Terapkan status approval
       let newLoanStatus: StatusPengajuanEnum;
-      console.log('meki kudanil', status);
+
       if (status === ApprovalInternalStatusEnum.APPROVED) {
         approval.approve();
         newLoanStatus = StatusPengajuanEnum.APPROVED_CA;
