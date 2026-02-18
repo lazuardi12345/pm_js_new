@@ -131,9 +131,9 @@ export class MKT_GetLoanApplicationByIdUseCase {
       const appealStatus: Record<string, any> = {};
 
       const roleMap: Record<string | number, string> = {
-        SPV: 'spv',
-        Supervisor: 'spv',
-        1: 'spv',
+        // SPV: 'spv',
+        // Supervisor: 'spv',
+        // 1: 'spv',
         HM: 'hm',
         'Head Marketing': 'hm',
         3: 'hm',
@@ -494,22 +494,33 @@ export class MKT_GetLoanApplicationByIdUseCase {
       return [];
     }
 
-    return parentRows.map((parent) => ({
-      other_loan_id: parent.other_loan_id,
-      nasabah_id: parent.nasabah_id,
-      cicilan_lain: parent.cicilan_lain,
-      validasi_pinjaman_lain: parent.validasi_pinjaman_lain,
-      catatan: parent.catatan_pinjaman_lain,
+    console.log('🔍 Parent rows:', parentRows);
+    console.log('🔍 Detail rows:', detailRows);
 
-      cicilan: detailRows
-        .filter((detail) => detail.otherExistLoan_id === parent.other_loan_id)
+    return parentRows.map((parent) => {
+      const cicilan = detailRows
+        .filter((detail) => detail.other_exist_loan_id === parent.other_loan_id)
+
         .map((detail) => ({
           detail_item_id: detail.detail_item_id,
           nama_pembiayaan: detail.nama_pembiayaan,
           total_pinjaman: detail.total_pinjaman,
           cicilan_perbulan: detail.cicilan_perbulan,
           sisa_tenor: detail.sisa_tenor,
-        })),
-    }));
+        }));
+
+      console.log(
+        `🔍 Cicilan for other_loan_id=${parent.other_loan_id}:`,
+        cicilan,
+      );
+
+      return {
+        other_loan_id: parent.other_loan_id,
+        cicilan_lain: parent.cicilan_lain,
+        validasi_pinjaman_lain: parent.validasi_pinjaman_lain,
+        catatan: parent.catatan_pinjaman_lain,
+        cicilan,
+      };
+    });
   }
 }

@@ -447,10 +447,45 @@ export class MKT_CreateDraftLoanApplicationUseCase {
       // Merge nested objects
       for (const field of nestedFields) {
         if (payload[field]) {
-          entityUpdate[field] = {
+          if (field === 'other_exist_loan_external') {
+            console.log('=== DEBUG OTHER_EXIST_LOAN_EXTERNAL ===');
+            console.log(
+              'Existing cicilan:',
+              JSON.stringify((existingDraft[field] as any)?.cicilan),
+            );
+            console.log(
+              'Payload cicilan:',
+              JSON.stringify((payload[field] as any)?.cicilan),
+            );
+          }
+
+          const merged = {
             ...(existingDraft[field] ?? {}),
             ...payload[field],
           };
+
+          // 🔥 Force array replacement
+          Object.keys(payload[field]).forEach((key) => {
+            const value = payload[field][key];
+            if (Array.isArray(value)) {
+              merged[key] = value;
+            }
+          });
+
+          entityUpdate[field] = merged;
+
+          // 🔍 DEBUG: Check after merge
+          if (field === 'other_exist_loan_external') {
+            console.log(
+              'Merged cicilan:',
+              JSON.stringify((merged as any)?.cicilan),
+            );
+            console.log(
+              'Merged cicilan length:',
+              (merged as any)?.cicilan?.length,
+            );
+            console.log('=====================================');
+          }
         }
       }
 
