@@ -753,25 +753,30 @@ class LoanGuarantorDto {
   catatan?: string;
 }
 
-class OtherExistLoanDto {
-  @IsEnum(CicilanLainEnum)
-  cicilan_lain: CicilanLainEnum;
-
-  @IsOptional()
+export class InstallmentItemsDto {
   @IsString()
-  nama_pembiayaan?: string;
+  @IsNotEmpty()
+  nama_pembiayaan: string;
 
   @IsOptional()
   @IsString()
   total_pinjaman?: string;
 
-  @Type(() => Number)
   @IsNumber()
   cicilan_perbulan: number;
 
-  @Type(() => Number)
   @IsNumber()
   sisa_tenor: number;
+}
+
+export class OtherExistLoanDto {
+  @IsEnum(CicilanLainEnum)
+  cicilan_lain: CicilanLainEnum;
+
+  @ValidateNested({ each: true })
+  @Type(() => InstallmentItemsDto)
+  @IsArray()
+  cicilan: InstallmentItemsDto[];
 
   @IsOptional()
   @IsBoolean()
@@ -823,10 +828,9 @@ export class PayloadExternalDTO {
   loan_guarantor_external?: LoanGuarantorDto;
 
   @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
+  @ValidateNested()
   @Type(() => OtherExistLoanDto)
-  other_exist_loan_external?: OtherExistLoanDto[];
+  other_exist_loan_external?: OtherExistLoanDto;
 
   @IsOptional()
   @ValidateNested()
