@@ -114,48 +114,26 @@ export class LoanApplicationExtRepositoryImpl
     id: string,
     updateData: Partial<LoanApplicationExtEntity>,
   ): Promise<{ entity: LoanApplicationExtEntity | null; isUpdated: boolean }> {
-    // Ambil existing dari DB
     const existing = await this.loanAppModel.findById(id).exec();
     if (!existing) return { entity: null, isUpdated: false };
 
     const existingObj = existing.toObject();
 
-    const existingOtherLoans = (existingObj.other_exist_loan_external ??
-      {}) as OtherExistLoansExternalType;
-
-    const newOtherLoans = (updateData.other_exist_loan_external ??
-      {}) as OtherExistLoansExternalType;
-
-    const existingCicilanArr = Array.isArray(existingOtherLoans.cicilan)
-      ? existingOtherLoans.cicilan
-      : [];
-
-    const newCicilanArr = Array.isArray(newOtherLoans.cicilan)
-      ? newOtherLoans.cicilan
-      : [];
-
-    const mergedCicilan = [
-      ...existingCicilanArr,
-      ...newCicilanArr.filter(
-        (newItem) =>
-          !existingCicilanArr.some(
-            (oldItem) => oldItem.nama_pembiayaan === newItem.nama_pembiayaan,
-          ),
-      ),
-    ];
-
-    // Build merged object
+    // ! SIMPLE: Just merge normally, spread operator will handle array replacement
     const mergedData = {
       ...existingObj,
       ...updateData,
-      other_exist_loan_external: {
-        ...existingOtherLoans,
-        ...newOtherLoans,
-        cicilan: mergedCicilan,
-      },
     };
 
-    // Kalo tidak berubah, skip update
+    // Deep merge untuk nested objects (tapi array tetap di-replace)
+    if (updateData.other_exist_loan_external) {
+      mergedData.other_exist_loan_external = {
+        ...(existingObj.other_exist_loan_external ?? {}),
+        ...updateData.other_exist_loan_external,
+      };
+    }
+
+    // Check if changed
     const hasChanged = !isEqual(existingObj, mergedData);
     if (!hasChanged) {
       return {
