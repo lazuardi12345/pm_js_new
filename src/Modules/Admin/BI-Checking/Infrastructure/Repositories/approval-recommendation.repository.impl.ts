@@ -425,7 +425,7 @@ export class ApprovalRecommendationRepositoryImpl
           no_ktp: item.client_external?.nik || null,
           no_hp: item.client_external?.no_hp || null,
           email: item.client_external?.email || null,
-          foto_ktp: fotoKtp, // di sini taro url-nya biar konsisten
+          foto_ktp: fotoKtp,
         },
         loan_application_external: {
           nominal_pinjaman:

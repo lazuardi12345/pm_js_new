@@ -44,6 +44,7 @@ export class AdCont_GetAllLoanDataInternalUseCase {
             return {
               loan_id: Number(item?.loan_id ?? 0),
               nama_nasabah: item?.nama_nasabah ?? '-',
+              customer_type: item?.customer_type ?? '-',
               loan_amount: this.formatCurrency(item?.loan_amount),
               loan_tenor: item?.loan_tenor ?? '-',
               loan_sequence: Number(item?.loan_sequence ?? 0),

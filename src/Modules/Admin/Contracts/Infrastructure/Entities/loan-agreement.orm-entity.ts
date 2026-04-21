@@ -1,3 +1,5 @@
+import { ClientInstallmentFrequency_ORM_Entity } from 'src/Modules/Admin/Account-Receivable/Infrastructure/Entities/client_loan_installment_frequency.orm-entity';
+import { PayType } from 'src/Shared/Enums/Admins/Account-Receivable/PayType';
 import { InternalCompanyList } from 'src/Shared/Enums/Admins/Contract/loan-agreement.enum';
 import {
   Entity,
@@ -7,6 +9,7 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   Index,
+  OneToMany,
 } from 'typeorm';
 
 @Index('IDX_SEARCH_CONTRACT_BY_NAME', ['nama'], {
@@ -36,6 +39,21 @@ export class LoanAggrement_ORM_Entity {
 
   @Column({ type: 'char', length: 50 })
   type: string;
+
+  @Column({ type: 'char', length: 100, nullable: true })
+  jenis_jaminan: string;
+
+  @Column({ type: 'char', length: 100, nullable: true })
+  daerah: string;
+
+  @Column({ type: 'char', length: 100, nullable: true })
+  tipe_pekerja: string;
+
+  @Column({ type: 'char', length: 100, nullable: true })
+  sub_type: string;
+
+  @Column({ type: 'char', length: 100, nullable: true })
+  potongan: string;
 
   @Column({ type: 'enum', enum: InternalCompanyList, nullable: true })
   perusahaan?: InternalCompanyList;
@@ -79,6 +97,9 @@ export class LoanAggrement_ORM_Entity {
   @Column({ type: 'date' })
   tanggal_jatuh_tempo: Date;
 
+  @Column({ type: 'enum', enum: PayType, nullable: true })
+  pay_type?: PayType;
+
   @Column({ type: 'text', nullable: true })
   catatan?: string;
 
@@ -90,4 +111,10 @@ export class LoanAggrement_ORM_Entity {
 
   @DeleteDateColumn({ type: 'timestamp', nullable: true })
   deleted_at?: Date;
+
+  @OneToMany(
+    () => ClientInstallmentFrequency_ORM_Entity,
+    (frequency) => frequency.loan_agreement,
+  )
+  frequencies: ClientInstallmentFrequency_ORM_Entity[];
 }

@@ -1,3 +1,4 @@
+import { PayType } from 'src/Shared/Enums/Admins/Account-Receivable/PayType';
 import { InternalCompanyList } from 'src/Shared/Enums/Admins/Contract/loan-agreement.enum';
 
 export interface CreateLoanAgreementDto {
@@ -19,5 +20,11 @@ export interface CreateLoanAgreementDto {
   id_card?: string;
   kedinasan?: string;
   pinjaman_ke?: number;
+  jenis_jaminan?: string;
+  daerah?: string;
+  sub_type?: string;
+  potongan?: string;
+  tipe_pekerja?: string;
+  pay_type?: PayType;
   catatan?: string;
 }

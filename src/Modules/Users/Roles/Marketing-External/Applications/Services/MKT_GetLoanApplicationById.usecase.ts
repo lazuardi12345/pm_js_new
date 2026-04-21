@@ -142,7 +142,8 @@ export class MKT_GetLoanApplicationByIdUseCase {
       (approvalsRows ?? []).forEach((approval: any) => {
         if (!approval) return;
 
-        const roleKey = roleMap[approval.role] ?? approval.role;
+        const roleKey = roleMap[approval.role];
+        if (!roleKey) return;
 
         const data = {
           id_user: approval.user_id,

@@ -104,9 +104,6 @@ export class LoanApplicationInternal_ORM_Entity {
   @Index('IDX_DraftID_at_LoanApplicationInternal', ['draft_id']) // <- index explicit name
   draft_id?: string;
 
-  // // * Internal Loan Application (Pengajuans) RELATIONSHIPS TO ANOTHER ENTITIES
-  // @OneToMany(() => Notification, (notif) => notif.pengajuan_dalam)
-  // notifications: Notification[];
   @OneToMany(
     () => ApprovalInternal_ORM_Entity,
     (approvalInternal) => approvalInternal.pengajuan,

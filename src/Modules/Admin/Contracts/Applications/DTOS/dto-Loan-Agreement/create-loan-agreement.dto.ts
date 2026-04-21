@@ -1,12 +1,13 @@
+import { Transform } from 'class-transformer';
 import {
   IsString,
   IsOptional,
   IsNumber,
-  IsDateString,
   IsNotEmpty,
   IsDate,
   IsEnum,
 } from 'class-validator';
+import { PayType } from 'src/Shared/Enums/Admins/Account-Receivable/PayType';
 import { InternalCompanyList } from 'src/Shared/Enums/Admins/Contract/loan-agreement.enum';
 
 export class CreateLoanAgreementDto {
@@ -33,6 +34,26 @@ export class CreateLoanAgreementDto {
   @IsString()
   @IsNotEmpty()
   type: string;
+
+  @IsOptional()
+  @IsString()
+  jenis_jaminan?: string;
+
+  @IsOptional()
+  @IsString()
+  daerah?: string;
+
+  @IsOptional()
+  @IsString()
+  tipe_pekerja?: string;
+
+  @IsOptional()
+  @IsString()
+  sub_type?: string;
+
+  @IsOptional()
+  @IsString()
+  potongan?: string;
 
   @IsOptional()
   @IsString()
@@ -84,10 +105,21 @@ export class CreateLoanAgreementDto {
   @IsNumber()
   bunga: number;
 
+  @Transform(({ value }) => {
+    if (typeof value === 'string' && value.includes('-')) {
+      const [d, m, y] = value.split('-');
+      return new Date(`${y}-${m}-${d}`);
+    }
+    return value;
+  })
   @IsDate()
   tanggal_jatuh_tempo: Date;
 
   @IsOptional()
   @IsString()
   catatan?: string;
+
+  @IsOptional()
+  @IsEnum(PayType)
+  pay_type?: PayType;
 }

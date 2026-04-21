@@ -34,6 +34,14 @@ export function resolveSequenceKey(
     return ContractSequenceCategory.BPD;
   }
 
+  // BPD - LEBIH FLEXIBLE
+  if (
+    normalizedType.includes('Borongan') ||
+    normalizedType.includes('BORONGAN')
+  ) {
+    return ContractSequenceCategory.BORONGAN;
+  }
+
   // DEFAULT → PT LUAR
   return ContractSequenceCategory.PT_LUAR;
 }

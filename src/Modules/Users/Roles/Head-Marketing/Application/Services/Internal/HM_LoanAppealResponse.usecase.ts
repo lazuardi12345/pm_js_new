@@ -26,7 +26,7 @@ export class HM_LoanAppealResponseInternalUseCase {
     appeal_response:
       | ApprovalInternalStatusEnum.APPROVED
       | ApprovalInternalStatusEnum.REJECTED,
-    appeal_consideration?: string, //! di database tetep nilainya keterangan, tapi di FE ini pertimbangan
+    appeal_consideration?: string,
     appeal_conclusion?: string,
     appeal_approval_tenor?: number,
     appeal_approval_amount?: number,

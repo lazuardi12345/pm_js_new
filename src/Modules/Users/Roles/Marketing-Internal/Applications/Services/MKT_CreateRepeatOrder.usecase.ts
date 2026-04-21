@@ -137,554 +137,554 @@ export class MKT_CreateRepeatOrderUseCase {
     private readonly fileStorage: IFileStorageRepository,
   ) {}
 
-  async submitRepeatOrder(
-    dto: CreateLoanApplicationDto,
-    client_id: number,
-    files?: Record<string, Express.Multer.File[]>,
-    repeatFromLoanId?: number,
-  ) {
-    const now = new Date();
+  // async submitRepeatOrder(
+  //   dto: CreateLoanApplicationDto,
+  //   client_id: number,
+  //   files?: Record<string, Express.Multer.File[]>,
+  //   repeatFromLoanId?: number,
+  // ) {
+  //   const now = new Date();
 
-    try {
-      return await this.uow.start(async () => {
-        // --- 0. BASIC INPUT VALIDATION (prevent many mistakes early) ---
-        if (!dto || typeof dto !== 'object') {
-          throw new BadRequestException({
-            payload: {
-              error: true,
-              message: 'Payload tidak valid',
-              reference: 'INVALID_PAYLOAD',
-            },
-          });
-        }
+  //   try {
+  //     return await this.uow.start(async () => {
+  //       // --- 0. BASIC INPUT VALIDATION (prevent many mistakes early) ---
+  //       if (!dto || typeof dto !== 'object') {
+  //         throw new BadRequestException({
+  //           payload: {
+  //             error: true,
+  //             message: 'Payload tidak valid',
+  //             reference: 'INVALID_PAYLOAD',
+  //           },
+  //         });
+  //       }
 
-        const {
-          client_internal,
-          address_internal,
-          family_internal,
-          job_internal,
-          loan_application_internal,
-          collateral_internal,
-          relative_internal,
-          documents_files,
-        } = dto;
+  //       const {
+  //         client_internal,
+  //         address_internal,
+  //         family_internal,
+  //         job_internal,
+  //         loan_application_internal,
+  //         collateral_internal,
+  //         relative_internal,
+  //         documents_files,
+  //       } = dto;
 
-        // Validate client-related required fields (adjust sesuai kebutuhan)
-        if (
-          !client_internal ||
-          !client_internal.no_ktp ||
-          !client_internal.nama_lengkap
-        ) {
-          throw new BadRequestException({
-            payload: {
-              error: true,
-              message:
-                'Data client_internal tidak lengkap (no_ktp / nama_lengkap wajib).',
-              reference: 'VALIDATION_CLIENT_INTERNAL',
-            },
-          });
-        }
+  //       // Validate client-related required fields (adjust sesuai kebutuhan)
+  //       if (
+  //         !client_internal ||
+  //         !client_internal.no_ktp ||
+  //         !client_internal.nama_lengkap
+  //       ) {
+  //         throw new BadRequestException({
+  //           payload: {
+  //             error: true,
+  //             message:
+  //               'Data client_internal tidak lengkap (no_ktp / nama_lengkap wajib).',
+  //             reference: 'VALIDATION_CLIENT_INTERNAL',
+  //           },
+  //         });
+  //       }
 
-        if (
-          !loan_application_internal ||
-          typeof loan_application_internal.nominal_pinjaman === 'undefined'
-        ) {
-          throw new BadRequestException({
-            payload: {
-              error: true,
-              message: 'Data loan_application_internal tidak lengkap.',
-              reference: 'VALIDATION_LOAN_INTERNAL',
-            },
-          });
-        }
+  //       if (
+  //         !loan_application_internal ||
+  //         typeof loan_application_internal.nominal_pinjaman === 'undefined'
+  //       ) {
+  //         throw new BadRequestException({
+  //           payload: {
+  //             error: true,
+  //             message: 'Data loan_application_internal tidak lengkap.',
+  //             reference: 'VALIDATION_LOAN_INTERNAL',
+  //           },
+  //         });
+  //       }
 
-        // optional: ensure NIK is numeric-ish for functions that rely on it
-        const nikNumber = Number(client_internal.no_ktp);
-        if (Number.isNaN(nikNumber)) {
-          throw new BadRequestException({
-            payload: {
-              error: true,
-              message: 'Nomor KTP tidak valid (harus angka).',
-              reference: 'INVALID_NIK',
-            },
-          });
-        }
+  //       // optional: ensure NIK is numeric-ish for functions that rely on it
+  //       const nikNumber = Number(client_internal.no_ktp);
+  //       if (Number.isNaN(nikNumber)) {
+  //         throw new BadRequestException({
+  //           payload: {
+  //             error: true,
+  //             message: 'Nomor KTP tidak valid (harus angka).',
+  //             reference: 'INVALID_NIK',
+  //           },
+  //         });
+  //       }
 
-        // --- 1. Pastikan client ada ---
-        const client = await this.clientRepo.findById(client_id);
-        if (!client) {
-          throw new HttpException(
-            {
-              payload: {
-                error: true,
-                message: 'Client tidak ditemukan',
-                reference: 'CLIENT_NOT_FOUND',
-              },
-            },
-            HttpStatus.NOT_FOUND,
-          );
-        }
+  //       // --- 1. Pastikan client ada ---
+  //       const client = await this.clientRepo.findById(client_id);
+  //       if (!client) {
+  //         throw new HttpException(
+  //           {
+  //             payload: {
+  //               error: true,
+  //               message: 'Client tidak ditemukan',
+  //               reference: 'CLIENT_NOT_FOUND',
+  //             },
+  //           },
+  //           HttpStatus.NOT_FOUND,
+  //         );
+  //       }
 
-        // --- 2. Simpan AddressInternal ---
-        try {
-          const addressEntity = new AddressInternal(
-            { id: client_id! },
-            address_internal.alamat_ktp,
-            address_internal.rt_rw,
-            address_internal.kelurahan,
-            address_internal.kecamatan,
-            address_internal.kota,
-            address_internal.provinsi,
-            address_internal.status_rumah as StatusRumahEnum,
-            address_internal.domisili as DomisiliEnum,
-            undefined,
-            now,
-            undefined,
-            address_internal.status_rumah_ktp as StatusRumahEnum,
-            address_internal.alamat_lengkap ?? '',
-            now,
-          );
-          await this.addressRepo.save(addressEntity);
-        } catch (e) {
-          console.error('Error saving address:', e);
-          // If DB connectivity problem => 503
-          if (e?.code === 'ECONNREFUSED' || e?.name === 'MongoNetworkError') {
-            throw new HttpException(
-              {
-                payload: {
-                  error: true,
-                  message: 'Database connection error saat menyimpan alamat',
-                  reference: 'DB_CONNECTION_ERROR',
-                },
-              },
-              HttpStatus.SERVICE_UNAVAILABLE,
-            );
-          }
-          throw new HttpException(
-            {
-              payload: {
-                error: true,
-                message: 'Gagal menyimpan alamat nasabah',
-                reference: 'ADDRESS_SAVE_ERROR',
-              },
-            },
-            HttpStatus.BAD_REQUEST,
-          );
-        }
+  //       // --- 2. Simpan AddressInternal ---
+  //       try {
+  //         const addressEntity = new AddressInternal(
+  //           { id: client_id! },
+  //           address_internal.alamat_ktp,
+  //           address_internal.rt_rw,
+  //           address_internal.kelurahan,
+  //           address_internal.kecamatan,
+  //           address_internal.kota,
+  //           address_internal.provinsi,
+  //           address_internal.status_rumah as StatusRumahEnum,
+  //           address_internal.domisili as DomisiliEnum,
+  //           undefined,
+  //           now,
+  //           undefined,
+  //           address_internal.status_rumah_ktp as StatusRumahEnum,
+  //           address_internal.alamat_lengkap ?? '',
+  //           now,
+  //         );
+  //         await this.addressRepo.save(addressEntity);
+  //       } catch (e) {
+  //         console.error('Error saving address:', e);
+  //         // If DB connectivity problem => 503
+  //         if (e?.code === 'ECONNREFUSED' || e?.name === 'MongoNetworkError') {
+  //           throw new HttpException(
+  //             {
+  //               payload: {
+  //                 error: true,
+  //                 message: 'Database connection error saat menyimpan alamat',
+  //                 reference: 'DB_CONNECTION_ERROR',
+  //               },
+  //             },
+  //             HttpStatus.SERVICE_UNAVAILABLE,
+  //           );
+  //         }
+  //         throw new HttpException(
+  //           {
+  //             payload: {
+  //               error: true,
+  //               message: 'Gagal menyimpan alamat nasabah',
+  //               reference: 'ADDRESS_SAVE_ERROR',
+  //             },
+  //           },
+  //           HttpStatus.BAD_REQUEST,
+  //         );
+  //       }
 
-        // --- 3. Simpan FamilyInternal ---
-        try {
-          const familyEntity = new FamilyInternal(
-            { id: client_id! },
-            family_internal.hubungan as HubunganEnum,
-            family_internal.nama,
-            family_internal.bekerja as BekerjaEnum,
-            undefined,
-            undefined,
-            undefined,
-            family_internal.nama_perusahaan!,
-            family_internal.jabatan!,
-            parseNumber(family_internal.penghasilan),
-            family_internal.alamat_kerja!,
-            family_internal.no_hp,
-            undefined,
-          );
-          await this.familyRepo.save(familyEntity);
-        } catch (e) {
-          console.error('Error saving family:', e);
-          throw new HttpException(
-            {
-              payload: {
-                error: true,
-                message: 'Gagal menyimpan data keluarga',
-                reference: 'FAMILY_SAVE_ERROR',
-              },
-            },
-            HttpStatus.BAD_REQUEST,
-          );
-        }
+  //       // --- 3. Simpan FamilyInternal ---
+  //       try {
+  //         const familyEntity = new FamilyInternal(
+  //           { id: client_id! },
+  //           family_internal.hubungan as HubunganEnum,
+  //           family_internal.nama,
+  //           family_internal.bekerja as BekerjaEnum,
+  //           undefined,
+  //           undefined,
+  //           undefined,
+  //           family_internal.nama_perusahaan!,
+  //           family_internal.jabatan!,
+  //           parseNumber(family_internal.penghasilan),
+  //           family_internal.alamat_kerja!,
+  //           family_internal.no_hp,
+  //           undefined,
+  //         );
+  //         await this.familyRepo.save(familyEntity);
+  //       } catch (e) {
+  //         console.error('Error saving family:', e);
+  //         throw new HttpException(
+  //           {
+  //             payload: {
+  //               error: true,
+  //               message: 'Gagal menyimpan data keluarga',
+  //               reference: 'FAMILY_SAVE_ERROR',
+  //             },
+  //           },
+  //           HttpStatus.BAD_REQUEST,
+  //         );
+  //       }
 
-        // --- 4. Simpan JobInternal (bukti_absensi nanti di-update jika upload sukses) ---
-        let jobEntity: JobInternal;
-        try {
-          jobEntity = new JobInternal(
-            { id: client_id! },
-            job_internal.perusahaan as PerusahaanEnum,
-            job_internal.divisi,
-            job_internal.golongan as GolonganEnum,
-            job_internal.nama_atasan!,
-            job_internal.nama_hrd!,
-            job_internal.absensi!,
-            undefined,
-            undefined,
-            undefined,
-            job_internal.yayasan!,
-            job_internal.lama_kerja_bulan,
-            job_internal.lama_kerja_tahun,
-            undefined,
-            undefined,
-          );
-          await this.jobRepo.save(jobEntity);
-        } catch (e) {
-          console.error('Error saving job:', e);
-          throw new HttpException(
-            {
-              payload: {
-                error: true,
-                message: 'Gagal menyimpan data pekerjaan',
-                reference: 'JOB_SAVE_ERROR',
-              },
-            },
-            HttpStatus.BAD_REQUEST,
-          );
-        }
+  //       // --- 4. Simpan JobInternal (bukti_absensi nanti di-update jika upload sukses) ---
+  //       let jobEntity: JobInternal;
+  //       try {
+  //         jobEntity = new JobInternal(
+  //           { id: client_id! },
+  //           job_internal.perusahaan as PerusahaanEnum,
+  //           job_internal.divisi,
+  //           job_internal.golongan as GolonganEnum,
+  //           job_internal.nama_atasan!,
+  //           job_internal.nama_hrd!,
+  //           job_internal.absensi!,
+  //           undefined,
+  //           undefined,
+  //           undefined,
+  //           job_internal.yayasan!,
+  //           job_internal.lama_kerja_bulan,
+  //           job_internal.lama_kerja_tahun,
+  //           undefined,
+  //           undefined,
+  //         );
+  //         await this.jobRepo.save(jobEntity);
+  //       } catch (e) {
+  //         console.error('Error saving job:', e);
+  //         throw new HttpException(
+  //           {
+  //             payload: {
+  //               error: true,
+  //               message: 'Gagal menyimpan data pekerjaan',
+  //               reference: 'JOB_SAVE_ERROR',
+  //             },
+  //           },
+  //           HttpStatus.BAD_REQUEST,
+  //         );
+  //       }
 
-        // --- 5. Simpan LoanApplicationInternal ---
-        let loanApp: LoanApplicationInternal;
-        try {
-          const isBandingBoolean =
-            loan_application_internal.is_banding === 1 ? true : false;
+  //       // --- 5. Simpan LoanApplicationInternal ---
+  //       let loanApp: LoanApplicationInternal;
+  //       try {
+  //         const isBandingBoolean =
+  //           loan_application_internal.is_banding === 1 ? true : false;
 
-          const loanAppEntity = new LoanApplicationInternal(
-            { id: client_id! },
-            (loan_application_internal.status_pinjaman as StatusPinjamanEnum.LAMA) ??
-              StatusPinjamanEnum.LAMA,
-            loan_application_internal.nominal_pinjaman ?? 0,
-            loan_application_internal.tenor ?? 0,
-            loan_application_internal.keperluan ?? '',
-            undefined,
-            undefined,
-            undefined,
-            (loan_application_internal.status ??
-              'pending') as StatusPengajuanEnum,
-            (loan_application_internal.status_akhir_pengajuan ??
-              'done') as StatusPengajuanAkhirEnum,
-            loan_application_internal.pinjaman_ke ?? 1,
-            loan_application_internal.riwayat_nominal ?? 0,
-            loan_application_internal.riwayat_tenor ?? 0,
-            loan_application_internal.sisa_pinjaman ?? 0,
-            loan_application_internal.notes ?? '',
-            isBandingBoolean,
-            loan_application_internal.alasan_banding ?? '',
-          );
+  //         const loanAppEntity = new LoanApplicationInternal(
+  //           { id: client_id! },
+  //           (loan_application_internal.status_pinjaman as StatusPinjamanEnum.LAMA) ??
+  //             StatusPinjamanEnum.LAMA,
+  //           loan_application_internal.nominal_pinjaman ?? 0,
+  //           loan_application_internal.tenor ?? 0,
+  //           loan_application_internal.keperluan ?? '',
+  //           undefined,
+  //           undefined,
+  //           undefined,
+  //           (loan_application_internal.status ??
+  //             'pending') as StatusPengajuanEnum,
+  //           (loan_application_internal.status_akhir_pengajuan ??
+  //             'done') as StatusPengajuanAkhirEnum,
+  //           loan_application_internal.pinjaman_ke ?? 1,
+  //           loan_application_internal.riwayat_nominal ?? 0,
+  //           loan_application_internal.riwayat_tenor ?? 0,
+  //           loan_application_internal.sisa_pinjaman ?? 0,
+  //           loan_application_internal.notes ?? '',
+  //           isBandingBoolean,
+  //           loan_application_internal.alasan_banding ?? '',
+  //         );
 
-          loanApp = await this.loanAppRepo.save(loanAppEntity);
-        } catch (e) {
-          console.error('Error saving loan application:', e);
-          // duplicate / constraint errors
-          if (e?.code === 'ER_DUP_ENTRY' || e?.code === 11000) {
-            throw new HttpException(
-              {
-                payload: {
-                  error: true,
-                  message: 'Terdeteksi duplikasi pengajuan',
-                  reference: 'DUPLICATE_LOAN',
-                },
-              },
-              HttpStatus.BAD_REQUEST,
-            );
-          }
-          throw new HttpException(
-            {
-              payload: {
-                error: true,
-                message: 'Gagal menyimpan pengajuan',
-                reference: 'LOAN_SAVE_ERROR',
-              },
-            },
-            HttpStatus.INTERNAL_SERVER_ERROR,
-          );
-        }
+  //         loanApp = await this.loanAppRepo.save(loanAppEntity);
+  //       } catch (e) {
+  //         console.error('Error saving loan application:', e);
+  //         // duplicate / constraint errors
+  //         if (e?.code === 'ER_DUP_ENTRY' || e?.code === 11000) {
+  //           throw new HttpException(
+  //             {
+  //               payload: {
+  //                 error: true,
+  //                 message: 'Terdeteksi duplikasi pengajuan',
+  //                 reference: 'DUPLICATE_LOAN',
+  //               },
+  //             },
+  //             HttpStatus.BAD_REQUEST,
+  //           );
+  //         }
+  //         throw new HttpException(
+  //           {
+  //             payload: {
+  //               error: true,
+  //               message: 'Gagal menyimpan pengajuan',
+  //               reference: 'LOAN_SAVE_ERROR',
+  //             },
+  //           },
+  //           HttpStatus.INTERNAL_SERVER_ERROR,
+  //         );
+  //       }
 
-        // ====================== FILES: CONVERT & UPLOAD ======================
-        let minioUploadResult: any = null;
-        const fileConversionErrors: Array<{
-          field: string;
-          name: string;
-          error: any;
-        }> = [];
+  //       // ====================== FILES: CONVERT & UPLOAD ======================
+  //       let minioUploadResult: any = null;
+  //       const fileConversionErrors: Array<{
+  //         field: string;
+  //         name: string;
+  //         error: any;
+  //       }> = [];
 
-        if (files && Object.keys(files).length > 0) {
-          // Convert images to jpeg (best-effort). Kegagalan conversion tidak abort transaksi,
-          // tapi kita catat dan fallback ke original buffer.
-          for (const [field, fileArray] of Object.entries(files)) {
-            if (!Array.isArray(fileArray)) continue;
-            for (const file of fileArray) {
-              try {
-                if (file.mimetype && file.mimetype.startsWith('image/')) {
-                  const outputBuffer = await sharp(file.buffer)
-                    .jpeg({ quality: 100 })
-                    .toBuffer();
+  //       if (files && Object.keys(files).length > 0) {
+  //         // Convert images to jpeg (best-effort). Kegagalan conversion tidak abort transaksi,
+  //         // tapi kita catat dan fallback ke original buffer.
+  //         for (const [field, fileArray] of Object.entries(files)) {
+  //           if (!Array.isArray(fileArray)) continue;
+  //           for (const file of fileArray) {
+  //             try {
+  //               if (file.mimetype && file.mimetype.startsWith('image/')) {
+  //                 const outputBuffer = await sharp(file.buffer)
+  //                   .jpeg({ quality: 100 })
+  //                   .toBuffer();
 
-                  file.buffer = outputBuffer;
-                  file.originalname = file.originalname.replace(
-                    /\.\w+$/,
-                    '.jpeg',
-                  );
-                  file.mimetype = 'image/jpeg';
-                  this.logger.log(
-                    `Converted ${file.originalname} (${field}) to JPEG`,
-                  );
-                }
-              } catch (convErr) {
-                // jangan throw — log & simpan info (so we can retry manual)
-                console.error(
-                  'Image conversion failed for',
-                  file.originalname,
-                  convErr,
-                );
-                fileConversionErrors.push({
-                  field,
-                  name: file.originalname,
-                  error: convErr,
-                });
-                // leave original buffer as-is
-              }
-            }
-          }
+  //                 file.buffer = outputBuffer;
+  //                 file.originalname = file.originalname.replace(
+  //                   /\.\w+$/,
+  //                   '.jpeg',
+  //                 );
+  //                 file.mimetype = 'image/jpeg';
+  //                 this.logger.log(
+  //                   `Converted ${file.originalname} (${field}) to JPEG`,
+  //                 );
+  //               }
+  //             } catch (convErr) {
+  //               // jangan throw — log & simpan info (so we can retry manual)
+  //               console.error(
+  //                 'Image conversion failed for',
+  //                 file.originalname,
+  //                 convErr,
+  //               );
+  //               fileConversionErrors.push({
+  //                 field,
+  //                 name: file.originalname,
+  //                 error: convErr,
+  //               });
+  //               // leave original buffer as-is
+  //             }
+  //           }
+  //         }
 
-          // Upload ke Minio (atau service storage). Harus tangani hasilnya.
-          try {
-            minioUploadResult = await this.fileStorage.saveRepeatOrderFiles(
-              nikNumber,
-              client_internal.nama_lengkap,
-              files,
-              REQUEST_TYPE.INTERNAL, // ← Sesuai pattern baru
-            );
+  //         // Upload ke Minio (atau service storage). Harus tangani hasilnya.
+  //         try {
+  //           minioUploadResult = await this.fileStorage.saveRepeatOrderFiles(
+  //             nikNumber,
+  //             client_internal.nama_lengkap,
+  //             files,
+  //             REQUEST_TYPE.INTERNAL, // ← Sesuai pattern baru
+  //           );
 
-            // Basic sanity checks on result
-            if (!minioUploadResult || typeof minioUploadResult !== 'object') {
-              throw new Error('Invalid upload result from fileStorage');
-            }
+  //           // Basic sanity checks on result
+  //           if (!minioUploadResult || typeof minioUploadResult !== 'object') {
+  //             throw new Error('Invalid upload result from fileStorage');
+  //           }
 
-            // Check if any field has files
-            const hasFiles = Object.values(minioUploadResult).some(
-              (fileArray) => Array.isArray(fileArray) && fileArray.length > 0,
-            );
+  //           // Check if any field has files
+  //           const hasFiles = Object.values(minioUploadResult).some(
+  //             (fileArray) => Array.isArray(fileArray) && fileArray.length > 0,
+  //           );
 
-            if (!hasFiles) {
-              throw new Error('No files were uploaded successfully');
-            }
+  //           if (!hasFiles) {
+  //             throw new Error('No files were uploaded successfully');
+  //           }
 
-            // Optional: Log metadata untuk tracking
-            console.log('RO Files uploaded:', {
-              customerId: nikNumber,
-              customerName: client_internal.nama_lengkap,
-              loanId: loanApp.id,
-              nasabahId: client_id,
-              filesUploaded: Object.keys(minioUploadResult).length,
-            });
-          } catch (uploadErr) {
-            console.error('File upload failed:', uploadErr);
+  //           // Optional: Log metadata untuk tracking
+  //           console.log('RO Files uploaded:', {
+  //             customerId: nikNumber,
+  //             customerName: client_internal.nama_lengkap,
+  //             loanId: loanApp.id,
+  //             nasabahId: client_id,
+  //             filesUploaded: Object.keys(minioUploadResult).length,
+  //           });
+  //         } catch (uploadErr) {
+  //           console.error('File upload failed:', uploadErr);
 
-            // Jika storage down, kita pertimbangkan sebagai SERVICE_UNAVAILABLE supaya operator aware
-            throw new HttpException(
-              {
-                payload: {
-                  error: true,
-                  message: 'Gagal mengunggah file ke storage',
-                  reference: 'FILE_UPLOAD_ERROR',
-                  details:
-                    fileConversionErrors.length > 0
-                      ? { conversionErrors: fileConversionErrors.length }
-                      : undefined,
-                },
-              },
-              HttpStatus.SERVICE_UNAVAILABLE,
-            );
-          }
-        }
+  //           // Jika storage down, kita pertimbangkan sebagai SERVICE_UNAVAILABLE supaya operator aware
+  //           throw new HttpException(
+  //             {
+  //               payload: {
+  //                 error: true,
+  //                 message: 'Gagal mengunggah file ke storage',
+  //                 reference: 'FILE_UPLOAD_ERROR',
+  //                 details:
+  //                   fileConversionErrors.length > 0
+  //                     ? { conversionErrors: fileConversionErrors.length }
+  //                     : undefined,
+  //               },
+  //             },
+  //             HttpStatus.SERVICE_UNAVAILABLE,
+  //           );
+  //         }
+  //       }
 
-        // ====================== MAP TO PROFILE AND UPDATE JOB ======================
-        try {
-          const clientProfileEntity = new ClientInternalProfile(
-            { id: client_id! },
-            { id: loanApp.id! },
-            client_internal.nama_lengkap,
-            client_internal.jenis_kelamin,
-            client_internal.tipe_nasabah as CLIENT_TYPE,
-            client_internal.no_hp,
-            client_internal.status_nikah as MARRIAGE_STATUS,
-            undefined,
-            client_internal.email,
-            minioUploadResult?.savedFiles?.foto_ktp?.[0]?.url ??
-              parseFileUrl(
-                documents_files?.foto_ktp ?? client_internal.foto_ktp ?? null,
-              ),
-            minioUploadResult?.savedFiles?.foto_kk?.[0]?.url ??
-              parseFileUrl(
-                documents_files?.foto_kk ?? client_internal.foto_kk ?? null,
-              ),
-            minioUploadResult?.savedFiles?.foto_id_card?.[0]?.url ??
-              parseFileUrl(documents_files?.foto_id_card ?? null),
-            minioUploadResult?.savedFiles?.foto_rekening?.[0]?.url ??
-              parseFileUrl(documents_files?.foto_rekening ?? null),
-            client_internal.no_rekening as string,
-          );
-          await this.clientProfileRepo.save(clientProfileEntity);
-        } catch (e) {
-          console.error('Error saving client profile:', e);
-          throw new HttpException(
-            {
-              payload: {
-                error: true,
-                message: 'Gagal menyimpan profil nasabah',
-                reference: 'PROFILE_SAVE_ERROR',
-              },
-            },
-            HttpStatus.BAD_REQUEST,
-          );
-        }
+  //       // ====================== MAP TO PROFILE AND UPDATE JOB ======================
+  //       try {
+  //         const clientProfileEntity = new ClientInternalProfile(
+  //           { id: client_id! },
+  //           { id: loanApp.id! },
+  //           client_internal.nama_lengkap,
+  //           client_internal.jenis_kelamin,
+  //           client_internal.tipe_nasabah as CLIENT_TYPE,
+  //           client_internal.no_hp,
+  //           client_internal.status_nikah as MARRIAGE_STATUS,
+  //           undefined,
+  //           client_internal.email,
+  //           minioUploadResult?.savedFiles?.foto_ktp?.[0]?.url ??
+  //             parseFileUrl(
+  //               documents_files?.foto_ktp ?? client_internal.foto_ktp ?? null,
+  //             ),
+  //           minioUploadResult?.savedFiles?.foto_kk?.[0]?.url ??
+  //             parseFileUrl(
+  //               documents_files?.foto_kk ?? client_internal.foto_kk ?? null,
+  //             ),
+  //           minioUploadResult?.savedFiles?.foto_id_card?.[0]?.url ??
+  //             parseFileUrl(documents_files?.foto_id_card ?? null),
+  //           minioUploadResult?.savedFiles?.foto_rekening?.[0]?.url ??
+  //             parseFileUrl(documents_files?.foto_rekening ?? null),
+  //           client_internal.no_rekening as string,
+  //         );
+  //         await this.clientProfileRepo.save(clientProfileEntity);
+  //       } catch (e) {
+  //         console.error('Error saving client profile:', e);
+  //         throw new HttpException(
+  //           {
+  //             payload: {
+  //               error: true,
+  //               message: 'Gagal menyimpan profil nasabah',
+  //               reference: 'PROFILE_SAVE_ERROR',
+  //             },
+  //           },
+  //           HttpStatus.BAD_REQUEST,
+  //         );
+  //       }
 
-        // Update job entity with bukti_absensi kalau ada
-        try {
-          if (minioUploadResult?.savedFiles?.bukti_absensi && jobEntity) {
-            jobEntity.bukti_absensi =
-              minioUploadResult.savedFiles.bukti_absensi[0].url;
-            await this.jobRepo.save(jobEntity);
-          }
-        } catch (e) {
-          console.error('Error updating job bukti_absensi:', e);
-          // jangan abort seluruh proses kalau update bukti gagal — log saja
-        }
+  //       // Update job entity with bukti_absensi kalau ada
+  //       try {
+  //         if (minioUploadResult?.savedFiles?.bukti_absensi && jobEntity) {
+  //           jobEntity.bukti_absensi =
+  //             minioUploadResult.savedFiles.bukti_absensi[0].url;
+  //           await this.jobRepo.save(jobEntity);
+  //         }
+  //       } catch (e) {
+  //         console.error('Error updating job bukti_absensi:', e);
+  //         // jangan abort seluruh proses kalau update bukti gagal — log saja
+  //       }
 
-        // ====================== COLLATERAL ======================
-        try {
-          const collEntity = new CollateralInternal(
-            { id: client_id! },
-            collateral_internal.jaminan_hrd,
-            collateral_internal.jaminan_cg,
-            collateral_internal.penjamin as PenjaminEnum,
-            undefined,
-            undefined,
-            undefined,
-            collateral_internal.nama_penjamin,
-            collateral_internal.lama_kerja_penjamin!,
-            collateral_internal.bagian!,
-            collateral_internal.absensi_penjamin!,
-            collateral_internal.riwayat_pinjam_penjamin as RiwayatPinjamPenjaminEnum,
-            collateral_internal.riwayat_nominal_penjamin!,
-            collateral_internal.riwayat_tenor_penjamin!,
-            collateral_internal.sisa_pinjaman_penjamin!,
-            collateral_internal.jaminan_cg_penjamin!,
-            collateral_internal.status_hubungan_penjamin!,
-            minioUploadResult?.savedFiles?.foto_ktp_penjamin?.[0]?.url ??
-              parseFileUrl(documents_files?.foto_ktp_penjamin ?? null),
-            minioUploadResult?.savedFiles?.foto_id_card_penjamin?.[0]?.url ??
-              parseFileUrl(documents_files?.foto_id_card_penjamin ?? null),
-            undefined,
-          );
-          await this.collateralRepo.save(collEntity);
-        } catch (e) {
-          console.error('Error saving collateral:', e);
-          throw new HttpException(
-            {
-              payload: {
-                error: true,
-                message: 'Gagal menyimpan data jaminan',
-                reference: 'COLLATERAL_SAVE_ERROR',
-              },
-            },
-            HttpStatus.BAD_REQUEST,
-          );
-        }
+  //       // ====================== COLLATERAL ======================
+  //       try {
+  //         const collEntity = new CollateralInternal(
+  //           { id: client_id! },
+  //           collateral_internal.jaminan_hrd,
+  //           collateral_internal.jaminan_cg,
+  //           collateral_internal.penjamin as PenjaminEnum,
+  //           undefined,
+  //           undefined,
+  //           undefined,
+  //           collateral_internal.nama_penjamin,
+  //           collateral_internal.lama_kerja_penjamin!,
+  //           collateral_internal.bagian!,
+  //           collateral_internal.absensi_penjamin!,
+  //           collateral_internal.riwayat_pinjam_penjamin as RiwayatPinjamPenjaminEnum,
+  //           collateral_internal.riwayat_nominal_penjamin!,
+  //           collateral_internal.riwayat_tenor_penjamin!,
+  //           collateral_internal.sisa_pinjaman_penjamin!,
+  //           collateral_internal.jaminan_cg_penjamin!,
+  //           collateral_internal.status_hubungan_penjamin!,
+  //           minioUploadResult?.savedFiles?.foto_ktp_penjamin?.[0]?.url ??
+  //             parseFileUrl(documents_files?.foto_ktp_penjamin ?? null),
+  //           minioUploadResult?.savedFiles?.foto_id_card_penjamin?.[0]?.url ??
+  //             parseFileUrl(documents_files?.foto_id_card_penjamin ?? null),
+  //           undefined,
+  //         );
+  //         await this.collateralRepo.save(collEntity);
+  //       } catch (e) {
+  //         console.error('Error saving collateral:', e);
+  //         throw new HttpException(
+  //           {
+  //             payload: {
+  //               error: true,
+  //               message: 'Gagal menyimpan data jaminan',
+  //               reference: 'COLLATERAL_SAVE_ERROR',
+  //             },
+  //           },
+  //           HttpStatus.BAD_REQUEST,
+  //         );
+  //       }
 
-        // ====================== RELATIVES (optional) ======================
-        try {
-          if (relative_internal) {
-            const relEntity = new RelativesInternal(
-              { id: client_id! },
-              relative_internal.kerabat_kerja as KerabatKerjaEnum,
-              undefined,
-              relative_internal.nama,
-              relative_internal.alamat,
-              relative_internal.no_hp,
-              relative_internal.status_hubungan!,
-              relative_internal.nama_perusahaan!,
-              undefined,
-              undefined,
-              undefined,
-            );
-            await this.relativeRepo.save(relEntity);
-          }
-        } catch (e) {
-          console.error('Error saving relatives:', e);
-          // optional — tidak fatal
-        }
+  //       // ====================== RELATIVES (optional) ======================
+  //       try {
+  //         if (relative_internal) {
+  //           const relEntity = new RelativesInternal(
+  //             { id: client_id! },
+  //             relative_internal.kerabat_kerja as KerabatKerjaEnum,
+  //             undefined,
+  //             relative_internal.nama,
+  //             relative_internal.alamat,
+  //             relative_internal.no_hp,
+  //             relative_internal.status_hubungan!,
+  //             relative_internal.nama_perusahaan!,
+  //             undefined,
+  //             undefined,
+  //             undefined,
+  //           );
+  //           await this.relativeRepo.save(relEntity);
+  //         }
+  //       } catch (e) {
+  //         console.error('Error saving relatives:', e);
+  //         // optional — tidak fatal
+  //       }
 
-        // --- Done: build response ---
-        return {
-          payload: {
-            error: false,
-            message: minioUploadResult?.isUpdate
-              ? `Repeat Order ke-${minioUploadResult.originalLoanId} berhasil dibuat`
-              : 'Pengajuan repeat berhasil dibuat',
-            reference: 'REPEAT_ORDER_CREATE_OK',
-            data: {
-              loanAppId: loanApp.id,
-              clientId: client_id,
-              isUpdate: minioUploadResult?.isUpdate ?? false,
-              isRepeatOrder: !!repeatFromLoanId,
-              pengajuanFolder: minioUploadResult?.pengajuanFolder ?? null,
-              originalLoanId: minioUploadResult?.originalLoanId ?? null,
-              filesUploaded: minioUploadResult?.savedFiles
-                ? Object.keys(minioUploadResult.savedFiles).length
-                : 0,
-              fileConversionErrorsCount: fileConversionErrors.length,
-            },
-          },
-        };
-      });
-    } catch (err) {
-      console.error('Error in CreateRepeatOrderUseCase:', err);
+  //       // --- Done: build response ---
+  //       return {
+  //         payload: {
+  //           error: false,
+  //           message: minioUploadResult?.isUpdate
+  //             ? `Repeat Order ke-${minioUploadResult.originalLoanId} berhasil dibuat`
+  //             : 'Pengajuan repeat berhasil dibuat',
+  //           reference: 'REPEAT_ORDER_CREATE_OK',
+  //           data: {
+  //             loanAppId: loanApp.id,
+  //             clientId: client_id,
+  //             isUpdate: minioUploadResult?.isUpdate ?? false,
+  //             isRepeatOrder: !!repeatFromLoanId,
+  //             pengajuanFolder: minioUploadResult?.pengajuanFolder ?? null,
+  //             originalLoanId: minioUploadResult?.originalLoanId ?? null,
+  //             filesUploaded: minioUploadResult?.savedFiles
+  //               ? Object.keys(minioUploadResult.savedFiles).length
+  //               : 0,
+  //             fileConversionErrorsCount: fileConversionErrors.length,
+  //           },
+  //         },
+  //       };
+  //     });
+  //   } catch (err) {
+  //     console.error('Error in CreateRepeatOrderUseCase:', err);
 
-      // Kalau error sudah HttpException (our own) → lempar apa adanya
-      if (err instanceof HttpException) throw err;
+  //     // Kalau error sudah HttpException (our own) → lempar apa adanya
+  //     if (err instanceof HttpException) throw err;
 
-      // DB connection down
-      if (err?.code === 'ECONNREFUSED' || err?.name === 'MongoNetworkError') {
-        throw new HttpException(
-          {
-            payload: {
-              error: true,
-              message: 'Database connection error',
-              reference: 'DB_CONNECTION_ERROR',
-            },
-          },
-          HttpStatus.SERVICE_UNAVAILABLE,
-        );
-      }
+  //     // DB connection down
+  //     if (err?.code === 'ECONNREFUSED' || err?.name === 'MongoNetworkError') {
+  //       throw new HttpException(
+  //         {
+  //           payload: {
+  //             error: true,
+  //             message: 'Database connection error',
+  //             reference: 'DB_CONNECTION_ERROR',
+  //           },
+  //         },
+  //         HttpStatus.SERVICE_UNAVAILABLE,
+  //       );
+  //     }
 
-      // Storage / Minio error fallback
-      if (
-        err?.message?.includes?.('storage') ||
-        err?.message?.toLowerCase?.().includes('upload')
-      ) {
-        throw new HttpException(
-          {
-            payload: {
-              error: true,
-              message: 'Service storage sedang bermasalah',
-              reference: 'STORAGE_SERVICE_ERROR',
-            },
-          },
-          HttpStatus.SERVICE_UNAVAILABLE,
-        );
-      }
+  //     // Storage / Minio error fallback
+  //     if (
+  //       err?.message?.includes?.('storage') ||
+  //       err?.message?.toLowerCase?.().includes('upload')
+  //     ) {
+  //       throw new HttpException(
+  //         {
+  //           payload: {
+  //             error: true,
+  //             message: 'Service storage sedang bermasalah',
+  //             reference: 'STORAGE_SERVICE_ERROR',
+  //           },
+  //         },
+  //         HttpStatus.SERVICE_UNAVAILABLE,
+  //       );
+  //     }
 
-      // Fallback general (400)
-      throw new HttpException(
-        {
-          payload: {
-            error: true,
-            message: err?.message || 'Gagal membuat repeat order',
-            reference: 'REPEAT_ORDER_CREATE_ERROR',
-          },
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-  }
+  //     // Fallback general (400)
+  //     throw new HttpException(
+  //       {
+  //         payload: {
+  //           error: true,
+  //           message: err?.message || 'Gagal membuat repeat order',
+  //           reference: 'REPEAT_ORDER_CREATE_ERROR',
+  //         },
+  //       },
+  //       HttpStatus.BAD_REQUEST,
+  //     );
+  //   }
+  // }
 
   async executeCreateRepeatOrder(
     dto: PayloadDTO,
@@ -694,8 +694,22 @@ export class MKT_CreateRepeatOrderUseCase {
     repeatFromLoanId?: number,
   ) {
     try {
-      let minioUploadResult: Record<string, FileMetadata[]> | undefined; // ← Fix type
+      const isActiveLoan = await this.loanAppRepo.findActiveLoan(client_id);
 
+      if (isActiveLoan) {
+        throw new BadRequestException({
+          payload: {
+            error: true,
+            message: 'Nasabah memiliki pengajuan yang sedang berjalan',
+            reference: 'LOAN_ACTIVE_EXISTS',
+            data: {
+              active_loan_id: isActiveLoan.id,
+            },
+          },
+        });
+      }
+
+      let minioUploadResult: Record<string, FileMetadata[]> | undefined;
       dto.marketing_id = marketingId;
 
       console.log('=== Create Draft Repeat Order ===');
@@ -704,9 +718,7 @@ export class MKT_CreateRepeatOrderUseCase {
       console.log('Repeat From Loan ID:', repeatFromLoanId);
       console.log('Files received:', files ? Object.keys(files) : 'No files');
 
-      // ============== PROSES FILE KALAU ADA ==============
       if (files && Object.keys(files).length > 0) {
-        // Convert images to JPEG
         for (const [field, fileArray] of Object.entries(files)) {
           if (!fileArray) continue;
 
@@ -785,7 +797,6 @@ export class MKT_CreateRepeatOrderUseCase {
         }
       }
 
-      // SIMPAN DRAFT KE MONGODB
       const draftData: any = {
         ...dto,
         uploaded_files: uploadedFiles,
@@ -802,9 +813,6 @@ export class MKT_CreateRepeatOrderUseCase {
           uploadedAt: new Date(),
         };
       }
-
-      console.log('Saving draft to MongoDB...');
-      console.log('uploaded_files:', uploadedFiles); // ← Debug
 
       const loanApp = await this.repeatOrderRepo.create(draftData);
 
@@ -856,6 +864,9 @@ export class MKT_CreateRepeatOrderUseCase {
 
       return response;
     } catch (err) {
+      if (err instanceof HttpException) {
+        throw err;
+      }
       console.error('=== Error Creating Draft ===');
       console.error(err);
 

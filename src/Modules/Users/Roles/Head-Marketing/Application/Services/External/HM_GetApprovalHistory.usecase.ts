@@ -100,10 +100,7 @@ export class HM_GetAllApprovalHistoryExternalUseCase {
                   spv_name: item.spv_app_name || '-',
                   spv_response: item.spv_app_status || '-',
                   spv_approved_amount:
-                    new Intl.NumberFormat('id-ID', {
-                      style: 'currency',
-                      currency: 'IDR',
-                    }).format(Number(item!.spv_app_approved_amount)) || '-',
+                    Number(item!.spv_app_approved_amount) || '-',
                   spv_approved_tenor: item.spv_app_approved_tenor || '-',
                   spv_response_at: item.spv_app_response_at || '-',
                 },
@@ -119,10 +116,7 @@ export class HM_GetAllApprovalHistoryExternalUseCase {
                   ca_name: item.ca_app_name || '-',
                   ca_response: item.ca_app_status || '-',
                   ca_approved_amount:
-                    new Intl.NumberFormat('id-ID', {
-                      style: 'currency',
-                      currency: 'IDR',
-                    }).format(Number(item!.ca_app_approved_amount)) || '-',
+                    Number(item!.ca_app_approved_amount) || '-',
                   ca_approved_tenor: item.ca_app_approved_tenor || '-',
                   ca_response_at: item.ca_app_response_at || '-',
                 },
@@ -132,10 +126,7 @@ export class HM_GetAllApprovalHistoryExternalUseCase {
                   hm_name: item.hm_app_name || '-',
                   hm_response: item.hm_app_status || '-',
                   hm_approved_amount:
-                    new Intl.NumberFormat('id-ID', {
-                      style: 'currency',
-                      currency: 'IDR',
-                    }).format(Number(item!.hm_app_approved_amount)) || '-',
+                    Number(item!.hm_app_approved_amount) || '-',
                   hm_approved_tenor: item.hm_app_approved_tenor || '-',
                   hm_response_at: item.hm_app_response_at || '-',
                 },

@@ -28,12 +28,28 @@ import { LoanAggrement_ORM_Entity } from 'src/Modules/Admin/Contracts/Infrastruc
 import { LoanAgreementModule } from 'src/Modules/Admin/Contracts/Modules/loan-agreement.module';
 import { AdCont_GetAllLoanAgreementsUseCase } from './Applications/Services/AdCont_GetAllLoanAgreement.usecase';
 import { AdCont_getAllLoanAgreementController } from './Presentation/AdCont_GetAllLoanAgreement.controller';
+import { AdCont_UpdateLoanAgreementUseCase } from './Applications/Services/AdCont_UpdateLoanAgreement.usecase';
+import { AdCont_UpdateLoanAgreementController } from './Presentation/AdCont_UpdateLoanAgreement.controller';
+import { AdCont_GetMarketingOrCreditAnalystController } from './Presentation/AdCont_GetMarketingOrCreditAnalystName.controller';
+import { AdCont_GetMarketingOrCreditAnalystUseCase } from './Applications/Services/AdCont_GetMarketingOrCreditAnalystName.usecase';
+import { UsersModule } from 'src/Modules/Users/ModuleUsers.module';
+import { AdCont_GetLoanInquiryController } from './Presentation/AdCont_GetLoanInquiry.controller';
+import { AdCont_GetLoanInquiryUseCase } from './Applications/Services/AdCont_GetLoanInquiry.usecase';
+import { ClientLoanInstallmentModule } from 'src/Modules/Admin/Account-Receivable/Modules/client_loan_installment.module';
+import { ClientLoanInstallmentInternalModule } from 'src/Modules/Admin/Account-Receivable/Modules/client_loan_installment_internal.module';
+import { ClientInstallmentFrequencyModule } from 'src/Modules/Admin/Account-Receivable/Modules/client_loan_installment_frequency.module';
+import { ClientLoanInstallmentDetailModule } from 'src/Modules/Admin/Account-Receivable/Modules/client_loan_installment_detail.module';
 @Module({
   imports: [
     VouchersModule,
     LoanApplicationExternalModule,
     LoanApplicationInternalModule,
     LoanAgreementModule,
+    UsersModule,
+    ClientLoanInstallmentModule,
+    ClientLoanInstallmentInternalModule,
+    ClientInstallmentFrequencyModule,
+    ClientLoanInstallmentDetailModule,
     TypeOrmModule.forFeature([
       Vouchers_ORM_Entity,
       LoanApplicationExternal_ORM_Entity,
@@ -49,6 +65,9 @@ import { AdCont_getAllLoanAgreementController } from './Presentation/AdCont_GetA
     AdCont_GetLoanDetailByIdExternalController,
     AdCont_GetLoanDetailByIdInternalController,
     AdCont_getAllLoanAgreementController,
+    AdCont_UpdateLoanAgreementController,
+    AdCont_GetMarketingOrCreditAnalystController,
+    AdCont_GetLoanInquiryController,
   ],
   providers: [
     AdCont_CreateVoucherUseCase,
@@ -58,6 +77,9 @@ import { AdCont_getAllLoanAgreementController } from './Presentation/AdCont_GetA
     AdCont_GetLoanDetailByIdExternalUseCase,
     AdCont_GetLoanDetailByIdInternalUseCase,
     AdCont_GetAllLoanAgreementsUseCase,
+    AdCont_UpdateLoanAgreementUseCase,
+    AdCont_GetMarketingOrCreditAnalystUseCase,
+    AdCont_GetLoanInquiryUseCase,
   ],
 })
 export class AdminContractUseCaseModule {}

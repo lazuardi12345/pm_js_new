@@ -15,7 +15,10 @@ import {
   RoleSearchEnum,
   TypeSearchEnum,
 } from 'src/Shared/Enums/General/General.enum';
-import { LoanApplicationSummary } from 'src/Shared/Interface/General_ClientsDatabase/BankDataLoanApplication.interface';
+import {
+  ApprovalDetail,
+  LoanApplicationSummary,
+} from 'src/Shared/Interface/General_ClientsDatabase/BankDataLoanApplication.interface';
 
 @Injectable()
 export class LoanApplicationInternalService {
@@ -397,9 +400,45 @@ export class LoanApplicationInternalService {
         sanitizedPageSize,
       );
 
+    const mapApprovalDetail = (item: any, prefix: string): ApprovalDetail => ({
+      name: item[`${prefix}_name`] || null,
+      status: item[`${prefix}_status`] || null,
+      approval_status: item[`${prefix}_approval_status`] || '',
+      response_at: item[`${prefix}_response_at`]
+        ? new Date(item[`${prefix}_response_at`])
+        : null,
+      approved_amount: item[`${prefix}_approved_amount`]
+        ? Number(item[`${prefix}_approved_amount`])
+        : null,
+      approved_tenor: item[`${prefix}_approved_tenor`]
+        ? Number(item[`${prefix}_approved_tenor`])
+        : null,
+      keterangan: item[`${prefix}_keterangan`] || '',
+    });
+
     const mappedData = (result.LoanApplicationData || []).map((item) => ({
-      ...item,
+      // ===================================
+      // DATA LOAN APPLICATION
+      // ===================================
+      loan_id: Number(item.loan_id),
       id_pengajuan: Number(item.id_pengajuan),
+      nama_nasabah: item.nama_nasabah,
+      tipe_nasabah: item.tipe_nasabah,
+      nominal_pinjaman: Number(item.nominal_pinjaman),
+      tenor: Number(item.tenor),
+      golongan: item.golongan,
+      status_pengajuan: item.status_pengajuan,
+      created_at: item.created_at,
+
+      loan_application_status: {
+        ca: mapApprovalDetail(item, 'ca_app'),
+        spv: mapApprovalDetail(item, 'spv_app'),
+        hm: mapApprovalDetail(item, 'hm_app'),
+      },
+      loan_appeal_status: {
+        ca: mapApprovalDetail(item, 'ca_appeal'),
+        hm: mapApprovalDetail(item, 'hm_appeal'),
+      },
     }));
 
     return {

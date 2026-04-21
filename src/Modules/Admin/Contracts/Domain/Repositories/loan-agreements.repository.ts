@@ -20,4 +20,12 @@ export interface ILoanAgreementRepository {
     page: number,
     pageSize: number,
   ): Promise<any[]>;
+
+  callSP_AdCont_GetLoanInquiry(nik: string): Promise<any[]>;
+
+  callSP_AdAR_GetAllClientSearchData(
+    nama: string | null,
+    no_ktp: number | null,
+    id_card: string | null,
+  ): Promise<any[]>;
 }

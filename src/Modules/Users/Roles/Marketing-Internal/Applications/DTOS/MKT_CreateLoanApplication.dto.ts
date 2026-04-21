@@ -129,9 +129,9 @@ export class AddressInternalDto {
   @IsString()
   status_rumah_ktp: string | null;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsEnum(StatusRumahEnum)
-  status_rumah: StatusRumahEnum;
+  status_rumah?: StatusRumahEnum | null;
 
   @IsNotEmpty()
   @IsEnum(DomisiliEnum)

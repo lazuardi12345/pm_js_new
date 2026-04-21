@@ -6,18 +6,9 @@ import {
 } from 'src/Modules/LoanAppInternal/Domain/Repositories/loanApp-internal.repository';
 
 import {
-  TypeLoanApplicationDetail,
-  TypeApprovalDetail,
-  TypeStatusApproval,
-} from '../../../Marketing-Internal/Applications/DTOS/MKT_CreateLoanApplication.dto';
-import {
   APPROVAL_RECOMMENDATION_REPOSITORY,
   IApprovalRecommendationRepository,
 } from 'src/Modules/Admin/BI-Checking/Domain/Repositories/approval-recommendation.repository';
-import {
-  DRAFT_LOAN_APPLICATION_INTERNAL_REPOSITORY,
-  ILoanApplicationDraftInternalRepository,
-} from 'src/Shared/Modules/Drafts/Domain/Repositories/int/LoanAppInt.repository';
 
 @Injectable()
 export class SPV_GetLoanApplicationByIdUseCase {
@@ -128,7 +119,7 @@ export class SPV_GetLoanApplicationByIdUseCase {
         data: {
           id_approval: approval.approval_id,
           status: approval.status,
-          keterangan: approval.keterangan,
+          // keterangan: approval.keterangan,
           kesimpulan: approval.kesimpulan,
           approved_tenor: approval.tenor_persetujuan,
           approved_amount: approval.nominal_persetujuan,

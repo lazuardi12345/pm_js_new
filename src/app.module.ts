@@ -24,6 +24,7 @@ import { SupervisorExternalUseCaseModule } from './Modules/Users/Roles/Superviso
 import { CreditAnalystExternalUseCaseModule } from './Modules/Users/Roles/CreditAnalyst-External/credit-analyst-external.module';
 import { AdminContractUseCaseModule } from './Modules/Users/Roles/Admin/Contract/admin-contract.module';
 import { SurveyorExternalUseCaseModule } from './Modules/Users/Roles/Surveyor-External/surveyor-external.module';
+import { AdminAccountReceivableUseCaseModule } from './Modules/Users/Roles/Admin/Account-Receivable/admin-account-receivable.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -77,6 +78,7 @@ import { SurveyorExternalUseCaseModule } from './Modules/Users/Roles/Surveyor-Ex
     HeadMarketingUsecaseModule,
     AdminBICheckingUseCaseModule,
     AdminContractUseCaseModule,
+    AdminAccountReceivableUseCaseModule,
 
     //? --- Persistence Config Modules ---
     PersistenceLoanAppModule,

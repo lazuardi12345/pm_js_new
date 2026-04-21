@@ -32,6 +32,7 @@ export interface ILoanApplicationInternalRepository {
   findById(id: number): Promise<LoanApplicationInternal | null>;
   findByNasabahId(nasabahId: number): Promise<LoanApplicationInternal[]>;
   findAll(): Promise<LoanApplicationInternal[]>;
+  findActiveLoan(clientId: number): Promise<LoanApplicationInternal | null>;
   save(loan: LoanApplicationInternal): Promise<LoanApplicationInternal>;
   update(
     id: number,

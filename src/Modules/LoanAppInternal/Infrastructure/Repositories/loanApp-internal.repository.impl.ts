@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { LoanApplicationInternal } from '../../Domain/Entities/loan-application-internal.entity';
 import {
   MarketingStats,
@@ -145,7 +145,17 @@ export class LoanApplicationInternalRepositoryImpl
     return ormEntities.map(this.toDomain);
   }
 
-  // async findLatestApprovalRecommendation(nik): Promise<> {}
+  async findActiveLoan(
+    clientId: number,
+  ): Promise<LoanApplicationInternal | null> {
+    const ormEntity = await this.ormRepository
+      .createQueryBuilder('loan')
+      .where('loan.nasabah_id = :clientId', { clientId })
+      .andWhere('loan.status_akhir_pengajuan IS NULL')
+      .getOne();
+
+    return ormEntity ? this.toDomain(ormEntity) : null;
+  }
 
   async save(
     loanApp: LoanApplicationInternal,
@@ -505,6 +515,8 @@ export class LoanApplicationInternalRepositoryImpl
       `CALL CA_GetAllApprovalRequest_Internal(?, ?);`,
       [page, pageSize],
     );
+
+    console.log(result);
 
     return {
       data: result[1] || [],

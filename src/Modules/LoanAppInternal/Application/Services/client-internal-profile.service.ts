@@ -18,6 +18,7 @@ export class ClientInternalProfileService {
     const client_internal_profile = new ClientInternalProfile(
       { id: dto.user_id },
       undefined,
+      { id: dto.marketing_id },
       dto.nama_lengkap,
       dto.jenis_kelamin,
       dto.tipe_nasabah,
