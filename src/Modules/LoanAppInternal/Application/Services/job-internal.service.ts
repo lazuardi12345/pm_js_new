@@ -1,5 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IJobInternalRepository, JOB_INTERNAL_REPOSITORY } from '../../Domain/Repositories/job-internal.repository';
+import {
+  IJobInternalRepository,
+  JOB_INTERNAL_REPOSITORY,
+} from '../../Domain/Repositories/job-internal.repository';
 import { JobInternal } from '../../Domain/Entities/job-internal.entity';
 import { CreateJobDto } from '../DTOS/dto-Job/create-job-internal.dto';
 import { UpdateJobDto } from '../DTOS/dto-Job/update-job-internal.dto';
@@ -14,13 +17,14 @@ export class JobInternalService {
   async create(dto: CreateJobDto): Promise<JobInternal> {
     const now = new Date();
     const jobs = new JobInternal(
-      {id: dto.nasabah_id},
+      { id: dto.nasabah_id },
       dto.perusahaan,
       dto.divisi,
       dto.golongan,
       dto.nama_atasan,
       dto.nama_hrd,
       dto.absensi,
+      { id: dto.nasabah_profil_id ?? 0 },
       undefined,
       now,
       null,

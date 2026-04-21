@@ -1,0 +1,16 @@
+{
+  "FOTS": {
+    "DEFAULT": "DEFAULT",
+    "EDC": "EDC"
+  },
+  "BORONGAN": {
+    "DEFAULT": "DEFAULT",
+    "PENGELOLA": "PENGELOLA",
+    "EDC": "EDC"
+  },
+  "ILW": "ILW",
+  "UBL": "UBL",
+  "IBU": "IBU",
+  "TSII": "TSII",
+  "ANI": "ANI"
+}

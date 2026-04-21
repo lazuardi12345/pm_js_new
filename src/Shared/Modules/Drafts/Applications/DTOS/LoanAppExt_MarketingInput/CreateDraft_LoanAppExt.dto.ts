@@ -670,7 +670,7 @@ class CollateralByUMKMDto {
 
   @IsOptional()
   @IsString()
-  foto_usaha?: string; //!! AARAYYYY MASSSS
+  foto_usaha?: string;
 
   @IsOptional()
   @IsString()

@@ -16,6 +16,7 @@ import {
 } from 'typeorm';
 import { ClientInternal_ORM_Entity } from './client-internal.orm-entity';
 import { LoanApplicationInternal_ORM_Entity } from './loan-application-internal.orm-entity';
+import { Users_ORM_Entity } from 'src/Modules/Users/Infrastructure/Entities/users.orm-entity';
 
 @Entity('client_internal_profile')
 export class ClientInternalProfile_ORM_Entity {
@@ -55,6 +56,9 @@ export class ClientInternalProfile_ORM_Entity {
   @Column({ nullable: true })
   no_rekening?: string;
 
+  @Column({ nullable: true })
+  marketing_id: number;
+
   @CreateDateColumn({ type: 'timestamp', nullable: true })
   created_at?: Date;
 
@@ -78,6 +82,17 @@ export class ClientInternalProfile_ORM_Entity {
     foreignKeyConstraintName: 'FK_ClientInternalID_at_ClientInternalProfile',
   })
   nasabah: ClientInternal_ORM_Entity;
+
+  @ManyToOne(() => Users_ORM_Entity, (user) => user.clientInternalProfiles, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
+  @JoinColumn({
+    name: 'marketing_id',
+    foreignKeyConstraintName: 'FK_MarketingID_at_ClientInternalProfile',
+  })
+  marketing: Users_ORM_Entity;
+
   @OneToOne(
     () => LoanApplicationInternal_ORM_Entity,
     (pengajuan) => pengajuan.id,

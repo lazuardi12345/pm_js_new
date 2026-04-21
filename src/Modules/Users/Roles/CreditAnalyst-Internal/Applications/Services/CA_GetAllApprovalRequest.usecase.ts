@@ -105,8 +105,7 @@ export class CA_GetAllApprovalRequest_UseCase {
           }
 
           return {
-            pengajuan_id: item.pengajuan_id || null,
-            id_nasabah: item.nasabah_id || null,
+            id_pengajuan: Number(item.loan_id) || null,
             nama_nasabah: item.nama_nasabah || '-',
             tipe_nasabah: item.tipe_nasabah || '-',
             pinjaman_ke: item.pinjaman_ke ?? 0,
@@ -116,11 +115,10 @@ export class CA_GetAllApprovalRequest_UseCase {
               minimumFractionDigits: 0,
             }).format(nominal),
             tenor: item.tenor ? `${item.tenor} bulan` : '0 bulan',
-            id_marketing: item.marketing_id || null,
             nama_marketing: item.nama_marketing || '-',
             nama_supervisor: item.nama_supervisor || '-',
             loan_submitted_at: item.waktu_pengajuan || '-',
-            status_loan: item.status_loan || '-',
+            status: item.status_pengajuan || '-',
             perusahaan: item.perusahaan || '-',
             is_banding: !!item.is_banding,
             is_need_survey: Number(item.is_need_survey!),

@@ -18,3 +18,13 @@ export enum ExternalCollateralType {
   t5 = 'KEDINASAN_MOU',
   t6 = 'KEDINASAN_NON_MOU',
 }
+
+export enum CompanyNames {
+  FOTS = 'FOTS',
+  BORONGAN = 'BORONGAN',
+  ILW = 'ILW',
+  UBL = 'UBL',
+  IBU = 'IBU',
+  TSII = 'TSII',
+  ANI = 'ANI',
+}

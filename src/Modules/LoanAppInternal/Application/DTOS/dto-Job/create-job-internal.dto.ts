@@ -5,11 +5,18 @@ import {
   IsString,
   IsNumber,
 } from 'class-validator';
-import { GolonganEnum, PerusahaanEnum } from 'src/Shared/Enums/Internal/Job.enum';
+import {
+  GolonganEnum,
+  PerusahaanEnum,
+} from 'src/Shared/Enums/Internal/Job.enum';
 
 export class CreateJobDto {
   @IsNumber()
   nasabah_id: number;
+
+  @IsNumber()
+  @IsOptional()
+  nasabah_profil_id?: number | null;
 
   @IsEnum(PerusahaanEnum)
   perusahaan: PerusahaanEnum;

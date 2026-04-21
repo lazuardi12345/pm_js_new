@@ -6,4 +6,5 @@ export enum ContractSequenceCategory {
   SF = 'sf',
   UMKM = 'umkm',
   BPD = 'bpd',
+  BORONGAN = 'borongan',
 }

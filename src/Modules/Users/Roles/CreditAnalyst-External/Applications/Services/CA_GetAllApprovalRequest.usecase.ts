@@ -115,7 +115,11 @@ export class CA_GetAllApprovalRequest_UseCase {
             nama_nasabah: item.nama_nasabah,
             tipe_nasabah: 'reguler',
             jenis_pembiayaan: item.jenis_pembiayaan,
-            nominal_pinjaman: item.nominal,
+            nominal_pinjaman: new Intl.NumberFormat('id-ID', {
+              style: 'currency',
+              currency: 'IDR',
+              minimumFractionDigits: 0,
+            }).format(nominal),
             nama_marketing: item.nama_marketing,
             nama_supervisor: item.nama_supervisor,
             is_has_survey: Number(item.is_has_survey!),

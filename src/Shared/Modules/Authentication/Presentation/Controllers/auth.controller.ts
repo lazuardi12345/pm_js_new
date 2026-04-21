@@ -92,6 +92,7 @@ export class AuthController {
     USERTYPE.SUPERADMIN,
     USERTYPE.ADMIN_BI,
     USERTYPE.ADMIN_KONTRAK,
+    USERTYPE.ADMIN_PIUTANG,
     USERTYPE.SVY,
   )
   @Get('me')

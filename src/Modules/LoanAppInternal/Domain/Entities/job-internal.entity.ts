@@ -8,13 +8,14 @@ import {
 export class JobInternal {
   constructor(
     // === Immutable ===
-    public readonly nasabah: {id: number}, // ID of ClientInternal
+    public readonly nasabah: { id: number }, // ID of ClientInternal
     public readonly perusahaan: PerusahaanEnum,
     public readonly divisi: string,
     public readonly golongan: GolonganEnum,
     public readonly nama_atasan: string,
     public readonly nama_hrd: string,
     public readonly absensi: string,
+    public readonly profile?: { id: number | null }, //ID of ClientInternalProfile,
     public readonly id?: number,
     public readonly created_at?: Date,
     public readonly deleted_at?: Date | null,

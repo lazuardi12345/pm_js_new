@@ -22,6 +22,10 @@ export class CreateClientInternalProfileDto {
   @IsNumber()
   user_id: number;
 
+  @IsNotEmpty()
+  @IsNumber()
+  marketing_id: number;
+
   @IsString()
   nama_lengkap: string;
 

@@ -28,6 +28,12 @@ export interface LoanAgreementData {
   biaya_layanan: number;
   bunga: number;
   tanggal_jatuh_tempo: Date;
+  jenis_jaminan?: string;
+  daerah?: string;
+  sub_type?: string;
+  pay_type?: string;
+  potongan?: string;
+  tipe_pekerja?: string;
   catatan: string;
   created_at: Date;
   updated_at: Date;
@@ -47,7 +53,7 @@ export class AdCont_GetAllLoanAgreementsUseCase {
         throw new BadRequestException({
           success: false,
           message: 'Pencarian nama minimal 3 karakter untuk performa optimal',
-          reference: 'SEARCH_NAMA_MIN_LENGTH',
+          reference: 'SEARCH_NAME_MIN_LENGTH',
         });
       }
 
@@ -107,6 +113,12 @@ export class AdCont_GetAllLoanAgreementsUseCase {
             id_card: item?.id_card ?? null,
             kedinasan: item?.kedinasan ?? null,
             pinjaman_ke: item?.pinjaman_ke ?? null,
+            jenis_jaminan: item?.jenis_jaminan ?? null,
+            daerah: item?.daerah ?? null,
+            tipe_pekerja: item?.tipe_pekerja ?? null,
+            sub_type: item?.sub_type ?? null,
+            pay_type: item?.pay_type ?? null,
+            potongan: item?.potongan ?? null,
 
             // Format financial data
             pokok_pinjaman: this.formatCurrency(item?.pokok_pinjaman),

@@ -46,6 +46,12 @@ export class LoanAggrementRepositoryImpl implements ILoanAgreementRepository {
       entity.id_card,
       entity.kedinasan,
       entity.pinjaman_ke,
+      entity.jenis_jaminan,
+      entity.daerah,
+      entity.tipe_pekerja,
+      entity.sub_type,
+      entity.potongan,
+      entity.pay_type,
       entity.catatan,
       entity.created_at ?? undefined,
       entity.updated_at ?? undefined,
@@ -60,6 +66,11 @@ export class LoanAggrementRepositoryImpl implements ILoanAgreementRepository {
       alamat: domain.alamat,
       no_ktp: domain.no_ktp,
       type: domain.type,
+      jenis_jaminan: domain.jenis_jaminan,
+      daerah: domain.daerah,
+      tipe_pekerja: domain.tipe_pekerja,
+      sub_type: domain.sub_type,
+      potongan: domain.potongan,
       pokok_pinjaman: domain.pokok_pinjaman,
       tenor: domain.tenor,
       biaya_admin: domain.biaya_admin,
@@ -75,6 +86,7 @@ export class LoanAggrementRepositoryImpl implements ILoanAgreementRepository {
       id_card: domain.id_card,
       kedinasan: domain.kedinasan,
       pinjaman_ke: domain.pinjaman_ke,
+      pay_type: domain.pay_type,
       catatan: domain.catatan,
       created_at: domain.created_at,
       updated_at: domain.updated_at,
@@ -90,6 +102,11 @@ export class LoanAggrementRepositoryImpl implements ILoanAgreementRepository {
     if (partial.alamat) ormData.alamat = partial.alamat;
     if (partial.no_ktp) ormData.no_ktp = partial.no_ktp;
     if (partial.type) ormData.type = partial.type;
+    if (partial.jenis_jaminan) ormData.jenis_jaminan = partial.jenis_jaminan;
+    if (partial.daerah) ormData.daerah = partial.daerah;
+    if (partial.tipe_pekerja) ormData.tipe_pekerja = partial.tipe_pekerja;
+    if (partial.sub_type) ormData.sub_type = partial.sub_type;
+    if (partial.potongan) ormData.potongan = partial.potongan;
     if (partial.pokok_pinjaman !== undefined)
       ormData.pokok_pinjaman = partial.pokok_pinjaman;
     if (partial.tenor !== undefined) ormData.tenor = partial.tenor;
@@ -111,6 +128,7 @@ export class LoanAggrementRepositoryImpl implements ILoanAgreementRepository {
     if (partial.id_card) ormData.id_card = partial.id_card;
     if (partial.kedinasan) ormData.kedinasan = partial.kedinasan;
     if (partial.pinjaman_ke) ormData.pinjaman_ke = partial.pinjaman_ke;
+    if (partial.pay_type) ormData.pay_type = partial.pay_type;
     if (partial.catatan) ormData.catatan = partial.catatan;
     if (partial.created_at) ormData.created_at = partial.created_at;
     if (partial.updated_at) ormData.updated_at = partial.updated_at;
@@ -118,7 +136,8 @@ export class LoanAggrementRepositoryImpl implements ILoanAgreementRepository {
   }
 
   async findById(id: number): Promise<LoanAgreement | null> {
-    const entity = await this.ormRepository.findOne({ where: { id } });
+    console.log(id);
+    const entity = await this.ormRepository.findOne({ where: { id: id } });
     return entity ? this.toDomain(entity) : null;
   }
 
@@ -197,6 +216,19 @@ export class LoanAggrementRepositoryImpl implements ILoanAgreementRepository {
     loanData: Partial<LoanAgreement>,
   ): Promise<LoanAgreement> {
     const nomorData = await this.generate(loanData.type!, loanData.perusahaan);
+
+    let validatedDate: Date;
+
+    if (
+      typeof loanData.tanggal_jatuh_tempo === 'string' &&
+      (loanData.tanggal_jatuh_tempo as string).includes('-')
+    ) {
+      const [d, m, y] = (loanData.tanggal_jatuh_tempo as string).split('-');
+      validatedDate = new Date(`${y}-${m}-${d}`);
+    } else {
+      validatedDate = new Date(loanData.tanggal_jatuh_tempo!);
+    }
+
     const loanDomain = new LoanAgreement(
       nomorData.nomorKontrak,
       loanData.nama!,
@@ -209,8 +241,8 @@ export class LoanAggrementRepositoryImpl implements ILoanAgreementRepository {
       loanData.cicilan!,
       loanData.biaya_layanan!,
       loanData.bunga!,
-      loanData.tanggal_jatuh_tempo!,
-      undefined, // id baru
+      validatedDate,
+      undefined,
       nomorData.nomorUrut,
       loanData.perusahaan,
       loanData.inisial_marketing,
@@ -219,9 +251,13 @@ export class LoanAggrementRepositoryImpl implements ILoanAgreementRepository {
       loanData.id_card,
       loanData.kedinasan,
       loanData.pinjaman_ke,
+      loanData.jenis_jaminan,
+      loanData.daerah,
+      loanData.tipe_pekerja,
+      loanData.sub_type,
+      loanData.potongan,
+      loanData.pay_type,
       loanData.catatan,
-      undefined,
-      undefined,
     );
 
     const ormEntity = this.toOrm(loanDomain);
@@ -249,6 +285,8 @@ export class LoanAggrementRepositoryImpl implements ILoanAgreementRepository {
         `SELECT @total_records as total_records, @total_pages as total_pages`,
       );
 
+      console.log(result);
+
       // Return metadata and data
       return [
         [metadata], // First element: metadata
@@ -258,5 +296,30 @@ export class LoanAggrementRepositoryImpl implements ILoanAgreementRepository {
       console.error('Error calling AdCont_GetAllLoanAgreementData:', error);
       throw error;
     }
+  }
+
+  async callSP_AdCont_GetLoanInquiry(nik: string): Promise<any[]> {
+    try {
+      const result = await this.dataSource.query(
+        `CALL AdCont_GetLoanInquiry(?)`,
+        [nik],
+      );
+      return result[0] ?? [];
+    } catch (error) {
+      console.error('Error calling AdCont_GetLoanInquiry:', error);
+      throw error;
+    }
+  }
+
+  async callSP_AdAR_GetAllClientSearchData(
+    nama: string | null,
+    no_ktp: number | null,
+    id_card: string | null,
+  ): Promise<any[]> {
+    return this.dataSource.query('CALL AdAR_GetAllClientSearchData(?, ?, ?)', [
+      nama,
+      no_ktp,
+      id_card,
+    ]);
   }
 }

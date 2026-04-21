@@ -1,5 +1,8 @@
 import { ClientInternal_ORM_Entity } from './client-internal.orm-entity';
-import { PerusahaanEnum, GolonganEnum } from 'src/Shared/Enums/Internal/Job.enum';
+import {
+  PerusahaanEnum,
+  GolonganEnum,
+} from 'src/Shared/Enums/Internal/Job.enum';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -10,17 +13,35 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
 } from 'typeorm';
+import { ClientInternalProfile_ORM_Entity } from './client-internal-profile.orm-entity';
 
 @Entity('job_internal')
 export class JobInternal_ORM_Entity {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
 
-  @ManyToOne(() => ClientInternal_ORM_Entity, (clientInternal) => clientInternal.id, {
-    onDelete: 'CASCADE',
+  @ManyToOne(
+    () => ClientInternal_ORM_Entity,
+    (clientInternal) => clientInternal.id,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
+  @JoinColumn({
+    name: 'nasabah_id',
+    foreignKeyConstraintName: 'FK_ClientInternalID_at_JobInternal',
   })
-  @JoinColumn({ name: 'nasabah_id', foreignKeyConstraintName: 'FK_ClientInternalID_at_JobInternal' })
   nasabah: ClientInternal_ORM_Entity;
+
+  @ManyToOne(() => ClientInternalProfile_ORM_Entity, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
+  @JoinColumn({
+    name: 'profile_id',
+    foreignKeyConstraintName: 'FK_ProfileID_at_JobInternal',
+  })
+  profile?: ClientInternalProfile_ORM_Entity;
 
   @Column({ type: 'enum', enum: PerusahaanEnum })
   perusahaan: PerusahaanEnum;

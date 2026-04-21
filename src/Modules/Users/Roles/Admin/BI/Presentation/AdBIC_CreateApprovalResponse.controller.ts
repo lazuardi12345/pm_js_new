@@ -19,6 +19,10 @@ import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorato
 import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 import { LoanTypeEnum } from 'src/Shared/Enums/Admins/BI/approval-recommendation.enum';
 import { JwtToken } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/jwt-extractor.decorator';
+import {
+  secureFileFilter,
+  uploadLimits,
+} from 'src/Shared/Modules/Authentication/Infrastructure/Helpers/FileFilter.help';
 
 @UseGuards(FileUploadAuthGuard)
 @Controller('admin-bi')
@@ -30,7 +34,8 @@ export class AdBIC_CreateApprovalResponseController {
   @UseInterceptors(
     FileFieldsInterceptor([{ name: 'files', maxCount: 3 }], {
       storage: multer.memoryStorage(),
-      limits: { fileSize: 5 * 1024 * 1024 },
+      limits: uploadLimits,
+      fileFilter: secureFileFilter,
     }),
   )
   async createApprovalInternalResponse(
@@ -66,7 +71,8 @@ export class AdBIC_CreateApprovalResponseController {
   @UseInterceptors(
     FileFieldsInterceptor([{ name: 'files', maxCount: 3 }], {
       storage: multer.memoryStorage(),
-      limits: { fileSize: 5 * 1024 * 1024 },
+      limits: uploadLimits,
+      fileFilter: secureFileFilter,
     }),
   )
   async createApprovalExternalResponse(

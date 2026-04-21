@@ -1,8 +1,5 @@
 // src/Modules/ApprovalRecommendation/Infrastructure/Entities/approval-recommendation.orm-entity.ts
 
-import { LoanApplicationInternal_ORM_Entity } from 'src/Modules/LoanAppInternal/Infrastructure/Entities/loan-application-internal.orm-entity';
-import { LoanApplicationExternal_ORM_Entity } from 'src/Modules/LoanAppExternal/Infrastructure/Entities/loan-application-external.orm-entity';
-// ... import lainnya
 import {
   Entity,
   PrimaryGeneratedColumn,

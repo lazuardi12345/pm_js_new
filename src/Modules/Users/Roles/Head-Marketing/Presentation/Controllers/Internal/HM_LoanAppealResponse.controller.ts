@@ -25,7 +25,7 @@ export class HM_LoanAppealResponseInternalController {
   @Post('appeal-response/:id')
   async postAppealResponse(
     @Param('id') loan_id: number,
-    @Body('payload')
+    @Body()
     payload: {
       appeal_response:
         | ApprovalInternalStatusEnum.APPROVED

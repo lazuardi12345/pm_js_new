@@ -103,10 +103,7 @@ export class HM_GetAllApprovalHistoryInternalUseCase {
             loan_id: Number(item.loan_id),
             customer_id: Number(item.customer_id),
             customer_name: item.customer_name || '-',
-            loan_amount: new Intl.NumberFormat('id-ID', {
-              style: 'currency',
-              currency: 'IDR',
-            }).format(Number(item!.loan_amount)),
+            loan_amount: Number(item!.loan_amount),
             loan_sequence: item.pinjaman_ke || '-',
             tenor: item.tenor || '-',
             approval_request_submitted_at:

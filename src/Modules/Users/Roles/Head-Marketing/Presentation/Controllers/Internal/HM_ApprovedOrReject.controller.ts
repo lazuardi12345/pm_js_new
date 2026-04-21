@@ -4,6 +4,7 @@ import { USERTYPE } from 'src/Shared/Enums/Users/Users.enum';
 import { HM_ApproveOrRejectInternalUseCase } from '../../../Application/Services/Internal/HM_ApprovedOrReject.usecase';
 import { ApprovalInternalStatusEnum } from 'src/Shared/Enums/Internal/Approval.enum';
 import { CurrentUser } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/user.decorator';
+import { Roles } from 'src/Shared/Modules/Authentication/Infrastructure/Decorators/roles.decorator';
 
 @Controller('hm/int/loan-apps')
 export class HM_ApprovedOrRejectInternalController {
@@ -11,11 +12,12 @@ export class HM_ApprovedOrRejectInternalController {
     private readonly approveOrRejectUseCase: HM_ApproveOrRejectInternalUseCase,
   ) {}
 
+  @Roles(USERTYPE.HM)
   @Post('approve-or-reject/:id')
   async approveOrReject(
     @Req() req: Request,
     @Param('id') loan_id: number,
-    @Body('payload')
+    @Body()
     payload: {
       status: ApprovalInternalStatusEnum;
       kesimpulan?: string;
@@ -25,6 +27,7 @@ export class HM_ApprovedOrRejectInternalController {
     },
     @CurrentUser('id') headMarketingId: number,
   ) {
+    console.log('pelod:', payload);
     if (!headMarketingId) {
       console.error('HM ID tidak ditemukan di cookie/decorator!');
       throw new Error('HM ID tidak ditemukan di cookie/decorator');

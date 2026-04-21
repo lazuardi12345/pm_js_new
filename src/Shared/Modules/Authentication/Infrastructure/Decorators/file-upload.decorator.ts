@@ -48,7 +48,7 @@ export class FileUploadAuthGuard extends AuthGuard('jwt') {
     // Jangan touch request body untuk multipart
     if (contentType?.includes('multipart/form-data')) {
       console.log(
-        '✅ FileUploadAuthGuard: Auth success, preserving multipart stream',
+        '> FileUploadAuthGuard: Auth success, preserving multipart stream',
       );
     }
 

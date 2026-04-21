@@ -11,6 +11,10 @@ export interface IUsersRepository {
     data: any[];
     total: number;
   }>;
+  AdCont_findMarketingOrCreditAnalystByName(
+    type: 'MARKETING' | 'CREDIT_ANALYST',
+    name_like?: string,
+  ): Promise<UsersEntity[]>;
   findById(id: number): Promise<UsersEntity | null>;
   findByEmail(email: string): Promise<UsersEntity | null>;
   findAll(): Promise<UsersEntity[]>;

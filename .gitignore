@@ -15,6 +15,9 @@ lerna-debug.log*
 # OS
 .DS_Store
 
+loadtest.js
+loadtest2.js
+
 # Tests
 /coverage
 /.nyc_output

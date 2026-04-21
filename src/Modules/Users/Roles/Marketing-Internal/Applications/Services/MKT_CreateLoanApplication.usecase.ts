@@ -18,34 +18,6 @@ import {
   IClientInternalRepository,
   CLIENT_INTERNAL_REPOSITORY,
 } from 'src/Modules/LoanAppInternal/Domain/Repositories/client-internal.repository';
-import {
-  CLIENT_INTERNAL_PROFILE_REPOSITORY,
-  IClientInternalProfileRepository,
-} from 'src/Modules/LoanAppInternal/Domain/Repositories/client-internal-profile.repository';
-import {
-  IAddressInternalRepository,
-  ADDRESS_INTERNAL_REPOSITORY,
-} from 'src/Modules/LoanAppInternal/Domain/Repositories/address-internal.repository';
-import {
-  IFamilyInternalRepository,
-  FAMILY_INTERNAL_REPOSITORY,
-} from 'src/Modules/LoanAppInternal/Domain/Repositories/family-internal.repository';
-import {
-  IJobInternalRepository,
-  JOB_INTERNAL_REPOSITORY,
-} from 'src/Modules/LoanAppInternal/Domain/Repositories/job-internal.repository';
-import {
-  ILoanApplicationInternalRepository,
-  LOAN_APPLICATION_INTERNAL_REPOSITORY,
-} from 'src/Modules/LoanAppInternal/Domain/Repositories/loanApp-internal.repository';
-import {
-  ICollateralInternalRepository,
-  COLLATERAL_INTERNAL_REPOSITORY,
-} from 'src/Modules/LoanAppInternal/Domain/Repositories/collateral-internal.repository';
-import {
-  IRelativesInternalRepository,
-  RELATIVE_INTERNAL_REPOSITORY,
-} from 'src/Modules/LoanAppInternal/Domain/Repositories/relatives-internal.repository';
 
 import {
   IUnitOfWork,
@@ -96,8 +68,6 @@ export class MKT_CreateLoanApplicationUseCase {
     private readonly clientRepo: IClientInternalRepository,
     @Inject(APPROVAL_RECOMMENDATION_REPOSITORY)
     private readonly approvalRecomRepo: IApprovalRecommendationRepository,
-    // @Inject(CREATE_DRAFT_LOAN_APPLICATION_REPOSITORY)
-    // private readonly loanAppDraftRepo: ILoanApplicationDraftRepository,
     @Inject(UNIT_OF_WORK)
     private readonly uow: IUnitOfWork,
   ) {}
@@ -255,28 +225,9 @@ export class MKT_CreateLoanApplicationUseCase {
           ),
         );
 
-        await this.uow.jobInternalRepo.save(
-          new JobInternal(
-            { id: customer.id! },
-            job_internal.perusahaan as PerusahaanEnum,
-            job_internal.divisi,
-            job_internal.golongan as GolonganEnum,
-            job_internal.nama_atasan!,
-            job_internal.nama_hrd!,
-            job_internal.absensi!,
-            undefined,
-            undefined,
-            undefined,
-            job_internal.yayasan!,
-            job_internal.lama_kerja_bulan,
-            job_internal.lama_kerja_tahun,
-            parseFileUrl(
-              documents_files?.bukti_absensi_file ??
-                job_internal.bukti_absensi ??
-                null,
-            ),
-            undefined,
-          ),
+        console.log(
+          'absensoy',
+          parseFileUrl(documents_files?.bukti_absensi_file),
         );
 
         // ==========================
@@ -313,10 +264,11 @@ export class MKT_CreateLoanApplicationUseCase {
         // ==========================
         // 5. CLIENT PROFILE (BARU)
         // ==========================
-        await this.uow.clientProfileInternalRepo.save(
+        const profile = await this.uow.clientProfileInternalRepo.save(
           new ClientInternalProfile(
             { id: customer.id! },
             { id: loanApp.id! },
+            { id: marketing_id! },
             client_internal.nama_lengkap,
             client_internal.jenis_kelamin,
             client_internal.tipe_nasabah as CLIENT_TYPE,
@@ -333,6 +285,33 @@ export class MKT_CreateLoanApplicationUseCase {
             parseFileUrl(documents_files?.foto_id_card ?? null),
             parseFileUrl(documents_files?.foto_rekening ?? null),
             client_internal.no_rekening,
+          ),
+        );
+
+        console.log('NGETEST PROFILEEEEE', profile);
+
+        await this.uow.jobInternalRepo.save(
+          new JobInternal(
+            { id: customer.id! },
+            job_internal.perusahaan as PerusahaanEnum,
+            job_internal.divisi,
+            job_internal.golongan as GolonganEnum,
+            job_internal.nama_atasan!,
+            job_internal.nama_hrd!,
+            job_internal.absensi!,
+            { id: profile.id! },
+            undefined,
+            undefined,
+            undefined,
+            job_internal.yayasan!,
+            job_internal.lama_kerja_bulan,
+            job_internal.lama_kerja_tahun,
+            parseFileUrl(
+              documents_files?.bukti_absensi_file ??
+                job_internal.bukti_absensi ??
+                null,
+            ),
+            undefined,
           ),
         );
 

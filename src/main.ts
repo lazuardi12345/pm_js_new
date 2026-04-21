@@ -40,6 +40,7 @@ async function bootstrap() {
         'http://localhost:3000',
         'http://loan-apps.local',
         'http://loan-apps.local:3000',
+        // 'https://loan-apps-ui-m53s.vercel.app',
       ];
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);

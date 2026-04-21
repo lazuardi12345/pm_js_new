@@ -117,10 +117,10 @@ export class CA_GetLoanApplicationByIdUseCase {
     };
 
     // === IMPORTANT: approvals is TypeApprovalDetail[] ===
-    (approvals ?? []).forEach((approval: TypeApprovalDetail) => {
+    (approvals ?? []).forEach((approval: any) => {
       const roleKey = roleMap[approval.role] ?? approval.role;
 
-      const data: TypeStatusApproval = {
+      const data: any = {
         id_user: approval.user_id,
         name: approval.user_nama,
         data: {
@@ -130,6 +130,7 @@ export class CA_GetLoanApplicationByIdUseCase {
           kesimpulan: approval.kesimpulan,
           approved_tenor: approval.tenor_persetujuan,
           approved_amount: approval.nominal_persetujuan,
+          additional_files: approval?.additional_files ?? '-',
           created_at: approval.created_at,
           updated_at: approval.updated_at,
         },

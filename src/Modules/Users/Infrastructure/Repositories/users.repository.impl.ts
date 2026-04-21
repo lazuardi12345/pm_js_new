@@ -139,4 +139,26 @@ export class UsersRepositoryImpl implements IUsersRepository {
 
     return { total, data };
   }
+
+  async AdCont_findMarketingOrCreditAnalystByName(
+    type: 'MARKETING' | 'CREDIT_ANALYST',
+    name_like?: string,
+  ): Promise<any[]> {
+    const query = this.ormRepository
+      .createQueryBuilder('user')
+      .select([
+        'user.id',
+        'user.nama',
+        'user.usertype',
+        'user.marketing_code', // tambah ini
+        // kolom lain yang dibutuhkan
+      ])
+      .where('user.usertype = :type', { type });
+
+    if (name_like) {
+      query.andWhere('user.nama LIKE :name', { name: `%${name_like}%` });
+    }
+
+    return await query.limit(20).getMany();
+  }
 }
